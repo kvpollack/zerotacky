@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Radio, KeyRound, Copy, Unlink, UploadCloud, Link2 } from 'lucide-react';
+import Link from 'next/link';
+import { Radio, KeyRound, Copy, Unlink, UploadCloud, Link2, UserCheck } from 'lucide-react';
 import { copyText } from '@/lib/download';
 import { slugFor } from '@/hooks/useMeetSync';
 
-// Admin side of live sync: publish this meet (needs the publish key), show the join code and the
-// public scoreboard link, or join another phone's meet by code. Hidden when sync is not configured.
+// Admin side of live sync: publish this meet (signed-in account, or a legacy publish key), show the join code and
+// the public scoreboard link, or join another phone's meet by code. Hidden when sync is not configured.
 export default function SyncPanel({ sync, meet }) {
   const [key, setKey] = useState('');
   const [code, setCode] = useState('');
@@ -14,7 +15,8 @@ export default function SyncPanel({ sync, meet }) {
   const [notice, setNotice] = useState(null);
   const [confirmLeave, setConfirmLeave] = useState(false);
   if (!sync?.enabled) return null;
-  const { status, link } = sync;
+  const { status, link, account } = sync;
+  const canPublish = sync.canPublish ?? !!sync.publishKey;
 
   const say = (text, tone = 'ok') => {
     setNotice({ text, tone });
@@ -84,24 +86,38 @@ export default function SyncPanel({ sync, meet }) {
         </div>
       )}
 
-      {/* Publish key + publish */}
+      {/* Who publishes: signed-in account (v2) or the legacy publish key */}
       <div className="bg-zt-inset border border-zt-border rounded-xl p-3 space-y-2">
-        <div className="text-[10px] font-bold uppercase text-zt-muted flex items-center gap-1">
-          <KeyRound className="w-3 h-3" /> Promoter publish key {sync.publishKey ? '(saved)' : '(not set)'}
-        </div>
-        <div className="flex gap-2">
-          <input
-            type="password"
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-            placeholder={sync.publishKey ? '••••••••' : 'paste key'}
-            autoComplete="off"
-            className="flex-1 bg-zt-surface border border-zt-border rounded-lg px-3 py-2 text-sm text-zt-text"
-          />
-          <button type="button" onClick={onSaveKey} className="px-3 py-2 rounded-lg bg-zt-surface-2 text-zt-text-2 font-extrabold text-[11px] uppercase">
-            Save
-          </button>
-        </div>
+        {account ? (
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-[10px] font-bold uppercase text-zt-muted flex items-center gap-1">
+              <UserCheck className="w-3 h-3" /> Publishing as <span className="text-zt-text normal-case">{account.label}</span>
+            </div>
+            <Link href="/website/account" className="text-[10px] font-bold uppercase text-zt-primary">Account</Link>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-[10px] font-bold uppercase text-zt-muted flex items-center gap-1">
+                <KeyRound className="w-3 h-3" /> Promoter publish key {sync.publishKey ? '(saved)' : '(not set)'}
+              </div>
+              <Link href="/website/account" className="text-[10px] font-bold uppercase text-zt-primary">Sign in instead</Link>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="password"
+                value={key}
+                onChange={(e) => setKey(e.target.value)}
+                placeholder={sync.publishKey ? '••••••••' : 'paste key'}
+                autoComplete="off"
+                className="flex-1 bg-zt-surface border border-zt-border rounded-lg px-3 py-2 text-sm text-zt-text"
+              />
+              <button type="button" onClick={onSaveKey} className="px-3 py-2 rounded-lg bg-zt-surface-2 text-zt-text-2 font-extrabold text-[11px] uppercase">
+                Save
+              </button>
+            </div>
+          </>
+        )}
         {!link && (
           <div className="text-[10px] text-zt-muted">
             Scoreboard address will be <span className="font-bold text-zt-text-2">/m/{slug}</span> (change it in Meet Details above; fixed after publishing).
@@ -109,7 +125,7 @@ export default function SyncPanel({ sync, meet }) {
         )}
         <button
           type="button"
-          disabled={busy || !sync.publishKey}
+          disabled={busy || !canPublish}
           onClick={() => run(() => sync.publish({ slug }), link ? 'Meet updated online' : 'Meet published')}
           className="w-full py-2.5 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase flex items-center justify-center gap-1.5 disabled:opacity-40"
         >

@@ -122,7 +122,7 @@ export class SyncController {
   private knownAthletes = new Map<string, string>(); // athlete id -> sig last seen remote/pushed
   private busy = false;
   get deviceId(): string { return this.o.deviceId; }
-  private readonly o: ControllerOpts;
+  private o: ControllerOpts;
 
   constructor(opts: ControllerOpts) {
     this.o = opts;
@@ -165,8 +165,15 @@ export class SyncController {
 
   unlink(): void { this.setLink(null); }
 
+  // v2: signed-in promoter. Every later call (publish, pushes, pulls) carries the user's JWT instead of the anon
+  // key, so zt_publish_meet sees auth.uid() and the RLS member policies apply. null drops back to anon.
+  setAccessToken(token: string | null): void {
+    this.o = { ...this.o, client: this.o.client.withAccessToken(token) };
+  }
+
   // Admin phone: publish (or re-publish) the whole meet. Keeps the remote uuid across re-publishes.
-  async publish(extra: Omit<PublishExtra, 'meetId' | 'deviceId'>, publishKey: string): Promise<SyncLink> {
+  // `publishKey` is null when the phone is signed in (setAccessToken) and the server should use auth.uid().
+  async publish(extra: Omit<PublishExtra, 'meetId' | 'deviceId'>, publishKey: string | null): Promise<SyncLink> {
     // Re-publish is authoritative for the roster, so first bring in anything the floor phones added.
     if (this.link && this.link.localMeetId === this.o.getState().meet.id) {
       try { await this.flush(); await this.pull(); } catch { /* publish proceeds with what we have */ }

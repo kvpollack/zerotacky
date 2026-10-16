@@ -4,13 +4,17 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createSyncClient, readSyncEnv } from '@/lib/sync/client';
 import { SyncController, getDeviceId, mergeAthletes, PUBLISH_KEY_KEY } from '@/lib/sync/controller';
 import { mergeResults } from '@/lib/sync/mapping';
+import { useAuth } from '@/lib/auth/useAuth';
+import { profileLabel } from '@/lib/auth/profile';
 
 // React glue for lib/sync/controller.ts. Owns the timers; the controller owns the logic.
 //   - every local change to results/athletes is diffed into the outbound queue, then flushed ~0.6 s later
 //   - a 3 s poll (only while the tab is visible) flushes anything pending and pulls what other phones wrote
 //   - judge/admin phones publish their station's "up now" to live_state (debounced), but only while the
 //     Judge Pad tab is open, so an admin phone parked on Setup never fights the station's judge
-//   - admin phones with a publish key auto re-publish when meet config (divisions, events, weights) changes
+//   - admin phones that can publish (signed-in account, or a legacy publish key) auto re-publish when meet config
+//     (divisions, events, weights) changes
+//   - v2: a signed-in promoter's JWT rides on every call (controller.setAccessToken), so publishing needs no key
 // Returns status 'off' when NEXT_PUBLIC_SUPABASE_* is not configured; the app then works exactly as before.
 export const POLL_MS = 3000;
 const PUSH_DEBOUNCE_MS = 600;
@@ -33,6 +37,12 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
   const [link, setLink] = useState(null);
   const [publishKey, setPublishKeyState] = useState('');
   const timers = useRef({});
+  const auth = useAuth();
+  const accessToken = auth.session?.access_token ?? null;
+  const signedIn = !!accessToken;
+  const canPublish = signedIn || !!publishKey;
+  const tokenRef = useRef(accessToken);
+  tokenRef.current = accessToken;
 
   const setPublishKey = useCallback((k) => {
     setPublishKeyState(k);
@@ -77,6 +87,7 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
         setLink(l);
       },
     });
+    ctl.setAccessToken(tokenRef.current);
     ctlRef.current = ctl;
     setStatus(ctl.status);
     setLink(ctl.link);
@@ -86,6 +97,11 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
       Object.values(timers.current).forEach(clearTimeout);
     };
   }, [env, setState]);
+
+  // Hand the account token to the controller on sign-in, refresh and sign-out.
+  useEffect(() => {
+    ctlRef.current?.setAccessToken(accessToken);
+  }, [accessToken]);
 
   const debounce = useCallback((key, ms, fn) => {
     clearTimeout(timers.current[key]);
@@ -147,22 +163,23 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
     if (prevSig.current === configSig) return;   // key paste, StrictMode double-run, etc. are not config changes
     prevSig.current = configSig;
     const ctl = ctlRef.current;
-    if (!ctl?.link || ctl.link.role !== 'admin' || !publishKey) return;
+    if (!ctl?.link || ctl.link.role !== 'admin' || !canPublish) return;
     debounce('republish', REPUBLISH_DEBOUNCE_MS, () => {
       const meet = stateRef.current.meet;
-      ctlRef.current?.publish({ slug: ctlRef.current.link?.slug || slugFor(meet), stations: meet.stations, isDemo: !!meet.isDemo }, publishKey).catch(() => {});
+      ctlRef.current?.publish({ slug: ctlRef.current.link?.slug || slugFor(meet), stations: meet.stations, isDemo: !!meet.isDemo }, signedIn ? null : publishKey).catch(() => {});
     });
-  }, [configSig, publishKey, debounce]);
+  }, [configSig, publishKey, canPublish, signedIn, debounce]);
 
   const publish = useCallback(async (opts = {}) => {
     const ctl = ctlRef.current;
     if (!ctl) throw new Error('Sync is not configured on this build.');
     const key = opts.publishKey ?? publishKey;
-    if (!key) throw new Error('Enter the publish key first.');
+    if (!key && !signedIn) throw new Error('Sign in to your ZeroTacky account (or enter a publish key) first.');
     const meet = stateRef.current.meet;
-    const out = await ctl.publish({ slug: opts.slug || slugFor(meet), stations: meet.stations, isDemo: !!meet.isDemo }, key);
+    // Signed in wins: the server then records this account as the meet owner / member.
+    const out = await ctl.publish({ slug: opts.slug || slugFor(meet), stations: meet.stations, isDemo: !!meet.isDemo }, signedIn ? null : key);
     return out;
-  }, [publishKey]);
+  }, [publishKey, signedIn]);
 
   const joinByCode = useCallback(async (code) => {
     const ctl = ctlRef.current;
@@ -186,6 +203,8 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
     syncNow,
     publishKey,
     setPublishKey,
+    canPublish,
+    account: signedIn ? { email: auth.user?.email ?? null, label: profileLabel(auth.profile, auth.user?.email), loading: auth.loading } : null,
     deviceId: ctlRef.current?.deviceId ?? null,
   };
 }

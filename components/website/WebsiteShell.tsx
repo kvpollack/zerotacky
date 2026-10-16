@@ -13,7 +13,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
     { id: 'home', label: 'Overview', href: '/website' },
     { id: 'shows', label: 'Find a Show', href: '/shows' },
     { id: 'gyms', label: 'Strongman Gyms', href: '/gyms' },
-    { id: 'account', label: 'Account Preview', href: '/website/account' },
+    { id: 'account', label: 'Account', href: '/website/account' },
   ];
 
   return (
@@ -107,7 +107,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
               Gyms
             </Link>
             <Link href="/website/account" className="hover:text-zt-primary">
-              Account Preview
+              Account
             </Link>
             <Link href="/scorer" className="hover:text-zt-primary">
               Meet-Day App
