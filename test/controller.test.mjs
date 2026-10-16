@@ -252,7 +252,7 @@ describe('SyncController: config republish reaches judge phones', () => {
   async function pair() {
     const srv = fakeServer();
     const admin = phone(srv, 'admin1', P.getInitialSeedState('strongfest-2026'), clock);
-    await admin.ctl.publish({ slug: 'sf', stations: [{ id: 'A', label: 'Stn 1' }, { id: 'B', label: 'Stn 2' }] }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'sf', stations: [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }] }, 'GOODKEY');
     const judge = phone(srv, 'judge1', { meet: {}, divisions: [], events: [], athletes: [], results: [] }, clock);
     const remote = await judge.ctl.lookupJoinCode('JC0001');
     judge.state = remote.state;
@@ -272,7 +272,7 @@ describe('SyncController: config republish reaches judge phones', () => {
     judge.state = { ...judge.state, meet: { ...judge.state.meet, adminPin: '4242' } };
     admin.mutate((s) => ({
       ...s,
-      meet: { ...s.meet, stations: [{ id: 'A', label: 'Stn 1' }, { id: 'B', label: 'Stn 2' }, { id: 'C', label: 'Stn 3' }] },
+      meet: { ...s.meet, stations: [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }, { id: 'C', label: 'Station 3' }] },
       events: s.events.map((e, i) => (i === 1 ? { ...e, divisionWeights: { ...e.divisionWeights, 'sf-g1': before + 25 } } : e)),
     }));
     await admin.ctl.publish({ slug: 'sf', stations: admin.state.meet.stations }, 'GOODKEY');

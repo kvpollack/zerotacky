@@ -17,8 +17,8 @@ export default function DivisionsSection({
     Array.isArray(meet.stations) && meet.stations.length > 0
       ? meet.stations
       : [
-          { id: 'A', label: 'Stn 1' },
-          { id: 'B', label: 'Stn 2' },
+          { id: 'A', label: 'Station 1' },
+          { id: 'B', label: 'Station 2' },
         ];
   const stationIds = new Set(stations.map((s) => s.id));
 

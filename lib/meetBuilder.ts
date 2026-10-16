@@ -19,8 +19,8 @@ import { ALL_POSSIBLE_PLATES } from './constants';
 import { getInitialSeedState, MEET_PRESETS } from './presets';
 
 export const DEFAULT_STATIONS: Station[] = [
-  { id: 'A', label: 'Stn 1' },
-  { id: 'B', label: 'Stn 2' },
+  { id: 'A', label: 'Station 1' },
+  { id: 'B', label: 'Station 2' },
 ];
 
 const DEMO_PRESET_IDS = new Set(MEET_PRESETS.map((p) => p.id));
@@ -101,7 +101,8 @@ export function normalizeState(raw: unknown): AppState {
           .filter((s): s is Record<string, unknown> => Boolean(s && typeof s === 'object'))
           .map((s, idx) => {
             const id = String(s.id ?? '').trim() || String.fromCharCode(65 + idx);
-            const label = String(s.label ?? '').trim() || `Stn ${idx + 1}`;
+            // 'Stn 1' was the default label until 10/16; upgrade saved meets so the rename reaches phones.
+            const label = (String(s.label ?? '').trim() || `Station ${idx + 1}`).replace(/^Stn (\d+)$/, 'Station $1');
             return { id, label };
           })
       : DEFAULT_STATIONS.map((s) => ({ ...s }));
@@ -248,7 +249,7 @@ export function addStation(
     while (usedIds.has(String.fromCharCode(code))) code++;
     nextId = String.fromCharCode(code);
   }
-  const nextLabel = input?.label?.trim() || `Stn ${existing.length + 1}`;
+  const nextLabel = input?.label?.trim() || `Station ${existing.length + 1}`;
   const stations = [...existing.map((s) => ({ ...s })), { id: nextId, label: nextLabel }];
   return { ...state, meet: { ...state.meet, stations } };
 }
