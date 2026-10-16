@@ -106,10 +106,14 @@ a local reset while linked left the pull watermark past the server's scores.
    6-char code with judges; share `/m/<slug>` with everyone else.
 Without the two env vars the app behaves exactly as before; the sync UI does not render.
 5. **Before meet day, wipe the test scores on the server** (a local reset alone gets re-filled from the server
-   on the next pull): SQL editor ->
-   `delete from results where meet_id = (select id from meets where slug = 'strongfest-2026');`
-   `delete from live_state where meet_id = (select id from meets where slug = 'strongfest-2026');`
-   then Reset scores on the admin phone and Publish Update. Judge phones re-join or Sync now.
+   on the next pull). Replace `<slug>` with the meet's slug (Meet Details -> URL slug):
+   `delete from results where meet_id = (select id from meets where slug = '<slug>');`
+   `delete from live_state where meet_id = (select id from meets where slug = '<slug>');`
+   Then Reset scores on the admin phone and Publish Update; judge phones Leave + re-join (same code).
+   Anyone holding the join code can do the same through the API (`DELETE /rest/v1/results?meet_id=eq.<uuid>`
+   with `x-zt-join`), which is how the 10/16 test data on `strongfest-2026` was cleared; the join code is
+   write access by design (Known limits).
+6. To retire a meet published by mistake: `delete from meets where slug = '<slug>';` (children cascade).
 
 ## Real backend test (10/16, project kagitbfthapxmaljsdtz, dev server :3077)
 Schema applied clean; anon reads `meets` public columns only (`join_code` and `publish_keys` -> 401); bad key
@@ -125,6 +129,10 @@ shown. `/m/strongfest-2026` -> up now Jessica on Stn 1, Ev 1 breakdown 7 reps. L
 - Divisions/events edits from the floor need the admin phone (RPC); judge phones can only write
   results, athletes (scratch, rack pins, walk-ons) and live_state.
 - Two judge phones on the same station will fight over "up now". One station, one Judge Pad.
+- Same athlete + same event edited on two phones: the newer client timestamp wins and the older write is
+  dropped silently (Kurt hit this 10/16: locked in the browser, then edited on the phone). A phone whose clock
+  runs behind loses such races. Rule for meet day: the judge phone owns scores; the admin phone edits a score
+  only when no judge is on that athlete.
 - Slug comes from Meet Details (Argon's `meet.slug` field, auto-slugified from the name until edited) and is
   fixed once published; the Sync panel only displays it.
 - Config republishes reach judge phones within one poll (fixed 10/16 pm, see below). Phones that were
