@@ -88,7 +88,7 @@ export default function JoinClient() {
             </button>
             {error && <div className="text-sm font-bold text-zt-danger-text text-center">{error}</div>}
             <p className="text-xs text-zt-muted text-center">
-              Scan the promoter's QR with your phone camera and the code fills in by itself, or type the 6-character code from their Meet Setup tab.
+              The promoter has the 6-character code on their Meet Setup tab.
             </p>
           </form>
         ) : (

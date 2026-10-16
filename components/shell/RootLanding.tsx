@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Globe, Play, QrCode } from 'lucide-react';
+import { Globe, KeyRound, Play } from 'lucide-react';
 import { DEFAULT_THEME_ID } from '@/lib/constants';
 import { readResume, type ResumeInfo } from '@/lib/landing';
 
 // Root splash. Two doors: the public site (gyms, shows, registration) and the volunteer join flow
-// (type the 6-character code or scan the promoter's QR). A phone that already carries a meet gets a
+// (type the promoter's 6-character code). A phone that already carries a meet gets a
 // Resume button on top so judges who open the home-screen icon on meet day land in the scorer in one tap.
 export default function RootLanding() {
   const [resume, setResume] = useState<ResumeInfo | null>(null);
@@ -40,10 +40,10 @@ export default function RootLanding() {
         <p className="text-[11px] text-zt-muted text-center -mt-2">Find gyms, browse shows, register for meets.</p>
 
         <a href="/join" className={`${btn} bg-zt-surface-2 border border-zt-border text-zt-text`}>
-          <QrCode className="w-4 h-4 text-zt-primary" aria-hidden="true" />
+          <KeyRound className="w-4 h-4 text-zt-primary" aria-hidden="true" />
           Join a meet
         </a>
-        <p className="text-[11px] text-zt-muted text-center -mt-2">Type the promoter's 6-character code or scan their QR.</p>
+        <p className="text-[11px] text-zt-muted text-center -mt-2">Type the promoter's 6-character code.</p>
 
         {!resume && (
           <a href="/scorer" className="block text-center text-xs font-bold text-zt-muted py-2">
