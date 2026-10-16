@@ -1,5 +1,5 @@
-import StrongmanAppLoader from '@/components/strongman-app-loader'
+import RootLanding from '@/components/shell/RootLanding';
 
 export default function Page() {
-  return <StrongmanAppLoader />
+  return <RootLanding />;
 }

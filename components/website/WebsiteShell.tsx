@@ -28,13 +28,13 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
               Website Skeleton Preview
             </span>
             <span className="text-zt-text-2 font-semibold">
-              Meet-day scoring at <code className="font-mono text-zt-text">/</code> and volunteer join at{' '}
-              <code className="font-mono text-zt-text">/join</code> are untouched.
+              Meet-day scoring lives at <code className="font-mono text-zt-text">/scorer</code>, volunteer join at{' '}
+              <code className="font-mono text-zt-text">/join</code>.
             </span>
           </div>
           <div className="flex items-center gap-3 font-bold">
-            <Link href="/" className="text-zt-primary hover:underline">
-              Open Meet-Day App (/)
+            <Link href="/scorer" className="text-zt-primary hover:underline">
+              Open Meet-Day App
             </Link>
             <Link href="/join" className="text-zt-text-2 hover:text-zt-text hover:underline">
               Volunteer Join (/join)
@@ -108,7 +108,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
             <Link href="/website/account" className="hover:text-zt-primary">
               Account Preview
             </Link>
-            <Link href="/" className="hover:text-zt-primary">
+            <Link href="/scorer" className="hover:text-zt-primary">
               Meet-Day App
             </Link>
           </div>

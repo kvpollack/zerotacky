@@ -113,6 +113,9 @@ Without the two env vars the app behaves exactly as before; the sync UI does not
    Anyone holding the join code can do the same through the API (`DELETE /rest/v1/results?meet_id=eq.<uuid>`
    with `x-zt-join`), which is how the 10/16 test data on `strongfest-2026` was cleared; the join code is
    write access by design (Known limits).
+   **Order matters (10/16 lesson):** Leave/Reset on every phone and close every browser tab that has the meet
+   joined BEFORE running the delete. A forgotten tab still holds the scores locally and pushes them back on
+   its next sync, which looks like the delete never took.
 6. To retire a meet published by mistake: `delete from meets where slug = '<slug>';` (children cascade).
 
 ## Real backend test (10/16, project kagitbfthapxmaljsdtz, dev server :3077)
@@ -175,3 +178,10 @@ Argon's public-site skeleton landed as 18 new files (two of the 20 handed over w
 - Verified: tsc clean, `bun test test/` 127 pass / 0 fail, dev server 200 on `/website`, `/shows`, `/shows/<fixture slug>`, `/gyms`, `/gyms/the-power-plant-gym-pa`, `/website/account`; 404 on unknown show and gym slugs. Argon did not run tests or a build before handing off.
 - Not applied (Argon's proposals, section 4 of `WEBSITE_NOTES.md`, decide after 10/24): tie placement `1, 1, 3` in `calculateDivisionStandings`; `meets` columns `competition_status`, `registration_status`, `results_status`, `is_public_listed` (default false), `venue_json`, `federation`; root route swap (`/scorer` for the meet-day app, `/website` to `/`, with `JoinClient` redirect and `manifest.json start_url` moved together).
 - All website data is fixture-only (`lib/website/fixtures.ts`); `data.ts` is the seam where Supabase reads go later.
+
+## Root splash + scorer moved to /scorer (10/16 evening, Kurt's ask)
+- `/` is now a thin splash (`components/shell/RootLanding.tsx`): **Enter ZeroTacky** (-> `/website`) and **Join a meet** (-> `/join`, type the code or scan the promoter's QR with the phone camera; the QR already encodes `/join?code=XXXXXX`). A phone that already carries a meet (sync link, or a non-demo meet with athletes/results) gets a **Resume: <meet>** button on top, so a judge opening the home-screen icon on meet day lands in the scorer in one tap. Helper `lib/landing.ts` `readResume()`, tests `test/landing.test.mjs` (8).
+- The meet-day app lives at **`/scorer`** (`app/scorer/page.tsx`, same loader). localStorage is per origin, so nothing on any phone moved or was lost; the admin phone in the browser panel came up at `/scorer` with Strongfest and Sync: Live.
+- Every hard-coded `/` that meant the scorer now says `/scorer`: `public/manifest.json start_url`, the post-join redirect in `JoinClient`, and the three website links (WebsiteShell banner + footer, landing "Run a Meet", account preview). `JoinClient` "Back" goes to `/`.
+- No in-app QR scanner yet: iOS Safari has no BarcodeDetector, so it needs a library. Camera-app scan works today.
+- Verified: tsc clean, `bun test test/` 135 pass; dev 200 on `/`, `/scorer`, `/join`, `/website`, `/m/strongfest-2026`.

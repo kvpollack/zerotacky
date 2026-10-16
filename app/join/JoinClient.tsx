@@ -54,7 +54,7 @@ export default function JoinClient() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(remote.state)); } catch { /* ignore */ }
     ctl.attach(remote, 'device');
     try { localStorage.setItem(ROLE_STORAGE_KEY, role); } catch { /* ignore */ }
-    window.location.href = '/';
+    window.location.href = '/scorer';
   };
 
   const field = 'w-full bg-zt-surface border border-zt-border rounded-xl px-4 py-3 text-2xl font-black tracking-[0.3em] text-center text-zt-text uppercase';
@@ -87,7 +87,9 @@ export default function JoinClient() {
               {busy ? 'Looking up…' : 'Find meet'}
             </button>
             {error && <div className="text-sm font-bold text-zt-danger-text text-center">{error}</div>}
-            <p className="text-xs text-zt-muted text-center">The promoter has the 6-character code on their Meet Setup tab.</p>
+            <p className="text-xs text-zt-muted text-center">
+              Scan the promoter's QR with your phone camera and the code fills in by itself, or type the 6-character code from their Meet Setup tab.
+            </p>
           </form>
         ) : (
           <div className="space-y-3">
@@ -107,7 +109,7 @@ export default function JoinClient() {
             <button type="button" onClick={() => setRemote(null)} className="w-full text-xs font-bold text-zt-muted py-2">Different code</button>
           </div>
         )}
-        <a href="/" className="block text-center text-xs font-bold text-zt-muted py-2">Back to the app</a>
+        <a href="/" className="block text-center text-xs font-bold text-zt-muted py-2">Back</a>
       </div>
     </div>
   );

@@ -46,7 +46,7 @@ export default async function WebsiteLandingPage() {
           </Link>
 
           <Link
-            href="/"
+            href="/scorer"
             className="px-6 py-4 rounded-xl bg-zt-surface-2 border-2 border-zt-border-strong text-zt-text font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 hover:border-zt-primary transition"
           >
             <Play className="w-4 h-4 text-zt-primary" aria-hidden="true" />

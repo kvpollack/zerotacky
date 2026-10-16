@@ -1,7 +1,7 @@
 {
   "name": "ZeroTacky Strongman Meet Manager",
   "short_name": "ZeroTacky",
-  "start_url": "/",
+  "start_url": "/scorer",
   "display": "standalone",
   "background_color": "#0b0d10",
   "theme_color": "#e11d48",

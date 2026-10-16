@@ -256,7 +256,7 @@ export default function AccountPreviewClient({ personas, gyms }: AccountPreviewC
             </div>
 
             <Link
-              href="/"
+              href="/scorer"
               className="px-4 py-2 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase tracking-wider inline-flex items-center gap-1.5"
             >
               <Play className="w-3.5 h-3.5" aria-hidden="true" />
