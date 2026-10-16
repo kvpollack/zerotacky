@@ -15,6 +15,18 @@ export default function MeetSection({
   removeStation,
 }) {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+  // Slug is edited as a draft: lowercase + hyphens while typing (so a trailing "-" or an emptied field survive
+  // the keystroke), then fully slugified on blur. Slugifying on every keystroke made "-" impossible to type
+  // and turned an empty field into "meet" (found 10/16).
+  const [slugDraft, setSlugDraft] = useState(null);
+  const slugShown = slugDraft ?? meet.slug ?? slugify(meet.name);
+  const commitSlug = () => {
+    if (slugDraft === null) return;
+    const next = slugDraft.trim() ? slugify(slugDraft) : slugify(meet.name);
+    setSlugManuallyEdited(slugDraft.trim().length > 0);
+    updateMeetConfig({ slug: next });
+    setSlugDraft(null);
+  };
   const [newStationLabel, setNewStationLabel] = useState('');
 
   const stations =
@@ -86,12 +98,14 @@ export default function MeetSection({
             </label>
             <input
               type="text"
-              value={meet.slug ?? slugify(meet.name)}
-              onChange={(e) => {
-                setSlugManuallyEdited(true);
-                updateMeetConfig({ slug: slugify(e.target.value) });
-              }}
+              value={slugShown}
+              onChange={(e) => setSlugDraft(e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, '-').slice(0, 60))}
+              onBlur={commitSlug}
+              onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
               placeholder="meet-slug"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-mono font-bold text-zt-text"
             />
           </div>
