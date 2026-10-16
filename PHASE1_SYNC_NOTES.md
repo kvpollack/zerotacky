@@ -184,3 +184,8 @@ Argon's public-site skeleton landed as 18 new files (two of the 20 handed over w
 - The meet-day app lives at **`/scorer`** (`app/scorer/page.tsx`, same loader). localStorage is per origin, so nothing on any phone moved or was lost; the admin phone in the browser panel came up at `/scorer` with Strongfest and Sync: Live.
 - Every hard-coded `/` that meant the scorer now says `/scorer`: `public/manifest.json start_url`, the post-join redirect in `JoinClient`, and the three website links (WebsiteShell banner + footer, landing "Run a Meet", account preview). `JoinClient` "Back" goes to `/`.
 - Verified: tsc clean, `bun test test/` 135 pass; dev 200 on `/`, `/scorer`, `/join`, `/website`, `/m/strongfest-2026`.
+
+## Meet Setup reorder + Advanced Settings (10/16 evening, sprint items 1-3)
+- Station defaults are "Station 1 / Station 2"; `normalizeState` upgrades saved "Stn n" labels, so existing meets rename themselves on load. `supabase/002_station_labels.sql` changes the server default (applied to staging; Kurt runs it on prod).
+- Meet Setup order: Meet Details, Divisions, Events, Athletes, Meets/Presets, then a **Results CSV** card that is always visible, then an **Advanced Settings** bar (collapsed by default) holding Role Lock, Backup & Export (minus CSV), Live Sync incl. publish key, Reset/Clear. **Promoter Theme is the last card** and stays visible.
+- `components/setup/ResultsCsvCard.jsx` is new; `BackupPanel` takes `hideCsv`.
