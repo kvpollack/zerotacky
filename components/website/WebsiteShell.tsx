@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import { DEFAULT_THEME_ID } from '@/lib/constants';
+import WebsiteThemeFrame from './WebsiteThemeFrame';
+import WebsiteThemeControls from './WebsiteThemeControls';
 
 interface WebsiteShellProps {
   activeNav?: 'home' | 'shows' | 'gyms' | 'account';
@@ -16,10 +17,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
   ];
 
   return (
-    <div
-      data-zt-theme={DEFAULT_THEME_ID}
-      className="min-h-screen bg-zt-bg text-zt-text font-sans flex flex-col"
-    >
+    <WebsiteThemeFrame>
       {/* Top Preview Notice Bar */}
       <div className="bg-zt-surface-2 border-b border-zt-border px-4 py-2 text-xs">
         <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2">
@@ -59,6 +57,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
             </span>
           </div>
 
+          <div className="flex items-center gap-3 flex-wrap">
           <nav aria-label="Primary website navigation" className="flex items-center gap-1.5 flex-wrap">
             {navItems.map((item) => {
               const isActive = activeNav === item.id;
@@ -78,6 +77,8 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
               );
             })}
           </nav>
+          <WebsiteThemeControls />
+          </div>
         </div>
       </header>
 
@@ -114,6 +115,6 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
           </div>
         </div>
       </footer>
-    </div>
+    </WebsiteThemeFrame>
   );
 }

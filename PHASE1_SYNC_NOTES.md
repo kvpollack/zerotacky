@@ -195,3 +195,8 @@ Argon's public-site skeleton landed as 18 new files (two of the 20 handed over w
 - Layout mode `phone | tv` (`lib/layout.ts`, `hooks/useLayoutMode.js`, `components/shell/LayoutToggle.jsx`): `?layout=tv` in the URL wins, then the device's last toggle (`ZEROTACKY_LAYOUT_V1`), then auto (landscape and >= 1024 px wide = TV). Toggle button sits in the Standings header, the Pit Crew load card, and the scoreboard header.
 - TV mode: `/m/<slug>` goes full width with one leaderboard table per division (two columns on 2xl screens); scorer Standings tab shows the table with the event breakdown beside it; Pit Crew shows the load card and the transition list side by side. Phone layouts unchanged.
 - Projector URL for 10/24: `https://zerotacky.com/m/strongfest-2026?layout=tv` (add `&theme=<id>` for a theme). Tests: `test/layout.test.mjs` (5); 141 total.
+
+## Website theme controls (10/16 evening, sprint item 5a)
+- `WebsiteShell` is wrapped in `components/website/WebsiteThemeFrame.tsx` (client), which owns `data-zt-theme` through the scorer's `useTheme` hook: same localStorage prefs, so phone and site share the theme. First paint is the default theme to match server HTML; the saved theme applies on mount.
+- Header gets `WebsiteThemeControls`: Day/Night toggle (Daylight theme vs last dark theme) and a Configure popover listing all `THEMES` with swatches. Closes on pick, outside click, Escape.
+- Theme ideation (new palettes) still open; Slate drafts options for Kurt to react to.
