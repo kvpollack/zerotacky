@@ -33,8 +33,8 @@ export default function MeetSection({
     Array.isArray(meet.stations) && meet.stations.length > 0
       ? meet.stations
       : [
-          { id: 'A', label: 'Stn 1' },
-          { id: 'B', label: 'Stn 2' },
+          { id: 'A', label: 'Station 1' },
+          { id: 'B', label: 'Station 2' },
         ];
 
   const handleNameChange = (nextName) => {
@@ -47,7 +47,7 @@ export default function MeetSection({
 
   const handleAddStation = (e) => {
     e.preventDefault();
-    addStation({ label: newStationLabel.trim() || `Stn ${stations.length + 1}` });
+    addStation({ label: newStationLabel.trim() || `Station ${stations.length + 1}` });
     setNewStationLabel('');
   };
 
@@ -159,7 +159,7 @@ export default function MeetSection({
         <form onSubmit={handleAddStation} className="flex gap-2">
           <input
             type="text"
-            placeholder={`New station label (e.g. Stn ${stations.length + 1})...`}
+            placeholder={`New station label (e.g. Station ${stations.length + 1})...`}
             value={newStationLabel}
             onChange={(e) => setNewStationLabel(e.target.value)}
             className="flex-1 bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"

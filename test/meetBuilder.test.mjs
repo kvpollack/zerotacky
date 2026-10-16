@@ -22,8 +22,8 @@ describe('slugify & createBlankMeet', () => {
     assert.equal(s.meet.isDemo, false);
     assert.equal(s.meet.adminPin, '1050');
     assert.deepEqual(s.meet.stations, [
-      { id: 'A', label: 'Stn 1' },
-      { id: 'B', label: 'Stn 2' },
+      { id: 'A', label: 'Station 1' },
+      { id: 'B', label: 'Station 2' },
     ]);
     assert.deepEqual(s.meet.availablePlates, ALL_POSSIBLE_PLATES);
     assert.deepEqual(s.divisions, []);
@@ -43,12 +43,23 @@ describe('normalizeState', () => {
     const norm = MB.normalizeState(raw);
     assert.equal(norm.meet.isDemo, true);
     assert.deepEqual(norm.meet.stations, [
-      { id: 'A', label: 'Stn 1' },
-      { id: 'B', label: 'Stn 2' },
+      { id: 'A', label: 'Station 1' },
+      { id: 'B', label: 'Station 2' },
     ]);
     assert.equal(norm.meet.slug, 'all-out-strongfest-2026-the-power-plant-gym');
     assert.equal(norm.divisions.length, 5);
     assert.equal(norm.athletes.length, 14);
+  });
+
+  test('upgrades legacy "Stn n" station labels to "Station n"; custom labels untouched', () => {
+    const raw = JSON.parse(JSON.stringify(P.getInitialSeedState('strongfest-2026')));
+    raw.meet.stations = [{ id: 'A', label: 'Stn 1' }, { id: 'B', label: 'Stn 2' }, { id: 'C', label: 'Log Side' }];
+    const norm = MB.normalizeState(raw);
+    assert.deepEqual(norm.meet.stations, [
+      { id: 'A', label: 'Station 1' },
+      { id: 'B', label: 'Station 2' },
+      { id: 'C', label: 'Log Side' },
+    ]);
   });
 
   test('hydrates a legacy custom save without presetId as isDemo false and fills implementCount on stone events', () => {

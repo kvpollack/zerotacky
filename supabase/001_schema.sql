@@ -17,7 +17,7 @@ create table if not exists meets (
   tiebreaker_rule text not null default 'event_wins',
   available_plates numeric[] not null default '{100,55,45,35,25,15,10,5,2.5}',
   collar_weight_per_pair numeric not null default 0,
-  stations jsonb not null default '[{"id":"A","label":"Stn 1"},{"id":"B","label":"Stn 2"}]',
+  stations jsonb not null default '[{"id":"A","label":"Station 1"},{"id":"B","label":"Station 2"}]',
   is_demo boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -184,7 +184,7 @@ begin
   values (v_id, m.slug, m.name, m.date, coalesce(m.admin_pin, '1050'),
           coalesce(m.run_order_method, 'reverse_overall'), coalesce(m.tiebreaker_rule, 'event_wins'),
           coalesce(m.available_plates, '{100,55,45,35,25,15,10,5,2.5}'), coalesce(m.collar_weight_per_pair, 0),
-          coalesce(m.stations, '[{"id":"A","label":"Stn 1"},{"id":"B","label":"Stn 2"}]'), coalesce(m.is_demo, false))
+          coalesce(m.stations, '[{"id":"A","label":"Station 1"},{"id":"B","label":"Station 2"}]'), coalesce(m.is_demo, false))
   on conflict (id) do update set
     slug = excluded.slug, name = excluded.name, date = excluded.date, admin_pin = excluded.admin_pin,
     run_order_method = excluded.run_order_method, tiebreaker_rule = excluded.tiebreaker_rule,

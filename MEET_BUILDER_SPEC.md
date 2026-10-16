@@ -27,11 +27,11 @@ order, plates, the clock, backup, or sync changes.
 
 ## Data model changes (`lib/types.ts`)
 ```ts
-export interface Station { id: string; label: string }          // e.g. { id: 'A', label: 'Stn 1' }
+export interface Station { id: string; label: string }          // e.g. { id: 'A', label: 'Station 1' }
 export interface Meet {
   ...existing,
   isDemo?: boolean;                 // true for the two presets; false/undefined for built meets
-  stations?: Station[];             // default [{id:'A',label:'Stn 1'},{id:'B',label:'Stn 2'}]
+  stations?: Station[];             // default [{id:'A',label:'Station 1'},{id:'B',label:'Station 2'}]
   slug?: string;                    // url-safe, derived from name, editable; used by Phase 1 sync
 }
 ```

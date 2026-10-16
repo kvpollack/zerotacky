@@ -75,8 +75,8 @@ export const DEMO_SHOW_RECORDS: PublicShowRecord[] = [
         collarWeightPerPair: 0,
         isDemo: true,
         stations: [
-          { id: 'A', label: 'Stn 1' },
-          { id: 'B', label: 'Stn 2' },
+          { id: 'A', label: 'Station 1' },
+          { id: 'B', label: 'Station 2' },
         ],
       },
       divisions: [
@@ -341,7 +341,7 @@ export const DEMO_SHOW_RECORDS: PublicShowRecord[] = [
         availablePlates: [100, 55, 45, 35, 25, 15, 10, 5, 2.5],
         collarWeightPerPair: 5,
         isDemo: true,
-        stations: [{ id: 'A', label: 'Stn 1' }],
+        stations: [{ id: 'A', label: 'Station 1' }],
       },
       divisions: [
         { id: 'iv-mw', meetId: 'demo-show-iron-valley-summer-2026', name: 'Middleweight 100kg', flight: 'A', sortOrder: 1 },
@@ -474,7 +474,7 @@ export const DEMO_SHOW_RECORDS: PublicShowRecord[] = [
         availablePlates: [100, 45, 25, 10, 5, 2.5],
         collarWeightPerPair: 5,
         isDemo: true,
-        stations: [{ id: 'A', label: 'Stn 1' }],
+        stations: [{ id: 'A', label: 'Station 1' }],
       },
       divisions: [
         { id: 'ch-hw', meetId: 'demo-show-chesapeake-provisional-2026', name: 'Open Heavyweight', flight: 'A', sortOrder: 1 },
@@ -569,7 +569,7 @@ export const DEMO_SHOW_RECORDS: PublicShowRecord[] = [
         availablePlates: [100, 45, 25, 10, 5, 2.5],
         collarWeightPerPair: 0,
         isDemo: true,
-        stations: [{ id: 'A', label: 'Stn 1' }],
+        stations: [{ id: 'A', label: 'Station 1' }],
       },
       divisions: [
         { id: 'gs-t1', meetId: 'demo-show-garden-state-winter-2026', name: 'Tier 1', flight: 'A', sortOrder: 1 },

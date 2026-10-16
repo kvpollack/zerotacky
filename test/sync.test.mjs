@@ -18,7 +18,7 @@ describe('mapping round-trips', () => {
       const back = M.rowsToState(rows);
       const { presetId: _p, ...meetNoPreset } = state.meet;   // presetId is client-only, not persisted
       // slug comes from the publish extra; isDemo/stations ride along on the meet row
-      assert.deepEqual(back.meet, { ...meetNoPreset, slug: 'x', isDemo: !!state.meet.isDemo, stations: state.meet.stations ?? [{ id: 'A', label: 'Stn 1' }, { id: 'B', label: 'Stn 2' }] });
+      assert.deepEqual(back.meet, { ...meetNoPreset, slug: 'x', isDemo: !!state.meet.isDemo, stations: state.meet.stations ?? [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }] });
       assert.deepEqual(back.divisions, state.divisions);
       assert.deepEqual(back.events, state.events);
       assert.deepEqual(back.athletes, state.athletes);

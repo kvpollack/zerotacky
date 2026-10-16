@@ -97,7 +97,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   if (notFound) return shell(<Notice text={`No meet at /m/${slug}.`} />);
   if (!state || !meet) return shell(<Notice text={error ? `Could not load: ${error}` : 'Loading…'} />);
 
-  const stations = meet.stations?.length ? meet.stations : [{ id: 'A', label: 'Stn 1' }, { id: 'B', label: 'Stn 2' }];
+  const stations = meet.stations?.length ? meet.stations : [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }];
   const divisions = division === 'ALL' ? state.divisions : state.divisions.filter((d) => d.id === division);
   const eventFor = (d: Division): EventDef | undefined => {
     const st = live.find((l) => l.station === d.flight);

@@ -49,7 +49,7 @@ export function meetToRow(meet: Meet, extra: PublishExtra): MeetRow {
     tiebreaker_rule: meet.tiebreakerRule,
     available_plates: [...meet.availablePlates],
     collar_weight_per_pair: meet.collarWeightPerPair,
-    stations: extra.stations ?? meet.stations ?? [{ id: 'A', label: 'Stn 1' }, { id: 'B', label: 'Stn 2' }],
+    stations: extra.stations ?? meet.stations ?? [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }],
     is_demo: extra.isDemo ?? !!meet.isDemo,
   };
 }
