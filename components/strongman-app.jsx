@@ -20,6 +20,7 @@ import { useMeetSync } from '@/hooks/useMeetSync';
 import { useTheme } from '@/hooks/useTheme';
 import { useStopwatch } from '@/hooks/useStopwatch';
 import { useRoleLock } from '@/hooks/useRoleLock';
+import useLayoutMode from '@/hooks/useLayoutMode';
 import Header from './shell/Header';
 import BottomNav from './shell/BottomNav';
 import JudgePad from './judge/JudgePad';
@@ -62,6 +63,8 @@ export default function App() {
   const { meet, divisions, athletes, events, results } = state;
 
   const [activeTab, setActiveTab] = useState('judge');
+  const [layout, toggleLayout] = useLayoutMode();
+  const wideTab = layout === 'tv' && (activeTab === 'standings' || activeTab === 'pitcrew');
   const [stationFlight, setStationFlight] = useState(() => meet.stations?.[0]?.id ?? 'A');
   const [selectedDivisionId, setSelectedDivisionId] = useState(() => state.divisions[0]?.id ?? '');
   const [selectedEventId, setSelectedEventId] = useState(() => state.events[0]?.id ?? '');
@@ -423,7 +426,7 @@ export default function App() {
         toggleDaylight={toggleDaylight}
       />
 
-      <main className="p-3.5 max-w-xl mx-auto space-y-4">
+      <main className={`p-3.5 mx-auto space-y-4 ${wideTab ? 'max-w-[1600px] px-6' : 'max-w-xl'}`}>
         {activeTab !== 'setup' && !isMeetReadyToRun && (
           <EmptyMeetNotice roleLock={roleLock} onGoToSetup={() => setActiveTab('setup')} />
         )}
@@ -468,6 +471,8 @@ export default function App() {
 
         {activeTab === 'pitcrew' && isMeetReadyToRun && (
           <PitCrew
+            layout={layout}
+            toggleLayout={toggleLayout}
             currentAthlete={currentAthlete}
             currentDivision={currentDivision}
             currentEvent={currentEvent}
@@ -491,8 +496,11 @@ export default function App() {
             currentDivision={currentDivision}
             currentEvent={currentEvent}
             eventScores={eventScores}
+            events={events}
             meet={meet}
             overallStandings={overallStandings}
+            layout={layout}
+            toggleLayout={toggleLayout}
           />
         )}
 
