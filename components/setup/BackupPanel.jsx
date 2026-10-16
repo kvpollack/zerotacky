@@ -12,7 +12,8 @@ function fmtTime(ms) {
 
 // Backup / export / restore. Everything here is recoverable by design: import and restore
 // take a snapshot of the current state first (see useMeetState.replaceState).
-export default function BackupPanel({ state, snapshots, importMeetState, restoreSnapshot }) {
+// hideCsv: the Results CSV button is rendered on its own card by MeetSetup (always visible), so skip it here.
+export default function BackupPanel({ state, snapshots, importMeetState, restoreSnapshot, hideCsv = false }) {
   const fileRef = useRef(null);
   const [notice, setNotice] = useState(null);
   const [pendingImport, setPendingImport] = useState(null);
@@ -64,9 +65,11 @@ export default function BackupPanel({ state, snapshots, importMeetState, restore
         <button type="button" onClick={onBackup} className="py-2.5 px-2 rounded-xl font-black text-xs bg-zt-primary text-zt-on-primary flex items-center justify-center gap-1.5 active:scale-95">
           <Download className="w-4 h-4" aria-hidden="true" /> Backup (JSON)
         </button>
-        <button type="button" onClick={onCsv} className="py-2.5 px-2 rounded-xl font-black text-xs bg-zt-surface border border-zt-primary/60 text-zt-text flex items-center justify-center gap-1.5 active:scale-95">
-          <FileSpreadsheet className="w-4 h-4" aria-hidden="true" /> Results CSV
-        </button>
+        {!hideCsv && (
+          <button type="button" onClick={onCsv} className="py-2.5 px-2 rounded-xl font-black text-xs bg-zt-surface border border-zt-primary/60 text-zt-text flex items-center justify-center gap-1.5 active:scale-95">
+            <FileSpreadsheet className="w-4 h-4" aria-hidden="true" /> Results CSV
+          </button>
+        )}
         <button type="button" onClick={onCopyStandings} className="py-2.5 px-2 rounded-xl font-black text-xs bg-zt-surface border border-zt-border-strong text-zt-text flex items-center justify-center gap-1.5 active:scale-95">
           <ClipboardCopy className="w-4 h-4" aria-hidden="true" /> Copy Standings
         </button>
