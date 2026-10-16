@@ -1,13 +1,46 @@
 'use client';
 
+import LayoutToggle from '@/components/shell/LayoutToggle';
+import LeaderboardTable from './LeaderboardTable';
 
+// Phone layout: overall cards then the current event breakdown. TV layout (projector / laptop): the full
+// per-event leaderboard table with the breakdown beside it. `layout` / `toggleLayout` come from useLayoutMode.
+/**
+ * @param {{ currentDivision: any, currentEvent: any, eventScores: any[], events?: any[], meet: any, overallStandings: any[], layout?: 'phone' | 'tv', toggleLayout?: () => void }} props
+ */
 export default function Standings({
   currentDivision,
   currentEvent,
   eventScores,
+  events = [],
   meet,
   overallStandings,
+  layout = 'phone',
+  toggleLayout,
 }) {
+  if (layout === 'tv') {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-xs font-black uppercase tracking-widest text-zt-muted">
+            Live leaderboard · {meet.name}
+          </div>
+          {toggleLayout && <LayoutToggle layout={layout} onToggle={toggleLayout} />}
+        </div>
+        <div className="grid grid-cols-1 xl:grid-cols-[3fr_1fr] gap-4 items-start">
+          <LeaderboardTable
+            division={currentDivision}
+            events={events}
+            standings={overallStandings}
+            meet={meet}
+            highlightEventId={currentEvent?.id ?? null}
+          />
+          <EventBreakdown currentEvent={currentEvent} eventScores={eventScores} size="tv" />
+        </div>
+      </div>
+    );
+  }
+
   return (
         <div className="space-y-4">
           <div className="bg-zt-surface border border-zt-border rounded-2xl p-4">
@@ -15,9 +48,12 @@ export default function Standings({
               <h2 className="text-base font-black text-zt-primary uppercase tracking-wide">
                 Overall Standings • {currentDivision.name}
               </h2>
-              <span className="text-[11px] font-bold text-zt-muted">
-                Tiebreaker: {meet.tiebreakerRule === 'event_wins' ? 'Event Wins' : 'Final Event'}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-zt-muted">
+                  Tiebreaker: {meet.tiebreakerRule === 'event_wins' ? 'Event Wins' : 'Final Event'}
+                </span>
+                {toggleLayout && <LayoutToggle layout={layout} onToggle={toggleLayout} />}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -58,6 +94,15 @@ export default function Standings({
             </div>
           </div>
 
+          <EventBreakdown currentEvent={currentEvent} eventScores={eventScores} />
+        </div>
+  );
+}
+
+function EventBreakdown({ currentEvent, eventScores, size = 'phone' }) {
+  if (!currentEvent) return null;
+  const tv = size === 'tv';
+  return (
           <div className="bg-zt-surface border border-zt-border rounded-2xl p-4">
             <h3 className="text-xs font-extrabold uppercase text-zt-muted mb-3">
               Event {currentEvent.eventNumber} Breakdown • {currentEvent.name}
@@ -70,7 +115,7 @@ export default function Standings({
                 >
                   <div className="flex items-center gap-2">
                     <span className="font-black text-zt-muted">#{s.place}</span>
-                    <span className="font-bold text-zt-text">{s.athleteName}</span>
+                    <span className={`font-bold text-zt-text ${tv ? 'text-base' : ''}`}>{s.athleteName}</span>
                     {s.isTied && (
                       <span className="text-[10px] bg-zt-primary/20 text-zt-primary-2 px-1.5 py-0.5 rounded font-bold">
                         TIE SPLIT
@@ -79,7 +124,7 @@ export default function Standings({
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-zt-muted font-mono text-xs">{s.displayScore}</span>
-                    <span className="font-black text-zt-primary min-w-[48px] text-right">
+                    <span className={`font-black text-zt-primary min-w-[48px] text-right ${tv ? 'text-lg' : ''}`}>
                       {s.points} pts
                     </span>
                   </div>
@@ -87,6 +132,5 @@ export default function Standings({
               ))}
             </div>
           </div>
-        </div>
   );
 }

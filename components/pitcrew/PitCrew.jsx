@@ -5,8 +5,12 @@ import {
   ArrowRight,
   Shuffle,
 } from 'lucide-react';
+import LayoutToggle from '@/components/shell/LayoutToggle';
 
+// `layout` 'tv' puts the load card and the transition list side by side for a pit-side TV or laptop.
 export default function PitCrew({
+  layout = 'phone',
+  toggleLayout,
   currentAthlete,
   currentDivision,
   currentEvent,
@@ -23,8 +27,10 @@ export default function PitCrew({
   upNowPinHeight,
   updateAthleteRackPin,
 }) {
+  const tv = layout === 'tv';
   return (
-        <div className="space-y-4">
+        <div className={tv ? 'grid grid-cols-1 lg:grid-cols-5 gap-4 items-start' : 'space-y-4'}>
+        <div className={tv ? 'lg:col-span-3 space-y-4' : 'space-y-4'}>
           {/* Up Now & On Deck Athlete Rack / Pin Height Callout Banner */}
           {currentEvent.hasHeightCallout && currentAthlete && (
             <div className="bg-zt-surface border-2 border-zt-primary rounded-2xl p-4 space-y-3 shadow-lg">
@@ -80,11 +86,14 @@ export default function PitCrew({
                 </span>
                 <h2 className="text-xl font-black text-zt-text mt-0.5">{currentEvent.name}</h2>
               </div>
-              <div className="text-right bg-zt-inset px-3 py-1.5 rounded-xl border border-zt-border">
-                <div className="text-[10px] uppercase font-bold text-zt-muted">Empty Tare</div>
-                <div className="text-base font-black text-zt-text">
-                  {currentEvent.implementEmptyWeight} lbs
+              <div className="flex items-start gap-2">
+                <div className="text-right bg-zt-inset px-3 py-1.5 rounded-xl border border-zt-border">
+                  <div className="text-[10px] uppercase font-bold text-zt-muted">Empty Tare</div>
+                  <div className="text-base font-black text-zt-text">
+                    {currentEvent.implementEmptyWeight} lbs
+                  </div>
                 </div>
+                {toggleLayout && <LayoutToggle layout={layout} onToggle={toggleLayout} />}
               </div>
             </div>
 
@@ -250,11 +259,12 @@ export default function PitCrew({
               </>
             )}
           </div>
+        </div>
 
           {/* Next Group / Lifter Transition */}
           <section
             aria-label="Next group transition"
-            className="bg-zt-surface border-2 border-zt-secondary/60 rounded-2xl p-4 space-y-3"
+            className={`bg-zt-surface border-2 border-zt-secondary/60 rounded-2xl p-4 space-y-3 ${tv ? 'lg:col-span-2' : ''}`}
           >
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">

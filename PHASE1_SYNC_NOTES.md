@@ -189,3 +189,9 @@ Argon's public-site skeleton landed as 18 new files (two of the 20 handed over w
 - Station defaults are "Station 1 / Station 2"; `normalizeState` upgrades saved "Stn n" labels, so existing meets rename themselves on load. `supabase/002_station_labels.sql` changes the server default (applied to staging; Kurt runs it on prod).
 - Meet Setup order: Meet Details, Divisions, Events, Athletes, Meets/Presets, then a **Results CSV** card that is always visible, then an **Advanced Settings** bar (collapsed by default) holding Role Lock, Backup & Export (minus CSV), Live Sync incl. publish key, Reset/Clear. **Promoter Theme is the last card** and stays visible.
 - `components/setup/ResultsCsvCard.jsx` is new; `BackupPanel` takes `hideCsv`.
+
+## Leaderboard + TV/phone layout (10/16 evening, sprint item 4)
+- Overall scoring already existed (Standings tab and `/m/<slug>` both call `calculateDivisionStandings`); what was missing was a TV layout. New `components/standings/LeaderboardTable.jsx`: place, athlete, points per event (E1..En, with the raw score under each on TV), total; current event column highlighted.
+- Layout mode `phone | tv` (`lib/layout.ts`, `hooks/useLayoutMode.js`, `components/shell/LayoutToggle.jsx`): `?layout=tv` in the URL wins, then the device's last toggle (`ZEROTACKY_LAYOUT_V1`), then auto (landscape and >= 1024 px wide = TV). Toggle button sits in the Standings header, the Pit Crew load card, and the scoreboard header.
+- TV mode: `/m/<slug>` goes full width with one leaderboard table per division (two columns on 2xl screens); scorer Standings tab shows the table with the event breakdown beside it; Pit Crew shows the load card and the transition list side by side. Phone layouts unchanged.
+- Projector URL for 10/24: `https://zerotacky.com/m/strongfest-2026?layout=tv` (add `&theme=<id>` for a theme). Tests: `test/layout.test.mjs` (5); 141 total.

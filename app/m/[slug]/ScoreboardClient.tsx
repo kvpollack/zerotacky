@@ -10,11 +10,15 @@ import { scoreSingleEvent, calculateDivisionStandings } from '@/lib/engine';
 import { DEFAULT_THEME_ID, THEMES } from '@/lib/constants';
 import type { AppState, Division, EventDef } from '@/lib/types';
 import Standings from '@/components/standings/Standings';
+import LeaderboardTable from '@/components/standings/LeaderboardTable';
+import LayoutToggle from '@/components/shell/LayoutToggle';
+import useLayoutMode from '@/hooks/useLayoutMode';
 
 const POLL_MS = 4000;
 
 // Public, read-only scoreboard: /m/<slug>. Loads the meet once, then polls results, athletes and
-// live_state. No login, no join code. Add ?theme=volt (any THEMES id) for the gym TV.
+// live_state. No login, no join code. ?theme=volt (any THEMES id) and ?layout=tv for the gym TV; the header
+// button toggles phone/TV too and remembers the choice on this device.
 export default function ScoreboardClient({ slug }: { slug: string }) {
   const env = useMemo(() => readSyncEnv(), []);
   const client = useMemo(() => (env ? createSyncClient(env) : null), [env]);
@@ -27,6 +31,8 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   const [division, setDivision] = useState<string>('ALL');
   const since = useRef<string | null>(null);
   const [theme, setTheme] = useState(DEFAULT_THEME_ID);
+  const [layout, toggleLayout] = useLayoutMode() as ['phone' | 'tv', () => void];
+  const tv = layout === 'tv';
 
   useEffect(() => {
     const t = new URLSearchParams(window.location.search).get('theme');
@@ -89,7 +95,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
 
   const shell = (children: React.ReactNode) => (
     <div data-zt-theme={theme} className="min-h-screen bg-zt-bg text-zt-text font-sans pb-10">
-      <div className="max-w-xl mx-auto p-3.5 space-y-4">{children}</div>
+      <div className={`mx-auto space-y-4 ${tv ? 'max-w-[1800px] p-6' : 'max-w-xl p-3.5'}`}>{children}</div>
     </div>
   );
 
@@ -117,11 +123,14 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
             <span className={`inline-block w-2 h-2 rounded-full ${error ? 'bg-amber-500' : 'bg-emerald-400 animate-pulse'}`} />
             Live scoreboard{meet.isDemo ? ' · DEMO' : ''}
           </div>
-          <h1 className="text-xl font-black truncate">{state.meet.name}</h1>
+          <h1 className={`font-black truncate ${tv ? 'text-3xl' : 'text-xl'}`}>{state.meet.name}</h1>
         </div>
+        <div className="flex items-start gap-2 flex-shrink-0">
+        <LayoutToggle layout={layout} onToggle={toggleLayout} />
         <div className="text-right text-[10px] font-bold text-zt-muted flex-shrink-0">
           {updatedAt ? `updated ${new Date(updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })}` : ''}
           {error && <div className="text-zt-danger-text">retrying…</div>}
+        </div>
         </div>
       </header>
 
@@ -136,7 +145,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
               <div className="text-[10px] font-extrabold uppercase text-zt-muted">{s.label} · up now</div>
               {l && ev ? (
                 <>
-                  <div className="text-base font-black text-zt-text truncate">{name(l.current_athlete_id) ?? '—'}</div>
+                  <div className={`font-black text-zt-text truncate ${tv ? 'text-2xl' : 'text-base'}`}>{name(l.current_athlete_id) ?? '—'}</div>
                   {l.lane2_athlete_id && <div className="text-sm font-bold text-zt-text-2 truncate">+ {name(l.lane2_athlete_id)}</div>}
                   <div className="text-[11px] text-zt-muted truncate">Ev {ev.eventNumber} {ev.name}{dv ? ` · ${dv.name}` : ''}</div>
                 </>
@@ -162,7 +171,24 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
         ))}
       </div>
 
-      {divisions.map((d) => {
+      {tv ? (
+        <div className={`grid gap-4 items-start ${divisions.length > 1 ? 'grid-cols-1 2xl:grid-cols-2' : 'grid-cols-1'}`}>
+          {divisions.map((d) => {
+            const divAth = state.athletes.filter((a) => a.divisionId === d.id);
+            if (divAth.length === 0) return null;
+            return (
+              <LeaderboardTable
+                key={d.id}
+                division={d}
+                events={state.events}
+                standings={calculateDivisionStandings(d, divAth, state.events, state.results, state.meet.tiebreakerRule)}
+                meet={state.meet}
+                highlightEventId={eventFor(d)?.id ?? null}
+              />
+            );
+          })}
+        </div>
+      ) : divisions.map((d) => {
         const ev = eventFor(d);
         const divAth = state.athletes.filter((a) => a.divisionId === d.id);
         if (!ev || divAth.length === 0) return null;
