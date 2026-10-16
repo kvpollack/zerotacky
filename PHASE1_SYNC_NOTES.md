@@ -164,3 +164,14 @@ weight -> 2 athletes -> readiness Ready -> Judge Pad scores 3 reps, lock, standi
 preset back prompts (1 score, snapshot taken); slug set in Meet Details -> Publish relinks to the same server
 uuid and join code. `strongman-app.jsx` is 552 lines (Argon's 520 cap not met; not worth a refactor now).
 Pre-merge tree backed up at `~/.aki/tmp/zt_pre_argon/`.
+
+## Website skeleton merge (Argon, 10/16 pm)
+Argon's public-site skeleton landed as 18 new files (two of the 20 handed over were byte-identical duplicates). Nothing already in the repo changed. Argon's own notes are in `WEBSITE_NOTES.md`; this section records what Slate did with them.
+
+- Files: `lib/website/{types,standingsAdapter,filters,fixtures,data}.ts`, `components/website/{WebsiteShell,ShowsBrowser,ShowDetailClient,GymsBrowser,AccountPreviewClient}.tsx`, `app/website/page.tsx`, `app/website/account/page.tsx`, `app/shows/page.tsx`, `app/shows/[slug]/{page,not-found}.tsx`, `app/gyms/page.tsx`, `app/gyms/[slug]/{page,not-found}.tsx`, `test/website.test.mjs`.
+- Routes are additive. `/`, `/join`, `/m/[slug]` and the scorer are untouched; `/website` is the landing page for now (Argon proposes promoting it to `/` after 10/24).
+- Fixed: `lib/website/filters.ts` lowercased the `'ALL'` sentinel to `'all'` and then compared it to `'ALL'`, so every show and gym filter returned an empty list. Added `normalizeChoice()`; Argon's own tests caught it (3 failing before the fix).
+- Fixed: unknown `/shows/<slug>` and `/gyms/<slug>` returned HTTP 200 with "not found" text. Both pages now call `notFound()` and have a `not-found.tsx` so crawlers and link checkers see a real 404.
+- Verified: tsc clean, `bun test test/` 127 pass / 0 fail, dev server 200 on `/website`, `/shows`, `/shows/<fixture slug>`, `/gyms`, `/gyms/the-power-plant-gym-pa`, `/website/account`; 404 on unknown show and gym slugs. Argon did not run tests or a build before handing off.
+- Not applied (Argon's proposals, section 4 of `WEBSITE_NOTES.md`, decide after 10/24): tie placement `1, 1, 3` in `calculateDivisionStandings`; `meets` columns `competition_status`, `registration_status`, `results_status`, `is_public_listed` (default false), `venue_json`, `federation`; root route swap (`/scorer` for the meet-day app, `/website` to `/`, with `JoinClient` redirect and `manifest.json start_url` moved together).
+- All website data is fixture-only (`lib/website/fixtures.ts`); `data.ts` is the seam where Supabase reads go later.
