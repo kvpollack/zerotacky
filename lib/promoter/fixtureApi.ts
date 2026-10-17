@@ -1,5 +1,9 @@
 // In-memory implementation of PromoterApi + pure validation and registration helpers.
 // Tested in test/promoter.test.mjs and test/register.test.mjs.
+//
+// Fixture data lives in the JavaScript heap of the process that imported this module: in the browser it is one
+// tab's memory (reset on reload), on the Next.js server it is the dev server process. Nothing is written to
+// localStorage or to Supabase. The Supabase implementation (Slate, M3) replaces getFixturePromoterApi().
 
 import { addAthlete, createBlankMeet, normalizeState, slugify } from '../meetBuilder';
 import { DEMO_SHOW_RECORDS } from '../website/fixtures';
@@ -11,7 +15,9 @@ import {
   type PromoterMeetDetail,
   type PromoterMeetSummary,
   type PromoterUser,
+  type PublicRegistrationMeet,
   type RegistrationRequest,
+  type RegistrationSubmission,
 } from './contract';
 import {
   createSeedMeets,
@@ -21,9 +27,14 @@ import {
 import type { AppState } from '../types';
 
 const JOIN_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 function clone<T>(val: T): T {
   return JSON.parse(JSON.stringify(val));
+}
+
+function todayIsoDate(): string {
+  return new Date().toISOString().slice(0, 10);
 }
 
 function generateJoinCode(existingCode?: string | null): string {
@@ -38,7 +49,11 @@ function generateJoinCode(existingCode?: string | null): string {
   return existingCode === 'ZT9999' ? 'ZT8888' : 'ZT9999';
 }
 
-// Pure helper: compares editable meet state (meet, divisions, events, athletes) while ignoring results.
+// ---------------------------------------------------------------------------------------------------------------
+// Pure helpers (no fixture state). Exported for the UI and the tests.
+// ---------------------------------------------------------------------------------------------------------------
+
+// Compares editable meet state (meet, divisions, events, athletes) while ignoring results.
 export function isMeetStateDirty(saved: AppState, working: AppState): boolean {
   const pickEditable = (s: AppState) => ({
     meet: s.meet,
@@ -49,7 +64,8 @@ export function isMeetStateDirty(saved: AppState, working: AppState): boolean {
   return JSON.stringify(pickEditable(saved)) !== JSON.stringify(pickEditable(working));
 }
 
-// Pure helper: validates listing patches before saving.
+// Validates a listing patch against the meet date. athleteCap must be a positive integer or null; the deadline must
+// be a YYYY-MM-DD on or before the meet date; publicly listed meets with a venue need city and state.
 export function validateListingPatch(
   meetDate: string,
   current: MeetListing,
@@ -58,19 +74,24 @@ export function validateListingPatch(
   const merged: MeetListing = { ...current, ...patch };
 
   if (merged.athleteCap !== null && merged.athleteCap !== undefined) {
-    if (!Number.isFinite(merged.athleteCap) || merged.athleteCap < 1) {
+    if (!Number.isInteger(merged.athleteCap) || merged.athleteCap < 1) {
       return 'Athlete cap must be a positive whole number (at least 1), or left blank.';
     }
   }
 
   if (merged.registrationDeadline) {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(merged.registrationDeadline)) {
+    if (!ISO_DATE.test(merged.registrationDeadline)) {
       return 'Registration deadline must be a valid YYYY-MM-DD date.';
     }
-    if (meetDate && /^\d{4}-\d{2}-\d{2}$/.test(meetDate)) {
-      if (merged.registrationDeadline > meetDate) {
-        return `Registration deadline (${merged.registrationDeadline}) must be on or before the meet date (${meetDate}).`;
-      }
+    if (meetDate && ISO_DATE.test(meetDate) && merged.registrationDeadline > meetDate) {
+      return `Registration deadline (${merged.registrationDeadline}) must be on or before the meet date (${meetDate}).`;
+    }
+  }
+
+  if (merged.promoterContact !== null && merged.promoterContact !== undefined) {
+    const trimmed = merged.promoterContact.trim();
+    if (trimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) && (trimmed.match(/\d/g) ?? []).length < 7) {
+      return 'Promoter contact must be an email address or a phone number with at least 7 digits.';
     }
   }
 
@@ -83,35 +104,51 @@ export function validateListingPatch(
   return null;
 }
 
-export interface FixturePromoterApiOptions {
-  signedOut?: boolean;
-}
-
-export interface ExtendedFixturePromoterApi extends PromoterApi {
-  setSignedOutForDev(signedOut: boolean): void;
-  getMeetBySlug(slug: string): Promise<ApiResult<PromoterMeetDetail>>;
-  submitPublicRegistration(input: RegistrationSubmissionInput): Promise<ApiResult<RegistrationRequest>>;
-}
-
-export interface RegistrationSubmissionInput {
-  slug: string;
-  divisionId: string;
-  athleteName: string;
-  email: string;
-  emergencyContact: string;
-  waiverAccepted: boolean;
+// Results are read-only in the dashboard, so a saved state must keep every athlete and event that a stored result
+// points at. Returns a message naming the first orphaned reference, or null when the state is safe to save.
+export function findOrphanedResult(
+  savedResults: AppState['results'],
+  saved: AppState,
+  working: AppState
+): string | null {
+  const athleteIds = new Set(working.athletes.map((a) => a.id));
+  const eventIds = new Set(working.events.map((e) => e.id));
+  for (const r of savedResults) {
+    if (!athleteIds.has(r.athleteId)) {
+      const name = saved.athletes.find((a) => a.id === r.athleteId)?.name ?? r.athleteId;
+      const eventName = saved.events.find((e) => e.id === r.eventId)?.name ?? r.eventId;
+      return `${name} has a recorded result in "${eventName}" and cannot be removed from the roster. Mark the athlete withdrawn on meet day instead.`;
+    }
+    if (!eventIds.has(r.eventId)) {
+      const eventName = saved.events.find((e) => e.id === r.eventId)?.name ?? r.eventId;
+      return `Event "${eventName}" has recorded results and cannot be removed.`;
+    }
+  }
+  return null;
 }
 
 export function isRegistrationOpen(status: MeetListing['registrationStatus']): boolean {
   return status === 'open' || status === 'waitlist';
 }
 
+// Emergency contact needs a name (letters) and a phone number (at least 7 digits).
+export function validateEmergencyContact(value: string): string | null {
+  const trimmed = (value ?? '').trim();
+  const digits = (trimmed.match(/\d/g) ?? []).length;
+  const letters = (trimmed.replace(/[\d\s\-().+]/g, '').match(/[A-Za-z]/g) ?? []).length;
+  if (digits < 7 || letters < 2) {
+    return 'Emergency contact needs a name and a phone number with at least 7 digits (for example "Sam Lee 717-555-0100").';
+  }
+  return null;
+}
+
+// Field-level validation of a public submission against the public meet shape.
 export function validateRegistrationInput(
-  input: RegistrationSubmissionInput,
-  detail: PromoterMeetDetail
+  input: Omit<RegistrationSubmission, 'waiverAccepted'> & { waiverAccepted: boolean },
+  meet: PublicRegistrationMeet
 ): string | null {
-  if (!isRegistrationOpen(detail.summary.listing.registrationStatus)) {
-    return `Registration for ${detail.summary.name} is currently closed (${detail.summary.listing.registrationStatus.replace(/_/g, ' ')}).`;
+  if (!isRegistrationOpen(meet.listing.registrationStatus)) {
+    return `Registration for ${meet.name} is currently closed (${meet.listing.registrationStatus.replace(/_/g, ' ')}).`;
   }
 
   const trimmedName = (input.athleteName ?? '').trim();
@@ -124,12 +161,10 @@ export function validateRegistrationInput(
     return 'Please enter a valid email address.';
   }
 
-  const trimmedEmergency = (input.emergencyContact ?? '').trim();
-  if (!trimmedEmergency || trimmedEmergency.length < 5) {
-    return 'Please provide an emergency contact name and phone number.';
-  }
+  const emergencyErr = validateEmergencyContact(input.emergencyContact);
+  if (emergencyErr) return emergencyErr;
 
-  if (!detail.state.divisions.some((d) => d.id === input.divisionId)) {
+  if (!meet.divisions.some((d) => d.id === input.divisionId)) {
     return 'Please select a valid division for this meet.';
   }
 
@@ -140,28 +175,105 @@ export function validateRegistrationInput(
   return null;
 }
 
+// Deadline and capacity gate. 'waitlist' status takes every submission onto the waitlist; 'open' refuses
+// submissions after the deadline or once the roster is at the cap.
+export function decideRegistrationOutcome(
+  meet: PublicRegistrationMeet,
+  today: string = todayIsoDate()
+): { status: 'pending' | 'waitlist'; error: null } | { status: null; error: string } {
+  const { registrationStatus, registrationDeadline, athleteCap } = meet.listing;
+  if (!isRegistrationOpen(registrationStatus)) {
+    return {
+      status: null,
+      error: `Registration for ${meet.name} is currently closed (${registrationStatus.replace(/_/g, ' ')}).`,
+    };
+  }
+  if (registrationStatus === 'waitlist') {
+    return { status: 'waitlist', error: null };
+  }
+  if (registrationDeadline && ISO_DATE.test(registrationDeadline) && today > registrationDeadline) {
+    return {
+      status: null,
+      error: `Registration for ${meet.name} closed on ${registrationDeadline}. Contact the promoter about late entries.`,
+    };
+  }
+  if (athleteCap !== null && meet.acceptedCount >= athleteCap) {
+    return {
+      status: null,
+      error: `${meet.name} is full (${meet.acceptedCount} of ${athleteCap} spots taken). Contact the promoter to ask about a waitlist.`,
+    };
+  }
+  return { status: 'pending', error: null };
+}
+
+// Allowlist projection for the public /register/<slug> page. Nothing outside this function decides what an
+// unauthenticated visitor can see.
+export function toPublicRegistrationMeet(
+  detail: PromoterMeetDetail,
+  promoterDisplayName: string
+): PublicRegistrationMeet {
+  const { summary, state } = detail;
+  const l = summary.listing;
+  return {
+    slug: summary.slug,
+    name: summary.name,
+    date: summary.date,
+    listing: {
+      competitionStatus: l.competitionStatus,
+      registrationStatus: l.registrationStatus,
+      entryFeeDisplay: l.entryFeeDisplay,
+      registrationDeadline: l.registrationDeadline,
+      athleteCap: l.athleteCap,
+      federation: l.federation,
+      venue: l.venue ? clone(l.venue) : null,
+      promoterContact: l.promoterContact,
+    },
+    promoterDisplayName,
+    divisions: state.divisions.map((d) => ({
+      id: d.id,
+      name: d.name,
+      targetWeights: state.events.map((e) => ({
+        eventName: e.name,
+        weight: typeof e.divisionWeights?.[d.id] === 'number' ? e.divisionWeights[d.id] : null,
+      })),
+    })),
+    acceptedCount: state.athletes.length,
+  };
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Fixture implementation
+// ---------------------------------------------------------------------------------------------------------------
+
+export interface FixturePromoterApiOptions {
+  signedOut?: boolean;
+  // Injected for tests so deadline rules are deterministic. Defaults to the real date.
+  today?: () => string;
+}
+
+export interface ExtendedFixturePromoterApi extends PromoterApi {
+  setSignedOutForDev(signedOut: boolean): void;
+  // Owner view by slug (includes joinCode); sign-in required like getMeet.
+  getMeetBySlug(slug: string): Promise<ApiResult<PromoterMeetDetail>>;
+}
+
 export function createFixturePromoterApi(
   opts: FixturePromoterApiOptions = {}
 ): ExtendedFixturePromoterApi {
   let signedOut = Boolean(opts.signedOut);
+  const today = opts.today ?? todayIsoDate;
   let user: PromoterUser = clone(DEMO_PROMOTER_USER);
   const meets: PromoterMeetDetail[] = createSeedMeets();
   const registrations: RegistrationRequest[] = createSeedRegistrations();
-  // Map registrationRequest.id -> created athlete.id in meet.state.athletes
-  const regToAthleteId = new Map<string, string>([
-    ['reg-ifc-1', 'ifc-ath-1'],
-    ['reg-ifc-2', 'ifc-ath-2'],
-  ]);
-  // Store emergency contact notes in memory alongside registrations
-  const regEmergencyContacts = new Map<string, string>();
+  // Display name of the organizer per meet; fixture meets belong to the demo user, bridged /shows records carry
+  // their own promoterName.
+  const ownerNames = new Map<string, string | null>();
 
   let seq = 100;
   const nextSeq = () => ++seq;
 
   function recomputeSummary(detail: PromoterMeetDetail): PromoterMeetSummary {
-    const regCount = registrations.filter(
-      (r) => r.meetServerId === detail.summary.serverId && r.status !== 'declined' && r.status !== 'withdrawn'
-    ).length;
+    const mine = registrations.filter((r) => r.meetServerId === detail.summary.serverId);
     detail.summary = {
       ...detail.summary,
       slug: detail.state.meet.slug || slugify(detail.state.meet.name),
@@ -169,9 +281,16 @@ export function createFixturePromoterApi(
       date: detail.state.meet.date || '',
       divisionCount: detail.state.divisions.length,
       athleteCount: detail.state.athletes.length,
-      registrationCount: regCount,
+      pendingCount: mine.filter((r) => r.status === 'pending').length,
+      registrationCount: mine.filter((r) => r.status === 'accepted').length,
     };
     return detail.summary;
+  }
+
+  function promoterNameFor(detail: PromoterMeetDetail): string {
+    const own = ownerNames.get(detail.summary.serverId);
+    if (own === undefined) return user.displayName;
+    return own ?? 'Promoter';
   }
 
   function findMeetBySlugInternal(slug: string): PromoterMeetDetail | null {
@@ -179,7 +298,7 @@ export function createFixturePromoterApi(
     const existing = meets.find((m) => m.summary.slug.toLowerCase() === clean);
     if (existing) return existing;
 
-    // Also bridge public show fixtures from lib/website/fixtures.ts so /register/<show-slug> works seamlessly
+    // Bridge public show fixtures from lib/website/fixtures.ts so /register/<show-slug> works for demo shows too.
     const pubShow = DEMO_SHOW_RECORDS.find((s) => s.slug.toLowerCase() === clean);
     if (!pubShow) return null;
 
@@ -199,17 +318,46 @@ export function createFixturePromoterApi(
           entryFeeDisplay: pubShow.registration.entryFeeDisplay ?? null,
           registrationDeadline: pubShow.registration.registrationDeadline ?? null,
           athleteCap: pubShow.registration.athleteCap ?? null,
+          promoterContact: pubShow.registration.promoterContact ?? null,
         },
         divisionCount: pubShow.state.divisions.length,
         athleteCount: pubShow.state.athletes.length,
+        pendingCount: 0,
         registrationCount: 0,
         updatedAt: pubShow.lastUpdatedIso ?? new Date().toISOString(),
         joinCode: 'DEMO01',
       },
       state: clone(pubShow.state),
     };
+    ownerNames.set(bridged.summary.serverId, pubShow.promoterName ?? null);
     meets.push(bridged);
     return bridged;
+  }
+
+  function removeRosterRow(
+    detail: PromoterMeetDetail,
+    reg: RegistrationRequest,
+    verb: string
+  ): string | null {
+    if (!reg.athleteId) return null;
+    const row = detail.state.athletes.find((a) => a.id === reg.athleteId);
+    if (!row) {
+      reg.athleteId = null;
+      return null;
+    }
+    const scored = detail.state.results.filter((r) => r.athleteId === row.id);
+    if (scored.length > 0) {
+      const eventNames = scored
+        .map((r) => detail.state.events.find((e) => e.id === r.eventId)?.name ?? r.eventId)
+        .join(', ');
+      return `${row.name} has recorded results (${eventNames}), so the request cannot be ${verb}. Results are read-only here; mark the athlete withdrawn on meet day instead.`;
+    }
+    detail.state = {
+      ...detail.state,
+      athletes: detail.state.athletes.filter((a) => a.id !== row.id),
+    };
+    reg.athleteId = null;
+    return null;
   }
 
   return {
@@ -264,6 +412,9 @@ export function createFixturePromoterApi(
     },
 
     async getMeetBySlug(slug: string): Promise<ApiResult<PromoterMeetDetail>> {
+      if (signedOut) {
+        return { data: null, error: 'Sign in required to view meet configuration.' };
+      }
       const found = findMeetBySlugInternal(slug);
       if (!found) {
         return { data: null, error: `No meet found at slug "${slug}".` };
@@ -285,7 +436,7 @@ export function createFixturePromoterApi(
         return { data: null, error: 'Meet name is required.' };
       }
       const meetDate = (input.date ?? '').trim();
-      if (!meetDate || !/^\d{4}-\d{2}-\d{2}$/.test(meetDate)) {
+      if (!meetDate || !ISO_DATE.test(meetDate)) {
         return { data: null, error: 'Meet date is required (YYYY-MM-DD).' };
       }
 
@@ -321,6 +472,7 @@ export function createFixturePromoterApi(
           listing: emptyListing(),
           divisionCount: 0,
           athleteCount: 0,
+          pendingCount: 0,
           registrationCount: 0,
           updatedAt: nowIso,
           joinCode: generateJoinCode(),
@@ -361,8 +513,23 @@ export function createFixturePromoterApi(
       }
 
       const normalized = normalizeState(state);
-      // Contract rule: results are read-only in the promoter dashboard; never overwrite existing server results.
+
+      const nextDate = normalized.meet.date || '';
+      const deadline = found.summary.listing.registrationDeadline;
+      if (deadline && nextDate && ISO_DATE.test(nextDate) && nextDate < deadline) {
+        return {
+          data: null,
+          error: `Meet date (${nextDate}) is earlier than the registration deadline (${deadline}). Move the deadline first.`,
+        };
+      }
+
+      // Contract rule: results are read-only in the promoter dashboard. Keep the stored results and refuse any
+      // roster or event change that would leave one of them pointing at nothing.
       const preservedResults = clone(found.state.results);
+      const orphan = findOrphanedResult(preservedResults, found.state, normalized);
+      if (orphan) {
+        return { data: null, error: orphan };
+      }
 
       found.state = {
         ...normalized,
@@ -406,6 +573,9 @@ export function createFixturePromoterApi(
         ...found.summary.listing,
         ...clone(patch),
       };
+      if (typeof found.summary.listing.promoterContact === 'string') {
+        found.summary.listing.promoterContact = found.summary.listing.promoterContact.trim() || null;
+      }
       found.summary.updatedAt = new Date().toISOString();
       recomputeSummary(found);
 
@@ -477,61 +647,74 @@ export function createFixturePromoterApi(
       if (!meetDetail) {
         return { data: null, error: 'Associated meet no longer exists.' };
       }
-
-      reg.status = status;
-
-      // Synchronise accepted registrations with the meet's athlete roster
-      const mappedAthleteId = regToAthleteId.get(reg.id) ?? `reg-ath-${reg.id}`;
-      const existingAthlete = meetDetail.state.athletes.find(
-        (a) =>
-          a.id === mappedAthleteId ||
-          (a.divisionId === reg.divisionId &&
-            a.name.trim().toLowerCase() === reg.athleteName.trim().toLowerCase())
-      );
+      if (reg.status === status) {
+        return { data: clone(reg), error: null };
+      }
 
       if (status === 'accepted') {
-        if (!existingAthlete) {
+        const division = meetDetail.state.divisions.find((d) => d.id === reg.divisionId);
+        if (!division) {
+          return {
+            data: null,
+            error: `${reg.athleteName} registered for a division that no longer exists on ${meetDetail.summary.name}. Decline the request or restore the division before accepting.`,
+          };
+        }
+        const existing = reg.athleteId
+          ? meetDetail.state.athletes.find((a) => a.id === reg.athleteId)
+          : undefined;
+        if (!existing) {
+          const athleteId = `reg-ath-${reg.id}`;
           meetDetail.state = addAthlete(meetDetail.state, {
-            id: mappedAthleteId,
+            id: athleteId,
             divisionId: reg.divisionId,
             name: reg.athleteName,
             status: 'active',
           });
-          regToAthleteId.set(reg.id, mappedAthleteId);
-        } else {
-          regToAthleteId.set(reg.id, existingAthlete.id);
+          reg.athleteId = athleteId;
         }
-      } else if (status === 'declined' || status === 'withdrawn') {
-        if (existingAthlete) {
-          const hasResults = meetDetail.state.results.some(
-            (r) => r.athleteId === existingAthlete.id
-          );
-          if (!hasResults) {
-            meetDetail.state = {
-              ...meetDetail.state,
-              athletes: meetDetail.state.athletes.filter((a) => a.id !== existingAthlete.id),
-            };
-          }
+      } else {
+        // pending / declined / withdrawn: the roster row (if any) leaves, unless it has results.
+        const verb = status === 'declined' ? 'declined' : status === 'withdrawn' ? 'withdrawn' : 'reopened';
+        const blocked = removeRosterRow(meetDetail, reg, verb);
+        if (blocked) {
+          return { data: null, error: blocked };
         }
       }
 
+      reg.status = status;
       meetDetail.summary.updatedAt = new Date().toISOString();
       recomputeSummary(meetDetail);
 
       return { data: clone(reg), error: null };
     },
 
-    async submitPublicRegistration(
-      input: RegistrationSubmissionInput
-    ): Promise<ApiResult<RegistrationRequest>> {
+    async getPublicMeetBySlug(slug: string): Promise<ApiResult<PublicRegistrationMeet | null>> {
+      const found = findMeetBySlugInternal(slug);
+      if (!found) {
+        return { data: null, error: null };
+      }
+      recomputeSummary(found);
+      return { data: toPublicRegistrationMeet(found, promoterNameFor(found)), error: null };
+    },
+
+    async submitRegistration(
+      input: RegistrationSubmission
+    ): Promise<ApiResult<{ id: string; status: 'pending' | 'waitlist' }>> {
       const detail = findMeetBySlugInternal(input.slug);
       if (!detail) {
         return { data: null, error: `No competition found at "${input.slug}".` };
       }
+      recomputeSummary(detail);
+      const pub = toPublicRegistrationMeet(detail, promoterNameFor(detail));
 
-      const validationErr = validateRegistrationInput(input, detail);
+      const validationErr = validateRegistrationInput(input, pub);
       if (validationErr) {
         return { data: null, error: validationErr };
+      }
+
+      const outcome = decideRegistrationOutcome(pub, today());
+      if (outcome.status === null) {
+        return { data: null, error: outcome.error };
       }
 
       const duplicate = registrations.find(
@@ -556,23 +739,27 @@ export function createFixturePromoterApi(
         divisionId: input.divisionId,
         athleteName: input.athleteName.trim(),
         email: input.email.trim().toLowerCase(),
+        emergencyContact: input.emergencyContact.trim(),
+        athleteId: null,
         status: 'pending',
+        waitlisted: outcome.status === 'waitlist',
         waiverAcceptedAt: nowIso,
         paid: false,
         createdAt: nowIso,
       };
 
       registrations.unshift(newReg);
-      regEmergencyContacts.set(newReg.id, input.emergencyContact.trim());
       detail.summary.updatedAt = nowIso;
       recomputeSummary(detail);
 
-      return { data: clone(newReg), error: null };
+      return { data: { id: newReg.id, status: outcome.status }, error: null };
     },
   };
 }
 
-// Module-level singleton so state persists across client navigations (/register/<slug> -> /promoter/<id>).
+// Module-level singleton so state persists across client navigations within one tab
+// (/register/<slug> -> /promoter/<id>). It is per JavaScript realm: the browser tab and the Next.js server each
+// hold their own copy, and a reload starts over from the seeds.
 let singletonApi: ExtendedFixturePromoterApi | null = null;
 
 export function getFixturePromoterApi(): ExtendedFixturePromoterApi {
@@ -580,17 +767,4 @@ export function getFixturePromoterApi(): ExtendedFixturePromoterApi {
     singletonApi = createFixturePromoterApi();
   }
   return singletonApi;
-}
-
-export async function getFixtureMeetForRegistration(
-  slug: string
-): Promise<ApiResult<PromoterMeetDetail>> {
-  return getFixturePromoterApi().getMeetBySlug(slug);
-}
-
-export async function submitFixtureRegistration(
-  input: RegistrationSubmissionInput,
-  api: ExtendedFixturePromoterApi = getFixturePromoterApi()
-): Promise<ApiResult<RegistrationRequest>> {
-  return api.submitPublicRegistration(input);
 }
