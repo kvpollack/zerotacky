@@ -116,6 +116,8 @@ Without the two env vars the app behaves exactly as before; the sync UI does not
    **Order matters (10/16 lesson):** Leave/Reset on every phone and close every browser tab that has the meet
    joined BEFORE running the delete. A forgotten tab still holds the scores locally and pushes them back on
    its next sync, which looks like the delete never took.
+   Take a dump first (`uv run scripts/dump_meet.py <slug> --join-code <code>`, section "Backup" below) so the
+   test scores can be inspected or put back if the wipe was a mistake.
 6. To retire a meet published by mistake: `delete from meets where slug = '<slug>';` (children cascade).
 
 ## Real backend test (10/16, project kagitbfthapxmaljsdtz, dev server :3077)
@@ -208,3 +210,26 @@ Argon's public-site skeleton landed as 18 new files (two of the 20 handed over w
 - **UI** `SyncPanel` shows "Publishing as <name>" with an Account link when signed in, otherwise the key box plus "Sign in instead". `/website/account` is real now (`components/website/AccountClient.tsx`; the persona preview `AccountPreviewClient.tsx` is gone, nav says "Account"): tabs Sign in / Create account / Email me a link; signed in: header with badges + Sign out, profile editor (display name, three role cards, Save enabled only when dirty), "Where to next" links. Auth errors arriving in the URL hash (expired link) surface as a notice.
 - **Verified on staging via localhost:3079** (v2 working copy, `next dev --webpack`: Turbopack refuses the shared `node_modules` junction): sign-up created `profiles` row "Slate Staging"; email confirmed by SQL (no mailbox), password sign-in; Promoter toggle saved through RLS; Publish from the scorer with **no key** created the meet with `owner_id` set, one `meet_members` row, 14 athletes, Sync: Live; a locked 3-rep score landed in `results` under the user JWT. Tests `test/auth.test.mjs` (5); 146 total, tsc clean.
 - **Open:** Supabase Auth URL allow list needs `http://localhost:3079/**`, the v2 Vercel preview URL and `https://www.zerotacky.com/**` before magic links / confirmation emails can land (Kurt owns that list); custom SMTP (Resend) before real users; website header does not yet show the signed-in name; `/promoter` dashboard (Argon) will link from the account page once merged; `listDemoPersonas` in `lib/website/data.ts` is now unused.
+
+## Backup: scripts/dump_meet.py (10/17)
+Free-tier Supabase has no point-in-time recovery, so the meet-day backup is a script, stdlib only, run with `uv run`:
+- **Dump** (anon read; safe against prod any time): `uv run scripts/dump_meet.py strongfest-2026 --join-code <code>`
+  writes `dumps/<slug>_<UTC stamp>.json` (meet row, divisions, events, athletes, results, live_state as PostgREST
+  returns them) and `dumps/<slug>_<stamp>_results.csv` (one row per result: event, division, athlete, lot, the
+  payload fields as columns, locked, updated_at, updated_by). Prints row counts, never keys. `--join-code` goes
+  through `zt_meet_by_join_code` so the meet row includes `admin_pin` and `join_code`; without it the dump has only
+  the anon-visible columns and a later restore needs `--admin-pin` or the PIN falls back to the schema default 1050.
+  `dumps/` is gitignored because of that. Credentials come from `--env` (default `.env.local`) or
+  `SUPABASE_URL` / `SUPABASE_ANON_KEY`.
+- **Restore** (writes; needs a publish key): `uv run scripts/dump_meet.py --restore dumps/<file>.json --publish-key <key>`
+  calls `zt_publish_meet` with the dumped meet/divisions/events/athletes/results, so it follows the same rules as a
+  phone publish: slug resolves the existing meet and updates it in place, stale children are removed, results are
+  last-writer-wins by `updated_at` (a newer server row is kept, so restoring an old dump over live scores does not
+  clobber them). `--slug other-slug` publishes the dump as a new meet (dropping the dumped id), useful for a
+  rehearsal copy. live_state is not restored; judge phones rewrite it. Prints the server counts after publishing.
+- **Verified 10/17:** dump of prod `strongfest-2026` (5/3/14/0 results/1 live_state, both anon and join-code
+  paths); a copy with one synthetic result restored to staging under `dump-restore-test` (5/3/14/1 on the server,
+  admin PIN preserved, result payload/lock/updated_at intact, CSV showed the `reps` and `time_seconds` columns).
+- **Meet day 10/24:** take a dump before the wipe in step 5, one after setup is published, and one after each event
+  (or a scheduled dump every few minutes from a laptop at the venue); the CSV is the hand-scoring fallback if the
+  phones go dark.
