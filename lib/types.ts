@@ -172,6 +172,7 @@ export interface ThemeDef {
   surface: string;
   primary: string;
   secondary: string;
+  light?: boolean;   // light-background theme; the Day/Night toggle swaps between the last light and last dark pick
 }
 
 export interface MeetPreset {
