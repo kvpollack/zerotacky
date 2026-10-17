@@ -28,6 +28,15 @@ export function slugFor(meet) {
   return String(base).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'meet';
 }
 
+// What to hand zt_publish_meet as p_key: the saved key when there is one, else null. Signed out, null is refused by
+// the server. Signed in, null means "use auth.uid()", and a key alongside the JWT claims an ownerless meet that was
+// published with that key before accounts existed (006; Astra gate HIGH, 10/17 pm). Before this the signed-in
+// phone always sent null and the claim the server asked for could not be made from the UI.
+export function keyToSend(signedIn, publishKey) {
+  void signedIn;
+  return publishKey || null;
+}
+
 export function useMeetSync({ state, setState, applyNewState, roleLock, station, live, activeTab = 'judge' }) {
   const env = useMemo(() => readSyncEnv(), []);
   const stateRef = useRef(state);
@@ -39,10 +48,13 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
   const timers = useRef({});
   const auth = useAuth();
   const accessToken = auth.session?.access_token ?? null;
+  const userId = auth.session?.user?.id ?? auth.user?.id ?? null;
   const signedIn = !!accessToken;
   const canPublish = signedIn || !!publishKey;
   const tokenRef = useRef(accessToken);
   tokenRef.current = accessToken;
+  const userIdRef = useRef(userId);
+  userIdRef.current = userId;
 
   const setPublishKey = useCallback((k) => {
     setPublishKeyState(k);
@@ -87,7 +99,7 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
         setLink(l);
       },
     });
-    ctl.setAccessToken(tokenRef.current);
+    ctl.setAccessToken(tokenRef.current, userIdRef.current);
     ctlRef.current = ctl;
     setStatus(ctl.status);
     setLink(ctl.link);
@@ -100,8 +112,8 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
 
   // Hand the account token to the controller on sign-in, refresh and sign-out.
   useEffect(() => {
-    ctlRef.current?.setAccessToken(accessToken);
-  }, [accessToken]);
+    ctlRef.current?.setAccessToken(accessToken, userId);
+  }, [accessToken, userId]);
 
   const debounce = useCallback((key, ms, fn) => {
     clearTimeout(timers.current[key]);
@@ -166,7 +178,8 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
     if (!ctl?.link || ctl.link.role !== 'admin' || !canPublish) return;
     debounce('republish', REPUBLISH_DEBOUNCE_MS, () => {
       const meet = stateRef.current.meet;
-      ctlRef.current?.publish({ slug: ctlRef.current.link?.slug || slugFor(meet), stations: meet.stations, isDemo: !!meet.isDemo }, signedIn ? null : publishKey).catch(() => {});
+      // The controller records a refusal in status.publishError (shown in the Sync panel); nothing else to do here.
+      ctlRef.current?.publish({ slug: ctlRef.current.link?.slug || slugFor(meet), stations: meet.stations, isDemo: !!meet.isDemo }, keyToSend(signedIn, publishKey)).catch(() => {});
     });
   }, [configSig, publishKey, canPublish, signedIn, debounce]);
 
@@ -176,10 +189,18 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
     const key = opts.publishKey ?? publishKey;
     if (!key && !signedIn) throw new Error('Sign in to your ZeroTacky account (or enter a publish key) first.');
     const meet = stateRef.current.meet;
-    // Signed in wins: the server then records this account as the meet owner / member.
-    const out = await ctl.publish({ slug: opts.slug || slugFor(meet), stations: meet.stations, isDemo: !!meet.isDemo }, signedIn ? null : key);
+    // Signed in: the server records this account as owner / member. A saved key goes along too, so a meet that was
+    // published with the key before accounts existed is claimed by this account (006) instead of being refused.
+    const out = await ctl.publish({ slug: opts.slug || slugFor(meet), stations: meet.stations, isDemo: !!meet.isDemo }, keyToSend(signedIn, key));
     return out;
   }, [publishKey, signedIn]);
+
+  // Joined phone: server-side admin PIN check (007). Resolves false when not linked.
+  const checkAdminPin = useCallback(async (pin) => {
+    const ctl = ctlRef.current;
+    if (!ctl?.link) return false;
+    return ctl.checkAdminPin(pin);
+  }, []);
 
   const joinByCode = useCallback(async (code) => {
     const ctl = ctlRef.current;
@@ -198,6 +219,7 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
     status,
     link,
     publish,
+    checkAdminPin,
     joinByCode,
     unlink,
     syncNow,

@@ -600,3 +600,131 @@ describe('SyncController sign-out (A4)', () => {
     assert.equal(a.ctl.paused, false);
   });
 });
+
+// ---------------------------------------------------------------------------------------------------------------
+// Astra gate round (10/17 pm): an account link is bound to the user that published it; publish refusals persist in
+// status.publishError; joined phones verify the admin PIN server-side.
+// ---------------------------------------------------------------------------------------------------------------
+describe('SyncController account binding + publish errors (gate round)', () => {
+  test('account publish records the user id on the link', async () => {
+    const a = a4Controller();
+    a.ctl.setAccessToken('TOKEN_A', 'user-a');
+    const link = await a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null);
+    assert.equal(link.auth, 'account');
+    assert.equal(link.userId, 'user-a');
+    const stored = JSON.parse(a.storage.getItem(K.LINK_KEY));
+    assert.equal(stored.userId, 'user-a');
+  });
+
+  test('a different signed-in account does not resume the queue: still paused, nothing sent, clear message', async () => {
+    const a = a4Controller();
+    a.ctl.setAccessToken('TOKEN_A', 'user-a');
+    await a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null);
+    a.ctl.setAccessToken(null);
+    a.ctl.setLive({ station: 'A', current_event_id: null, current_division_id: null, current_athlete_id: null, lane2_athlete_id: null });
+    a.log.length = 0;
+
+    a.ctl.setAccessToken('TOKEN_B', 'user-b');
+    assert.equal(a.ctl.paused, true);
+    assert.equal(a.ctl.status.state, 'paused');
+    assert.match(a.ctl.status.error, /different ZeroTacky account/);
+    await a.ctl.tick();
+    await a.ctl.flush();
+    assert.equal(a.log.length, 0, 'no network under the other account');
+    assert.equal(a.ctl.status.pending, 1, 'queue kept for the owner');
+    await assert.rejects(() => a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null), /different ZeroTacky account/);
+    assert.equal(a.log.length, 0);
+
+    // the owner comes back: resumes and flushes under their token
+    a.ctl.setAccessToken('TOKEN_A', 'user-a');
+    assert.equal(a.ctl.paused, false);
+    await a.ctl.tick();
+    const upserts = a.log.filter((e) => e.kind === 'upsert');
+    assert.equal(upserts.length, 1);
+    assert.equal(upserts[0].token, 'TOKEN_A');
+  });
+
+  test('a link written before user ids existed (no userId) resumes for any token, as before', async () => {
+    const storage = memStorage();
+    storage.setItem(K.LINK_KEY, JSON.stringify({ meetId: 'srv-uuid-1', localMeetId: 'x', slug: 'g', joinCode: 'ABC234', role: 'admin', auth: 'account', since: null }));
+    const a = a4Controller({ storage });
+    assert.equal(a.ctl.paused, true, 'no token yet');
+    a.ctl.setAccessToken('TOKEN_B', 'user-b');
+    assert.equal(a.ctl.paused, false);
+  });
+
+  test('a signed-in phone that also holds a key sends the key (claim path) and the link is a key link', async () => {
+    const a = a4Controller();
+    a.ctl.setAccessToken('TOKEN_A', 'user-a');
+    const link = await a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, 'legacy-key');
+    const call = a.log.find((e) => e.kind === 'rpc' && e.name === 'zt_publish_meet');
+    assert.equal(call.args.p_key, 'legacy-key');
+    assert.equal(call.token, 'TOKEN_A');
+    assert.equal(link.auth, 'key');
+    a.ctl.setAccessToken(null);
+    assert.equal(a.ctl.paused, false, 'key links are accountless');
+  });
+
+  // Resolve pending fake calls (newest first is fine) until `stop(entry)` matches one, which is returned unresolved.
+  // Yields through a timer so the controller's own awaits get to run; bounded so a bug fails instead of hanging.
+  // (Windows timers tick at ~15 ms, so the round budget stays small.)
+  async function driveUntil(a, stop, value = (e) => e.autoValue) {
+    let idle = 0;
+    for (let i = 0; i < 120; i++) {
+      const hit = a.log.find((e) => !e.done && stop(e));
+      if (hit) return hit;
+      const next = a.log.find((e) => !e.done);
+      if (next) { idle = 0; next.done = true; next.resolve(value(next)); } else if (++idle >= 6) return null;   // nothing pending: drained
+      await new Promise((r) => setTimeout(r, 0));
+    }
+    throw new Error('driveUntil: no matching call after 120 rounds');
+  }
+  const PUBLISH_OK = (e) => (e.kind === 'rpc' ? { id: 'srv-uuid-1', join_code: 'ABC234' } : e.autoValue);
+  const isPublish = (e) => e.kind === 'rpc' && e.name === 'zt_publish_meet';
+  const never = () => false;
+
+  test('a refused publish stays visible in status.publishError across successful ticks; the next good publish clears it', async () => {
+    const a = a4Controller({ auto: false });
+    a.ctl.setAccessToken('TOKEN_A', 'user-a');
+    const p1 = a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null);
+    const first = await driveUntil(a, isPublish);
+    first.done = true; first.resolve(PUBLISH_OK(first));
+    await p1;
+    assert.equal(a.ctl.status.publishError, null);
+
+    const p2 = a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null).catch((e) => e);
+    const rpc = await driveUntil(a, isPublish);
+    rpc.done = true;
+    rpc.reject(new C.SyncError(400, 'Jessica Rucci has 1 recorded result(s) and cannot be removed.'));
+    const err = await p2;
+    assert.match(err.message, /recorded result/);
+    assert.match(a.ctl.status.publishError, /recorded result/);
+    assert.equal(a.ctl.status.state, 'error');
+
+    // a successful tick clears `error` but keeps `publishError`
+    const t = a.ctl.tick();
+    assert.equal(await driveUntil(a, never), null);   // drains everything the tick asks for
+    await t;
+    assert.equal(a.ctl.status.state, 'idle');
+    assert.equal(a.ctl.status.error, null);
+    assert.match(a.ctl.status.publishError, /recorded result/);
+
+    const p3 = a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null);
+    const third = await driveUntil(a, isPublish);
+    third.done = true; third.resolve(PUBLISH_OK(third));
+    await p3;
+    assert.equal(a.ctl.status.publishError, null);
+  });
+
+  test('checkAdminPin asks the server with the join code; false when not linked', async () => {
+    const a = a4Controller();
+    assert.equal(await a.ctl.checkAdminPin('1234'), false);
+    assert.equal(a.log.length, 0);
+    a.ctl.attach({ state: a.st, slug: 'g', joinCode: 'ZZZ999', latestServerAt: null, updatedAt: null }, 'device');
+    const p = a.ctl.checkAdminPin('1234');
+    const call = a.log.find((e) => e.kind === 'rpc' && e.name === 'zt_check_admin_pin');
+    assert.deepEqual(call.args, { p_code: 'ZZZ999', p_pin: '1234' });
+    // the fake resolves rpc calls with the publish shape; anything but `true` is a refusal
+    assert.equal(await p, false);
+  });
+});

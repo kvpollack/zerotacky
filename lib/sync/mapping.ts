@@ -86,7 +86,7 @@ export function resultToRow(r: Result, meetId: string, deviceId: string | null =
 // ---------- from rows ----------
 export function rowToMeet(row: MeetRow): Meet {
   return {
-    id: row.id, name: row.name, date: row.date ?? '', adminPin: row.admin_pin,
+    id: row.id, name: row.name, date: row.date ?? '', adminPin: row.admin_pin ?? undefined,
     runOrderMethod: row.run_order_method as Meet['runOrderMethod'],
     tiebreakerRule: row.tiebreaker_rule as Meet['tiebreakerRule'],
     availablePlates: [...row.available_plates].map(Number).sort((a, b) => b - a),

@@ -6,7 +6,10 @@ import { ROLE_STORAGE_KEY } from '@/lib/constants';
 const ROLES = ['admin', 'judge', 'pitcrew', 'spectator'];
 const DEFAULT_TAB = { judge: 'judge', pitcrew: 'pitcrew', spectator: 'standings' };
 
-export function useRoleLock({ meet, setActiveTab }) {
+// `verifyPin(pin)` (optional) asks the server when this phone does not hold the meet's PIN locally (a phone that
+// joined by code: since 007 the join RPC returns no admin_pin). It resolves true/false, or null when the phone is
+// not linked to a server meet, in which case the local default applies.
+export function useRoleLock({ meet, setActiveTab, verifyPin }) {
   // Volunteer Phone Role Lock ('admin' | 'judge' | 'pitcrew' | 'spectator')
   // Persisted so a volunteer phone stays locked across refresh / reopen.
   const [roleLock, setRoleLock] = useState(() => {
@@ -34,7 +37,7 @@ export function useRoleLock({ meet, setActiveTab }) {
   }, []);
   const [pinPromptOpen, setPinPromptOpen] = useState(false);
   const [pinInput, setPinInput] = useState('');
-  const [pinError, setPinError] = useState(false);
+  const [pinError, setPinError] = useState(false);   // false | string (the message to show)
 
   const lockDeviceToRole = (mode) => {
     setRoleLock(mode);
@@ -43,14 +46,28 @@ export function useRoleLock({ meet, setActiveTab }) {
     if (mode === 'spectator') setActiveTab('standings');
   };
 
-  const handleUnlockWithPin = () => {
-    if (pinInput === (meet.adminPin || '1050')) {
+  const handleUnlockWithPin = async () => {
+    let ok;
+    let message = 'Wrong PIN';
+    if (meet.adminPin) {
+      ok = pinInput === meet.adminPin;                 // this phone holds the meet config (built or published here)
+    } else {
+      let remote = null;
+      try {
+        remote = verifyPin ? await verifyPin(pinInput) : null;
+      } catch (e) {
+        remote = false;
+        message = e?.message || 'Could not check the PIN. Try again.';
+      }
+      ok = remote === null ? pinInput === '1050' : remote === true;   // null = no server meet: local default
+    }
+    if (ok) {
       setRoleLock('admin');
       setPinPromptOpen(false);
       setPinInput('');
       setPinError(false);
     } else {
-      setPinError(true);
+      setPinError(message);
     }
   };
 

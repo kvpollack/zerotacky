@@ -14,6 +14,7 @@ export default function SyncPanel({ sync, meet }) {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState(null);
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const [showKeyWhileSignedIn, setShowKeyWhileSignedIn] = useState(false);
   if (!sync?.enabled) return null;
   const { status, link, account } = sync;
   const canPublish = sync.canPublish ?? !!sync.publishKey;
@@ -79,6 +80,11 @@ export default function SyncPanel({ sync, meet }) {
           </div>
           <div className="text-[10px] text-zt-muted break-all">{boardUrl}</div>
           {status.error && <div className="text-[11px] text-zt-danger-text break-words">{status.error}</div>}
+          {status.publishError && status.publishError !== status.error && (
+            <div className="text-[11px] text-zt-danger-text break-words">
+              <span className="font-bold">Last publish was refused:</span> {status.publishError} Config changes since then are not online.
+            </div>
+          )}
         </div>
       ) : (
         <div className="text-xs text-zt-text-2">
@@ -89,12 +95,39 @@ export default function SyncPanel({ sync, meet }) {
       {/* Who publishes: signed-in account (v2) or the legacy publish key */}
       <div className="bg-zt-inset border border-zt-border rounded-xl p-3 space-y-2">
         {account ? (
-          <div className="flex items-center justify-between gap-2">
-            <div className="text-[10px] font-bold uppercase text-zt-muted flex items-center gap-1">
-              <UserCheck className="w-3 h-3" /> Publishing as <span className="text-zt-text normal-case">{account.label}</span>
+          <>
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-[10px] font-bold uppercase text-zt-muted flex items-center gap-1">
+                <UserCheck className="w-3 h-3" /> Publishing as <span className="text-zt-text normal-case">{account.label}</span>
+              </div>
+              <Link href="/website/account" className="text-[10px] font-bold uppercase text-zt-primary">Account</Link>
             </div>
-            <Link href="/website/account" className="text-[10px] font-bold uppercase text-zt-primary">Account</Link>
-          </div>
+            {/* A meet published with a key before accounts existed is claimed by publishing once with the key while signed in (006). */}
+            {sync.publishKey ? (
+              <div className="text-[10px] text-zt-muted flex items-center justify-between gap-2">
+                <span><KeyRound className="w-3 h-3 inline mr-1" />Publish key saved on this phone; it is sent with your account so meets published with it become yours.</span>
+                <button type="button" onClick={() => sync.setPublishKey('')} className="font-bold uppercase text-zt-primary">Forget</button>
+              </div>
+            ) : showKeyWhileSignedIn ? (
+              <div className="flex gap-2">
+                <input
+                  type="password"
+                  value={key}
+                  onChange={(e) => setKey(e.target.value)}
+                  placeholder="paste the publish key"
+                  autoComplete="off"
+                  className="flex-1 bg-zt-surface border border-zt-border rounded-lg px-3 py-2 text-sm text-zt-text"
+                />
+                <button type="button" onClick={() => { onSaveKey(); setShowKeyWhileSignedIn(false); }} className="px-3 py-2 rounded-lg bg-zt-surface-2 text-zt-text-2 font-extrabold text-[11px] uppercase">
+                  Save
+                </button>
+              </div>
+            ) : (
+              <button type="button" onClick={() => setShowKeyWhileSignedIn(true)} className="text-[10px] font-bold text-zt-muted underline">
+                Published this meet with a publish key before? Enter it once to claim it for this account.
+              </button>
+            )}
+          </>
         ) : (
           <>
             <div className="flex items-center justify-between gap-2">

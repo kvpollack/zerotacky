@@ -373,6 +373,28 @@ export function createFixturePromoterApi(
         };
       }
 
+      // Astra gate M9: an accepted athlete keeps the division they registered for (name/bodyweight edits are fine).
+      const movedReg = registrations.find((r) => {
+        if (r.meetServerId !== serverId || r.status !== 'accepted' || !r.athleteId) return false;
+        const row = normalized.athletes.find((a) => a.id === r.athleteId);
+        return !!row && row.divisionId !== r.divisionId;
+      });
+      if (movedReg) {
+        return {
+          data: null,
+          error: `${movedReg.athleteName} registered for a specific division. To move them, decline or withdraw the registration and accept it again under the new division.`,
+        };
+      }
+
+      // Astra gate C4: the roster cannot be saved above the listing cap; raise the cap in Listing first.
+      const cap = found.summary.listing.athleteCap;
+      if (cap !== null && cap !== undefined && normalized.athletes.length > cap) {
+        return {
+          data: null,
+          error: `The roster has ${normalized.athletes.length} athletes but the listing cap is ${cap}. Raise the cap in Listing or remove athletes before saving.`,
+        };
+      }
+
       found.state = {
         ...normalized,
         meet: {
@@ -392,7 +414,8 @@ export function createFixturePromoterApi(
 
     async updateListing(
       serverId: string,
-      patch: Partial<MeetListing>
+      patch: Partial<MeetListing>,
+      opts?: { expectedUpdatedAt?: string | null }
     ): Promise<ApiResult<PromoterMeetSummary>> {
       if (signedOut) {
         return { data: null, error: 'Sign in required to update listing.' };
@@ -402,6 +425,14 @@ export function createFixturePromoterApi(
         return { data: null, error: `No meet found with serverId "${serverId}".` };
       }
 
+      // Astra gate C3 (listing): same revision rule as saveMeetState; a stale tab cannot flip registration back open.
+      if (opts?.expectedUpdatedAt && opts.expectedUpdatedAt !== found.summary.updatedAt) {
+        return {
+          data: null,
+          error: `This meet changed since you opened it (saved ${found.summary.updatedAt}). Reload to see the latest version, then redo your edits.`,
+        };
+      }
+
       const validationError = validateListingPatch(
         found.summary.date,
         found.summary.listing,
@@ -409,6 +440,13 @@ export function createFixturePromoterApi(
       );
       if (validationError) {
         return { data: null, error: validationError };
+      }
+      // Astra gate C4: the cap cannot drop below the current roster (zt_update_listing enforces the same).
+      if (patch.athleteCap !== null && patch.athleteCap !== undefined && found.state.athletes.length > patch.athleteCap) {
+        return {
+          data: null,
+          error: `The roster already has ${found.state.athletes.length} athletes; the cap cannot be lower than that.`,
+        };
       }
 
       found.summary.listing = {

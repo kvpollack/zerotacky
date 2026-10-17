@@ -220,6 +220,9 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
 
     if (res.error || !res.data) {
       setSaveError(res.error ?? 'Failed to save meet configuration.');
+      // C2: the write landed and only the refresh failed. Reload so the editor shows the saved version instead of
+      // offering a retry that the revision check would refuse.
+      if (res.committed) await loadAll();
       return;
     }
 
@@ -236,9 +239,12 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   };
 
   const handleSaveListing = async (patch: Partial<MeetListing>) => {
-    const res = await api.updateListing(serverId, patch);
+    // C3: the Listing tab names the revision it loaded, like the builder save does.
+    const res = await api.updateListing(serverId, patch, { expectedUpdatedAt: detail?.summary.updatedAt });
     if (!res.error && res.data) {
       setDetail((prev) => (prev ? { ...prev, summary: res.data! } : prev));
+    } else if (res.committed) {
+      await loadAll();
     }
     return { error: res.error };
   };

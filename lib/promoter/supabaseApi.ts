@@ -287,7 +287,7 @@ export function createSupabasePromoterApi(
         const fullMeetRow =
           'division_count' in created ? (created as PromoterMeetRow) : await db.selectMeet(serverId);
         if (!fullMeetRow) {
-          return { data: null, error: `Created meet "${serverId}" could not be re-read.` };
+          return { data: null, committed: true, error: `The meet was created, but it could not be loaded afterwards. Reload the dashboard; do not create it again.` };
         }
         const detail = await buildMeetDetail(fullMeetRow);
         return { data: detail, error: null };
@@ -374,9 +374,15 @@ export function createSupabasePromoterApi(
           p_expected_updated_at: opts?.expectedUpdatedAt ?? null,
         });
 
-        const rereadRow = await db.selectMeet(serverId);
+        let rereadRow: PromoterMeetRow | null = null;
+        let rereadError: string | null = null;
+        try {
+          rereadRow = await db.selectMeet(serverId);
+        } catch (e) {
+          rereadError = errMessage(e);
+        }
         if (!rereadRow) {
-          return { data: null, error: `Meet "${serverId}" could not be re-read after saving.` };
+          return { data: null, committed: true, error: `Your changes were saved, but the page could not refresh${rereadError ? ` (${rereadError})` : ''}. Reload to see the saved version.` };
         }
         const detail = await buildMeetDetail(rereadRow);
         return { data: detail, error: null };
@@ -387,7 +393,8 @@ export function createSupabasePromoterApi(
 
     async updateListing(
       serverId: string,
-      patch: Partial<MeetListing>
+      patch: Partial<MeetListing>,
+      opts?: { expectedUpdatedAt?: string | null }
     ): Promise<ApiResult<PromoterMeetSummary>> {
       try {
         const authCheck = await requireSignedInUser();
@@ -409,10 +416,16 @@ export function createSupabasePromoterApi(
           return { data: null, error: validationError };
         }
 
-        await db.updateMeetListing(serverId, listingPatchToColumns(patch));
-        const updatedRow = await db.selectMeet(serverId);
+        await db.updateMeetListing(serverId, listingPatchToColumns(patch), opts?.expectedUpdatedAt ?? null);
+        let updatedRow: PromoterMeetRow | null = null;
+        let rereadError: string | null = null;
+        try {
+          updatedRow = await db.selectMeet(serverId);
+        } catch (e) {
+          rereadError = errMessage(e);
+        }
         if (!updatedRow) {
-          return { data: null, error: `Meet "${serverId}" could not be re-read after updating listing.` };
+          return { data: null, committed: true, error: `Listing saved, but the page could not refresh${rereadError ? ` (${rereadError})` : ''}. Reload to see the saved version.` };
         }
         return { data: rowToPromoterMeetSummary(updatedRow), error: null };
       } catch (e) {

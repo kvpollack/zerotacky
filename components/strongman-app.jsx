@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Ban,
   UserMinus,
@@ -76,6 +76,7 @@ export default function App() {
   const [statusMenuOpen, setStatusMenuOpen] = useState(false);
   const [pendingStatusAction, setPendingStatusAction] = useState(null);
 
+  const verifyPinRef = useRef(() => Promise.resolve(null));
   const {
     roleLock,
     setRoleLock,
@@ -87,7 +88,7 @@ export default function App() {
     setPinError,
     lockDeviceToRole,
     handleUnlockWithPin,
-  } = useRoleLock({ meet, setActiveTab });
+  } = useRoleLock({ meet, setActiveTab, verifyPin: (pin) => verifyPinRef.current(pin) });
 
   const { themeId, isDaylight, selectTheme, toggleDaylight } = useTheme();
 
@@ -222,6 +223,7 @@ export default function App() {
   const restoreSnapshot = (snap) => applyNewState(snap.state, 'snapshot restore');
 
   // Live sync (Phase 1). No-op unless NEXT_PUBLIC_SUPABASE_* is set; see hooks/useMeetSync.js.
+  // useRoleLock runs before the sync hook, so the PIN verifier reaches it through a ref filled in below.
   const sync = useMeetSync({
     state,
     setState,
@@ -236,6 +238,8 @@ export default function App() {
       lane2AthleteId: lane2AthleteId || null,
     },
   });
+
+  verifyPinRef.current = (pin) => (sync.link ? sync.checkAdminPin(pin) : Promise.resolve(null));
 
   const requestMeetPreset = (presetId) => {
     if (meet.isDemo && presetId === (meet.presetId ?? DEFAULT_PRESET_ID)) return;

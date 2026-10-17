@@ -3,6 +3,7 @@ import Link from 'next/link';
 import WebsiteThemeFrame from './WebsiteThemeFrame';
 import WebsiteThemeControls from './WebsiteThemeControls';
 import WebsiteAccountChip from './WebsiteAccountChip';
+import { readSyncEnv } from '@/lib/sync/client';
 
 interface WebsiteShellProps {
   activeNav?: 'home' | 'shows' | 'gyms' | 'account';
@@ -10,6 +11,9 @@ interface WebsiteShellProps {
 }
 
 export default function WebsiteShell({ activeNav, children }: WebsiteShellProps) {
+  // Astra gate STYLE: the amber "preview" badge belongs to fixture-only builds. With a backend configured the site is
+  // showing real listings, so the bar is a plain pointer to the meet-day app.
+  const live = readSyncEnv() !== null;
   const navItems: Array<{ id: WebsiteShellProps['activeNav']; label: string; href: string }> = [
     { id: 'home', label: 'Overview', href: '/website' },
     { id: 'shows', label: 'Find a Show', href: '/shows' },
@@ -23,11 +27,13 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
       <div className="bg-zt-surface-2 border-b border-zt-border px-4 py-2 text-xs">
         <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
-              Website Skeleton Preview
-            </span>
+            {!live && (
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                Website Skeleton Preview
+              </span>
+            )}
             <span className="text-zt-text-2 font-semibold">
-              Meet-day scoring lives at <code className="font-mono text-zt-text">/scorer</code>, volunteer join at{' '}
+              Running a meet today? Scoring is at <code className="font-mono text-zt-text">/scorer</code>. Volunteers join at{' '}
               <code className="font-mono text-zt-text">/join</code>.
             </span>
           </div>

@@ -8,7 +8,7 @@ import { mergeResults, resultToRow, athleteToRow } from './mapping';
 import type { PublishExtra } from './mapping';
 import { enqueue, groupByTable, removeFlushed, readQueue, writeQueue } from './queue';
 import type { QueueItem } from './queue';
-import { publishMeet, fetchMeetByJoinCode, fetchMeetBySlug, pullChanges, fetchMeetConfig, type MeetConfig } from './meetApi';
+import { publishMeet, fetchMeetByJoinCode, fetchMeetBySlug, pullChanges, fetchMeetConfig, checkAdminPin, type MeetConfig } from './meetApi';
 import type { RemoteMeet, LiveStateRow } from './meetApi';
 
 export const LINK_KEY = 'ZEROTACKY_SYNC_LINK_V1';
@@ -25,6 +25,9 @@ export interface SyncLink {
   // 'key' (legacy publish key) and 'join' (volunteer join code) links are intentionally accountless and keep going.
   // Absent on links written before 10/17: treated as 'key' for admin and 'join' for device.
   auth?: 'account' | 'key' | 'join';
+  // Astra gate MED (10/17 pm): the account an 'account' link was published under. A different signed-in user on the
+  // same phone does not resume this link's queue; they unlink (or the owner signs back in).
+  userId?: string | null;
   since: string | null;  // results watermark for incremental pulls
   configAt?: string | null;  // meets.updated_at last applied on this phone (device role only)
 }
@@ -36,6 +39,9 @@ export interface SyncStatus {
   lastSyncAt: number | null;
   error: string | null;
   dropped: number;        // rows the server rejected for good (4xx) and we gave up on; see flush()
+  // Astra gate LOW (10/17 pm): the last publish/re-publish refusal. Survives successful ticks (which only clear
+  // `error`) until the next publish succeeds, so an auto re-publish the server refused stays visible in Setup.
+  publishError?: string | null;
 }
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
@@ -119,7 +125,7 @@ const ON_CONFLICT: Record<string, string> = { results: 'meet_id,id', athletes: '
 
 export class SyncController {
   link: SyncLink | null;
-  status: SyncStatus = { state: 'off', pending: 0, lastSyncAt: null, error: null, dropped: 0 };
+  status: SyncStatus = { state: 'off', pending: 0, lastSyncAt: null, error: null, dropped: 0, publishError: null };
   private rerun = false;
   private queue: QueueItem[];
   private known = new Map<string, number>();        // result id -> updatedAt last seen remote/pushed
@@ -129,6 +135,7 @@ export class SyncController {
   // the queue, the watermarks or local state when it completes.
   private session = 0;
   private accessToken: string | null = null;
+  private userId: string | null = null;
   get deviceId(): string { return this.o.deviceId; }
   private o: ControllerOpts;
 
@@ -169,7 +176,7 @@ export class SyncController {
     this.link = link;
     writeLink(this.o.storage, link);
     if (!link) { this.queue = []; this.persistQueue(); this.known.clear(); this.knownAthletes.clear(); }
-    this.setStatus({ state: link ? 'idle' : 'off', error: null, dropped: 0 });
+    this.setStatus({ state: link ? 'idle' : 'off', error: null, dropped: 0, publishError: null });
   }
 
   unlink(): void { this.setLink(null); }
@@ -178,18 +185,29 @@ export class SyncController {
   // key, so zt_publish_meet sees auth.uid() and the RLS member policies apply. null drops back to anon.
   // Astra A4: a token change invalidates everything in flight (session generation), and signing out of an
   // account-published link pauses it: unsent work stays queued, nothing is sent or applied until a token is back.
-  setAccessToken(token: string | null): void {
-    const changed = (token ?? null) !== this.accessToken;
+  // `userId` is the signed-in user's id when known. An 'account' link remembers the id it was published under
+  // and stays paused for any other account (Astra gate MED). Callers that do not know the id pass nothing; the
+  // link is then bound on its next publish.
+  setAccessToken(token: string | null, userId: string | null = null): void {
+    const changed = (token ?? null) !== this.accessToken || (userId ?? null) !== this.userId;
     this.accessToken = token ?? null;
+    this.userId = token ? (userId ?? null) : null;
     this.o = { ...this.o, client: this.o.client.withAccessToken(token) };
     if (!changed) return;
     this.session++;
     this.refreshPaused();
   }
 
-  // 'account' links need a token; everything else is accountless by design.
+  // 'account' links need a token from the account that published them; everything else is accountless by design.
   get paused(): boolean {
-    return !!this.link && this.linkAuth(this.link) === 'account' && this.accessToken === null;
+    if (!this.link || this.linkAuth(this.link) !== 'account') return false;
+    if (this.accessToken === null) return true;
+    return this.otherAccount;
+  }
+
+  // Signed in, but not as the account this link belongs to (both ids known and different).
+  private get otherAccount(): boolean {
+    return !!this.link && !!this.link.userId && !!this.userId && this.link.userId !== this.userId;
   }
 
   linkAuth(link: SyncLink): NonNullable<SyncLink['auth']> {
@@ -198,12 +216,19 @@ export class SyncController {
 
   private refreshPaused(): void {
     if (!this.link) return;
-    if (this.paused) this.setStatus({ state: 'paused', error: 'Signed out. This meet was published from your account; sign back in to resume syncing. Scores stay on this phone meanwhile.' });
-    else if (this.status.state === 'paused') this.setStatus({ state: 'idle', error: null });
+    if (this.paused) {
+      this.setStatus({
+        state: 'paused',
+        error: this.otherAccount
+          ? 'This meet was published from a different ZeroTacky account. Sign in as that account to resume syncing, or unlink this phone. Scores stay on this phone meanwhile.'
+          : 'Signed out. This meet was published from your account; sign back in to resume syncing. Scores stay on this phone meanwhile.',
+      });
+    } else if (this.status.state === 'paused') this.setStatus({ state: 'idle', error: null });
   }
 
   // Admin phone: publish (or re-publish) the whole meet. Keeps the remote uuid across re-publishes.
-  // `publishKey` is null when the phone is signed in (setAccessToken) and the server should use auth.uid().
+  // `publishKey` is null when the phone is signed in (setAccessToken) and the server should use auth.uid(). A signed-in
+  // phone that also holds a key sends both: that is how an ownerless meet published with the key is claimed (006).
   async publish(extra: Omit<PublishExtra, 'meetId' | 'deviceId'>, publishKey: string | null): Promise<SyncLink> {
     // Re-publish is authoritative for the roster, so first bring in anything the floor phones added.
     if (this.link && this.link.localMeetId === this.o.getState().meet.id) {
@@ -212,6 +237,7 @@ export class SyncController {
     const state = this.o.getState();
     const meetId = this.link?.localMeetId === state.meet.id ? this.link.meetId : newMeetUuid();
     if (publishKey === null && this.accessToken === null) throw new Error('Sign in to your ZeroTacky account (or enter a publish key) first.');
+    if (publishKey === null && this.otherAccount) throw new Error('This meet was published from a different ZeroTacky account. Sign in as that account, or unlink this phone and publish again.');
     const gen = this.session;
     this.setStatus({ state: 'syncing', error: null });
     try {
@@ -220,16 +246,25 @@ export class SyncController {
       const link: SyncLink = {
         meetId: out.id, localMeetId: state.meet.id, slug: extra.slug, joinCode: out.joinCode, role: 'admin',
         auth: publishKey === null ? 'account' : 'key',
+        userId: this.accessToken ? this.userId : null,
         since: this.link?.meetId === out.id ? this.link.since : null,
       };
       this.setLink(link);
       this.seedKnown(state);
-      this.setStatus({ state: 'idle', lastSyncAt: this.now() });
+      this.setStatus({ state: 'idle', lastSyncAt: this.now(), publishError: null });
       return link;
     } catch (e) {
       this.fail(e);
+      this.setStatus({ publishError: e instanceof Error ? e.message : String(e) });
       throw e;
     }
+  }
+
+  // Joined phone: ask the server whether `pin` is this meet's admin PIN (zt_check_admin_pin, 007). The join RPC no
+  // longer returns admin_pin, so this is the only way a volunteer phone can unlock admin controls.
+  async checkAdminPin(pin: string): Promise<boolean> {
+    if (!this.link) return false;
+    return checkAdminPin(this.o.client, this.link.joinCode, pin);
   }
 
   // Judge / pit-crew phone: trade a join code for the meet. Caller applies `remote.state` to the app,

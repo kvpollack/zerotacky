@@ -100,6 +100,9 @@ export interface RegistrationSubmission {
 export interface ApiResult<T> {
   data: T | null;
   error: string | null;        // human-readable; UI shows it verbatim
+  // Astra gate C2 (10/17 pm): true when the write itself succeeded and only the re-read that builds `data` failed.
+  // The UI reloads instead of retrying; a retry would hit "slug already used" or re-apply an edit that is saved.
+  committed?: boolean;
 }
 
 // Authorization matrix (Astra C1, 10/17). "Owner" means meets.owner_id = auth.uid() or a meet_members row, verified
@@ -121,9 +124,14 @@ export interface ApiResult<T> {
 //   getPublicMeetBySlug    public projection    same                       same
 //   submitRegistration     server-validated     same                       same (userId stamped when signed in)
 //
-// Every write is one transaction on the server (an RPC): accept = create athlete + link + status together; save =
-// revision check + reference validation + config/roster upsert, results untouched. data and error are never both
-// set; a successful write followed by a failed re-read reports the write as done and the refresh as failed.
+// Every write is one transaction on the server (an RPC, including updateListing since 007): accept = create athlete +
+// link + status together; save = revision check + reference validation + config/roster upsert, results untouched.
+// data and error are never both set; a successful write followed by a failed re-read returns error + committed: true.
+//
+// Outside this API: a volunteer join code lets a phone read the meet (without admin_pin since 007) and write
+// athletes/results/live_state through the scorer; the admin PIN is checked server-side (zt_check_admin_pin, throttled),
+// never compared on a joined phone. The legacy publish key is a full capability: a signed-in phone that sends it with
+// its JWT claims an ownerless meet (006); without it, an ownerless meet is refused.
 export interface PromoterApi {
   // session
   getCurrentUser(): Promise<ApiResult<PromoterUser | null>>;   // null = signed out (UI shows sign-in prompt)
@@ -138,7 +146,8 @@ export interface PromoterApi {
   // is linked to an accepted registration (decline or withdraw the request first); opts.expectedUpdatedAt is given and
   // differs from the server's summary.updatedAt (someone else saved; reload and redo).
   saveMeetState(serverId: string, state: AppState, opts?: { expectedUpdatedAt?: string }): Promise<ApiResult<PromoterMeetDetail>>;
-  updateListing(serverId: string, patch: Partial<MeetListing>): Promise<ApiResult<PromoterMeetSummary>>;
+  // opts.expectedUpdatedAt: the summary.updatedAt the Listing tab loaded (C3, same rule as saveMeetState).
+  updateListing(serverId: string, patch: Partial<MeetListing>, opts?: { expectedUpdatedAt?: string | null }): Promise<ApiResult<PromoterMeetSummary>>;
   rotateJoinCode(serverId: string): Promise<ApiResult<{ joinCode: string }>>;
   archiveMeet(serverId: string): Promise<ApiResult<{ ok: true }>>;   // soft: competitionStatus -> 'completed', isPublicListed unchanged
 

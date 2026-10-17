@@ -171,10 +171,14 @@ function createFakePromoterDb(opts = {}) {
       };
     },
 
-    async updateMeetListing(meetId, patch) {
+    async updateMeetListing(meetId, patch, expectedUpdatedAt = null) {
       checkThrow();
+      rpcCalls.push({ fn: 'zt_update_listing', params: { p_meet_id: meetId, p_patch: patch, p_expected_updated_at: expectedUpdatedAt } });
       const idx = meets.findIndex((m) => m.id === meetId);
       if (idx < 0) throw new Error(`No meet found with serverId "${meetId}".`);
+      if (expectedUpdatedAt && meets[idx].updated_at !== expectedUpdatedAt) {
+        throw new Error(`This meet changed since you opened it (saved ${meets[idx].updated_at}). Reload to see the latest version, then redo your edits.`);
+      }
       meets[idx] = {
         ...meets[idx],
         ...JSON.parse(JSON.stringify(patch)),
@@ -526,6 +530,84 @@ describe('supabaseApi: saveMeetState RPC pass-through & H3 orphan guard', () => 
     expect(bad.data).toBeNull();
     expect(bad.error).toMatch(/accepted registration/);
     expect((await api.getMeet('srv-meet-upcoming-1')).data.state.athletes.some((a) => a.id === 'ifc-ath-1')).toBe(true);
+  });
+
+  // Astra gate (10/17 pm): listing writes carry the revision too, and a committed write with a failed re-read says so.
+  test('gate C3: updateListing passes expectedUpdatedAt to zt_update_listing; a stale listing save is refused; a fresh one lands', async () => {
+    const fakeDb = createFakePromoterDb();
+    const api = SA.createSupabasePromoterApi(fakeDb);
+    const first = await api.getMeet('srv-meet-upcoming-1');
+    const rev1 = first.data.summary.updatedAt;
+
+    // tab A closes registration
+    const a = await api.updateListing('srv-meet-upcoming-1', { registrationStatus: 'closed' }, { expectedUpdatedAt: rev1 });
+    expect(a.error).toBeNull();
+    expect(a.data.listing.registrationStatus).toBe('closed');
+    const rev2 = a.data.updatedAt;
+    expect(rev2).not.toBe(rev1);
+    const call = fakeDb.rpcCalls.filter((c) => c.fn === 'zt_update_listing').at(-1);
+    expect(call.params.p_expected_updated_at).toBe(rev1);
+    expect(call.params.p_patch).toEqual({ registration_status: 'closed' });
+
+    // tab B, still on rev1, submits the whole old listing (registration open): refused, registration stays closed
+    const stale = await api.updateListing('srv-meet-upcoming-1', { ...first.data.summary.listing }, { expectedUpdatedAt: rev1 });
+    expect(stale.data).toBeNull();
+    expect(stale.error).toMatch(/changed since you opened it/);
+    expect((await api.getMeet('srv-meet-upcoming-1')).data.summary.listing.registrationStatus).toBe('closed');
+
+    const fresh = await api.updateListing('srv-meet-upcoming-1', { federation: 'USS' }, { expectedUpdatedAt: rev2 });
+    expect(fresh.error).toBeNull();
+    expect(fresh.data.listing.federation).toBe('USS');
+    expect(fresh.data.listing.registrationStatus).toBe('closed');
+  });
+
+  test('gate C2: a write that lands but cannot be re-read returns committed: true with a reload message, never a bare failure', async () => {
+    const fakeDb = createFakePromoterDb();
+    const api = SA.createSupabasePromoterApi(fakeDb);
+    const first = await api.getMeet('srv-meet-upcoming-1');
+    const realSelect = fakeDb.selectMeet.bind(fakeDb);
+    let failReads = false;
+    fakeDb.selectMeet = async (id) => {
+      if (failReads) throw new Error('Network failure after commit');
+      return realSelect(id);
+    };
+
+    // saveMeetState: the RPC runs, then the re-read fails
+    const origRpc = fakeDb.rpc.bind(fakeDb);
+    fakeDb.rpc = async (fn, params) => {
+      const out = await origRpc(fn, params);
+      if (fn === 'zt_save_meet_config') failReads = true;
+      return out;
+    };
+    const saved = await api.saveMeetState('srv-meet-upcoming-1', first.data.state, { expectedUpdatedAt: first.data.summary.updatedAt });
+    expect(saved.data).toBeNull();
+    expect(saved.committed).toBe(true);
+    expect(saved.error).toMatch(/saved, but the page could not refresh/);
+    failReads = false;
+    expect(fakeDb.rpcCalls.filter((c) => c.fn === 'zt_save_meet_config').length).toBe(1);
+
+    // updateListing: same shape
+    const rev = (await api.getMeet('srv-meet-upcoming-1')).data.summary.updatedAt;
+    fakeDb.rpc = async (fn, params) => {
+      const out = await origRpc(fn, params);
+      return out;
+    };
+    const origUpdate = fakeDb.updateMeetListing.bind(fakeDb);
+    fakeDb.updateMeetListing = async (...args) => {
+      await origUpdate(...args);
+      failReads = true;
+    };
+    const listed = await api.updateListing('srv-meet-upcoming-1', { federation: 'USS' }, { expectedUpdatedAt: rev });
+    expect(listed.data).toBeNull();
+    expect(listed.committed).toBe(true);
+    expect(listed.error).toMatch(/Listing saved, but/);
+    failReads = false;
+    expect((await api.getMeet('srv-meet-upcoming-1')).data.summary.listing.federation).toBe('USS');
+
+    // a refused write is NOT committed
+    const refused = await api.updateListing('srv-meet-upcoming-1', { athleteCap: 0 });
+    expect(refused.data).toBeNull();
+    expect(refused.committed).toBeUndefined();
   });
 });
 

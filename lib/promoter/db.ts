@@ -90,7 +90,8 @@ export interface PromoterDb {
   selectMyMeets(): Promise<PromoterMeetRow[]>;
   selectMeet(meetId: string): Promise<PromoterMeetRow | null>;
   selectChildren(meetId: string): Promise<MeetChildrenRows>;
-  updateMeetListing(meetId: string, patch: Partial<MeetListingColumns>): Promise<void>;
+  // 007: zt_update_listing RPC (owner check, enum/cap/deadline validation, C3 revision check). Returns the meets row.
+  updateMeetListing(meetId: string, patch: Partial<MeetListingColumns>, expectedUpdatedAt?: string | null): Promise<void>;
 
   selectRegistrations(meetId: string): Promise<RegistrationRow[]>;
   selectPublicMeetBySlug(slug: string): Promise<PublicMeetBundle | null>;
@@ -161,11 +162,12 @@ export function createSupabaseDb(client: SupabaseClient): PromoterDb {
       };
     },
 
-    async updateMeetListing(meetId: string, patch: Partial<MeetListingColumns>): Promise<void> {
-      const { error } = await client
-        .from('meets')
-        .update({ ...patch, updated_at: new Date().toISOString() })
-        .eq('id', meetId);
+    async updateMeetListing(meetId: string, patch: Partial<MeetListingColumns>, expectedUpdatedAt: string | null = null): Promise<void> {
+      const { error } = await client.rpc('zt_update_listing', {
+        p_meet_id: meetId,
+        p_patch: patch,
+        p_expected_updated_at: expectedUpdatedAt ?? null,
+      });
       if (error) throw new Error(error.message);
     },
 

@@ -338,3 +338,73 @@ describe('fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers',
     assert.equal(FA.isMeetStateDirty(s1, s3), true);
   });
 });
+
+// Astra gate round (10/17 pm): fixture mirrors of the 007 server rules.
+describe('fixtureApi: gate round (cap on roster save, accepted division fixed, listing revision)', () => {
+  test('C4: a roster save above the listing cap is refused; lowering the cap below the roster is refused', async () => {
+    const api = FA.createFixturePromoterApi();
+    const meet = (await api.getMeet('srv-meet-upcoming-1')).data;   // 2 athletes, cap 40
+    const capped = await api.updateListing('srv-meet-upcoming-1', { athleteCap: 2 });
+    assert.equal(capped.error, null);
+
+    const tooLow = await api.updateListing('srv-meet-upcoming-1', { athleteCap: 1 });
+    assert.equal(tooLow.data, null);
+    assert.match(tooLow.error, /roster already has 2 athletes/);
+
+    const withExtra = {
+      ...meet.state,
+      athletes: [...meet.state.athletes, { ...meet.state.athletes[0], id: 'walk-in-1', name: 'Walk In', lotNumber: 9 }],
+    };
+    const over = await api.saveMeetState('srv-meet-upcoming-1', withExtra);
+    assert.equal(over.data, null);
+    assert.match(over.error, /roster has 3 athletes but the listing cap is 2/);
+    assert.equal((await api.getMeet('srv-meet-upcoming-1')).data.state.athletes.length, 2);
+
+    const raised = await api.updateListing('srv-meet-upcoming-1', { athleteCap: 3 });
+    assert.equal(raised.error, null);
+    const ok = await api.saveMeetState('srv-meet-upcoming-1', withExtra);
+    assert.equal(ok.error, null);
+    assert.equal(ok.data.state.athletes.length, 3);
+  });
+
+  test('M9: an accepted athlete cannot be moved to another division through the roster; name edits are fine', async () => {
+    const api = FA.createFixturePromoterApi();
+    const meet = (await api.getMeet('srv-meet-upcoming-1')).data;   // ifc-ath-1 is accepted reg-ifc-1 in ifc-g1
+    const moved = {
+      ...meet.state,
+      athletes: meet.state.athletes.map((a) => (a.id === 'ifc-ath-1' ? { ...a, divisionId: 'ifc-g2' } : a)),
+    };
+    const refused = await api.saveMeetState('srv-meet-upcoming-1', moved);
+    assert.equal(refused.data, null);
+    assert.match(refused.error, /registered for a specific division/);
+    assert.equal((await api.getMeet('srv-meet-upcoming-1')).data.state.athletes.find((a) => a.id === 'ifc-ath-1').divisionId, 'ifc-g1');
+
+    const renamed = {
+      ...meet.state,
+      athletes: meet.state.athletes.map((a) => (a.id === 'ifc-ath-1' ? { ...a, name: 'Alex Sample-Corrected' } : a)),
+    };
+    const ok = await api.saveMeetState('srv-meet-upcoming-1', renamed);
+    assert.equal(ok.error, null);
+    assert.equal(ok.data.state.athletes.find((a) => a.id === 'ifc-ath-1').name, 'Alex Sample-Corrected');
+  });
+
+  test('C3 (listing): a stale tab cannot flip registration back open; the revision advances on every listing save', async () => {
+    const api = FA.createFixturePromoterApi();
+    const first = (await api.getMeet('srv-meet-upcoming-1')).data;
+    const rev1 = first.summary.updatedAt;
+
+    const closed = await api.updateListing('srv-meet-upcoming-1', { registrationStatus: 'closed' }, { expectedUpdatedAt: rev1 });
+    assert.equal(closed.error, null);
+    assert.equal(closed.data.listing.registrationStatus, 'closed');
+    assert.notEqual(closed.data.updatedAt, rev1);
+
+    const stale = await api.updateListing('srv-meet-upcoming-1', { ...first.summary.listing }, { expectedUpdatedAt: rev1 });
+    assert.equal(stale.data, null);
+    assert.match(stale.error, /changed since you opened it/);
+    assert.equal((await api.getMeet('srv-meet-upcoming-1')).data.summary.listing.registrationStatus, 'closed');
+
+    const fresh = await api.updateListing('srv-meet-upcoming-1', { federation: 'USS' }, { expectedUpdatedAt: closed.data.updatedAt });
+    assert.equal(fresh.error, null);
+    assert.equal(fresh.data.listing.registrationStatus, 'closed');
+  });
+});
