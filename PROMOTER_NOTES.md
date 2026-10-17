@@ -146,3 +146,6 @@ Verification: `tsc --noEmit` clean; `bun test test/` 212 pass, 0 fail, 16 files 
 | Second account / token expiry live | open | Unchanged; needs Astra's second account confirmed (Kurt, or SQL on request). |
 | Venue shape | noted | Astra's proposed contract (six string keys with limits) is reasonable; not implemented this round. Kurt to accept or not; ~20 min if yes. |
 | Rate check in transaction, anon email unverified | noted | Unchanged, disclosed (section 6). |
+
+### 7a. Venue shape (Kurt accepted Astra's recommendation, 10/17 night)
+`zt_check_venue(p_venue, p_listed)` in 007 (immutable; called by `zt_update_listing` for both a patched and an existing venue): null, or an object with only `facilityName` 160, `streetAddress` 240, `city` 120, `state` 80, `postalCode` 32, `country` 80, all strings; arrays, nested objects, non-strings and unknown keys refused ("Venue has an unexpected field ..."), strings trimmed, empty optional fields dropped, a listed meet with a venue needs city, state and country. Client mirror `validateVenueShape` in `lib/promoter/rules.ts`, used by `validateListingPatch` (both APIs). Tests: `test/promoter.test.mjs` venue block (2). Staging: 007 re-applied; direct probes of the function gave the five refusals and the normalised object; the one existing venue on staging (Power Plant Gym, York PA US) passes. 214 tests, tsc clean.

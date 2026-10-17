@@ -493,11 +493,46 @@ grant execute on function zt_save_meet_config(uuid, jsonb, jsonb, jsonb, jsonb, 
 -- p_patch keys are the `meets` listing column names (competition_status, registration_status, results_status,
 -- is_public_listed, venue, federation, entry_fee_display, registration_deadline, athlete_cap, promoter_contact).
 -- Unknown keys are ignored; a key present with JSON null clears the column. Returns the updated meets row.
+-- Venue shape (10/17 night, Astra gate 2 recommendation, accepted by Kurt): null, or an object with only these string
+-- keys: facilityName (160), streetAddress (240), city (120), state (80), postalCode (32), country (80). Arrays, nested
+-- objects, non-strings and unknown keys are refused; strings are trimmed and empty optional ones dropped; a publicly
+-- listed meet with a venue needs city, state and country. Returns the normalised venue (or null).
+create or replace function zt_check_venue(p_venue jsonb, p_listed boolean) returns jsonb
+language plpgsql immutable as $$
+declare
+  k text; v jsonb; out_v jsonb := '{}'::jsonb; lim int;
+  limits jsonb := '{"facilityName":160,"streetAddress":240,"city":120,"state":80,"postalCode":32,"country":80}'::jsonb;
+begin
+  if p_venue is null or p_venue = 'null'::jsonb then return null; end if;
+  if jsonb_typeof(p_venue) <> 'object' then
+    raise exception 'Venue must be an object with facilityName, streetAddress, city, state, postalCode and country.' using errcode = 'P0001';
+  end if;
+  for k, v in select * from jsonb_each(p_venue) loop
+    if not (limits ? k) then
+      raise exception 'Venue has an unexpected field "%".', left(k, 40) using errcode = 'P0001';
+    end if;
+    if jsonb_typeof(v) = 'null' then continue; end if;
+    if jsonb_typeof(v) <> 'string' then
+      raise exception 'Venue field "%" must be text.', k using errcode = 'P0001';
+    end if;
+    lim := (limits->>k)::int;
+    if char_length(trim(v #>> '{}')) > lim then
+      raise exception 'Venue field "%" is too long (% characters max).', k, lim using errcode = 'P0001';
+    end if;
+    if trim(v #>> '{}') <> '' then out_v := out_v || jsonb_build_object(k, trim(v #>> '{}')); end if;
+  end loop;
+  if out_v = '{}'::jsonb then return null; end if;
+  if p_listed and (not (out_v ? 'city') or not (out_v ? 'state') or not (out_v ? 'country')) then
+    raise exception 'Publicly listed meets with a venue must include City, State and Country.' using errcode = 'P0001';
+  end if;
+  return out_v;
+end $$;
+
 create or replace function zt_update_listing(p_meet_id uuid, p_patch jsonb, p_expected_updated_at timestamptz default null)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare
   cur meets%rowtype;
-  v_reg text; v_comp text; v_res text; v_cap int; v_deadline date; v_contact text;
+  v_reg text; v_comp text; v_res text; v_cap int; v_deadline date; v_contact text; v_listed boolean; v_venue jsonb;
   v_roster int;
 begin
   if auth.uid() is null then
@@ -562,12 +597,15 @@ begin
     raise exception 'Promoter contact is too long (160 characters max).' using errcode = 'P0001';
   end if;
 
+  v_listed := case when p_patch ? 'is_public_listed' then coalesce((p_patch->>'is_public_listed')::boolean, false) else cur.is_public_listed end;
+  v_venue := zt_check_venue(case when p_patch ? 'venue' then p_patch->'venue' else cur.venue end, v_listed);
+
   update meets set
     competition_status = v_comp,
     registration_status = v_reg,
     results_status = v_res,
-    is_public_listed = case when p_patch ? 'is_public_listed' then coalesce((p_patch->>'is_public_listed')::boolean, false) else is_public_listed end,
-    venue = case when p_patch ? 'venue' then nullif(p_patch->'venue', 'null'::jsonb) else venue end,
+    is_public_listed = v_listed,
+    venue = v_venue,
     federation = case when p_patch ? 'federation' then left(nullif(trim(coalesce(p_patch->>'federation', '')), ''), 120) else federation end,
     entry_fee_display = case when p_patch ? 'entry_fee_display' then left(nullif(trim(coalesce(p_patch->>'entry_fee_display', '')), ''), 80) else entry_fee_display end,
     registration_deadline = v_deadline,

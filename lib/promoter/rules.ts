@@ -66,12 +66,34 @@ export function validateListingPatch(
     }
   }
 
-  if (merged.isPublicListed && merged.venue) {
-    if (!merged.venue.city?.trim() || !merged.venue.state?.trim()) {
-      return 'Publicly listed meets with a venue must include both City and State.';
+  if (merged.venue) {
+    const shape = validateVenueShape(merged.venue);
+    if (shape) return shape;
+    if (merged.isPublicListed && (!merged.venue.city?.trim() || !merged.venue.state?.trim() || !merged.venue.country?.trim())) {
+      return 'Publicly listed meets with a venue must include City, State and Country.';
     }
   }
 
+  return null;
+}
+
+// Venue shape (Astra gate 2 recommendation, 10/17 night): mirrors zt_check_venue in 007. Only these six string keys,
+// each with a length limit; anything else is refused. Empty strings are allowed here (the UI sends them for optional
+// fields) and dropped on the server.
+export const VENUE_LIMITS: Record<string, number> = {
+  facilityName: 160, streetAddress: 240, city: 120, state: 80, postalCode: 32, country: 80,
+};
+export function validateVenueShape(venue: unknown): string | null {
+  if (venue === null || venue === undefined) return null;
+  if (typeof venue !== 'object' || Array.isArray(venue)) {
+    return 'Venue must be an object with facilityName, streetAddress, city, state, postalCode and country.';
+  }
+  for (const [k, v] of Object.entries(venue as Record<string, unknown>)) {
+    if (!(k in VENUE_LIMITS)) return `Venue has an unexpected field "${k.slice(0, 40)}".`;
+    if (v === undefined || v === null) continue;
+    if (typeof v !== 'string') return `Venue field "${k}" must be text.`;
+    if (v.trim().length > VENUE_LIMITS[k]) return `Venue field "${k}" is too long (${VENUE_LIMITS[k]} characters max).`;
+  }
   return null;
 }
 

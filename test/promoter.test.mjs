@@ -415,3 +415,28 @@ describe('fixtureApi: gate round (cap on roster save, accepted division fixed, l
     assert.equal(fresh.data.listing.registrationStatus, 'closed');
   });
 });
+
+// Astra gate 2 (10/17 night): venue shape, mirrored from zt_check_venue in 007.
+const R = await import(`${ROOT}/lib/promoter/rules.ts`);
+describe('fixtureApi: venue shape', () => {
+  test('validateVenueShape: only the six string keys, with limits', () => {
+    assert.equal(R.validateVenueShape(null), null);
+    assert.equal(R.validateVenueShape({ city: 'York', state: 'PA', country: 'US' }), null);
+    assert.match(R.validateVenueShape(['York']), /must be an object/);
+    assert.match(R.validateVenueShape({ city: 'York', lat: 40.1 }), /unexpected field "lat"/);
+    assert.match(R.validateVenueShape({ city: { nested: true } }), /"city" must be text/);
+    assert.match(R.validateVenueShape({ postalCode: 'x'.repeat(33) }), /"postalCode" is too long \(32/);
+    assert.match(R.validateVenueShape({ ['<script>'.repeat(10)]: 'x' }), /unexpected field "<script><script><script><script><script>"/);
+  });
+  test('updateListing refuses a malformed venue and a listed venue without country; accepts the proper shape', async () => {
+    const api = FA.createFixturePromoterApi();
+    const bad = await api.updateListing('srv-meet-upcoming-1', { venue: { city: 'York', state: 'PA', country: 'US', website: 'http://x' } });
+    assert.equal(bad.data, null);
+    assert.match(bad.error, /unexpected field "website"/);
+    const noCountry = await api.updateListing('srv-meet-upcoming-1', { isPublicListed: true, venue: { city: 'York', state: 'PA', country: '' } });
+    assert.match(noCountry.error, /City, State and Country/);
+    const ok = await api.updateListing('srv-meet-upcoming-1', { venue: { facilityName: 'The Power Plant Gym', city: 'York', state: 'PA', country: 'US' } });
+    assert.equal(ok.error, null);
+    assert.equal(ok.data.listing.venue.facilityName, 'The Power Plant Gym');
+  });
+});
