@@ -149,3 +149,20 @@ Verification: `tsc --noEmit` clean; `bun test test/` 212 pass, 0 fail, 16 files 
 
 ### 7a. Venue shape (Kurt accepted Astra's recommendation, 10/17 night)
 `zt_check_venue(p_venue, p_listed)` in 007 (immutable; called by `zt_update_listing` for both a patched and an existing venue): null, or an object with only `facilityName` 160, `streetAddress` 240, `city` 120, `state` 80, `postalCode` 32, `country` 80, all strings; arrays, nested objects, non-strings and unknown keys refused ("Venue has an unexpected field ..."), strings trimmed, empty optional fields dropped, a listed meet with a venue needs city, state and country. Client mirror `validateVenueShape` in `lib/promoter/rules.ts`, used by `validateListingPatch` (both APIs). Tests: `test/promoter.test.mjs` venue block (2). Staging: 007 re-applied; direct probes of the function gave the five refusals and the normalised object; the one existing venue on staging (Power Plant Gym, York PA US) passes. 214 tests, tsc clean.
+
+### 7b. Fresh upgrade dry run (10/17 night, disposable project `zerotacky-upgrade-test`)
+Closes the "fresh 001/002/004 upgrade" item that has been open since section 5. Kurt created a third Supabase project for it; nothing here touched prod or staging.
+
+Method (`~/.aki/tmp/zt/upgrade/`, all through the Management API):
+1. `001`, `002`, `004` applied on the empty project (prod's shape).
+2. `seed.sql`: a publish key, a keyed `zt_publish_meet` of an ownerless meet (`upgrade-strongfest`, PIN 7391, 2 divisions, 2 events, 3 athletes incl. one withdrawn), a locked result written the way a judge phone writes it (`updated_by` set, `updated_at` an hour old), a `live_state` row, and a second keyed meet (`is_demo`, PIN 1050). `snapshot.sql` taken (`snap_before.json`: every row of meets/athletes/results/events/divisions/live_state/meet_members/publish_keys as jsonb).
+3. `003`, `005`, `006`, `007`, `008` applied in order. Each returned clean on the first try; no edits to any migration were needed.
+4. `snap_after.json` compared field by field with the before snapshot: **all eight groups identical** (result payload, `locked`, `updated_at`, `updated_by`; both PINs; both join codes; stations; `owner_id` still null on both meets; the withdrawn athlete).
+5. Claim rules on the upgraded ownerless meet (`claim_probe.sql`, rolled back, 11 checks, all pass): a fresh `auth.users` row gets its `profiles` row from the 003 trigger; signed in without a key -> `42501 ... enter the key once to claim it`, owner and PIN untouched; signed in with a wrong key -> same refusal; signed in with the real key -> `owner_id` set, owner membership row written, PIN still 7391 (payload sent without `admin_pin`), join code unchanged, locked result still there; the owner can then republish without the key; a second signed-in user is refused "belongs to another promoter"; anon without a key is refused.
+6. `zt_meet_by_join_code('XXPEQ9')` as anon returns the meet with `admin_pin` null (007's PIN hiding works on an upgraded row).
+7. Structure parity with staging (`perms.sql` on both projects): RLS flags (12), default ACLs (6), table grants (56), column privileges (453), columns (124), indexes (18), policies (19), triggers (10), function grants (54), function signatures + security definer + search_path (28), constraints (38): **all identical sets**.
+8. Idempotence: the whole chain `001..008` applied a second time on the upgraded project, clean; rows and structure re-compared: identical to step 4 and step 7.
+
+Not covered: a real phone against the upgraded project (the probes call the same RPCs the client calls, with the same arguments, but through SQL with `request.jwt.claims` set, not through PostgREST). The seed's REST upsert was a plain insert. Prod's exact row contents are not reproduced here; the shape is, by construction (001+002+004 is what prod has).
+
+For the merge: Kurt pastes `003`, `005`, `006`, `007`, `008` into the prod SQL editor in that order, then ships the v2 client. Order matters (007 depends on 005/006, 008 on 005-007); re-running any of them is safe.
