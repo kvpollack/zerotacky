@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   AlertTriangle,
@@ -78,6 +78,10 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const [savingState, setSavingState] = useState(false);
+  // The Listing tab keeps its own draft (saved through updateListing, not saveMeetState); it reports dirtiness up
+  // so the sticky bar can mention it.
+  const [listingDirty, setListingDirty] = useState(false);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -108,9 +112,12 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
 
     setDetail(meetRes.data);
     setWorkingState(JSON.parse(JSON.stringify(meetRes.data.state)));
-    if (regsRes.data) {
-      setRegistrations(regsRes.data);
+    if (regsRes.error || !regsRes.data) {
+      setLoadError(regsRes.error ?? 'Registrations could not be loaded.');
+      setLoading(false);
+      return;
     }
+    setRegistrations(regsRes.data);
     setLoading(false);
   }, [api, serverId]);
 
@@ -232,26 +239,44 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     return { error: res.error };
   };
 
+  const registrationsBlockedReason = isDirty
+    ? 'Save or discard your changes first. Accepting or declining reloads the roster and would overwrite unsaved edits.'
+    : null;
+
   const handleSetRegistrationStatus = async (
     regId: string,
     status: RegistrationRequest['status']
   ) => {
+    // M1: never replace a dirty working draft. The Registrations tab disables its buttons while dirty, this is the
+    // backstop.
+    if (registrationsBlockedReason) {
+      return { error: registrationsBlockedReason };
+    }
     const res = await api.setRegistrationStatus(regId, status);
     if (res.error) {
       return { error: res.error };
     }
 
-    // Re-fetch meet and registrations so accepted roster rows appear immediately
+    // Re-fetch meet and registrations so the roster row appears or disappears immediately. The working draft is
+    // clean here (checked above), so replacing it loses nothing.
     const [meetRes, regsRes] = await Promise.all([
       api.getMeet(serverId),
       api.listRegistrations(serverId),
     ]);
-    if (meetRes.data) {
+    const problems: string[] = [];
+    if (meetRes.error || !meetRes.data) {
+      problems.push(`roster refresh failed: ${meetRes.error ?? 'no data'}`);
+    } else {
       setDetail(meetRes.data);
       setWorkingState(JSON.parse(JSON.stringify(meetRes.data.state)));
     }
-    if (regsRes.data) {
+    if (regsRes.error || !regsRes.data) {
+      problems.push(`registrations refresh failed: ${regsRes.error ?? 'no data'}`);
+    } else {
       setRegistrations(regsRes.data);
+    }
+    if (problems.length > 0) {
+      return { error: `Status changed to ${status}, but the page could not refresh (${problems.join('; ')}). Reload to see the current state.` };
     }
     return { error: null };
   };
@@ -280,6 +305,27 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     );
   }
 
+  if (loadError) {
+    return (
+      <div className="bg-zt-surface border border-zt-border rounded-2xl p-6 space-y-4">
+        <div
+          role="alert"
+          className="p-4 rounded-xl bg-zt-danger/15 border border-zt-danger text-zt-danger-text text-xs font-bold flex items-center gap-2"
+        >
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+          <span>{loadError}</span>
+        </div>
+        <Link
+          href="/promoter"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+          Back to My Meets
+        </Link>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className="max-w-xl mx-auto my-8 bg-zt-surface border-2 border-zt-border rounded-2xl p-6 text-center space-y-4">
@@ -298,7 +344,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     );
   }
 
-  if (loadError || !detail || !workingState) {
+  if (!detail || !workingState) {
     return (
       <div className="bg-zt-surface border border-zt-border rounded-2xl p-6 space-y-4">
         <div
@@ -306,7 +352,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
           className="p-4 rounded-xl bg-zt-danger/15 border border-zt-danger text-zt-danger-text text-xs font-bold flex items-center gap-2"
         >
           <AlertTriangle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-          <span>{loadError ?? 'Meet not found.'}</span>
+          <span>Meet not found.</span>
         </div>
         <Link
           href="/promoter"
@@ -341,6 +387,18 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     },
     { id: 'meetday', number: 7, label: 'Meet Day' },
   ];
+
+  const onTabKeyDown = (e: React.KeyboardEvent, index: number) => {
+    let next: number | null = null;
+    if (e.key === 'ArrowRight') next = (index + 1) % tabs.length;
+    if (e.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+    if (e.key === 'Home') next = 0;
+    if (e.key === 'End') next = tabs.length - 1;
+    if (next === null) return;
+    e.preventDefault();
+    setActiveTab(tabs[next].id);
+    tabRefs.current[next]?.focus();
+  };
 
   return (
     <div className="space-y-5 pb-20">
@@ -380,12 +438,12 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
               {summary.listing.isPublicListed ? (
                 <>
                   <Eye className="w-3 h-3" aria-hidden="true" />
-                  Public on /shows
+                  Listed (preview)
                 </>
               ) : (
                 <>
                   <EyeOff className="w-3 h-3" aria-hidden="true" />
-                  Hidden from /shows
+                  Unlisted (preview)
                 </>
               )}
             </span>
@@ -399,6 +457,11 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
 
           <span className="text-[11px] font-mono text-zt-muted">ID: {summary.serverId}</span>
         </div>
+
+        <p className="text-[11px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-2">
+          Preview: this meet&apos;s data lives in this browser tab only, resets on reload, and nothing here is a real
+          entry or a live meet. The live backend connects in a later milestone.
+        </p>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
@@ -433,16 +496,26 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
         </div>
 
         {/* Ordered 7-Tab Bar */}
-        <nav
+        <div
+          role="tablist"
           aria-label="Meet editor sections"
           className="flex items-center gap-1.5 overflow-x-auto pt-3 border-t border-zt-border"
         >
-          {tabs.map((tab) => {
+          {tabs.map((tab, index) => {
             const active = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
+                ref={(el) => {
+                  tabRefs.current[index] = el;
+                }}
                 type="button"
+                role="tab"
+                id={`tab-${tab.id}`}
+                aria-selected={active}
+                aria-controls={`panel-${tab.id}`}
+                tabIndex={active ? 0 : -1}
+                onKeyDown={(e) => onTabKeyDown(e, index)}
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide whitespace-nowrap border transition flex items-center gap-1.5 ${
                   active
@@ -467,7 +540,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
               </button>
             );
           })}
-        </nav>
+        </div>
       </section>
 
       {/* Save Error / Notice Banner */}
@@ -491,9 +564,10 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
         </div>
       )}
 
-      {/* Active Section Content */}
+      {/* Active Section Content. Every section stays mounted so in-progress drafts (Listing fields, EventForm)
+          survive tab switches; inactive panels are hidden with the HTML hidden attribute (M2). */}
       <div>
-        {activeTab === 'meet' && (
+        <div role="tabpanel" id="panel-meet" aria-labelledby="tab-meet" hidden={activeTab !== 'meet'}>
           <MeetSection
             meet={workingState.meet}
             divisions={workingState.divisions}
@@ -503,9 +577,9 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             updateStation={updateStation}
             removeStation={removeStation}
           />
-        )}
+        </div>
 
-        {activeTab === 'divisions' && (
+        <div role="tabpanel" id="panel-divisions" aria-labelledby="tab-divisions" hidden={activeTab !== 'divisions'}>
           <DivisionsSection
             meet={workingState.meet}
             divisions={workingState.divisions}
@@ -516,9 +590,9 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             removeDivision={removeDivision}
             reorderDivisions={reorderDivisions}
           />
-        )}
+        </div>
 
-        {activeTab === 'events' && (
+        <div role="tabpanel" id="panel-events" aria-labelledby="tab-events" hidden={activeTab !== 'events'}>
           <EventsSection
             divisions={workingState.divisions}
             events={workingState.events}
@@ -528,9 +602,9 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             removeEvent={removeEvent}
             reorderEvents={reorderEvents}
           />
-        )}
+        </div>
 
-        {activeTab === 'athletes' && (
+        <div role="tabpanel" id="panel-athletes" aria-labelledby="tab-athletes" hidden={activeTab !== 'athletes'}>
           <AthletesSection
             divisions={workingState.divisions}
             athletes={workingState.athletes}
@@ -543,35 +617,37 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             shuffleLots={shuffleLots}
             toggleAthleteWithdrawn={toggleAthleteWithdrawn}
           />
-        )}
+        </div>
 
-        {activeTab === 'listing' && (
+        <div role="tabpanel" id="panel-listing" aria-labelledby="tab-listing" hidden={activeTab !== 'listing'}>
           <ListingSection
             meetDate={workingState.meet.date}
             listing={summary.listing}
             onSaveListing={handleSaveListing}
+            onDirtyChange={setListingDirty}
           />
-        )}
+        </div>
 
-        {activeTab === 'registrations' && (
+        <div role="tabpanel" id="panel-registrations" aria-labelledby="tab-registrations" hidden={activeTab !== 'registrations'}>
           <RegistrationsSection
             registrations={registrations}
             divisions={workingState.divisions}
             athletes={workingState.athletes}
             onSetStatus={handleSetRegistrationStatus}
+            blockedReason={registrationsBlockedReason}
           />
-        )}
+        </div>
 
-        {activeTab === 'meetday' && (
+        <div role="tabpanel" id="panel-meetday" aria-labelledby="tab-meetday" hidden={activeTab !== 'meetday'}>
           <MeetDaySection
             summary={summary}
             onRotateCode={handleRotateJoinCode}
           />
-        )}
+        </div>
       </div>
 
-      {/* Sticky Dirty-State Save Bar for Builder Sections (Tabs 1-4) */}
-      {isDirty && (
+      {/* Sticky Dirty-State Save Bar: builder sections (Tabs 1-4) save here; Listing (Tab 5) saves on its own tab. */}
+      {(isDirty || listingDirty) && (
         <div
           role="region"
           aria-label="Unsaved meet changes"
@@ -579,15 +655,29 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
         >
           <div className="space-y-0.5">
             <div className="text-xs font-black uppercase tracking-wider text-zt-primary">
-              Unsaved Meet Builder Changes
+              {isDirty ? 'Unsaved Meet Builder Changes' : 'Unsaved Listing Changes'}
             </div>
             <div className="text-xs font-bold text-zt-text-2">
-              Your edits to Meet, Divisions, Events, or Athletes are in working memory. Save to
-              commit them.
+              {isDirty
+                ? 'Your edits to Meet, Divisions, Events, or Athletes are in working memory. Save to commit them.'
+                : 'The Listing tab has edited fields.'}
+              {isDirty && listingDirty ? ' The Listing tab also has edited fields.' : ''}
+              {listingDirty ? ' Use Save Listing Settings or Reset on the Listing tab.' : ''}
             </div>
           </div>
 
           <div className="flex items-center gap-2.5">
+            {listingDirty && activeTab !== 'listing' && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('listing')}
+                className="px-4 py-2.5 rounded-xl bg-zt-surface-2 border border-zt-border-strong text-zt-text-2 font-extrabold text-xs uppercase"
+              >
+                Go to Listing
+              </button>
+            )}
+            {isDirty && (
+            <>
             <button
               type="button"
               onClick={handleDiscardChanges}
@@ -606,6 +696,8 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
               <Save className="w-3.5 h-3.5" aria-hidden="true" />
               {savingState ? 'Saving…' : 'Save Changes'}
             </button>
+            </>
+            )}
           </div>
         </div>
       )}

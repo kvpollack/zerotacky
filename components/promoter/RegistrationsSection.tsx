@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AlertTriangle, Check, UserCheck, Users, X } from 'lucide-react';
+import { AlertTriangle, Check, PhoneCall, UserCheck, Users, X } from 'lucide-react';
 import type { RegistrationRequest } from '@/lib/promoter/contract';
 import type { Athlete, Division } from '@/lib/types';
 
@@ -13,6 +13,8 @@ interface RegistrationsSectionProps {
     id: string,
     status: RegistrationRequest['status']
   ) => Promise<{ error: string | null }>;
+  // When set, Accept/Decline are disabled and this message is shown (e.g. unsaved builder edits).
+  blockedReason?: string | null;
 }
 
 export default function RegistrationsSection({
@@ -20,30 +22,38 @@ export default function RegistrationsSection({
   divisions,
   athletes,
   onSetStatus,
+  blockedReason = null,
 }: RegistrationsSectionProps) {
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
+  // Errors are kept per request so the message sits next to the row whose action failed.
+  const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
 
   const divisionNameById = new Map(divisions.map((d) => [d.id, d.name]));
 
-  const findMatchingRosterAthlete = (reg: RegistrationRequest): Athlete | undefined => {
-    return athletes.find(
-      (a) =>
-        a.id === `reg-ath-${reg.id}` ||
-        (a.divisionId === reg.divisionId &&
-          a.name.trim().toLowerCase() === reg.athleteName.trim().toLowerCase())
-    );
-  };
+  // Roster rows are linked by athleteId only (contract); names are never used for matching.
+  const rosterRowFor = (reg: RegistrationRequest): Athlete | undefined =>
+    reg.athleteId ? athletes.find((a) => a.id === reg.athleteId) : undefined;
 
   const handleAction = async (id: string, nextStatus: RegistrationRequest['status']) => {
+    if (blockedReason) {
+      setRowErrors((prev) => ({ ...prev, [id]: blockedReason }));
+      return;
+    }
     setBusyId(id);
-    setActionError(null);
+    setRowErrors((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
     const res = await onSetStatus(id, nextStatus);
     setBusyId(null);
     if (res.error) {
-      setActionError(res.error);
+      setRowErrors((prev) => ({ ...prev, [id]: res.error as string }));
     }
   };
+
+  const pendingCount = registrations.filter((r) => r.status === 'pending').length;
+  const acceptedCount = registrations.filter((r) => r.status === 'accepted').length;
 
   return (
     <section className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-4">
@@ -54,19 +64,20 @@ export default function RegistrationsSection({
             <span>6. Athlete Registrations ({registrations.length})</span>
           </h2>
           <p className="text-xs text-zt-muted mt-0.5">
-            Accepting a registration automatically adds the athlete to that division&apos;s meet
-            roster (Section 4) with the next lot number.
+            {pendingCount} pending, {acceptedCount} accepted. Accepting adds the athlete to that division&apos;s roster
+            (Section 4) with the next lot number; declining removes the roster row unless it already has results.
+            Emergency contacts are visible to you only.
           </p>
         </div>
       </div>
 
-      {actionError && (
+      {blockedReason && (
         <div
-          role="alert"
-          className="p-3.5 rounded-xl bg-zt-danger/15 border border-zt-danger text-zt-danger-text text-xs font-bold flex items-center gap-2"
+          role="status"
+          className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-2"
         >
           <AlertTriangle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-          <span>{actionError}</span>
+          <span>{blockedReason}</span>
         </div>
       )}
 
@@ -80,6 +91,7 @@ export default function RegistrationsSection({
             <thead>
               <tr className="border-b border-zt-border text-[10px] font-extrabold uppercase text-zt-muted">
                 <th className="py-2.5 pr-3">Athlete</th>
+                <th className="py-2.5 px-2">Emergency Contact</th>
                 <th className="py-2.5 px-2">Division</th>
                 <th className="py-2.5 px-2">Status &amp; Roster Link</th>
                 <th className="py-2.5 px-2">Waiver</th>
@@ -91,15 +103,23 @@ export default function RegistrationsSection({
             <tbody className="divide-y divide-zt-border">
               {registrations.map((reg) => {
                 const divName = divisionNameById.get(reg.divisionId) ?? reg.divisionId;
-                const rosterEntry =
-                  reg.status === 'accepted' ? findMatchingRosterAthlete(reg) : undefined;
+                const rosterEntry = rosterRowFor(reg);
                 const isBusy = busyId === reg.id;
+                const rowError = rowErrors[reg.id];
+                const disabled = isBusy || Boolean(blockedReason);
 
                 return (
-                  <tr key={reg.id} className="hover:bg-zt-inset/50">
+                  <React.Fragment key={reg.id}>
+                  <tr className="hover:bg-zt-inset/50">
                     <td className="py-3 pr-3">
                       <div className="font-black text-zt-text">{reg.athleteName}</div>
                       <div className="text-[11px] font-semibold text-zt-muted">{reg.email}</div>
+                    </td>
+                    <td className="py-3 px-2 text-[11px] font-semibold text-zt-text-2">
+                      <span className="inline-flex items-center gap-1">
+                        <PhoneCall className="w-3 h-3 text-zt-muted" aria-hidden="true" />
+                        {reg.emergencyContact || 'not provided'}
+                      </span>
                     </td>
                     <td className="py-3 px-2 font-bold text-zt-text-2 whitespace-nowrap">
                       {divName}
@@ -117,6 +137,11 @@ export default function RegistrationsSection({
                         >
                           {reg.status}
                         </span>
+                        {reg.waitlisted && reg.status === 'pending' && (
+                          <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-zt-inset text-zt-text-2 border border-zt-border">
+                            waitlisted
+                          </span>
+                        )}
                         {rosterEntry && (
                           <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-zt-primary/15 text-zt-primary-2 border border-zt-primary/40 inline-flex items-center gap-1">
                             <UserCheck className="w-3 h-3" aria-hidden="true" />
@@ -152,7 +177,7 @@ export default function RegistrationsSection({
                       <div className="inline-flex items-center gap-1.5">
                         <button
                           type="button"
-                          disabled={isBusy || reg.status === 'accepted'}
+                          disabled={disabled || reg.status === 'accepted'}
                           onClick={() => handleAction(reg.id, 'accepted')}
                           className="px-2.5 py-1.5 rounded-lg bg-emerald-500 text-emerald-950 font-black text-[11px] uppercase inline-flex items-center gap-1 disabled:opacity-35"
                         >
@@ -161,7 +186,7 @@ export default function RegistrationsSection({
                         </button>
                         <button
                           type="button"
-                          disabled={isBusy || reg.status === 'declined'}
+                          disabled={disabled || reg.status === 'declined'}
                           onClick={() => handleAction(reg.id, 'declined')}
                           className="px-2.5 py-1.5 rounded-lg bg-zt-inset border border-zt-border-strong text-zt-text-2 hover:text-red-300 font-extrabold text-[11px] uppercase inline-flex items-center gap-1 disabled:opacity-35"
                         >
@@ -171,6 +196,20 @@ export default function RegistrationsSection({
                       </div>
                     </td>
                   </tr>
+                  {rowError && (
+                    <tr>
+                      <td colSpan={8} className="pb-3">
+                        <div
+                          role="alert"
+                          className="p-2.5 rounded-lg bg-zt-danger/15 border border-zt-danger text-zt-danger-text text-[11px] font-bold flex items-center gap-2"
+                        >
+                          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+                          <span>{reg.athleteName}: {rowError}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </React.Fragment>
                 );
               })}
             </tbody>

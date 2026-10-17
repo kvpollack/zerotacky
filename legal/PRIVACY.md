@@ -35,7 +35,7 @@ We collect only the information needed to run the directory, register athletes f
 
 ZeroTacky does **not** use third-party advertising trackers or cross-site marketing cookies.
 - **Session Cookies / Tokens:** Used solely to keep signed-in users authenticated via Supabase Auth.
-- **Browser `localStorage`:** Used to save your chosen visual theme (`ZEROTACKY_THEME_V1`), layout preference (`ZEROTACKY_LAYOUT_V1`), and—when you use the meet-day scorer at `/scorer` or `/join`—offline meet state, recovery snapshots, and the outbound sync queue so scores are never lost if gym Wi-Fi drops.
+- **Browser `localStorage`:** Used to save your chosen visual theme (`ZEROTACKY_THEME_V1`), layout preference (`ZEROTACKY_LAYOUT_V1`), and—when you use the meet-day scorer at `/scorer` or `/join`—offline meet state, recovery snapshots, and an outbound sync queue. Scores entered while gym Wi-Fi is down are queued locally and retried when the connection returns; the queue has a fixed size, so during a very long outage the oldest queued scores can be dropped, and the scorer keeps the local copy on the device.
 
 ## 4. Where Your Data Lives and Who Receives It
 
@@ -48,7 +48,7 @@ ZeroTacky does **not** use third-party advertising trackers or cross-site market
 
 - **Account and Registration Data:** Retained while your account is active or as needed for the promoter to administer the competition you entered.
 - **Historical Competition Results:** Published competition standings are retained as part of the sport's historical record unless the promoter removes the meet or an athlete requests removal of their personal identifiers.
-- **Deletion Requests:** You may request access to or deletion of your account or personal registration data at any time by emailing the operator at the contact address listed on the site. We will process verified deletion requests within 30 days.
+- **Deletion Requests:** You may request access to or deletion of your account or personal registration data at any time by emailing the operator at [OPERATOR CONTACT EMAIL]. We will process verified deletion requests within 30 days [OPERATOR TO CONFIRM].
 
 ## 6. Children's Privacy
 

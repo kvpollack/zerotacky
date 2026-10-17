@@ -11,13 +11,15 @@ All contrast ratios below are computed using the WCAG 2.1 relative luminance for
 * **WCAG AA Normal Text Minimum**: `4.50 : 1`
 * **WCAG AAA Normal Text / High-Distance TV Target**: `7.00 : 1`
 
+Ratios below are computed with the WCAG 2.x formula and shown to two decimals (recomputed 2026-10-16 after Astra's audit; the earlier one-decimal figures were off by up to 2 points): relative luminance L = 0.2126 R + 0.7152 G + 0.0722 B, where each sRGB channel c in [0,1] is linearised as c/12.92 if c <= 0.03928, else ((c + 0.055)/1.055)^2.4; contrast = (L_lighter + 0.05) / (L_darker + 0.05). Grades: AAA >= 7.0, AA >= 4.5 (normal text).
+
 | Theme ID | Name | Background (`--zt-bg`) | Surface (`--zt-surface`) | `--zt-text` on Surface | `--zt-text-2` on Surface | `--zt-primary` on Surface | `--zt-on-primary` on Primary |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `gunmetal` | **Anvil Gunmetal** *(Non-Near-Black Slate)* | `#181C24` | `#212733` | **13.5 : 1** (AAA) | **9.8 : 1** (AAA) | **6.8 : 1** (AA+) | **8.6 : 1** (AAA) |
-| `arena-tv` | **Arena Scoreboard 40ft** *(High-Contrast TV)* | `#000000` | `#090B10` | **19.4 : 1** (AAA) | **15.1 : 1** (AAA) | **14.9 : 1** (AAA) | **16.0 : 1** (AAA) |
-| `foundry` | **Foundry Oxide** *(Warm Charcoal Depth)* | `#161311` | `#211C19` | **14.3 : 1** (AAA) | **10.4 : 1** (AAA) | **7.1 : 1** (AAA) | **8.8 : 1** (AAA) |
-| `chalkboard` | **Gym Chalk & Concrete** *(Mid-Tone Industrial)* | `#1E2226` | `#272C31` | **12.6 : 1** (AAA) | **9.4 : 1** (AAA) | **7.4 : 1** (AAA) | **9.2 : 1** (AAA) |
-| `sandstone` | **Warm Pavement** *(Low-Glare Outdoor Light)* | `#F4F1EA` | `#FAF8F5` | **15.8 : 1** (AAA) | **10.9 : 1** (AAA) | **7.2 : 1** (AAA) | **7.6 : 1** (AAA) |
+| `gunmetal` | **Anvil Gunmetal** *(Non-Near-Black Slate)* | `#181C24` | `#212733` | **14.31 : 1** (AAA) | **11.60 : 1** (AAA) | **6.97 : 1** (AA) | **8.65 : 1** (AAA) |
+| `arena-tv` | **Arena Scoreboard 40ft** *(High-Contrast TV)* | `#000000` | `#090B10` | **19.68 : 1** (AAA) | **15.97 : 1** (AAA) | **12.85 : 1** (AAA) | **13.17 : 1** (AAA) |
+| `foundry` | **Foundry Oxide** *(Warm Charcoal Depth)* | `#161311` | `#211C19` | **15.82 : 1** (AAA) | **12.91 : 1** (AAA) | **7.45 : 1** (AAA) | **8.20 : 1** (AAA) |
+| `chalkboard` | **Gym Chalk & Concrete** *(Mid-Tone Industrial)* | `#1E2226` | `#272C31` | **13.00 : 1** (AAA) | **10.39 : 1** (AAA) | **7.57 : 1** (AAA) | **9.48 : 1** (AAA) |
+| `sandstone` | **Warm Pavement** *(Low-Glare Outdoor Light)* | `#F4F1EA` | `#FAF8F5` | **17.39 : 1** (AAA) | **12.99 : 1** (AAA) | **6.10 : 1** (AA) | **6.47 : 1** (AA) |
 
 ---
 
@@ -26,7 +28,7 @@ All contrast ratios below are computed using the WCAG 2.1 relative luminance for
 * **Name**: `Anvil Gunmetal`
 * **Tagline**: `Blue-Grey Slate • Safety Amber • Forged Cyan`
 * **Where it works**: Built specifically for laptop meet setup and dim indoor warehouse gyms where pure `#0A0B0E` black feels flat and causes halation around white text. The stepped blue-slate surfaces (`#181C24` -> `#212733` -> `#2C3444`) create unmistakable card depth without losing dark-mode battery savings.
-* **WCAG Contrast**: `--zt-text` (`#F8FAFC`) on `--zt-surface` (`#212733`) = **13.5 : 1**; `--zt-primary` (`#F59E0B`) on `--zt-surface` (`#212733`) = **6.8 : 1**; `--zt-on-primary` (`#111318`) on `--zt-primary` = **8.6 : 1**.
+* **WCAG Contrast**: `--zt-text` (`#F8FAFC`) on `--zt-surface` (`#212733`) = **14.31 : 1**; `--zt-primary` (`#F59E0B`) on `--zt-surface` (`#212733`) = **6.97 : 1** (AA); `--zt-on-primary` (`#111318`) on `--zt-primary` = **8.65 : 1** (AAA).
 
 ```ts
 // lib/constants.ts entry
@@ -67,7 +69,7 @@ All contrast ratios below are computed using the WCAG 2.1 relative luminance for
 * **Name**: `Arena Scoreboard 40ft`
 * **Tagline**: `Pitch Black • Optic Yellow • Signal Cyan`
 * **Where it works**: Engineered for `/m/<slug>?layout=tv` on cheap gym TVs and washed-out HDMI projectors viewed from 40+ feet away across a chalky competition floor. Optic yellow (`#FACC15`) and pure white (`#FFFFFF`) against `#090B10` cut through overhead fluorescent glare better than any mid-tone red or blue.
-* **WCAG Contrast**: `--zt-text` (`#FFFFFF`) on `--zt-surface` (`#090B10`) = **19.4 : 1**; `--zt-primary` (`#FACC15`) on `--zt-surface` (`#090B10`) = **14.9 : 1**; `--zt-on-primary` (`#05070A`) on `--zt-primary` = **16.0 : 1**.
+* **WCAG Contrast**: `--zt-text` (`#FFFFFF`) on `--zt-surface` (`#090B10`) = **19.68 : 1**; `--zt-primary` (`#FACC15`) on `--zt-surface` (`#090B10`) = **12.85 : 1** (AAA); `--zt-on-primary` (`#05070A`) on `--zt-primary` = **13.17 : 1** (AAA).
 
 ```ts
 // lib/constants.ts entry
@@ -108,7 +110,7 @@ All contrast ratios below are computed using the WCAG 2.1 relative luminance for
 * **Name**: `Foundry Oxide`
 * **Tagline**: `Warm Iron • Molten Orange • Patina Green`
 * **Where it works**: Ideal for evening meets, barn venues, and promoters who want an old-school cast-iron aesthetic without cold blue undertones. The warm `#211C19` surface and `#FB923C` orange primary keep the Judge Pad comfortable on the eyes during a 7-hour meet.
-* **WCAG Contrast**: `--zt-text` (`#FAF7F5`) on `--zt-surface` (`#211C19`) = **14.3 : 1**; `--zt-primary` (`#FB923C`) on `--zt-surface` (`#211C19`) = **7.1 : 1**; `--zt-on-primary` (`#18120E`) on `--zt-primary` = **8.8 : 1**.
+* **WCAG Contrast**: `--zt-text` (`#FAF7F5`) on `--zt-surface` (`#211C19`) = **15.82 : 1**; `--zt-primary` (`#FB923C`) on `--zt-surface` (`#211C19`) = **7.45 : 1** (AAA); `--zt-on-primary` (`#18120E`) on `--zt-primary` = **8.20 : 1** (AAA).
 
 ```ts
 // lib/constants.ts entry
@@ -149,7 +151,7 @@ All contrast ratios below are computed using the WCAG 2.1 relative luminance for
 * **Name**: `Gym Chalk & Concrete`
 * **Tagline**: `Concrete Charcoal • Chalk Mint • Comp Coral`
 * **Where it works**: A true mid-charcoal (`#1E2226` background, `#272C31` cards) that looks like a seasoned concrete lifting platform dusted with carbonate chalk. Great on both desktop browsers (`/promoter` and `/shows`) and phones under mixed indoor/bay-door lighting.
-* **WCAG Contrast**: `--zt-text` (`#F4F6F8`) on `--zt-surface` (`#272C31`) = **12.6 : 1**; `--zt-primary` (`#2DD4BF`) on `--zt-surface` (`#272C31`) = **7.4 : 1**; `--zt-on-primary` (`#081C19`) on `--zt-primary` = **9.2 : 1**.
+* **WCAG Contrast**: `--zt-text` (`#F4F6F8`) on `--zt-surface` (`#272C31`) = **13.00 : 1**; `--zt-primary` (`#2DD4BF`) on `--zt-surface` (`#272C31`) = **7.57 : 1** (AAA); `--zt-on-primary` (`#081C19`) on `--zt-primary` = **9.48 : 1** (AAA).
 
 ```ts
 // lib/constants.ts entry
@@ -190,7 +192,7 @@ All contrast ratios below are computed using the WCAG 2.1 relative luminance for
 * **Name**: `Warm Pavement`
 * **Tagline**: `Warm Stone • Crimson Iron • Deep Navy`
 * **Where it works**: An alternative to the stark white `daylight` theme for parking-lot truck pulls and outdoor summer shows where pure `#FFFFFF` cards dazzle the eyes in direct sun. The warm stone background (`#F4F1EA`) and deep crimson primary (`#B91C1C`) stay crisp on a phone screen at 100% brightness without blinding the judge.
-* **WCAG Contrast**: `--zt-text` (`#141413`) on `--zt-surface` (`#FAF8F5`) = **15.8 : 1**; `--zt-primary` (`#B91C1C`) on `--zt-surface` (`#FAF8F5`) = **7.2 : 1**; `--zt-on-primary` (`#FFFFFF`) on `--zt-primary` = **7.6 : 1**.
+* **WCAG Contrast**: `--zt-text` (`#141413`) on `--zt-surface` (`#FAF8F5`) = **17.39 : 1**; `--zt-primary` (`#B91C1C`) on `--zt-surface` (`#FAF8F5`) = **6.10 : 1** (AA); `--zt-on-primary` (`#FFFFFF`) on `--zt-primary` = **6.47 : 1** (AA).
 
 ```ts
 // lib/constants.ts entry

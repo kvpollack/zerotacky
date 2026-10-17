@@ -1,21 +1,17 @@
 import type { Metadata } from 'next';
 import WebsiteShell from '@/components/website/WebsiteShell';
 import PromoterMeetDetailClient from '@/components/promoter/PromoterMeetDetailClient';
-import { getFixturePromoterApi } from '@/lib/promoter/fixtureApi';
 
 interface PromoterMeetPageProps {
   params: Promise<{ serverId: string }>;
 }
 
+// Client-resolved page (M3/M13): the meet is looked up in the browser by PromoterMeetDetailClient because the
+// fixture API is per-realm (a meet created in this tab is unknown to the server). Unknown ids therefore return HTTP
+// 200 with the client's "Meet not found" state, not a 404, and the title cannot name the meet.
 export async function generateMetadata({ params }: PromoterMeetPageProps): Promise<Metadata> {
   const { serverId } = await params;
-  const res = await getFixturePromoterApi().getMeet(serverId);
-  if (!res.data) {
-    return { title: 'Manage Meet — ZeroTacky Promoter' };
-  }
-  return {
-    title: `${res.data.summary.name} — Promoter Dashboard — ZeroTacky`,
-  };
+  return { title: `Manage Meet ${serverId} — ZeroTacky Promoter` };
 }
 
 export default async function PromoterMeetDetailPage({ params }: PromoterMeetPageProps) {

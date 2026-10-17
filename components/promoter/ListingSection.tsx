@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { AlertTriangle, CheckCircle2, Eye, EyeOff, Globe } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, CheckCircle2, Eye, EyeOff, Globe, RotateCcw } from 'lucide-react';
 import type { MeetListing } from '@/lib/promoter/contract';
 import type {
   ResultsFinalizationStatus,
@@ -13,45 +13,108 @@ interface ListingSectionProps {
   meetDate: string;
   listing: MeetListing;
   onSaveListing: (patch: Partial<MeetListing>) => Promise<{ error: string | null }>;
+  // Reports whether the form holds unsaved edits so the parent can show it in the dirty bar.
+  onDirtyChange?: (dirty: boolean) => void;
 }
+
+// Flat text form of a listing. Kept as strings so the inputs are controlled and comparison is trivial.
+interface ListingDraft {
+  competitionStatus: ShowCompetitionStatus;
+  registrationStatus: ShowRegistrationStatus;
+  resultsStatus: ResultsFinalizationStatus;
+  isPublicListed: boolean;
+  facilityName: string;
+  streetAddress: string;
+  city: string;
+  stateCode: string;
+  postalCode: string;
+  country: string;
+  federation: string;
+  entryFeeDisplay: string;
+  registrationDeadline: string;
+  athleteCapText: string;
+  promoterContact: string;
+}
+
+function toDraft(listing: MeetListing): ListingDraft {
+  return {
+    competitionStatus: listing.competitionStatus,
+    registrationStatus: listing.registrationStatus,
+    resultsStatus: listing.resultsStatus,
+    isPublicListed: listing.isPublicListed,
+    facilityName: listing.venue?.facilityName ?? '',
+    streetAddress: listing.venue?.streetAddress ?? '',
+    city: listing.venue?.city ?? '',
+    stateCode: listing.venue?.state ?? '',
+    postalCode: listing.venue?.postalCode ?? '',
+    country: listing.venue?.country ?? 'US',
+    federation: listing.federation ?? '',
+    entryFeeDisplay: listing.entryFeeDisplay ?? '',
+    registrationDeadline: listing.registrationDeadline ?? '',
+    athleteCapText:
+      listing.athleteCap !== null && listing.athleteCap !== undefined ? String(listing.athleteCap) : '',
+    promoterContact: listing.promoterContact ?? '',
+  };
+}
+
+function toPatch(d: ListingDraft): Partial<MeetListing> {
+  const hasVenueFields =
+    d.facilityName.trim() || d.streetAddress.trim() || d.city.trim() || d.stateCode.trim() || d.postalCode.trim();
+  const capText = d.athleteCapText.trim();
+  return {
+    competitionStatus: d.competitionStatus,
+    registrationStatus: d.registrationStatus,
+    resultsStatus: d.resultsStatus,
+    isPublicListed: d.isPublicListed,
+    venue: hasVenueFields
+      ? {
+          facilityName: d.facilityName.trim() || undefined,
+          streetAddress: d.streetAddress.trim() || undefined,
+          city: d.city.trim(),
+          state: d.stateCode.trim().toUpperCase(),
+          postalCode: d.postalCode.trim() || undefined,
+          country: d.country.trim().toUpperCase() || 'US',
+        }
+      : null,
+    federation: d.federation.trim() || null,
+    entryFeeDisplay: d.entryFeeDisplay.trim() || null,
+    registrationDeadline: d.registrationDeadline.trim() || null,
+    // Non-numeric text becomes NaN on purpose so validateListingPatch rejects it with its own message.
+    athleteCap: capText ? Number(capText) : null,
+    promoterContact: d.promoterContact.trim() || null,
+  };
+}
+
+const INPUT = 'w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text';
+const LABEL = 'block text-[11px] font-bold uppercase text-zt-muted mb-1';
 
 export default function ListingSection({
   meetDate,
   listing,
   onSaveListing,
+  onDirtyChange,
 }: ListingSectionProps) {
-  const [competitionStatus, setCompetitionStatus] = useState<ShowCompetitionStatus>(
-    listing.competitionStatus
-  );
-  const [registrationStatus, setRegistrationStatus] = useState<ShowRegistrationStatus>(
-    listing.registrationStatus
-  );
-  const [resultsStatus, setResultsStatus] = useState<ResultsFinalizationStatus>(
-    listing.resultsStatus
-  );
-  const [isPublicListed, setIsPublicListed] = useState<boolean>(listing.isPublicListed);
-
-  const [facilityName, setFacilityName] = useState(listing.venue?.facilityName ?? '');
-  const [streetAddress, setStreetAddress] = useState(listing.venue?.streetAddress ?? '');
-  const [city, setCity] = useState(listing.venue?.city ?? '');
-  const [stateCode, setStateCode] = useState(listing.venue?.state ?? '');
-  const [postalCode, setPostalCode] = useState(listing.venue?.postalCode ?? '');
-  const [country, setCountry] = useState(listing.venue?.country ?? 'US');
-
-  const [federation, setFederation] = useState(listing.federation ?? '');
-  const [entryFeeDisplay, setEntryFeeDisplay] = useState(listing.entryFeeDisplay ?? '');
-  const [registrationDeadline, setRegistrationDeadline] = useState(
-    listing.registrationDeadline ?? ''
-  );
-  const [athleteCapText, setAthleteCapText] = useState(
-    listing.athleteCap !== null && listing.athleteCap !== undefined
-      ? String(listing.athleteCap)
-      : ''
-  );
-
+  const [draft, setDraft] = useState<ListingDraft>(() => toDraft(listing));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
+
+  const isDirty = useMemo(
+    () => JSON.stringify(toPatch(draft)) !== JSON.stringify(toPatch(toDraft(listing))),
+    [draft, listing]
+  );
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  const set = <K extends keyof ListingDraft>(key: K, value: ListingDraft[K]) =>
+    setDraft((prev) => ({ ...prev, [key]: value }));
+
+  const handleReset = () => {
+    setDraft(toDraft(listing));
+    setError(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,43 +122,13 @@ export default function ListingSection({
     setError(null);
     setSavedNotice(null);
 
-    const hasVenueFields =
-      facilityName.trim() ||
-      streetAddress.trim() ||
-      city.trim() ||
-      stateCode.trim() ||
-      postalCode.trim();
-
-    const venue = hasVenueFields
-      ? {
-          facilityName: facilityName.trim() || undefined,
-          streetAddress: streetAddress.trim() || undefined,
-          city: city.trim(),
-          state: stateCode.trim().toUpperCase(),
-          postalCode: postalCode.trim() || undefined,
-          country: country.trim().toUpperCase() || 'US',
-        }
-      : null;
-
-    const athleteCap = athleteCapText.trim() ? Number(athleteCapText.trim()) : null;
-
-    const res = await onSaveListing({
-      competitionStatus,
-      registrationStatus,
-      resultsStatus,
-      isPublicListed,
-      venue,
-      federation: federation.trim() || null,
-      entryFeeDisplay: entryFeeDisplay.trim() || null,
-      registrationDeadline: registrationDeadline.trim() || null,
-      athleteCap,
-    });
+    const res = await onSaveListing(toPatch(draft));
 
     setSaving(false);
     if (res.error) {
       setError(res.error);
     } else {
-      setSavedNotice('Public listing settings saved.');
+      setSavedNotice('Listing settings saved (preview data, this browser tab only).');
       setTimeout(() => setSavedNotice(null), 4000);
     }
   };
@@ -109,11 +142,11 @@ export default function ListingSection({
         <div>
           <h2 className="text-sm font-black uppercase tracking-wider text-zt-primary flex items-center gap-2">
             <Globe className="w-4 h-4" aria-hidden="true" />
-            <span>5. Public Show Listing &amp; Lifecycle</span>
+            <span>5. Show Listing &amp; Lifecycle</span>
           </h2>
           <p className="text-xs text-zt-muted mt-0.5">
-            Controls how this competition appears on <code className="font-mono">/shows</code> and{' '}
-            <code className="font-mono">/register/&lt;slug&gt;</code>.
+            Preview of the listing fields. Saving here updates this browser tab only; it connects to the live backend
+            (and to <code className="font-mono">/shows</code>) in a later milestone.
           </p>
         </div>
         <span className="text-xs font-bold text-zt-text-2">
@@ -121,58 +154,52 @@ export default function ListingSection({
         </span>
       </div>
 
-      {/* Public Visibility Toggle + Plain Warning */}
+      {/* Public Visibility Toggle */}
       <div
         className={`rounded-2xl border-2 p-4 space-y-2 ${
-          isPublicListed
-            ? 'bg-emerald-500/10 border-emerald-500/40'
-            : 'bg-amber-500/10 border-amber-500/40'
+          draft.isPublicListed ? 'bg-emerald-500/10 border-emerald-500/40' : 'bg-amber-500/10 border-amber-500/40'
         }`}
       >
-        <div className="flex items-center justify-between gap-3">
-          <label className="flex items-center gap-2.5 text-sm font-black text-zt-text cursor-pointer">
-            <input
-              type="checkbox"
-              checked={isPublicListed}
-              onChange={(e) => setIsPublicListed(e.target.checked)}
-              className="w-4 h-4"
-            />
-            <span className="flex items-center gap-1.5">
-              {isPublicListed ? (
-                <>
-                  <Eye className="w-4 h-4 text-emerald-400" aria-hidden="true" />
-                  Publicly Listed on /shows
-                </>
-              ) : (
-                <>
-                  <EyeOff className="w-4 h-4 text-amber-400" aria-hidden="true" />
-                  Public Listing Off (Unlisted)
-                </>
-              )}
-            </span>
-          </label>
-        </div>
+        <label className="flex items-center gap-2.5 text-sm font-black text-zt-text cursor-pointer">
+          <input
+            id="listing-public"
+            type="checkbox"
+            checked={draft.isPublicListed}
+            onChange={(e) => set('isPublicListed', e.target.checked)}
+            className="w-4 h-4"
+          />
+          <span className="flex items-center gap-1.5">
+            {draft.isPublicListed ? (
+              <>
+                <Eye className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+                Listed (public directory, when live)
+              </>
+            ) : (
+              <>
+                <EyeOff className="w-4 h-4 text-amber-400" aria-hidden="true" />
+                Unlisted
+              </>
+            )}
+          </span>
+        </label>
         <p className="text-xs font-bold text-zt-text-2">
-          {isPublicListed
-            ? 'This meet is visible in the public /shows directory. Athletes can discover it by state, division, and implements.'
-            : 'Warning: Turning Public Listing off means this meet is invisible on /shows. Keep it off for test meets or drafts until you are ready for athletes to find it.'}
+          {draft.isPublicListed
+            ? 'When the backend lands, listed meets appear in the public shows directory, searchable by state, division and implements.'
+            : 'Unlisted meets stay out of the public directory. Keep test meets and drafts unlisted until athletes should find them.'}
         </p>
       </div>
 
       {/* Lifecycle Statuses */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
         <div>
-          <label
-            htmlFor="listing-comp-status"
-            className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1"
-          >
+          <label htmlFor="listing-comp-status" className={LABEL}>
             Competition Status
           </label>
           <select
             id="listing-comp-status"
-            value={competitionStatus}
-            onChange={(e) => setCompetitionStatus(e.target.value as ShowCompetitionStatus)}
-            className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
+            value={draft.competitionStatus}
+            onChange={(e) => set('competitionStatus', e.target.value as ShowCompetitionStatus)}
+            className={INPUT}
           >
             <option value="upcoming">Upcoming</option>
             <option value="live">Live Now</option>
@@ -183,17 +210,14 @@ export default function ListingSection({
         </div>
 
         <div>
-          <label
-            htmlFor="listing-reg-status"
-            className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1"
-          >
+          <label htmlFor="listing-reg-status" className={LABEL}>
             Registration Status
           </label>
           <select
             id="listing-reg-status"
-            value={registrationStatus}
-            onChange={(e) => setRegistrationStatus(e.target.value as ShowRegistrationStatus)}
-            className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
+            value={draft.registrationStatus}
+            onChange={(e) => set('registrationStatus', e.target.value as ShowRegistrationStatus)}
+            className={INPUT}
           >
             <option value="open">Open</option>
             <option value="waitlist">Waitlist Only</option>
@@ -205,17 +229,14 @@ export default function ListingSection({
         </div>
 
         <div>
-          <label
-            htmlFor="listing-res-status"
-            className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1"
-          >
+          <label htmlFor="listing-res-status" className={LABEL}>
             Results Status
           </label>
           <select
             id="listing-res-status"
-            value={resultsStatus}
-            onChange={(e) => setResultsStatus(e.target.value as ResultsFinalizationStatus)}
-            className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
+            value={draft.resultsStatus}
+            onChange={(e) => set('resultsStatus', e.target.value as ResultsFinalizationStatus)}
+            className={INPUT}
           >
             <option value="not_started">Not Started</option>
             <option value="in_progress">In Progress (Live Provisional)</option>
@@ -227,143 +248,169 @@ export default function ListingSection({
 
       {/* Venue Fields */}
       <div className="pt-3 border-t border-zt-border space-y-3">
-        <div className="text-xs font-extrabold uppercase text-zt-primary">
-          Venue &amp; Location
-        </div>
+        <div className="text-xs font-extrabold uppercase text-zt-primary">Venue &amp; Location</div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className="block text-[11px] font-bold uppercase text-zt-muted mb-1">
+            <label htmlFor="listing-facility" className={LABEL}>
               Facility / Gym Name
             </label>
             <input
+              id="listing-facility"
               type="text"
-              value={facilityName}
-              onChange={(e) => setFacilityName(e.target.value)}
+              value={draft.facilityName}
+              onChange={(e) => set('facilityName', e.target.value)}
               placeholder="e.g. The Power Plant Gym"
-              className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
+              className={INPUT}
             />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase text-zt-muted mb-1">
+            <label htmlFor="listing-street" className={LABEL}>
               Street Address
             </label>
             <input
+              id="listing-street"
               type="text"
-              value={streetAddress}
-              onChange={(e) => setStreetAddress(e.target.value)}
+              value={draft.streetAddress}
+              onChange={(e) => set('streetAddress', e.target.value)}
               placeholder="e.g. 3104 Market St"
-              className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
+              className={INPUT}
             />
           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div>
-            <label className="block text-[11px] font-bold uppercase text-zt-muted mb-1">
+            <label htmlFor="listing-city" className={LABEL}>
               City
             </label>
             <input
+              id="listing-city"
               type="text"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
+              value={draft.city}
+              onChange={(e) => set('city', e.target.value)}
               placeholder="York"
-              className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
+              className={INPUT}
             />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase text-zt-muted mb-1">
+            <label htmlFor="listing-state" className={LABEL}>
               State
             </label>
             <input
+              id="listing-state"
               type="text"
               maxLength={4}
-              value={stateCode}
-              onChange={(e) => setStateCode(e.target.value.toUpperCase())}
+              value={draft.stateCode}
+              onChange={(e) => set('stateCode', e.target.value.toUpperCase())}
               placeholder="PA"
-              className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text uppercase"
+              className={`${INPUT} uppercase`}
             />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase text-zt-muted mb-1">
+            <label htmlFor="listing-postal" className={LABEL}>
               Postal Code
             </label>
             <input
+              id="listing-postal"
               type="text"
-              value={postalCode}
-              onChange={(e) => setPostalCode(e.target.value)}
+              value={draft.postalCode}
+              onChange={(e) => set('postalCode', e.target.value)}
               placeholder="17404"
-              className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
+              className={INPUT}
             />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase text-zt-muted mb-1">
+            <label htmlFor="listing-country" className={LABEL}>
               Country
             </label>
             <input
+              id="listing-country"
               type="text"
-              value={country}
-              onChange={(e) => setCountry(e.target.value.toUpperCase())}
+              value={draft.country}
+              onChange={(e) => set('country', e.target.value.toUpperCase())}
               placeholder="US"
-              className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text uppercase"
+              className={`${INPUT} uppercase`}
             />
           </div>
         </div>
       </div>
 
-      {/* Federation, Entry Fee, Registration Deadline, Athlete Cap */}
+      {/* Federation, Entry Fee, Registration Deadline, Athlete Cap, Contact */}
       <div className="pt-3 border-t border-zt-border space-y-3">
         <div className="text-xs font-extrabold uppercase text-zt-primary">
-          Sanctioning, Entry Fee &amp; Caps
+          Sanctioning, Entry Fee, Caps &amp; Contact
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
-            <label className="block text-[11px] font-bold uppercase text-zt-muted mb-1">
+            <label htmlFor="listing-federation" className={LABEL}>
               Federation / Format
             </label>
             <input
+              id="listing-federation"
               type="text"
-              value={federation}
-              onChange={(e) => setFederation(e.target.value)}
+              value={draft.federation}
+              onChange={(e) => set('federation', e.target.value)}
               placeholder="USS, Strongman Corp, Unsanctioned..."
-              className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
+              className={INPUT}
             />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase text-zt-muted mb-1">
+            <label htmlFor="listing-fee" className={LABEL}>
               Entry Fee Display
             </label>
             <input
+              id="listing-fee"
               type="text"
-              value={entryFeeDisplay}
-              onChange={(e) => setEntryFeeDisplay(e.target.value)}
+              value={draft.entryFeeDisplay}
+              onChange={(e) => set('entryFeeDisplay', e.target.value)}
               placeholder="e.g. $80 (Venmo/Cash)"
-              className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
+              className={INPUT}
             />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase text-zt-muted mb-1">
+            <label htmlFor="listing-deadline" className={LABEL}>
               Registration Deadline
             </label>
             <input
+              id="listing-deadline"
               type="date"
-              value={registrationDeadline}
-              onChange={(e) => setRegistrationDeadline(e.target.value)}
-              className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
+              value={draft.registrationDeadline}
+              onChange={(e) => set('registrationDeadline', e.target.value)}
+              className={INPUT}
             />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase text-zt-muted mb-1">
+            <label htmlFor="listing-cap" className={LABEL}>
               Athlete Cap
             </label>
             <input
+              id="listing-cap"
               type="number"
               min={1}
-              value={athleteCapText}
-              onChange={(e) => setAthleteCapText(e.target.value)}
+              step={1}
+              value={draft.athleteCapText}
+              onChange={(e) => set('athleteCapText', e.target.value)}
               placeholder="e.g. 40"
-              className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
+              className={INPUT}
             />
           </div>
+        </div>
+        <div>
+          <label htmlFor="listing-contact" className={LABEL}>
+            Promoter Contact (shown to athletes)
+          </label>
+          <input
+            id="listing-contact"
+            type="text"
+            value={draft.promoterContact}
+            onChange={(e) => set('promoterContact', e.target.value)}
+            placeholder="email or phone athletes may use"
+            aria-describedby="listing-contact-help"
+            className={INPUT}
+          />
+          <p id="listing-contact-help" className="text-[11px] text-zt-muted mt-1">
+            Appears on the registration page and in the waiver. Leave blank to show &quot;contact not provided&quot;.
+          </p>
         </div>
       </div>
 
@@ -387,10 +434,22 @@ export default function ListingSection({
         </div>
       )}
 
-      <div className="flex justify-end pt-2">
+      <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2">
+        {isDirty && (
+          <span className="text-xs font-bold text-amber-300 mr-auto">Unsaved listing changes</span>
+        )}
+        <button
+          type="button"
+          onClick={handleReset}
+          disabled={saving || !isDirty}
+          className="px-4 py-2.5 rounded-xl bg-zt-surface-2 border border-zt-border-strong text-zt-text-2 font-extrabold text-xs uppercase inline-flex items-center gap-1.5 disabled:opacity-40"
+        >
+          <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+          Reset
+        </button>
         <button
           type="submit"
-          disabled={saving}
+          disabled={saving || !isDirty}
           className="px-6 py-3 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase tracking-wider shadow disabled:opacity-40"
         >
           {saving ? 'Saving Listing…' : 'Save Listing Settings'}

@@ -75,8 +75,8 @@ export default function MeetDaySection({ summary, onRotateCode }: MeetDaySection
           <span>7. Meet Day Codes &amp; Screen Links</span>
         </h2>
         <p className="text-xs text-zt-muted mt-0.5">
-          Share the 6-character volunteer join code with your judges and pit crew, and open the
-          projector URL on your venue TV.
+          Preview of the meet-day codes and screen links. The join code shown here is fixture data and does not
+          attach volunteer phones to a live meet; it connects to the live backend in a later milestone.
         </p>
       </div>
 
@@ -101,7 +101,8 @@ export default function MeetDaySection({ summary, onRotateCode }: MeetDaySection
             {summary.joinCode || 'NOT SET'}
           </div>
           <p className="text-xs text-zt-muted">
-            Rotating the join code immediately invalidates the old code for new volunteer phones.
+            Rotate generates a new 6-character code in this preview (this browser tab only). When live, rotating
+            will invalidate the old code for new volunteer phones.
           </p>
         </div>
 

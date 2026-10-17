@@ -108,6 +108,26 @@ export default function PromoterDashboardClient() {
     );
   }
 
+  // A failed session lookup is an error, not a signed-out visitor (M11).
+  if (!user && loadError) {
+    return (
+      <div className="max-w-xl mx-auto my-8 bg-zt-surface border-2 border-zt-danger rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-lg">
+        <div className="w-12 h-12 rounded-2xl bg-zt-danger/15 border border-zt-danger text-zt-danger-text mx-auto flex items-center justify-center">
+          <AlertTriangle className="w-6 h-6" aria-hidden="true" />
+        </div>
+        <h1 className="text-2xl font-black text-zt-text">Could not check your session</h1>
+        <p role="alert" className="text-xs sm:text-sm font-bold text-zt-danger-text">{loadError}</p>
+        <button
+          type="button"
+          onClick={() => refresh()}
+          className="px-5 py-3 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase tracking-wider shadow"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
+
   // Signed-out state (getCurrentUser() returns null)
   if (!user) {
     return (
@@ -169,9 +189,12 @@ export default function PromoterDashboardClient() {
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-zt-text">My Meets</h1>
           <p className="text-xs sm:text-sm text-zt-text-2 max-w-2xl">
-            Configure divisions, events, weights, public show directory visibility, and athlete
-            registrations on your laptop. Use the meet-day phone scorer for floor edits and live
-            scoring.
+            Configure divisions, events, weights, listing details, and athlete registrations on your laptop. Use the
+            meet-day phone scorer for floor edits and live scoring.
+          </p>
+          <p className="text-[11px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-2 max-w-2xl">
+            Preview: everything on this dashboard lives in this browser tab only, resets on reload, and no entry here
+            is real. The live backend connects in a later milestone.
           </p>
         </div>
 
@@ -218,7 +241,7 @@ export default function PromoterDashboardClient() {
               Create a New Strongman Meet
             </h2>
             <span className="text-[11px] font-bold text-zt-muted">
-              Defaults to hidden on /shows until you enable Public Listing
+              Starts unlisted until you enable the listing on its Listing tab
             </span>
           </div>
 
@@ -364,12 +387,12 @@ export default function PromoterDashboardClient() {
                       {m.listing.isPublicListed ? (
                         <>
                           <Eye className="w-3 h-3" aria-hidden="true" />
-                          Public on /shows
+                          Listed (preview)
                         </>
                       ) : (
                         <>
                           <EyeOff className="w-3 h-3" aria-hidden="true" />
-                          Unlisted (Private)
+                          Unlisted (preview)
                         </>
                       )}
                     </span>
@@ -426,7 +449,15 @@ export default function PromoterDashboardClient() {
                         {m.registrationCount}
                       </div>
                       <div className="text-[10px] font-extrabold uppercase text-zt-muted">
-                        Registrations
+                        Accepted
+                      </div>
+                    </div>
+                    <div className="bg-zt-inset border border-zt-border rounded-xl px-3 py-2 text-center">
+                      <div className={`text-sm font-black ${m.pendingCount > 0 ? 'text-amber-300' : 'text-zt-text'}`}>
+                        {m.pendingCount}
+                      </div>
+                      <div className="text-[10px] font-extrabold uppercase text-zt-muted">
+                        Pending
                       </div>
                     </div>
                   </div>

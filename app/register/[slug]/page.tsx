@@ -1,48 +1,47 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import WebsiteShell from '@/components/website/WebsiteShell';
 import RegisterClient from '@/components/register/RegisterClient';
-import { getFixtureMeetForRegistration } from '@/lib/promoter/fixtureApi';
+
+// M3 decision: this page is a client-rendered lookup, like /promoter/[serverId]. The fixture API is an in-memory
+// singleton per JavaScript realm, so a meet created in the browser's dashboard exists only in that tab; a server
+// lookup would 404 it. RegisterClient calls getPublicMeetBySlug(slug) in the browser and shows its own not-found
+// state. The server's only job here is reading the waiver text, which the browser cannot do.
 
 interface RegisterPageProps {
   params: Promise<{ slug: string }>;
 }
 
-function loadWaiverMarkdown(): string {
+function loadWaiverMarkdown(): { text: string | null; error: string | null } {
   try {
-    return readFileSync(join(process.cwd(), 'legal', 'WAIVER.md'), 'utf-8');
-  } catch {
-    return '# Assumption of Risk and Liability Waiver (Draft)\n\nWaiver text file (legal/WAIVER.md) could not be read from disk.';
+    const text = readFileSync(join(process.cwd(), 'legal', 'WAIVER.md'), 'utf-8');
+    if (!text.trim()) {
+      return { text: null, error: 'The waiver file legal/WAIVER.md is empty. Registration is unavailable until it is restored.' };
+    }
+    return { text, error: null };
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : String(err);
+    return { text: null, error: `The waiver text could not be loaded (${reason}). Registration is unavailable until it is restored.` };
   }
 }
 
+// The slug is resolved in the browser (see above), so the title cannot name the meet.
 export async function generateMetadata({ params }: RegisterPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const res = await getFixtureMeetForRegistration(slug);
-  if (!res.data) {
-    return { title: 'Register for Competition — ZeroTacky' };
-  }
   return {
-    title: `Register: ${res.data.summary.name} — ZeroTacky`,
-    description: `Athlete registration and waiver for ${res.data.summary.name}.`,
+    title: 'Athlete Registration — ZeroTacky',
+    description: `Athlete registration and waiver for /register/${slug}.`,
   };
 }
 
 export default async function RegisterPage({ params }: RegisterPageProps) {
   const { slug } = await params;
-  const res = await getFixtureMeetForRegistration(slug);
-
-  if (!res.data) {
-    notFound();
-  }
-
-  const waiverText = loadWaiverMarkdown();
+  const waiver = loadWaiverMarkdown();
 
   return (
     <WebsiteShell activeNav="shows">
-      <RegisterClient initialDetail={res.data} waiverText={waiverText} />
+      <RegisterClient slug={slug} waiverText={waiver.text} waiverError={waiver.error} />
     </WebsiteShell>
   );
 }
