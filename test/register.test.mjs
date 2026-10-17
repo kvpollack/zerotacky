@@ -11,6 +11,7 @@ const GOOD = {
   email: 'riley.competitor@example.com',
   emergencyContact: 'Sam Competitor (spouse) 717-555-0144',
   waiverAccepted: true,
+  waiverVersion: 'testwaiver01',
 };
 
 describe('register: public meet shape (H1)', () => {
@@ -216,6 +217,7 @@ describe('register: submitRegistration into fixtureApi (M10, M19)', () => {
       email: 'skyler.waitlist@example.com',
       emergencyContact: 'Morgan Waitlist 856-555-0192',
       waiverAccepted: true,
+      waiverVersion: 'testwaiver01',
     });
     assert.equal(regRes.error, null);
     assert.equal(regRes.data.status, 'waitlist');

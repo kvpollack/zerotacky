@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, CheckCircle2, Eye, EyeOff, Globe, RotateCcw } from 'lucide-react';
 import type { MeetListing } from '@/lib/promoter/contract';
+import { isLiveBackend } from '@/lib/promoter/usePromoterApi';
 import type {
   ResultsFinalizationStatus,
   ShowCompetitionStatus,
@@ -128,7 +129,11 @@ export default function ListingSection({
     if (res.error) {
       setError(res.error);
     } else {
-      setSavedNotice('Listing settings saved (preview data, this browser tab only).');
+      setSavedNotice(
+        isLiveBackend()
+          ? 'Listing settings saved. Listed meets appear on /shows within a minute.'
+          : 'Listing settings saved (preview data, this browser tab only).'
+      );
       setTimeout(() => setSavedNotice(null), 4000);
     }
   };
@@ -145,8 +150,17 @@ export default function ListingSection({
             <span>5. Show Listing &amp; Lifecycle</span>
           </h2>
           <p className="text-xs text-zt-muted mt-0.5">
-            Preview of the listing fields. Saving here updates this browser tab only; it connects to the live backend
-            (and to <code className="font-mono">/shows</code>) in a later milestone.
+            {isLiveBackend() ? (
+              <>
+                Controls what the public sees on <code className="font-mono">/shows</code> and{' '}
+                <code className="font-mono">/register/{'<slug>'}</code>. Unlisted meets still open by direct link.
+              </>
+            ) : (
+              <>
+                Preview of the listing fields. Saving here updates this browser tab only; it connects to the live backend
+                (and to <code className="font-mono">/shows</code>) in a later milestone.
+              </>
+            )}
           </p>
         </div>
         <span className="text-xs font-bold text-zt-text-2">

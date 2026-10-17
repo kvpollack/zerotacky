@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type { Metadata } from 'next';
 import WebsiteShell from '@/components/website/WebsiteShell';
 import RegisterClient from '@/components/register/RegisterClient';
+import { waiverVersionOf } from '@/lib/promoter/waiverVersion';
 
 // M3 decision: this page is a client-rendered lookup, like /promoter/[serverId]. The fixture API is an in-memory
 // singleton per JavaScript realm, so a meet created in the browser's dashboard exists only in that tab; a server
@@ -41,7 +42,12 @@ export default async function RegisterPage({ params }: RegisterPageProps) {
 
   return (
     <WebsiteShell activeNav="shows">
-      <RegisterClient slug={slug} waiverText={waiver.text} waiverError={waiver.error} />
+      <RegisterClient
+        slug={slug}
+        waiverText={waiver.text}
+        waiverVersion={waiver.text ? waiverVersionOf(waiver.text) : null}
+        waiverError={waiver.error}
+      />
     </WebsiteShell>
   );
 }

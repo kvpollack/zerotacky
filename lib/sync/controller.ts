@@ -21,11 +21,15 @@ export interface SyncLink {
   slug: string;
   joinCode: string;
   role: 'admin' | 'device';
+  // How this phone earned its write authority (Astra A4, 10/17). 'account' links pause when the account signs out;
+  // 'key' (legacy publish key) and 'join' (volunteer join code) links are intentionally accountless and keep going.
+  // Absent on links written before 10/17: treated as 'key' for admin and 'join' for device.
+  auth?: 'account' | 'key' | 'join';
   since: string | null;  // results watermark for incremental pulls
   configAt?: string | null;  // meets.updated_at last applied on this phone (device role only)
 }
 
-export type SyncState = 'off' | 'idle' | 'syncing' | 'offline' | 'error';
+export type SyncState = 'off' | 'idle' | 'syncing' | 'offline' | 'error' | 'paused';
 export interface SyncStatus {
   state: SyncState;
   pending: number;
@@ -121,6 +125,10 @@ export class SyncController {
   private known = new Map<string, number>();        // result id -> updatedAt last seen remote/pushed
   private knownAthletes = new Map<string, string>(); // athlete id -> sig last seen remote/pushed
   private busy = false;
+  // Astra A4: bumped on every token change. Work that started under an older generation does not update the link,
+  // the queue, the watermarks or local state when it completes.
+  private session = 0;
+  private accessToken: string | null = null;
   get deviceId(): string { return this.o.deviceId; }
   private o: ControllerOpts;
 
@@ -132,6 +140,7 @@ export class SyncController {
       // after a reload, treat current local state as already known so we don't re-push everything
       this.seedKnown(opts.getState());
       this.setStatus({ state: 'idle' });
+      this.refreshPaused();   // an account link with no token yet shows paused until setAccessToken() arrives
     }
   }
 
@@ -167,8 +176,30 @@ export class SyncController {
 
   // v2: signed-in promoter. Every later call (publish, pushes, pulls) carries the user's JWT instead of the anon
   // key, so zt_publish_meet sees auth.uid() and the RLS member policies apply. null drops back to anon.
+  // Astra A4: a token change invalidates everything in flight (session generation), and signing out of an
+  // account-published link pauses it: unsent work stays queued, nothing is sent or applied until a token is back.
   setAccessToken(token: string | null): void {
+    const changed = (token ?? null) !== this.accessToken;
+    this.accessToken = token ?? null;
     this.o = { ...this.o, client: this.o.client.withAccessToken(token) };
+    if (!changed) return;
+    this.session++;
+    this.refreshPaused();
+  }
+
+  // 'account' links need a token; everything else is accountless by design.
+  get paused(): boolean {
+    return !!this.link && this.linkAuth(this.link) === 'account' && this.accessToken === null;
+  }
+
+  linkAuth(link: SyncLink): NonNullable<SyncLink['auth']> {
+    return link.auth ?? (link.role === 'admin' ? 'key' : 'join');
+  }
+
+  private refreshPaused(): void {
+    if (!this.link) return;
+    if (this.paused) this.setStatus({ state: 'paused', error: 'Signed out. This meet was published from your account; sign back in to resume syncing. Scores stay on this phone meanwhile.' });
+    else if (this.status.state === 'paused') this.setStatus({ state: 'idle', error: null });
   }
 
   // Admin phone: publish (or re-publish) the whole meet. Keeps the remote uuid across re-publishes.
@@ -180,11 +211,15 @@ export class SyncController {
     }
     const state = this.o.getState();
     const meetId = this.link?.localMeetId === state.meet.id ? this.link.meetId : newMeetUuid();
+    if (publishKey === null && this.accessToken === null) throw new Error('Sign in to your ZeroTacky account (or enter a publish key) first.');
+    const gen = this.session;
     this.setStatus({ state: 'syncing', error: null });
     try {
       const out = await publishMeet(this.o.client, state, { ...extra, meetId, deviceId: this.o.deviceId }, publishKey);
+      if (gen !== this.session) throw new Error('Sign-in changed while publishing; this phone was not linked. Publish again.');
       const link: SyncLink = {
         meetId: out.id, localMeetId: state.meet.id, slug: extra.slug, joinCode: out.joinCode, role: 'admin',
+        auth: publishKey === null ? 'account' : 'key',
         since: this.link?.meetId === out.id ? this.link.since : null,
       };
       this.setLink(link);
@@ -213,7 +248,7 @@ export class SyncController {
   }
 
   attach(remote: RemoteMeet, role: SyncLink['role'] = 'device'): SyncLink {
-    const link: SyncLink = { meetId: remote.state.meet.id, localMeetId: remote.state.meet.id, slug: remote.slug, joinCode: remote.joinCode ?? '', role, since: remote.latestServerAt, configAt: remote.updatedAt ?? null };
+    const link: SyncLink = { meetId: remote.state.meet.id, localMeetId: remote.state.meet.id, slug: remote.slug, joinCode: remote.joinCode ?? '', role, auth: 'join', since: remote.latestServerAt, configAt: remote.updatedAt ?? null };
     this.setLink(link);
     this.seedKnown(remote.state);
     this.setStatus({ state: 'idle', lastSyncAt: this.now() });
@@ -268,7 +303,8 @@ export class SyncController {
   // deleted, a bad payload), retry row by row and drop the rows that still fail: one poisoned row must not
   // freeze the phone. Network errors propagate (the queue is kept for the next tick).
   async flush(): Promise<void> {
-    if (!this.link || this.queue.length === 0) return;
+    if (!this.link || this.queue.length === 0 || this.paused) return;
+    const gen = this.session;
     const groups = groupByTable(this.queue);
     const tables = [...SyncController.FLUSH_ORDER, ...Object.keys(groups).filter((t) => !SyncController.FLUSH_ORDER.includes(t))];
     let lastRejection: SyncError | null = null;
@@ -278,8 +314,10 @@ export class SyncController {
       const onConflict = ON_CONFLICT[table] ?? 'id';
       try {
         await this.writer.upsert(table, items.map((i) => i.row), onConflict);
+        if (gen !== this.session) return;   // signed in/out meanwhile: upserts are idempotent, leave the queue for the next session
         this.queue = removeFlushed(this.queue, items);
       } catch (e) {
+        if (gen !== this.session) return;
         if (isNetworkError(e)) { this.persistQueue(); throw e; }
         const err = e as SyncError;
         if (err.status === 401 || err.status === 403) { this.persistQueue(); throw e; }  // bad join code: keep everything
@@ -287,8 +325,10 @@ export class SyncController {
         for (const item of items) {
           try {
             await this.writer.upsert(table, [item.row], onConflict);
+            if (gen !== this.session) return;
             this.queue = removeFlushed(this.queue, [item]);
           } catch (e2) {
+            if (gen !== this.session) return;
             if (isNetworkError(e2)) { this.persistQueue(); throw e2; }
             this.queue = removeFlushed(this.queue, [item]);
             dropped++;
@@ -304,10 +344,11 @@ export class SyncController {
 
   // ---- inbound ----
   async pull(): Promise<void> {
-    if (!this.link) return;
+    if (!this.link || this.paused) return;
+    const gen = this.session;
     const hasPendingAthletes = this.queue.some((q) => q.table === 'athletes');
     const { results, athletes, latestIso, meetUpdatedAt } = await pullChanges(this.o.client, this.link.meetId, this.link.since);
-    if (!this.link) return;   // unlinked while awaiting
+    if (!this.link || gen !== this.session) return;   // unlinked or re-authenticated while awaiting
     const state = this.o.getState();
     const patch: { results?: Result[]; athletes?: Athlete[]; config?: MeetConfig } = {};
     // Admin republished (weights, events, stations, demo flag): judge phones re-read the config. The admin phone
@@ -315,7 +356,7 @@ export class SyncController {
     if (meetUpdatedAt && meetUpdatedAt !== (this.link.configAt ?? null)) {
       if (this.link.role === 'device') {
         const cfg = await fetchMeetConfig(this.o.client, this.link.meetId);
-        if (!this.link) return;
+        if (!this.link || gen !== this.session) return;
         if (cfg) patch.config = cfg;
       }
       this.link = { ...this.link, configAt: meetUpdatedAt }; writeLink(this.o.storage, this.link);
@@ -341,6 +382,7 @@ export class SyncController {
   // while one is running makes it go round once more.
   async tick(): Promise<void> {
     if (!this.link) return;
+    if (this.paused) { this.refreshPaused(); return; }
     if (this.busy) { this.rerun = true; return; }
     this.busy = true;
     try {
@@ -353,11 +395,11 @@ export class SyncController {
           if (flushError && isNetworkError(flushError)) throw flushError;
           await this.pull();                       // a rejected write must not stop us reading
           if (flushError) throw flushError;
-          if (this.link) this.setStatus({ state: 'idle', error: this.status.dropped ? this.status.error : null, lastSyncAt: this.now() });
+          if (this.link && !this.paused) this.setStatus({ state: 'idle', error: this.status.dropped ? this.status.error : null, lastSyncAt: this.now() });
         } catch (e) {
-          if (this.link) this.fail(e);
+          if (this.link && !this.paused) this.fail(e);
         }
-      } while (this.rerun && this.link);
+      } while (this.rerun && this.link && !this.paused);
     } finally {
       this.busy = false;
     }

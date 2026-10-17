@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { AlertTriangle, Check, Copy, ExternalLink, KeyRound, RefreshCw, Tv } from 'lucide-react';
 import { copyText } from '@/lib/download';
 import type { PromoterMeetSummary } from '@/lib/promoter/contract';
+import { isLiveBackend } from '@/lib/promoter/usePromoterApi';
 
 interface MeetDaySectionProps {
   summary: PromoterMeetSummary;
@@ -56,7 +57,9 @@ export default function MeetDaySection({ summary, onRotateCode }: MeetDaySection
       label: 'Volunteer Judge & Pit Crew Join URL',
       path: summary.joinCode ? `/join?code=${summary.joinCode}` : '/join',
       fullUrl: joinUrl,
-      help: 'Share with judges and pit crew so their phones attach directly to this meet.',
+      help: isLiveBackend()
+        ? 'Share with judges and pit crew. Their phones attach to this meet with the current join code.'
+        : 'Preview link: in this browser-tab preview the code is fixture data and attaches no phones.',
     },
     {
       key: 'tv',
@@ -75,8 +78,9 @@ export default function MeetDaySection({ summary, onRotateCode }: MeetDaySection
           <span>7. Meet Day Codes &amp; Screen Links</span>
         </h2>
         <p className="text-xs text-zt-muted mt-0.5">
-          Preview of the meet-day codes and screen links. The join code shown here is fixture data and does not
-          attach volunteer phones to a live meet; it connects to the live backend in a later milestone.
+          {isLiveBackend()
+            ? 'Meet-day codes and screen links for this meet. The join code is checked on every write from a volunteer phone.'
+            : 'Preview of the meet-day codes and screen links. The join code shown here is fixture data and does not attach volunteer phones to a live meet; it connects to the live backend in a later milestone.'}
         </p>
       </div>
 
@@ -101,8 +105,9 @@ export default function MeetDaySection({ summary, onRotateCode }: MeetDaySection
             {summary.joinCode || 'NOT SET'}
           </div>
           <p className="text-xs text-zt-muted">
-            Rotate generates a new 6-character code in this preview (this browser tab only). When live, rotating
-            will invalidate the old code for new volunteer phones.
+            {isLiveBackend()
+              ? 'Rotate replaces the code. Every phone that joined with the old code, including an admin phone that published with it, is locked out on its next write until it rejoins with the new one. A phone signed in to this account is unaffected.'
+              : 'Rotate generates a new 6-character code in this preview (this browser tab only). When live, every phone that joined with the old code must rejoin with the new one.'}
           </p>
         </div>
 

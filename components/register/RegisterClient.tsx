@@ -14,16 +14,13 @@ import {
 } from 'lucide-react';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import type { PublicRegistrationMeet } from '@/lib/promoter/contract';
-import {
-  decideRegistrationOutcome,
-  getFixturePromoterApi,
-  isRegistrationOpen,
-  validateRegistrationInput,
-} from '@/lib/promoter/fixtureApi';
+import { decideRegistrationOutcome, isRegistrationOpen, validateRegistrationInput } from '@/lib/promoter/rules';
+import { getPromoterApi, isLiveBackend } from '@/lib/promoter/usePromoterApi';
 
 interface RegisterClientProps {
   slug: string;
   waiverText: string | null;
+  waiverVersion: string | null; // computed server-side from the waiver file; null when the waiver did not load
   waiverError: string | null;
 }
 
@@ -33,7 +30,7 @@ type LoadState = 'loading' | 'ready' | 'missing' | 'error';
 const PREVIEW_NOTICE =
   'Preview: this entry is stored in this browser tab only, resets when the page reloads, and is not a real registration. Real entries open when the live backend lands in a later milestone.';
 
-export default function RegisterClient({ slug, waiverText, waiverError }: RegisterClientProps) {
+export default function RegisterClient({ slug, waiverText, waiverVersion, waiverError }: RegisterClientProps) {
   const [meet, setMeet] = useState<PublicRegistrationMeet | null>(null);
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -55,7 +52,7 @@ export default function RegisterClient({ slug, waiverText, waiverError }: Regist
   useEffect(() => {
     let active = true;
     setLoadState('loading');
-    getFixturePromoterApi()
+    getPromoterApi()
       .getPublicMeetBySlug(slug)
       .then((res) => {
         if (!active) return;
@@ -154,7 +151,7 @@ export default function RegisterClient({ slug, waiverText, waiverError }: Regist
     e.preventDefault();
     setError(null);
     const err = validateRegistrationInput(
-      { slug: meet.slug, divisionId, athleteName, email, emergencyContact, waiverAccepted: true },
+      { slug: meet.slug, divisionId, athleteName, email, emergencyContact, waiverAccepted: true, waiverVersion: waiverVersion ?? '' },
       meet
     );
     if (err) {
@@ -180,14 +177,19 @@ export default function RegisterClient({ slug, waiverText, waiverError }: Regist
       setError('You must read and accept the competition waiver before submitting.');
       return;
     }
+    if (!waiverVersion) {
+      setError('The waiver text did not load, so this entry cannot be submitted. Reload the page and try again.');
+      return;
+    }
     setSubmitting(true);
-    const res = await getFixturePromoterApi().submitRegistration({
+    const res = await getPromoterApi().submitRegistration({
       slug: meet.slug,
       divisionId,
       athleteName,
       email,
       emergencyContact,
       waiverAccepted: true,
+      waiverVersion,
     });
     setSubmitting(false);
 
@@ -199,7 +201,7 @@ export default function RegisterClient({ slug, waiverText, waiverError }: Regist
     setSubmitted(res.data);
     setStep(4);
     // Refresh the public shape so the capacity line reflects the new entry.
-    const refreshed = await getFixturePromoterApi().getPublicMeetBySlug(meet.slug);
+    const refreshed = await getPromoterApi().getPublicMeetBySlug(meet.slug);
     if (refreshed.data) setMeet(refreshed.data);
   };
 
@@ -282,9 +284,11 @@ export default function RegisterClient({ slug, waiverText, waiverError }: Regist
         </div>
       </section>
 
-      <p className="text-[11px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-2">
-        {PREVIEW_NOTICE}
-      </p>
+      {!isLiveBackend() && (
+        <p className="text-[11px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-2">
+          {PREVIEW_NOTICE}
+        </p>
+      )}
 
       {waiverError ? (
         <section role="alert" className="bg-zt-surface border-2 border-zt-danger rounded-2xl p-8 text-center space-y-3">
@@ -640,9 +644,11 @@ export default function RegisterClient({ slug, waiverText, waiverError }: Regist
                   : ' Once the promoter accepts your entry, your name is added to the meet roster.'}
               </p>
 
-              <p className="text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-2">
-                {PREVIEW_NOTICE}
-              </p>
+              {!isLiveBackend() && (
+                <p className="text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-2">
+                  {PREVIEW_NOTICE}
+                </p>
+              )}
 
               <div className="bg-zt-inset border border-zt-border rounded-xl p-4 space-y-1.5 text-xs">
                 <div>
@@ -664,12 +670,14 @@ export default function RegisterClient({ slug, waiverText, waiverError }: Regist
               </div>
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Link
-                  href="/promoter"
-                  className="px-4 py-2.5 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase"
-                >
-                  Open the preview dashboard (same tab)
-                </Link>
+                {!isLiveBackend() && (
+                  <Link
+                    href="/promoter"
+                    className="px-4 py-2.5 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase"
+                  >
+                    Open the preview dashboard (same tab)
+                  </Link>
+                )}
                 <Link
                   href="/shows"
                   className="px-4 py-2.5 rounded-xl bg-zt-inset border border-zt-border-strong text-zt-text font-extrabold text-xs uppercase"

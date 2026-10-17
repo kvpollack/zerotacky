@@ -444,3 +444,159 @@ describe('controller helpers', () => {
     assert.equal(K.isNetworkError(new C.SyncError(401, 'x')), false);
   });
 });
+
+// ---------------------------------------------------------------------------------------------------------------
+// Sign-out behaviour (Astra A4, 10/17). Own fake client: every call records the bearer it was made under, and
+// promises can be held open to simulate work in flight across a sign-out.
+// ---------------------------------------------------------------------------------------------------------------
+const A4MB = await import('../lib/meetBuilder.ts');
+
+// Each call is { kind, table|fn, token, joinCode, resolve, reject } and resolves only when the test says so,
+// unless `auto` is true.
+function a4FakeClient(log, { token = null, joinCode = null, auto = true } = {}) {
+  const pend = (kind, name, extra = {}) =>
+    new Promise((resolve, reject) => {
+      const entry = { kind, name, token, joinCode, ...extra, resolve, reject };
+      log.push(entry);
+      if (auto) resolve(entry.autoValue ?? undefined);
+    });
+  const client = {
+    select: (table, query) => pend('select', table, { query, autoValue: [] }),
+    upsert: (table, rows) => pend('upsert', table, { rows }),
+    insert: (table, rows) => pend('insert', table, { rows, autoValue: rows }),
+    update: (table) => pend('update', table),
+    del: (table) => pend('del', table),
+    rpc: (fn, args) => pend('rpc', fn, { args, autoValue: { id: 'srv-uuid-1', join_code: 'ABC234' } }),
+    withJoinCode: (code) => a4FakeClient(log, { token, joinCode: code, auto }),
+    withAccessToken: (t) => a4FakeClient(log, { token: t ?? null, joinCode, auto }),
+  };
+  return client;
+}
+
+function a4Controller({ auto = true, storage = memStorage(), state } = {}) {
+  const log = [];
+  const st = state ?? A4MB.createBlankMeet('A4 Meet', '2026-11-01');
+  const statuses = [];
+  const ctl = new K.SyncController({
+    client: a4FakeClient(log, { auto }),
+    storage,
+    deviceId: 'dev-test',
+    getState: () => st,
+    onIncoming: () => {},
+    onStatus: (s) => statuses.push({ ...s }),
+  });
+  return { ctl, log, statuses, st, storage };
+}
+
+describe('SyncController sign-out (A4)', () => {
+  test('account publish tags the link auth=account; key publish tags auth=key; attach tags auth=join', async () => {
+    const a = a4Controller();
+    a.ctl.setAccessToken('TOKEN_A');
+    const link = await a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, null);
+    assert.equal(link.auth, 'account');
+    assert.equal(a.log.at(-1).token, 'TOKEN_A');
+
+    const k = a4Controller();
+    const klink = await k.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, 'legacy-key');
+    assert.equal(klink.auth, 'key');
+
+    const j = a4Controller();
+    const jl = j.ctl.attach({ state: j.st, slug: 'a4-meet', joinCode: 'ZZZ999', latestServerAt: null, updatedAt: null }, 'device');
+    assert.equal(jl.auth, 'join');
+  });
+
+  test('keyless publish with no token is refused before any network call', async () => {
+    const a = a4Controller();
+    await assert.rejects(() => a.ctl.publish({ slug: 'x', stations: [], isDemo: false }, null), /Sign in/);
+    assert.equal(a.log.length, 0);
+  });
+
+  test('sign-out pauses an account link: queue kept, nothing sent, status paused; sign-in resumes', async () => {
+    const a = a4Controller();
+    a.ctl.setAccessToken('TOKEN_A');
+    await a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, null);
+    a.log.length = 0;
+
+    a.ctl.setAccessToken(null);
+    assert.equal(a.ctl.paused, true);
+    assert.equal(a.ctl.status.state, 'paused');
+    assert.match(a.ctl.status.error, /sign back in/i);
+
+    a.ctl.setLive({ station: 'A', current_event_id: null, current_division_id: null, current_athlete_id: null, lane2_athlete_id: null });
+    assert.equal(a.ctl.status.pending, 1, 'queued, not dropped');
+    await a.ctl.tick();
+    await a.ctl.flush();
+    await a.ctl.pull();
+    assert.equal(a.log.length, 0, 'no network while paused');
+    assert.ok(a.ctl.link, 'link kept');
+
+    a.ctl.setAccessToken('TOKEN_A');
+    assert.equal(a.ctl.paused, false);
+    assert.equal(a.ctl.status.state, 'idle');
+    await a.ctl.tick();
+    const upserts = a.log.filter((e) => e.kind === 'upsert');
+    assert.equal(upserts.length, 1);
+    assert.equal(upserts[0].token, 'TOKEN_A');
+    assert.equal(a.ctl.status.pending, 0);
+  });
+
+  test('key and join links are accountless by design: sign-out does not pause them', async () => {
+    const k = a4Controller();
+    k.ctl.setAccessToken('TOKEN_A');
+    await k.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, 'legacy-key');
+    k.ctl.setAccessToken(null);
+    assert.equal(k.ctl.paused, false);
+    assert.equal(k.ctl.status.state, 'idle');
+
+    const j = a4Controller();
+    j.ctl.attach({ state: j.st, slug: 'a4-meet', joinCode: 'ZZZ999', latestServerAt: null, updatedAt: null }, 'device');
+    j.ctl.setAccessToken('TOKEN_A');
+    j.ctl.setAccessToken(null);
+    assert.equal(j.ctl.paused, false);
+  });
+
+  test('a publish in flight when the account signs out does not create the link (session generation)', async () => {
+    const a = a4Controller({ auto: false });
+    a.ctl.setAccessToken('OLD_TOKEN');
+    const p = a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, null);
+    await Promise.resolve();
+    const rpc = a.log.find((e) => e.kind === 'rpc' && e.name === 'zt_publish_meet');
+    assert.ok(rpc, 'publish rpc sent');
+    assert.equal(rpc.token, 'OLD_TOKEN');
+
+    a.ctl.setAccessToken(null);        // sign out while the server is still working
+    rpc.resolve({ id: 'srv-uuid-1', join_code: 'ABC234' });   // ...and then the old call completes
+    await assert.rejects(p, /Sign-in changed/);
+    assert.equal(a.ctl.link, null, 'no admin link recreated from a stale completion');
+    assert.equal(a.storage.getItem(K.LINK_KEY), null);
+  });
+
+  test('a flush in flight across a sign-out leaves the queue alone and sends nothing more', async () => {
+    const a = a4Controller({ auto: false });
+    a.ctl.setAccessToken('TOKEN_A');
+    const pub = a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, null);
+    await Promise.resolve();
+    a.log.find((e) => e.kind === 'rpc').resolve({ id: 'srv-uuid-1', join_code: 'ABC234' });
+    await pub;
+    a.log.length = 0;
+
+    a.ctl.setLive({ station: 'A', current_event_id: null, current_division_id: null, current_athlete_id: null, lane2_athlete_id: null });
+    const f = a.ctl.flush();
+    await Promise.resolve();
+    const up = a.log.find((e) => e.kind === 'upsert');
+    assert.ok(up);
+    a.ctl.setAccessToken(null);
+    up.resolve();
+    await f;
+    assert.equal(a.ctl.status.pending, 1, 'queue kept for the next session');
+    assert.equal(a.log.filter((e) => e.kind === 'upsert').length, 1, 'no anonymous follow-up write');
+  });
+
+  test('legacy stored links without auth are treated as key (admin) or join (device)', () => {
+    const storage = memStorage();
+    storage.setItem(K.LINK_KEY, JSON.stringify({ meetId: 'srv-uuid-1', localMeetId: 'x', slug: 's', joinCode: 'ABC234', role: 'admin', since: null }));
+    const a = a4Controller({ storage });
+    assert.equal(a.ctl.linkAuth(a.ctl.link), 'key');
+    assert.equal(a.ctl.paused, false);
+  });
+});

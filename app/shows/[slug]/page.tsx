@@ -4,6 +4,9 @@ import Link from 'next/link';
 import WebsiteShell from '@/components/website/WebsiteShell';
 import ShowDetailClient from '@/components/website/ShowDetailClient';
 import { getPublicShowBySlug } from '@/lib/website/data';
+
+// Same freshness rule as /shows: at most a minute behind a promoter's listing save.
+export const revalidate = 60;
 import { buildAllDivisionResultsViews } from '@/lib/website/standingsAdapter';
 
 interface ShowDetailPageProps {

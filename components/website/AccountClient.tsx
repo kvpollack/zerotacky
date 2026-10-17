@@ -117,13 +117,14 @@ export default function AccountClient() {
               the scorer with this sign-in instead of a shared key.
             </p>
           </div>
-          <div role="tablist" className="grid grid-cols-3 gap-2">
+          {/* Mode switch. Plain toggle buttons (aria-pressed), not a tablist: one form changes shape below, there are no
+              separate panels to associate, and tab roles without arrow-key handling misled assistive tech (Astra B1). */}
+          <div role="group" aria-label="Sign-in method" className="grid grid-cols-3 gap-2">
             {tabs.map(([id, label]) => (
               <button
                 key={id}
                 type="button"
-                role="tab"
-                aria-selected={mode === id}
+                aria-pressed={mode === id}
                 onClick={() => { setMode(id); setNotice(null); }}
                 className={`py-2 rounded-xl border text-[11px] font-black uppercase ${mode === id ? 'bg-zt-primary/15 border-zt-primary text-zt-text' : 'bg-zt-inset border-zt-border text-zt-text-2'}`}
               >
@@ -250,6 +251,11 @@ export default function AccountClient() {
       <section aria-labelledby="next-heading" className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-3">
         <h2 id="next-heading" className="text-base font-black uppercase text-zt-text">Where to next</h2>
         <div className="flex flex-wrap gap-2">
+          {p?.is_promoter && (
+            <Link href="/promoter" className={primaryBtn}>
+              <Trophy className="w-3.5 h-3.5" aria-hidden="true" /> Promoter dashboard
+            </Link>
+          )}
           <Link href="/scorer" className={primaryBtn}>
             <Play className="w-3.5 h-3.5" aria-hidden="true" /> Meet-day scorer
           </Link>

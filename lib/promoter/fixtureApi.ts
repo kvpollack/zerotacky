@@ -26,16 +26,30 @@ import {
 } from './fixtures';
 import type { AppState } from '../types';
 
+import {
+  clone,
+  decideRegistrationOutcome,
+  findOrphanedResult,
+  ISO_DATE,
+  todayIsoDate,
+  toPublicRegistrationMeet,
+  validateListingPatch,
+  validateRegistrationInput,
+} from './rules';
+
+// The pure rules moved to ./rules (Astra H1, 10/17); re-exported so existing imports and tests keep working.
+export {
+  decideRegistrationOutcome,
+  findOrphanedResult,
+  isMeetStateDirty,
+  isRegistrationOpen,
+  toPublicRegistrationMeet,
+  validateEmergencyContact,
+  validateListingPatch,
+  validateRegistrationInput,
+} from './rules';
+
 const JOIN_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-
-function clone<T>(val: T): T {
-  return JSON.parse(JSON.stringify(val));
-}
-
-function todayIsoDate(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function generateJoinCode(existingCode?: string | null): string {
   for (let attempt = 0; attempt < 20; attempt++) {
@@ -47,198 +61,6 @@ function generateJoinCode(existingCode?: string | null): string {
     if (code !== existingCode) return code;
   }
   return existingCode === 'ZT9999' ? 'ZT8888' : 'ZT9999';
-}
-
-// ---------------------------------------------------------------------------------------------------------------
-// Pure helpers (no fixture state). Exported for the UI and the tests.
-// ---------------------------------------------------------------------------------------------------------------
-
-// Compares editable meet state (meet, divisions, events, athletes) while ignoring results.
-export function isMeetStateDirty(saved: AppState, working: AppState): boolean {
-  const pickEditable = (s: AppState) => ({
-    meet: s.meet,
-    divisions: s.divisions,
-    events: s.events,
-    athletes: s.athletes,
-  });
-  return JSON.stringify(pickEditable(saved)) !== JSON.stringify(pickEditable(working));
-}
-
-// Validates a listing patch against the meet date. athleteCap must be a positive integer or null; the deadline must
-// be a YYYY-MM-DD on or before the meet date; publicly listed meets with a venue need city and state.
-export function validateListingPatch(
-  meetDate: string,
-  current: MeetListing,
-  patch: Partial<MeetListing>
-): string | null {
-  const merged: MeetListing = { ...current, ...patch };
-
-  if (merged.athleteCap !== null && merged.athleteCap !== undefined) {
-    if (!Number.isInteger(merged.athleteCap) || merged.athleteCap < 1) {
-      return 'Athlete cap must be a positive whole number (at least 1), or left blank.';
-    }
-  }
-
-  if (merged.registrationDeadline) {
-    if (!ISO_DATE.test(merged.registrationDeadline)) {
-      return 'Registration deadline must be a valid YYYY-MM-DD date.';
-    }
-    if (meetDate && ISO_DATE.test(meetDate) && merged.registrationDeadline > meetDate) {
-      return `Registration deadline (${merged.registrationDeadline}) must be on or before the meet date (${meetDate}).`;
-    }
-  }
-
-  if (merged.promoterContact !== null && merged.promoterContact !== undefined) {
-    const trimmed = merged.promoterContact.trim();
-    if (trimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) && (trimmed.match(/\d/g) ?? []).length < 7) {
-      return 'Promoter contact must be an email address or a phone number with at least 7 digits.';
-    }
-  }
-
-  if (merged.isPublicListed && merged.venue) {
-    if (!merged.venue.city?.trim() || !merged.venue.state?.trim()) {
-      return 'Publicly listed meets with a venue must include both City and State.';
-    }
-  }
-
-  return null;
-}
-
-// Results are read-only in the dashboard, so a saved state must keep every athlete and event that a stored result
-// points at. Returns a message naming the first orphaned reference, or null when the state is safe to save.
-export function findOrphanedResult(
-  savedResults: AppState['results'],
-  saved: AppState,
-  working: AppState
-): string | null {
-  const athleteIds = new Set(working.athletes.map((a) => a.id));
-  const eventIds = new Set(working.events.map((e) => e.id));
-  for (const r of savedResults) {
-    if (!athleteIds.has(r.athleteId)) {
-      const name = saved.athletes.find((a) => a.id === r.athleteId)?.name ?? r.athleteId;
-      const eventName = saved.events.find((e) => e.id === r.eventId)?.name ?? r.eventId;
-      return `${name} has a recorded result in "${eventName}" and cannot be removed from the roster. Mark the athlete withdrawn on meet day instead.`;
-    }
-    if (!eventIds.has(r.eventId)) {
-      const eventName = saved.events.find((e) => e.id === r.eventId)?.name ?? r.eventId;
-      return `Event "${eventName}" has recorded results and cannot be removed.`;
-    }
-  }
-  return null;
-}
-
-export function isRegistrationOpen(status: MeetListing['registrationStatus']): boolean {
-  return status === 'open' || status === 'waitlist';
-}
-
-// Emergency contact needs a name (letters) and a phone number (at least 7 digits).
-export function validateEmergencyContact(value: string): string | null {
-  const trimmed = (value ?? '').trim();
-  const digits = (trimmed.match(/\d/g) ?? []).length;
-  const letters = (trimmed.replace(/[\d\s\-().+]/g, '').match(/[A-Za-z]/g) ?? []).length;
-  if (digits < 7 || letters < 2) {
-    return 'Emergency contact needs a name and a phone number with at least 7 digits (for example "Sam Lee 717-555-0100").';
-  }
-  return null;
-}
-
-// Field-level validation of a public submission against the public meet shape.
-export function validateRegistrationInput(
-  input: Omit<RegistrationSubmission, 'waiverAccepted'> & { waiverAccepted: boolean },
-  meet: PublicRegistrationMeet
-): string | null {
-  if (!isRegistrationOpen(meet.listing.registrationStatus)) {
-    return `Registration for ${meet.name} is currently closed (${meet.listing.registrationStatus.replace(/_/g, ' ')}).`;
-  }
-
-  const trimmedName = (input.athleteName ?? '').trim();
-  if (!trimmedName || trimmedName.length < 2) {
-    return 'Please enter the athlete full name.';
-  }
-
-  const trimmedEmail = (input.email ?? '').trim();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-    return 'Please enter a valid email address.';
-  }
-
-  const emergencyErr = validateEmergencyContact(input.emergencyContact);
-  if (emergencyErr) return emergencyErr;
-
-  if (!meet.divisions.some((d) => d.id === input.divisionId)) {
-    return 'Please select a valid division for this meet.';
-  }
-
-  if (!input.waiverAccepted) {
-    return 'You must read and accept the competition waiver before submitting.';
-  }
-
-  return null;
-}
-
-// Deadline and capacity gate. 'waitlist' status takes every submission onto the waitlist; 'open' refuses
-// submissions after the deadline or once the roster is at the cap.
-export function decideRegistrationOutcome(
-  meet: PublicRegistrationMeet,
-  today: string = todayIsoDate()
-): { status: 'pending' | 'waitlist'; error: null } | { status: null; error: string } {
-  const { registrationStatus, registrationDeadline, athleteCap } = meet.listing;
-  if (!isRegistrationOpen(registrationStatus)) {
-    return {
-      status: null,
-      error: `Registration for ${meet.name} is currently closed (${registrationStatus.replace(/_/g, ' ')}).`,
-    };
-  }
-  if (registrationStatus === 'waitlist') {
-    return { status: 'waitlist', error: null };
-  }
-  if (registrationDeadline && ISO_DATE.test(registrationDeadline) && today > registrationDeadline) {
-    return {
-      status: null,
-      error: `Registration for ${meet.name} closed on ${registrationDeadline}. Contact the promoter about late entries.`,
-    };
-  }
-  if (athleteCap !== null && meet.acceptedCount >= athleteCap) {
-    return {
-      status: null,
-      error: `${meet.name} is full (${meet.acceptedCount} of ${athleteCap} spots taken). Contact the promoter to ask about a waitlist.`,
-    };
-  }
-  return { status: 'pending', error: null };
-}
-
-// Allowlist projection for the public /register/<slug> page. Nothing outside this function decides what an
-// unauthenticated visitor can see.
-export function toPublicRegistrationMeet(
-  detail: PromoterMeetDetail,
-  promoterDisplayName: string
-): PublicRegistrationMeet {
-  const { summary, state } = detail;
-  const l = summary.listing;
-  return {
-    slug: summary.slug,
-    name: summary.name,
-    date: summary.date,
-    listing: {
-      competitionStatus: l.competitionStatus,
-      registrationStatus: l.registrationStatus,
-      entryFeeDisplay: l.entryFeeDisplay,
-      registrationDeadline: l.registrationDeadline,
-      athleteCap: l.athleteCap,
-      federation: l.federation,
-      venue: l.venue ? clone(l.venue) : null,
-      promoterContact: l.promoterContact,
-    },
-    promoterDisplayName,
-    divisions: state.divisions.map((d) => ({
-      id: d.id,
-      name: d.name,
-      targetWeights: state.events.map((e) => ({
-        eventName: e.name,
-        weight: typeof e.divisionWeights?.[d.id] === 'number' ? e.divisionWeights[d.id] : null,
-      })),
-    })),
-    acceptedCount: state.athletes.length,
-  };
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -486,7 +308,8 @@ export function createFixturePromoterApi(
 
     async saveMeetState(
       serverId: string,
-      state: AppState
+      state: AppState,
+      opts?: { expectedUpdatedAt?: string }
     ): Promise<ApiResult<PromoterMeetDetail>> {
       if (signedOut) {
         return { data: null, error: 'Sign in required to save meet changes.' };
@@ -512,6 +335,13 @@ export function createFixturePromoterApi(
         };
       }
 
+      if (opts?.expectedUpdatedAt && opts.expectedUpdatedAt !== found.summary.updatedAt) {
+        return {
+          data: null,
+          error: `This meet changed since you opened it (saved ${found.summary.updatedAt}). Reload to see the latest version, then redo your edits.`,
+        };
+      }
+
       const normalized = normalizeState(state);
 
       const nextDate = normalized.meet.date || '';
@@ -529,6 +359,18 @@ export function createFixturePromoterApi(
       const orphan = findOrphanedResult(preservedResults, found.state, normalized);
       if (orphan) {
         return { data: null, error: orphan };
+      }
+
+      // Astra M9/C3 (10/17, checked after the result guard): an accepted registration's roster row leaves only through its request
+      const workingAthleteIds = new Set(normalized.athletes.map((a) => a.id));
+      const linked = registrations.find(
+        (r) => r.meetServerId === serverId && r.status === 'accepted' && r.athleteId && !workingAthleteIds.has(r.athleteId)
+      );
+      if (linked) {
+        return {
+          data: null,
+          error: `${linked.athleteName} is on the roster through an accepted registration. Decline or withdraw that registration instead of deleting the athlete.`,
+        };
       }
 
       found.state = {
@@ -662,6 +504,13 @@ export function createFixturePromoterApi(
         const existing = reg.athleteId
           ? meetDetail.state.athletes.find((a) => a.id === reg.athleteId)
           : undefined;
+        const cap = meetDetail.summary.listing.athleteCap;
+        if (!existing && cap !== null && meetDetail.state.athletes.length >= cap) {
+          return {
+            data: null,
+            error: `${meetDetail.summary.name} is at its athlete cap (${cap}). Raise the cap in Listing before accepting ${reg.athleteName}.`,
+          };
+        }
         if (!existing) {
           const athleteId = `reg-ath-${reg.id}`;
           meetDetail.state = addAthlete(meetDetail.state, {
@@ -744,6 +593,7 @@ export function createFixturePromoterApi(
         status: 'pending',
         waitlisted: outcome.status === 'waitlist',
         waiverAcceptedAt: nowIso,
+        waiverVersion: input.waiverVersion,
         paid: false,
         createdAt: nowIso,
       };

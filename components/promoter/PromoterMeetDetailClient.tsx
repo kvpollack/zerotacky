@@ -44,8 +44,8 @@ import type {
   PromoterUser,
   RegistrationRequest,
 } from '@/lib/promoter/contract';
-import { isMeetStateDirty } from '@/lib/promoter/fixtureApi';
-import { usePromoterApi } from '@/lib/promoter/usePromoterApi';
+import { isMeetStateDirty } from '@/lib/promoter/rules';
+import { isLiveBackend, usePromoterApi } from '@/lib/promoter/usePromoterApi';
 import type { AppState, Athlete, Division, EventDef, Meet } from '@/lib/types';
 import ListingSection from './ListingSection';
 import RegistrationsSection from './RegistrationsSection';
@@ -81,6 +81,9 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   // The Listing tab keeps its own draft (saved through updateListing, not saveMeetState); it reports dirtiness up
   // so the sticky bar can mention it.
   const [listingDirty, setListingDirty] = useState(false);
+  // Astra M2: an open EventForm holds a draft that reaches workingState only through its own Save button, so the
+  // global dirty bar and the registration guard treat it like unsaved work.
+  const [eventFormOpen, setEventFormOpen] = useState(false);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const loadAll = useCallback(async () => {
@@ -211,7 +214,8 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     setSaveError(null);
     setSaveNotice(null);
 
-    const res = await api.saveMeetState(serverId, workingState);
+    // C3: the save names the revision this editor loaded; the API refuses if someone saved in between.
+    const res = await api.saveMeetState(serverId, workingState, { expectedUpdatedAt: detail?.summary.updatedAt });
     setSavingState(false);
 
     if (res.error || !res.data) {
@@ -241,7 +245,9 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
 
   const registrationsBlockedReason = isDirty
     ? 'Save or discard your changes first. Accepting or declining reloads the roster and would overwrite unsaved edits.'
-    : null;
+    : eventFormOpen
+      ? 'An event form is open on the Events tab. Save or cancel it first; accepting or declining reloads the meet and would drop that draft.'
+      : null;
 
   const handleSetRegistrationStatus = async (
     regId: string,
@@ -438,12 +444,12 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
               {summary.listing.isPublicListed ? (
                 <>
                   <Eye className="w-3 h-3" aria-hidden="true" />
-                  Listed (preview)
+                  {isLiveBackend() ? 'Listed' : 'Listed (preview)'}
                 </>
               ) : (
                 <>
                   <EyeOff className="w-3 h-3" aria-hidden="true" />
-                  Unlisted (preview)
+                  {isLiveBackend() ? 'Unlisted' : 'Unlisted (preview)'}
                 </>
               )}
             </span>
@@ -458,10 +464,12 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
           <span className="text-[11px] font-mono text-zt-muted">ID: {summary.serverId}</span>
         </div>
 
-        <p className="text-[11px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-2">
-          Preview: this meet&apos;s data lives in this browser tab only, resets on reload, and nothing here is a real
-          entry or a live meet. The live backend connects in a later milestone.
-        </p>
+        {!isLiveBackend() && (
+          <p className="text-[11px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-2">
+            Preview: this meet&apos;s data lives in this browser tab only, resets on reload, and nothing here is a real
+            entry or a live meet. The live backend connects in a later milestone.
+          </p>
+        )}
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
@@ -601,6 +609,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             updateEvent={updateEvent}
             removeEvent={removeEvent}
             reorderEvents={reorderEvents}
+            onEditingChange={setEventFormOpen}
           />
         </div>
 
@@ -647,7 +656,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
       </div>
 
       {/* Sticky Dirty-State Save Bar: builder sections (Tabs 1-4) save here; Listing (Tab 5) saves on its own tab. */}
-      {(isDirty || listingDirty) && (
+      {(isDirty || listingDirty || eventFormOpen) && (
         <div
           role="region"
           aria-label="Unsaved meet changes"
@@ -655,18 +664,30 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
         >
           <div className="space-y-0.5">
             <div className="text-xs font-black uppercase tracking-wider text-zt-primary">
-              {isDirty ? 'Unsaved Meet Builder Changes' : 'Unsaved Listing Changes'}
+              {isDirty ? 'Unsaved Meet Builder Changes' : listingDirty ? 'Unsaved Listing Changes' : 'Event Form Open'}
             </div>
             <div className="text-xs font-bold text-zt-text-2">
               {isDirty
                 ? 'Your edits to Meet, Divisions, Events, or Athletes are in working memory. Save to commit them.'
-                : 'The Listing tab has edited fields.'}
+                : listingDirty
+                  ? 'The Listing tab has edited fields.'
+                  : 'An event form on the Events tab has a draft that Save Changes does not include.'}
               {isDirty && listingDirty ? ' The Listing tab also has edited fields.' : ''}
               {listingDirty ? ' Use Save Listing Settings or Reset on the Listing tab.' : ''}
+              {eventFormOpen ? ' Save or cancel the event form on the Events tab to include or drop that draft.' : ''}
             </div>
           </div>
 
           <div className="flex items-center gap-2.5">
+            {eventFormOpen && activeTab !== 'events' && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('events')}
+                className="px-4 py-2.5 rounded-xl bg-zt-surface-2 border border-zt-border-strong text-zt-text-2 font-extrabold text-xs uppercase"
+              >
+                Go to Events
+              </button>
+            )}
             {listingDirty && activeTab !== 'listing' && (
               <button
                 type="button"

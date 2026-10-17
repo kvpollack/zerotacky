@@ -46,8 +46,43 @@ LOW
 * L2 Counts corrected above; round-trip vs browser split stated in section 1.
 * L3 `components/website/WebsiteShell`'s theme frame writes `ZEROTACKY_THEME_V1` (and `ZEROTACKY_LAYOUT_V1`) to localStorage on every page including these. The promoter and register code paths themselves never write meet state, sync link or queue keys to localStorage; the fixture API holds everything in memory.
 
-## 3. Still open
+## 3. Still open (as of 10/16 night; resolved 10/17, kept for history)
 
-* `components/website/ShowDetailClient.tsx` still shows the placeholder "In-App Registration Status" button instead of linking to `/register/<slug>` (Argon's section 4B proposal from the first drop). Small, in a file outside this round; do it when wiring the Supabase PromoterApi.
-* Supabase implementation of `PromoterApi` (v2 M3) replaces `getFixturePromoterApi()` in `lib/promoter/usePromoterApi.ts`; registrations need a table (`emergency_contact`, `athlete_id`, `waitlisted` columns per the contract).
-* Arrow-key tab navigation and the Listing dirty bar have not been clicked through in a browser.
+* ~~`ShowDetailClient.tsx` placeholder button~~: links to `/register/<slug>` since Argon's M3 drop (browser-verified 10/17).
+* ~~Supabase implementation of `PromoterApi`~~: `lib/promoter/supabaseApi.ts` + `supabase/005_listing.sql` (M3, 10/17).
+* Arrow-key tab navigation has still not been clicked through in a browser; the Listing dirty bar was (10/17).
+
+## 4. Astra 10/17 round (`audits/astra-2026-10-17-fixround.md`): disposition per finding
+
+Rule for this round (Kurt, 10/17): every finding gets a fix or an explicit decision before hand-back; nothing is skipped silently. Verification: `tsc --noEmit` clean; `bun test test/` 193 pass, 0 fail across 15 files (`test/supabaseApi.test.mjs` 7, `test/controller.test.mjs` 32 of which 7 new, `test/promoter.test.mjs` 14, `test/register.test.mjs` 13); browser pass on `:3079` against the staging project, signed in as the staging account, meet `95876e4b-7c5b-4487-8602-ddb54c68e9aa` (slug `all-out-strongfest-2026-the-power-plant-gym`, published from the phone in the M2 round, 14 athletes, 1 recorded result):
+
+* Listing tab: listed + registration open + venue York, PA + cap 15 + contact; "Listing settings saved. Listed meets appear on /shows within a minute."; row confirmed by SQL; `/shows` showed "1 Listed Show" with the meet once the 60 s window passed (the meet had to be `is_demo=false`; demo meets never list, by design); `/shows/<slug>` links to `/register/<slug>`; `/shows/nope-not-a-meet` is a real 404.
+* Events tab: Add Event opened -> dirty bar "Event Form Open" with "Go to Events"; Registrations tab showed the blocked reason; Cancel -> bar gone (M2).
+* `/register/<slug>`: no preview banner; Group 1, name, email, emergency contact -> waiver -> submit. First attempt was refused by the RPC ("The waiver version is missing"): `supabaseApi.submitRegistration` built `p_input` by hand and dropped `waiverVersion`. Fixed, test added, second attempt stored `fb64363c-...` with `waiver_version = a995ce0eab26`, which equals `sha256(legal/WAIVER.md)[:12]`. Confirmation shows no "Open the preview dashboard" button.
+* Registrations tab: 1 pending -> Accept -> "0 pending, 1 accepted", "On Roster (Lot #5)", Athletes tab 15; roster is now at the cap of 15.
+* Athletes tab: removing the accepted athlete and saving -> "Slate Testathlete is on the roster through an accepted registration. Decline or withdraw..." (server M9; roster stayed 15 in SQL). Removing the scored athlete (Jessica Rucci) and saving -> "has a recorded result in "Basket Deadlift (For Reps)" and cannot be removed" (H3). Plate toggle save succeeded twice in a row (C3 passes on the revision the editor loaded; plates confirmed in SQL after each).
+
+| Finding | Astra verdict | Disposition |
+|---|---|---|
+| H1 fixtures in the public bundle | partial | Fixed. `lib/promoter/rules.ts` holds the pure helpers; `usePromoterApi.ts` loads `fixtureApi` through `import()` only when no Supabase env exists; no component imports `fixtureApi`. Test: `supabaseApi.test.mjs` "forwards to the lazily loaded fixture". |
+| H3 result chain (division) | partial | Fixed. `findOrphanedResult` checks the scored athlete's division survives; `zt_save_meet_config` Guard 1 checks `p_divisions`; `004_result_guard.sql` refuses the delete at the table. Staging-exercised 10/17. |
+| M2 EventForm draft | partial | Fixed. `EventsSection` reports `onEditingChange`; `PromoterMeetDetailClient` shows the dirty bar ("Event Form Open", "Go to Events") and blocks Accept/Decline while an event form is open. Browser-verified. |
+| M5 join/rotation copy | partial | Fixed. `MeetDaySection` and `ListingSection` copy switches on `isLiveBackend()`; rotation copy states that every phone on the old code (including an admin phone that published with it) is locked out until it rejoins; only a signed-in phone is unaffected (`zt_has_join` runs on every write). |
+| M9 accepted linkage vs roster edits | partial | Fixed in both implementations and the RPC (`zt_save_meet_config`); refused after the result guard, so a scored athlete gets the result message first. Tests in `promoter.test.mjs` and `supabaseApi.test.mjs`; staging-exercised. |
+| M13 fake 404s | not fixed | Deferred to M4 (Kurt, 10/17): both pages resolve in the browser on purpose at this stage; ROADMAP M4 carries "server-rendered lookups with real 404s". |
+| M16 privacy contact | partial | Placeholder stays (Kurt, 10/17): `privacy@zerotacky.com` forwarding is on Kurt's list; the 30-day SLA stands. `legal/PRIVACY.md` unchanged this round. |
+| M19 test depth | partial | Addressed as far as it goes: deep comparisons, re-reads, identity and count assertions exist; there is still no automated browser/server-boundary test. The browser evidence above is manual and listed as such. |
+| C1 authorization matrix | new | Fixed in `lib/promoter/contract.ts` (matrix comment block) and enforced in `005`/`006`: profile self-only, meets owner/member, `setRegistrationStatus` resolves the meet from the stored request, join-code authority limited to results/athletes/live_state writes. |
+| C2 transactional changes | new | Fixed. All dashboard writes are security-definer RPCs; no direct `UPDATE` grant on `registrations`; results never touched by `zt_save_meet_config`. |
+| C3 expected revision | new | Fixed. `saveMeetState(serverId, state, { expectedUpdatedAt })`, `p_expected_updated_at` checked under the row lock; client passes the loaded `summary.updatedAt`. `zt_submit_registration` stopped bumping `meets.updated_at` so pending requests do not fail open editors. Test + staging. |
+| C4 capacity on accept | new | Fixed. Accept refuses at `athlete_cap` (fixture and `zt_set_registration_status`); the promoter raises the cap first. |
+| C5 roadmap vs contract | new | Fixed. ROADMAP M3 names 004/005/006 and the moved registration scope; M4 rescoped. |
+| C6 waiver evidence | new | Fixed. `waiverVersion` (sha-256 prefix of `legal/WAIVER.md` as deployed) required on submit, stored as `registrations.waiver_version`, returned to the promoter. Rendered-context snapshot (venue, date as shown) not stored: the meet row keeps those and the acceptance timestamp dates them; noted as a gap, not a claim. |
+| C7 promoterContact | new | Fixed. `PublicRegistrationMeet` comment allows only the designated public promoter contact; registrant emails, profile emails and emergency contacts stay excluded. |
+| A1 ownerless claim | new | Fixed in `006_ownership.sql`: keyless publish of an existing ownerless slug is refused ("enter the key once to claim it"). |
+| A2 owner_id / meet_members | new | Fixed in `006`: column-level UPDATE grants exclude `owner_id`, `join_code`, `admin_pin`; members policies owner-only; `zt_transfer_ownership` RPC. |
+| A3 publish cascades results | new | Fixed by `004_result_guard.sql` (trigger, shared with `main`). Applied to staging; prod needs Kurt to paste it (see PHASE1_SYNC_NOTES.md "Result guard"). |
+| A4 sign-out | new | Fixed in `lib/sync/controller.ts`: `SyncLink.auth` ('account' / 'key' / 'join'); `setAccessToken` bumps a session generation (in-flight publish/flush/pull completions are ignored) and pauses account links on sign-out (queue kept, status `paused` with a message, nothing sent); key and join links are accountless by design and keep going. 7 tests in `test/controller.test.mjs`. Not clicked through in a browser. |
+| B1 account tabs | new | Fixed. `AccountClient` mode switch is a `role="group"` of `aria-pressed` buttons; no tab roles without tab behaviour. |
+
+Not done this round, written down so it is not mistaken for done: no automated browser-boundary test (M19); `/promoter/[serverId]` and `/register/<slug>` still return HTTP 200 for unknown ids (M13, M4); the A4 pause has unit coverage only; the rendered-context snapshot for the waiver (C6) is not stored.

@@ -16,8 +16,7 @@ import {
 import { slugify } from '@/lib/meetBuilder';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import type { PromoterMeetSummary, PromoterUser } from '@/lib/promoter/contract';
-import { getFixturePromoterApi } from '@/lib/promoter/fixtureApi';
-import { usePromoterApi } from '@/lib/promoter/usePromoterApi';
+import { isLiveBackend, setFixtureSignedOutForDev, usePromoterApi } from '@/lib/promoter/usePromoterApi';
 
 export default function PromoterDashboardClient() {
   const api = usePromoterApi();
@@ -41,11 +40,12 @@ export default function PromoterDashboardClient() {
     setLoading(true);
     setLoadError(null);
 
-    // Dev-only query param handler (?signedout=1) to verify the signed-out state
-    if (typeof window !== 'undefined') {
+    // Dev-only query param handler (?signedout=1) to verify the signed-out state; fixture backend only
+    // (the helper is a no-op when Supabase is configured, and loads the fixture module lazily: Astra H1).
+    if (typeof window !== 'undefined' && !isLiveBackend()) {
       const params = new URLSearchParams(window.location.search);
       const isSignedOutParam = params.get('signedout') === '1';
-      getFixturePromoterApi().setSignedOutForDev(isSignedOutParam);
+      await setFixtureSignedOutForDev(isSignedOutParam);
     }
 
     const userRes = await api.getCurrentUser();
@@ -162,12 +162,14 @@ export default function PromoterDashboardClient() {
           >
             Go to Account &amp; Sign-In (/website/account)
           </Link>
-          <a
-            href="/promoter"
-            className="px-4 py-3 rounded-xl bg-zt-inset border border-zt-border text-zt-text-2 font-bold text-xs uppercase hover:text-zt-text"
-          >
-            Exit Signed-Out Preview
-          </a>
+          {!isLiveBackend() && (
+            <a
+              href="/promoter"
+              className="px-4 py-3 rounded-xl bg-zt-inset border border-zt-border text-zt-text-2 font-bold text-xs uppercase hover:text-zt-text"
+            >
+              Exit Signed-Out Preview
+            </a>
+          )}
         </div>
       </div>
     );
@@ -192,10 +194,12 @@ export default function PromoterDashboardClient() {
             Configure divisions, events, weights, listing details, and athlete registrations on your laptop. Use the
             meet-day phone scorer for floor edits and live scoring.
           </p>
-          <p className="text-[11px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-2 max-w-2xl">
-            Preview: everything on this dashboard lives in this browser tab only, resets on reload, and no entry here
-            is real. The live backend connects in a later milestone.
-          </p>
+          {!isLiveBackend() && (
+            <p className="text-[11px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-2 max-w-2xl">
+              Preview: everything on this dashboard lives in this browser tab only, resets on reload, and no entry here
+              is real. The live backend connects in a later milestone.
+            </p>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
@@ -210,13 +214,15 @@ export default function PromoterDashboardClient() {
             <FilePlus2 className="w-4 h-4" aria-hidden="true" />
             New Meet
           </button>
-          <a
-            href="/promoter?signedout=1"
-            className="px-3 py-3 rounded-xl bg-zt-inset border border-zt-border text-zt-muted hover:text-zt-text font-bold text-[11px] uppercase"
-            title="Dev preview of the signed-out state"
-          >
-            Preview Signed-Out
-          </a>
+          {!isLiveBackend() && (
+            <a
+              href="/promoter?signedout=1"
+              className="px-3 py-3 rounded-xl bg-zt-inset border border-zt-border text-zt-muted hover:text-zt-text font-bold text-[11px] uppercase"
+              title="Dev preview of the signed-out state"
+            >
+              Preview Signed-Out
+            </a>
+          )}
         </div>
       </section>
 
@@ -387,12 +393,12 @@ export default function PromoterDashboardClient() {
                       {m.listing.isPublicListed ? (
                         <>
                           <Eye className="w-3 h-3" aria-hidden="true" />
-                          Listed (preview)
+                          {isLiveBackend() ? 'Listed' : 'Listed (preview)'}
                         </>
                       ) : (
                         <>
                           <EyeOff className="w-3 h-3" aria-hidden="true" />
-                          Unlisted (preview)
+                          {isLiveBackend() ? 'Unlisted' : 'Unlisted (preview)'}
                         </>
                       )}
                     </span>

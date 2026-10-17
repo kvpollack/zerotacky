@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowDown, ArrowUp, Edit3, Plus, Trash2 } from 'lucide-react';
 import EventForm from './EventForm';
 
@@ -19,8 +19,13 @@ export default function EventsSection({
   updateEvent,
   removeEvent,
   reorderEvents,
+  onEditingChange, // optional: (open: boolean) => void, true while an EventForm draft is open (promoter dirty bar, Astra M2)
 }) {
   const [editingId, setEditingId] = useState(null); // 'NEW' | event.id | null
+
+  useEffect(() => {
+    if (onEditingChange) onEditingChange(editingId !== null);
+  }, [editingId, onEditingChange]);
   const [armedDeleteId, setArmedDeleteId] = useState(null);
 
   const sortedEvents = [...events].sort((a, b) => a.eventNumber - b.eventNumber);

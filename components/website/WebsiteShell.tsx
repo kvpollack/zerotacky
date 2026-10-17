@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import WebsiteThemeFrame from './WebsiteThemeFrame';
 import WebsiteThemeControls from './WebsiteThemeControls';
+import WebsiteAccountChip from './WebsiteAccountChip';
 
 interface WebsiteShellProps {
   activeNav?: 'home' | 'shows' | 'gyms' | 'account';
@@ -77,6 +78,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
               );
             })}
           </nav>
+          <WebsiteAccountChip />
           <WebsiteThemeControls />
           </div>
         </div>

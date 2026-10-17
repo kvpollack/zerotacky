@@ -233,3 +233,25 @@ Free-tier Supabase has no point-in-time recovery, so the meet-day backup is a sc
 - **Meet day 10/24:** take a dump before the wipe in step 5, one after setup is published, and one after each event
   (or a scheduled dump every few minutes from a laptop at the venue); the CSV is the hand-scoring fallback if the
   phones go dark.
+
+## Result guard: supabase/004_result_guard.sql (10/17, prod + staging)
+Astra's A3 (10/17): a signed-in or keyed re-publish is authoritative for the roster, so a phone that dropped an athlete, event
+or division from Meet Setup after that row had scores would delete the scores through the `results` cascade. The guard is a
+`BEFORE DELETE` trigger (`zt_guard_results()`) on `athletes`, `events` and `divisions`: the delete is refused with
+`P0001 "<name> has N recorded result(s) and cannot be removed. Mark the athlete withdrawn, or Reset scores first."` when any
+result references the row (division: through its athletes). Two exceptions keep the existing flows working: the meet row is
+already gone (so `delete from meets where slug = ...` still cascades everything), and a session that ran
+`select set_config('zt.allow_result_delete', 'on', true)` (for an explicit reset in the SQL editor).
+- **Phone behaviour on a refused publish**: `SyncController.publish` fails, `status.error` carries the message and the
+  Setup > Live Sync panel renders it under the join code (`components/setup/SyncPanel.jsx`). The auto re-publish fires once
+  per config change (debounced, `hooks/useMeetSync.js`), so a refusal does not loop; the next config edit retries and is
+  refused again until the removed athlete is back on the roster (or marked withdrawn instead of deleted). Scores on the
+  phones are unaffected either way; this only blocks the publish.
+- **Meet day**: the step-5 wipe deletes `results` and `live_state` directly, which the guard does not touch. Retiring a meet
+  (`delete from meets`) still cascades. The restore path (`dump_meet.py --restore`) publishes every athlete in the dump, so
+  it is not affected unless the dump predates a scored walk-on; then re-add that athlete or reset scores first.
+- **Applying to prod (Kurt)**: paste `supabase/004_result_guard.sql` into the prod SQL editor, then run the verify query from
+  the file header (`select tgname, tgrelid::regclass from pg_trigger where tgname like 'zt_guard_results%';` should list
+  three rows: athletes, events, divisions).
+  Staging has it since 10/17 (exercised: unscored delete ok, scored athlete/event/division delete refused, `delete from meets`
+  cascades).

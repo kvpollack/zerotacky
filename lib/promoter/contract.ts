@@ -1,5 +1,6 @@
 // Promoter dashboard contract (v2, 10/16; revised 10/16 night after Astra's audit: public registration model,
-// emergencyContact, athleteId linkage, split counts, promoterContact). Slate owns this file and the Supabase
+// emergencyContact, athleteId linkage, split counts, promoterContact; revised 10/17 after Astra's second audit:
+// authorization matrix, save revision check, cap policy on accept, waiver version, linked-athlete protection). Slate owns this file and the Supabase
 // implementation; Argon builds the UI against it using the fixture implementation. Both implement PromoterApi.
 //
 // Vocabulary: a "meet" here is the same object the meet-day scorer runs (AppState: meet, divisions, events,
@@ -66,13 +67,16 @@ export interface RegistrationRequest {
   status: 'pending' | 'accepted' | 'declined' | 'withdrawn';
   waitlisted: boolean;         // true when the submission was taken under registrationStatus 'waitlist' (past deadline or at cap); still 'pending' until the promoter decides
   waiverAcceptedAt: string | null;
+  waiverVersion: string | null; // sha-256 prefix of the waiver text the athlete saw (RegistrationSubmission.waiverVersion); null for rows older than 10/17
   paid: boolean;
   createdAt: string;
 }
 
-// What the public /register/<slug> page may see. Built server-side from the owner detail by an allowlist; it must
-// never carry joinCode, adminPin, emails, emergency contacts or the results table. If a field is not listed here it
-// does not reach the browser of an unauthenticated visitor.
+// What the public /register/<slug> page may see. Built from the owner detail by an allowlist; it must never carry
+// joinCode, adminPin, registrant or profile emails, emergency contacts or the results table. The one deliberate
+// contact is listing.promoterContact, the promoter's chosen public email or phone. If a field is not listed here it
+// does not reach the browser of an unauthenticated visitor. Unlisted (isPublicListed=false) is not private: the slug
+// still resolves for anyone who has the link; only /shows discovery is affected. Demo meets never resolve.
 export interface PublicRegistrationMeet {
   slug: string;
   name: string;
@@ -90,6 +94,7 @@ export interface RegistrationSubmission {
   email: string;
   emergencyContact: string;
   waiverAccepted: true;          // the form cannot submit without it
+  waiverVersion: string;         // identifies the waiver text shown (first 12 hex chars of sha-256 of legal/WAIVER.md as rendered); stored with the request
 }
 
 export interface ApiResult<T> {
@@ -97,6 +102,28 @@ export interface ApiResult<T> {
   error: string | null;        // human-readable; UI shows it verbatim
 }
 
+// Authorization matrix (Astra C1, 10/17). "Owner" means meets.owner_id = auth.uid() or a meet_members row, verified
+// server-side; profile role flags are self-declared preferences and never grant meet access. A join-code device is
+// not an account member: it writes athletes/results/live_state through the scorer, never through this API.
+//
+//   method                 anonymous            signed-in owner/member     other signed-in account
+//   getCurrentUser         null                 own identity               own identity
+//   updateProfile          deny                 own row only               own row only
+//   listMyMeets            deny                 own/member meets           own/member meets (may be empty)
+//   getMeet                deny                 allow                      deny (error)
+//   createMeet             deny                 new meet, owner = caller   new meet, owner = caller
+//   saveMeetState          deny                 allow (integrity rules)    deny
+//   updateListing          deny                 allow                      deny
+//   rotateJoinCode         deny                 allow                      deny
+//   archiveMeet            deny                 allow                      deny
+//   listRegistrations      deny                 allow (incl. emergency)    deny
+//   setRegistrationStatus  deny                 allow (ownership resolved from the stored request's meet)  deny
+//   getPublicMeetBySlug    public projection    same                       same
+//   submitRegistration     server-validated     same                       same (userId stamped when signed in)
+//
+// Every write is one transaction on the server (an RPC): accept = create athlete + link + status together; save =
+// revision check + reference validation + config/roster upsert, results untouched. data and error are never both
+// set; a successful write followed by a failed re-read reports the write as done and the refresh as failed.
 export interface PromoterApi {
   // session
   getCurrentUser(): Promise<ApiResult<PromoterUser | null>>;   // null = signed out (UI shows sign-in prompt)
@@ -106,14 +133,19 @@ export interface PromoterApi {
   listMyMeets(): Promise<ApiResult<PromoterMeetSummary[]>>;
   getMeet(serverId: string): Promise<ApiResult<PromoterMeetDetail>>;
   createMeet(input: { name: string; date: string; slug?: string }): Promise<ApiResult<PromoterMeetDetail>>;
-  saveMeetState(serverId: string, state: AppState): Promise<ApiResult<PromoterMeetDetail>>;   // config + roster; results are read-only here
+  // config + roster; results are read-only here. Refused (error, nothing written) when: a removed athlete, event or
+  // division still owns results (the chain result -> athlete -> division is checked, not just ids); a removed athlete
+  // is linked to an accepted registration (decline or withdraw the request first); opts.expectedUpdatedAt is given and
+  // differs from the server's summary.updatedAt (someone else saved; reload and redo).
+  saveMeetState(serverId: string, state: AppState, opts?: { expectedUpdatedAt?: string }): Promise<ApiResult<PromoterMeetDetail>>;
   updateListing(serverId: string, patch: Partial<MeetListing>): Promise<ApiResult<PromoterMeetSummary>>;
   rotateJoinCode(serverId: string): Promise<ApiResult<{ joinCode: string }>>;
   archiveMeet(serverId: string): Promise<ApiResult<{ ok: true }>>;   // soft: competitionStatus -> 'completed', isPublicListed unchanged
 
   // registrations (M4; fixture only until the schema lands)
   listRegistrations(serverId: string): Promise<ApiResult<RegistrationRequest[]>>;
-  // accept: validates the division still exists, creates the state.athletes row, stores athleteId on the request.
+  // accept: validates the division still exists, refuses when the roster is at listing.athleteCap (raise the cap first;
+  // there is no silent override), creates the state.athletes row, stores athleteId on the request.
   // decline/withdraw of an accepted request removes exactly that athleteId's row, and only if it has no results.
   setRegistrationStatus(id: string, status: RegistrationRequest['status']): Promise<ApiResult<RegistrationRequest>>;
 

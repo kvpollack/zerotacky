@@ -257,6 +257,7 @@ describe('fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers',
       athleteName: 'Alex Sample (Fake)', // same name as the seeded ifc-ath-1
       emergencyContact: 'Sam Sample 717-555-0101',
       waiverAccepted: true,
+      waiverVersion: 'testwaiver01',
     };
     const s1 = await api.submitRegistration({ ...base, email: 'alex.one@example.com' });
     const s2 = await api.submitRegistration({ ...base, email: 'alex.two@example.com' });
