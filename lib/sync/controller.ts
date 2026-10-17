@@ -111,12 +111,14 @@ export function isNetworkError(e: unknown): boolean {
   return true; // TypeError: Failed to fetch, AbortError, etc.
 }
 
+export interface IncomingPatch { results?: Result[]; athletes?: Athlete[]; config?: MeetConfig }
+
 export interface ControllerOpts {
   client: SyncClient;
   storage: StorageLike;
   deviceId: string;
   getState: () => AppState;
-  onIncoming: (patch: { results?: Result[]; athletes?: Athlete[]; config?: MeetConfig }) => void;
+  onIncoming: (patch: IncomingPatch) => void;   // in React this is a scheduled setState, not a synchronous write
   onStatus?: (s: SyncStatus, link: SyncLink | null) => void;
   now?: () => number;
 }
@@ -240,15 +242,22 @@ export class SyncController {
     // rehearsal 10/17): if that pre-pull fails, stop. Publishing a stale roster would tell the server to delete
     // athletes this phone has simply not seen yet (the server refuses the dangerous cases since 008, but the
     // harmless-looking ones would still vanish). The admin sees the refusal in the Sync panel and can retry.
+    let pulled: IncomingPatch | null = null;
     if (this.link && this.link.localMeetId === this.o.getState().meet.id) {
-      try { await this.flush(); await this.pull(); } catch (e) {
+      try { await this.flush(); pulled = await this.pull(); } catch (e) {
         const why = e instanceof Error ? e.message : String(e);
         const msg = `Not published: could not fetch the latest scores and roster first (${why}). Check the connection and try again.`;
         this.setStatus({ publishError: msg });
         throw new Error(msg);
       }
     }
-    const state = this.o.getState();
+    // G2-H2 (Astra gate 2): what the pull merged is handed to the host through onIncoming, which in React is a
+    // scheduled setState; getState() here still returns the pre-pull state, so the payload would omit the walk-ons the
+    // pull just fetched and the publish would delete them (reproduced live). Build the payload from the merged rows.
+    const base = this.o.getState();
+    const state: AppState = pulled
+      ? { ...base, results: pulled.results ?? base.results, athletes: pulled.athletes ?? base.athletes }
+      : base;
     const meetId = this.link?.localMeetId === state.meet.id ? this.link.meetId : newMeetUuid();
     if (publishKey === null && this.accessToken === null) throw new Error('Sign in to your ZeroTacky account (or enter a publish key) first.');
     if (publishKey === null && this.otherAccount) throw new Error('This meet was published from a different ZeroTacky account. Sign in as that account, or unlink this phone and publish again.');
@@ -405,20 +414,22 @@ export class SyncController {
   }
 
   // ---- inbound ----
-  async pull(): Promise<void> {
-    if (!this.link || this.paused) return;
+  // Resolves to the patch handed to onIncoming (null when nothing changed), so publish() can use the merged rows
+  // without waiting for the host to commit them.
+  async pull(): Promise<IncomingPatch | null> {
+    if (!this.link || this.paused) return null;
     const gen = this.session;
     const hasPendingAthletes = this.queue.some((q) => q.table === 'athletes');
     const { results, athletes, latestIso, meetUpdatedAt } = await pullChanges(this.o.client, this.link.meetId, this.link.since);
-    if (!this.link || gen !== this.session) return;   // unlinked or re-authenticated while awaiting
+    if (!this.link || gen !== this.session) return null;   // unlinked or re-authenticated while awaiting
     const state = this.o.getState();
-    const patch: { results?: Result[]; athletes?: Athlete[]; config?: MeetConfig } = {};
+    const patch: IncomingPatch = {};
     // Admin republished (weights, events, stations, demo flag): judge phones re-read the config. The admin phone
     // is the source of that config, so it only records the stamp.
     if (meetUpdatedAt && meetUpdatedAt !== (this.link.configAt ?? null)) {
       if (this.link.role === 'device') {
         const cfg = await fetchMeetConfig(this.o.client, this.link.meetId);
-        if (!this.link || gen !== this.session) return;
+        if (!this.link || gen !== this.session) return null;
         if (cfg) patch.config = cfg;
       }
       this.link = { ...this.link, configAt: meetUpdatedAt }; writeLink(this.o.storage, this.link);
@@ -439,8 +450,10 @@ export class SyncController {
         for (const a of merged) this.knownAthletes.set(a.id, athleteSig(a));
       }
     }
-    if (patch.results || patch.athletes || patch.config) this.o.onIncoming(patch);
+    const changed = !!(patch.results || patch.athletes || patch.config);
+    if (changed) this.o.onIncoming(patch);
     if (latestIso !== this.link.since) { this.link = { ...this.link, since: latestIso }; writeLink(this.o.storage, this.link); }
+    return changed ? patch : null;
   }
 
   // One cycle: push what we have, then pull what others wrote. Never overlaps itself; a tick requested

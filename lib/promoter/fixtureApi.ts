@@ -373,22 +373,13 @@ export function createFixturePromoterApi(
         };
       }
 
-      // Astra gate M9: an accepted athlete keeps the division they registered for (name/bodyweight edits are fine).
-      const movedReg = registrations.find((r) => {
-        if (r.meetServerId !== serverId || r.status !== 'accepted' || !r.athleteId) return false;
-        const row = normalized.athletes.find((a) => a.id === r.athleteId);
-        return !!row && row.divisionId !== r.divisionId;
-      });
-      if (movedReg) {
-        return {
-          data: null,
-          error: `${movedReg.athleteName} registered for a specific division. To move them, decline or withdraw the registration and accept it again under the new division.`,
-        };
-      }
+      // Division (Astra gate 2, G2-M1): the registration keeps the SUBMITTED division as evidence; the roster row is
+      // the division the athlete competes in, and may be changed here or on the floor. No refusal.
 
-      // Astra gate C4: the roster cannot be saved above the listing cap; raise the cap in Listing first.
+      // Cap (Astra gate C4, revised gate 2 G2-M1): an intake limit. A roster already over the cap (floor walk-ons)
+      // saves; what is refused is this save ADDING athletes beyond the cap.
       const cap = found.summary.listing.athleteCap;
-      if (cap !== null && cap !== undefined && normalized.athletes.length > cap) {
+      if (cap !== null && cap !== undefined && normalized.athletes.length > cap && normalized.athletes.length > found.state.athletes.length) {
         return {
           data: null,
           error: `The roster has ${normalized.athletes.length} athletes but the listing cap is ${cap}. Raise the cap in Listing or remove athletes before saving.`,
@@ -441,13 +432,7 @@ export function createFixturePromoterApi(
       if (validationError) {
         return { data: null, error: validationError };
       }
-      // Astra gate C4: the cap cannot drop below the current roster (zt_update_listing enforces the same).
-      if (patch.athleteCap !== null && patch.athleteCap !== undefined && found.state.athletes.length > patch.athleteCap) {
-        return {
-          data: null,
-          error: `The roster already has ${found.state.athletes.length} athletes; the cap cannot be lower than that.`,
-        };
-      }
+      // (Gate 2 G2-M1: a cap below the current roster is allowed; it limits intake, not the existing roster.)
 
       found.summary.listing = {
         ...found.summary.listing,

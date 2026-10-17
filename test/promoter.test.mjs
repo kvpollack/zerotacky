@@ -341,15 +341,21 @@ describe('fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers',
 
 // Astra gate round (10/17 pm): fixture mirrors of the 007 server rules.
 describe('fixtureApi: gate round (cap on roster save, accepted division fixed, listing revision)', () => {
-  test('C4: a roster save above the listing cap is refused; lowering the cap below the roster is refused', async () => {
+  test('C4 / G2-M1: a save that adds athletes beyond the cap is refused; an over-cap roster still saves; the cap may drop below the roster', async () => {
     const api = FA.createFixturePromoterApi();
     const meet = (await api.getMeet('srv-meet-upcoming-1')).data;   // 2 athletes, cap 40
     const capped = await api.updateListing('srv-meet-upcoming-1', { athleteCap: 2 });
     assert.equal(capped.error, null);
 
-    const tooLow = await api.updateListing('srv-meet-upcoming-1', { athleteCap: 1 });
-    assert.equal(tooLow.data, null);
-    assert.match(tooLow.error, /roster already has 2 athletes/);
+    // G2-M1: the cap is an intake limit; lowering it below the roster is allowed (close intake on an over-full meet)
+    const lower = await api.updateListing('srv-meet-upcoming-1', { athleteCap: 1 });
+    assert.equal(lower.error, null);
+    assert.equal(lower.data.listing.athleteCap, 1);
+    // ...and an unchanged over-cap roster still saves (unrelated edits are not blocked)
+    const sameRoster = await api.saveMeetState('srv-meet-upcoming-1', { ...meet.state, meet: { ...meet.state.meet, collarWeightPerPair: 7 } });
+    assert.equal(sameRoster.error, null);
+    assert.equal(sameRoster.data.state.athletes.length, 2);
+    assert.equal((await api.updateListing('srv-meet-upcoming-1', { athleteCap: 2 })).error, null);
 
     const withExtra = {
       ...meet.state,
@@ -367,17 +373,18 @@ describe('fixtureApi: gate round (cap on roster save, accepted division fixed, l
     assert.equal(ok.data.state.athletes.length, 3);
   });
 
-  test('M9: an accepted athlete cannot be moved to another division through the roster; name edits are fine', async () => {
+  test('M9 / G2-M1: moving an accepted athlete to another division saves; the registration keeps the submitted division as evidence', async () => {
     const api = FA.createFixturePromoterApi();
     const meet = (await api.getMeet('srv-meet-upcoming-1')).data;   // ifc-ath-1 is accepted reg-ifc-1 in ifc-g1
     const moved = {
       ...meet.state,
       athletes: meet.state.athletes.map((a) => (a.id === 'ifc-ath-1' ? { ...a, divisionId: 'ifc-g2' } : a)),
     };
-    const refused = await api.saveMeetState('srv-meet-upcoming-1', moved);
-    assert.equal(refused.data, null);
-    assert.match(refused.error, /registered for a specific division/);
-    assert.equal((await api.getMeet('srv-meet-upcoming-1')).data.state.athletes.find((a) => a.id === 'ifc-ath-1').divisionId, 'ifc-g1');
+    const movedOk = await api.saveMeetState('srv-meet-upcoming-1', moved);
+    assert.equal(movedOk.error, null);
+    assert.equal(movedOk.data.state.athletes.find((a) => a.id === 'ifc-ath-1').divisionId, 'ifc-g2');
+    const reg = (await api.listRegistrations('srv-meet-upcoming-1')).data.find((r) => r.athleteId === 'ifc-ath-1');
+    assert.equal(reg.divisionId, 'ifc-g1');   // submitted division, unchanged
 
     const renamed = {
       ...meet.state,

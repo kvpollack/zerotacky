@@ -11,7 +11,9 @@
 -- 2. MED   zt_submit_registration: length bounds, approved waiver versions, unique active (meet, division, email),
 --          per-IP and per-meet throttles, deadline applies to waitlist too, inbox cap per meet. Bodyweight bound
 --          revised 10/17 pm (Astra rehearsal R7): 1..1000 as the message says; 0.5 used to pass. Re-apply after 007.
--- 3. MED   zt_save_meet_config: roster cannot exceed athlete_cap; an accepted registration's athlete keeps its division.
+-- 3. MED   zt_save_meet_config: a save cannot ADD athletes beyond athlete_cap (revised 10/17 night, Astra G2-M1: an
+--          over-cap roster from floor walk-ons still saves; the accepted-division immutability check was dropped, the
+--          registration keeps the submitted division as evidence and the roster row is the effective one).
 -- 4. MED   zt_update_listing RPC with the C3 expected-revision check (the client used a bare PATCH).
 -- 5. MED   zt_meet_by_join_code no longer returns admin_pin; zt_check_admin_pin verifies a PIN server-side (throttled).
 
@@ -370,21 +372,16 @@ begin
       v_linked_name using errcode = 'P0001';
   end if;
 
-  -- M9 (gate): the athlete keeps the division they registered for. Changing it means declining and re-accepting
-  -- in Registrations, so the request and the roster never disagree. Name and bodyweight corrections are allowed.
-  select r.name into v_linked_name
-  from registrations r
-  join jsonb_populate_recordset(null::athletes, coalesce(p_athletes, '[]'::jsonb)) a on a.id = r.athlete_id
-  where r.meet_id = p_meet_id and r.status = 'accepted' and r.athlete_id is not null and a.division_id <> r.division_id
-  limit 1;
-  if v_linked_name is not null then
-    raise exception '% registered for a specific division. To move them, decline or withdraw the registration and accept it again under the new division.',
-      v_linked_name using errcode = 'P0001';
-  end if;
+  -- Division (M9 gate, revised 10/17 night, Astra gate 2 G2-M1): the registration keeps the division the athlete
+  -- SUBMITTED (evidence); the roster row is the division they COMPETE in. Meet day moves athletes on the floor
+  -- (weigh-in) through the athletes upsert, which has no such check, so refusing the same move here only left the
+  -- dashboard unable to save anything afterwards. The Registrations table shows "competing in X" when they differ.
 
-  -- C4 (gate): the roster cannot be saved above the listing cap; raise the cap in Listing first.
+  -- Cap (C4 gate, revised 10/17 night, G2-M1): the cap is an intake limit (zt_submit_registration, accept). A roster
+  -- that is already over it (floor walk-ons) saves fine; what is refused is this save ADDING athletes beyond the cap.
   select count(*)::int into v_roster_count from jsonb_populate_recordset(null::athletes, coalesce(p_athletes, '[]'::jsonb));
-  if cur.athlete_cap is not null and v_roster_count > cur.athlete_cap then
+  if cur.athlete_cap is not null and v_roster_count > cur.athlete_cap
+     and v_roster_count > (select count(*) from athletes a where a.meet_id = p_meet_id) then
     raise exception 'The roster has % athletes but the listing cap is %. Raise the cap in Listing or remove athletes before saving.',
       v_roster_count, cur.athlete_cap using errcode = 'P0001';
   end if;
@@ -543,10 +540,8 @@ begin
   if v_cap is not null and v_cap < 1 then
     raise exception 'Athlete cap must be at least 1 (leave it blank for no cap).' using errcode = 'P0001';
   end if;
-  select count(*)::int into v_roster from athletes a where a.meet_id = p_meet_id;
-  if v_cap is not null and v_roster > v_cap then
-    raise exception 'The roster already has % athletes; the cap cannot be lower than that.', v_roster using errcode = 'P0001';
-  end if;
+  -- (10/17 night, G2-M1: a cap below the current roster is allowed. The cap limits intake; a roster that grew past it
+  -- on the floor must not stop the promoter from closing registration or saving anything else.)
 
   if p_patch ? 'registration_deadline' then
     begin

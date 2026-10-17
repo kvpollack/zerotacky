@@ -17,6 +17,8 @@
 --          pre-pull failed) is in lib/sync/controller.ts.
 -- R1       admin_pin: null in the payload keeps the server's PIN (a phone that joined by code never holds it; before
 --          this the client filled in '1050' and a keyed republish from such a phone would have reset the real PIN).
+--          Revised 10/17 night (Astra gate 2, G2-H1): the first version defaulted the null in the INSERT values, so
+--          the ON CONFLICT clause saw '1050' in `excluded` and reset the PIN anyway. Decided once, in a variable.
 -- R4 MED   006 left column-level UPDATE on the listing columns of `meets`, so an owner could PATCH athlete_cap below
 --          the roster (cap 1 with 6 athletes, reproduced on staging). Every client write to `meets` goes through a
 --          security-definer RPC (zt_publish_meet, zt_create_meet, zt_save_meet_config, zt_update_listing,
@@ -49,7 +51,7 @@ create or replace function zt_publish_meet(
   p_key text, p_meet jsonb,
   p_divisions jsonb default '[]', p_events jsonb default '[]', p_athletes jsonb default '[]', p_results jsonb default '[]'
 ) returns jsonb language plpgsql security definer set search_path = public as $$
-declare v_id uuid; v_code text; m meets%rowtype; v_uid uuid; v_keyed boolean; v_owner uuid; v_linked_name text;
+declare v_id uuid; v_code text; m meets%rowtype; v_uid uuid; v_keyed boolean; v_owner uuid; v_linked_name text; v_pin text;
 begin
   -- Two ways in: a signed-in promoter (v2) or a legacy publish key (meet-day phones before accounts).
   v_uid := auth.uid();
@@ -87,15 +89,20 @@ begin
       v_linked_name using errcode = 'P0001';
   end if;
 
+  -- G2-H1 (Astra gate 2): the PIN decision is made here, on the nullable input, not in the ON CONFLICT clause. There
+  -- `excluded.admin_pin` is the VALUES expression, which had already been defaulted to '1050', so a null from a
+  -- joined phone reset the real PIN to 1050 (reproduced live by Astra). New row: payload PIN or '1050'. Existing
+  -- row: payload PIN when present, else the server's.
+  v_pin := nullif(trim(m.admin_pin), '');
   insert into meets (id, slug, name, date, owner_id, admin_pin, run_order_method, tiebreaker_rule,
                      available_plates, collar_weight_per_pair, stations, is_demo)
-  values (v_id, m.slug, m.name, m.date, v_uid, coalesce(nullif(trim(m.admin_pin), ''), '1050'),
+  values (v_id, m.slug, m.name, m.date, v_uid, coalesce(v_pin, '1050'),
           coalesce(m.run_order_method, 'reverse_overall'), coalesce(m.tiebreaker_rule, 'event_wins'),
           coalesce(m.available_plates, '{100,55,45,35,25,15,10,5,2.5}'), coalesce(m.collar_weight_per_pair, 0),
           coalesce(m.stations, '[{"id":"A","label":"Station 1"},{"id":"B","label":"Station 2"}]'), coalesce(m.is_demo, false))
   on conflict (id) do update set
     slug = excluded.slug, name = excluded.name, date = excluded.date,
-    admin_pin = coalesce(nullif(trim(excluded.admin_pin), ''), meets.admin_pin, '1050'),   -- 008 (R1): null keeps the PIN
+    admin_pin = coalesce(v_pin, meets.admin_pin, '1050'),   -- 008 (R1, G2-H1): null keeps the server's PIN
     run_order_method = excluded.run_order_method, tiebreaker_rule = excluded.tiebreaker_rule,
     available_plates = excluded.available_plates, collar_weight_per_pair = excluded.collar_weight_per_pair,
     stations = excluded.stations, is_demo = excluded.is_demo, updated_at = now(),

@@ -123,6 +123,12 @@ export default function RegistrationsSection({
                     </td>
                     <td className="py-3 px-2 font-bold text-zt-text-2 whitespace-nowrap">
                       {divName}
+                      {/* G2-M1: the registration keeps the submitted division; the roster row is where they compete */}
+                      {rosterEntry && rosterEntry.divisionId !== reg.divisionId && (
+                        <span className="block text-[10px] font-extrabold text-amber-300">
+                          competing in {divisionNameById.get(rosterEntry.divisionId) ?? rosterEntry.divisionId}
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 px-2 whitespace-nowrap">
                       <div className="flex flex-wrap items-center gap-1.5">

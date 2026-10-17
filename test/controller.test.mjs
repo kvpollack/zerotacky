@@ -13,15 +13,17 @@ function memStorage() {
   return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k), _m: m };
 }
 
-// A fake "phone": state holder + controller wired like the hook would.
-function phone(server, deviceId, initialState, now) {
+// A fake "phone": state holder + controller wired like the hook would. `asyncIncoming` applies onIncoming on the
+// next macrotask, the way React commits a setState (Astra G2-H2: the synchronous default hid a real race).
+function phone(server, deviceId, initialState, now, { asyncIncoming = false } = {}) {
   const storage = memStorage();
   const box = { state: initialState, incoming: [] , statuses: [] };
   const client = C.createSyncClient({ url: 'https://x.supabase.co', anonKey: 'A', fetchImpl: server.fetchImpl });
+  const apply = (patch) => { box.incoming.push(patch); box.state = { ...box.state, ...patch }; };
   const ctl = new K.SyncController({
     client, storage, deviceId,
     getState: () => box.state,
-    onIncoming: (patch) => { box.incoming.push(patch); box.state = { ...box.state, ...patch }; },
+    onIncoming: (patch) => { if (asyncIncoming) setTimeout(() => apply(patch), 0); else apply(patch); },
     onStatus: (s) => box.statuses.push(s.state),
     now,
   });
@@ -786,6 +788,33 @@ describe('SyncController account binding + publish errors (gate round)', () => {
     assert.ok(srv.db.athletes.some((a) => a.id === scored.id));
     await admin.ctl.tick();
     assert.ok(admin.state.athletes.some((a) => a.id === scored.id), 'refused deletion was not restored by the pull');
+  });
+  // Astra gate 2, G2-H2 (10/17 night): the pull's merged roster reaches React asynchronously; publish must not read
+  // the stale pre-pull state. The judge adds a walk-on; the stale admin's first healthy publish has to keep it.
+  test('G2-H2: a walk-on fetched by the pre-publish pull is in the publish payload even before the host commits it', async () => {
+    const srv = fakeServer();
+    const admin = phone(srv, 'a-h2', P.getInitialSeedState('strongfest-2026'), clock, { asyncIncoming: true });
+    await admin.ctl.publish({ slug: 'h2' }, 'GOODKEY');
+    const judge = phone(srv, 'j-h2', P.getInitialSeedState('york-iron-2026'), clock);
+    const remote = await judge.ctl.lookupJoinCode(admin.ctl.link.joinCode);
+    judge.state = remote.state; judge.ctl.attach(remote);
+    const walkon = { ...judge.state.athletes[0], id: 'walkon-h2', name: 'Walk On', lotNumber: 99 };
+    judge.mutate((s) => ({ ...s, athletes: [...s.athletes, walkon] }));
+    await judge.ctl.tick();
+    assert.ok(srv.db.athletes.some((a) => a.id === 'walkon-h2'));
+    // admin edits a weight (a config change -> republish) while its React state still lacks the walk-on
+    admin.mutate((s) => ({ ...s, meet: { ...s.meet, collarWeightPerPair: 5 } }));
+    assert.ok(!admin.state.athletes.some((a) => a.id === 'walkon-h2'));
+    const calls = srv.log.length;
+    await admin.ctl.publish({ slug: 'h2' }, 'GOODKEY');
+    assert.ok(!admin.state.athletes.some((a) => a.id === 'walkon-h2'), 'test premise: host has not committed the pull yet');
+    const pub = srv.log.slice(calls).find((e) => e.path.endsWith('/rpc/zt_publish_meet'));
+    assert.ok(pub.body.p_athletes.some((a) => a.id === 'walkon-h2'), 'publish payload omitted the pulled walk-on');
+    assert.ok(srv.db.athletes.some((a) => a.id === 'walkon-h2'), 'server lost the walk-on');
+    await new Promise((r) => setTimeout(r, 5));
+    assert.ok(admin.state.athletes.some((a) => a.id === 'walkon-h2'));   // and the host catches up
+    const again = await judge.ctl.lookupJoinCode(admin.ctl.link.joinCode);
+    assert.ok(again.state.athletes.some((a) => a.id === 'walkon-h2'));
   });
   test('R1: the admin phone publishes without a PIN and the server keeps its own (null admin_pin never overwrites)', async () => {
     const srv = fakeServer();
