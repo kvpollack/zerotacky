@@ -13,7 +13,8 @@ import { profileLabel } from '@/lib/auth/profile';
 //   - judge/admin phones publish their station's "up now" to live_state (debounced), but only while the
 //     Judge Pad tab is open, so an admin phone parked on Setup never fights the station's judge
 //   - admin phones that can publish (signed-in account, or a legacy publish key) auto re-publish when meet config
-//     (divisions, events, weights) changes
+//     (divisions, events, weights) or roster membership changes; the server may refuse (scored athlete, accepted
+//     registration, cap) and the refusal shows in the Sync panel while the next pull restores the roster
 //   - v2: a signed-in promoter's JWT rides on every call (controller.setAccessToken), so publishing needs no key
 // Returns status 'off' when NEXT_PUBLIC_SUPABASE_* is not configured; the app then works exactly as before.
 export const POLL_MS = 3000;
@@ -82,12 +83,15 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
             const { merged, changed } = mergeAthletes(prev.athletes, patch.athletes);
             if (changed) next = { ...next, athletes: merged };
           }
-          // Admin republished the meet config. Keep this phone's id and PIN (public columns omit admin_pin).
+          // Admin republished the meet config. Keep this phone's id and PIN (public columns omit admin_pin; a joined
+          // phone has none and keeps none, so `adminPin` stays absent rather than becoming undefined-as-key).
           if (patch.config) {
             const { meet, divisions, events } = patch.config;
+            const { adminPin: _drop, ...meetPublic } = meet;
+            void _drop;
             next = {
               ...next,
-              meet: { ...prev.meet, ...meet, id: prev.meet.id, adminPin: prev.meet.adminPin ?? meet.adminPin },
+              meet: { ...prev.meet, ...meetPublic, id: prev.meet.id },
               divisions,
               events,
             };
@@ -168,8 +172,10 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
     });
   }, [linked, roleLock, station, activeTab, liveEventId, liveDivisionId, liveAthleteId, liveLane2Id, debounce, syncNow]);
 
-  // Admin auto re-publish on config change (weights, events, divisions, stations).
-  const configSig = JSON.stringify({ m: state.meet, d: state.divisions, e: state.events });
+  // Admin auto re-publish on config change (weights, events, divisions, stations) and on roster membership (R5, Astra
+  // rehearsal 10/17): athlete edits travel through the queue, but a removed athlete leaves the server only through
+  // zt_publish_meet, so the ids are in the signature (not the rows: a pit-crew rack-height edit is not a republish).
+  const configSig = JSON.stringify({ m: state.meet, d: state.divisions, e: state.events, a: state.athletes.map((x) => x.id) });
   const prevSig = useRef(configSig);
   useEffect(() => {
     if (prevSig.current === configSig) return;   // key paste, StrictMode double-run, etc. are not config changes
@@ -195,10 +201,10 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
     return out;
   }, [publishKey, signedIn]);
 
-  // Joined phone: server-side admin PIN check (007). Resolves false when not linked.
+  // Linked phone: server-side admin PIN check (007). Resolves null when not linked (useRoleLock then uses local state).
   const checkAdminPin = useCallback(async (pin) => {
     const ctl = ctlRef.current;
-    if (!ctl?.link) return false;
+    if (!ctl?.link) return null;
     return ctl.checkAdminPin(pin);
   }, []);
 

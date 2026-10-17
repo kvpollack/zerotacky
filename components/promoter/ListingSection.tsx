@@ -186,7 +186,7 @@ export default function ListingSection({
             {draft.isPublicListed ? (
               <>
                 <Eye className="w-4 h-4 text-emerald-400" aria-hidden="true" />
-                Listed (public directory, when live)
+                Listed in the public shows directory
               </>
             ) : (
               <>
@@ -198,7 +198,7 @@ export default function ListingSection({
         </label>
         <p className="text-xs font-bold text-zt-text-2">
           {draft.isPublicListed
-            ? 'When the backend lands, listed meets appear in the public shows directory, searchable by state, division and implements.'
+            ? 'Listed meets appear on the public shows page and can be found by athletes. Unlist to hide the meet while you finish setting it up.'
             : 'Unlisted meets stay out of the public directory. Keep test meets and drafts unlisted until athletes should find them.'}
         </p>
       </div>

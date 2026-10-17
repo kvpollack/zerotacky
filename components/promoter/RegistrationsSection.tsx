@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AlertTriangle, Check, PhoneCall, UserCheck, Users, X } from 'lucide-react';
+import { AlertTriangle, Check, LogOut, PhoneCall, UserCheck, Users, X } from 'lucide-react';
 import type { RegistrationRequest } from '@/lib/promoter/contract';
 import type { Athlete, Division } from '@/lib/types';
 
@@ -192,6 +192,18 @@ export default function RegistrationsSection({
                         >
                           <X className="w-3 h-3" aria-hidden="true" />
                           Decline
+                        </button>
+                        {/* R6 (Astra rehearsal): the athlete pulled out after being accepted. Same server path as decline
+                            (roster row leaves, scored athletes refused), kept separate so the record says what happened. */}
+                        <button
+                          type="button"
+                          disabled={disabled || reg.status !== 'accepted'}
+                          onClick={() => handleAction(reg.id, 'withdrawn')}
+                          title="Athlete withdrew after being accepted"
+                          className="px-2.5 py-1.5 rounded-lg bg-zt-inset border border-zt-border-strong text-zt-text-2 hover:text-amber-300 font-extrabold text-[11px] uppercase inline-flex items-center gap-1 disabled:opacity-35"
+                        >
+                          <LogOut className="w-3 h-3" aria-hidden="true" />
+                          Withdraw
                         </button>
                       </div>
                     </td>

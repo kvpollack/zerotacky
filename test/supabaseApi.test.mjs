@@ -609,6 +609,47 @@ describe('supabaseApi: saveMeetState RPC pass-through & H3 orphan guard', () => 
     expect(refused.data).toBeNull();
     expect(refused.committed).toBeUndefined();
   });
+
+  // Astra rehearsal R3 (10/17): the re-read can also fail one step later, in the child reads behind buildMeetDetail,
+  // which used to fall through to the outer catch and come back as a bare error (meet created, Create re-enabled).
+  test('R3: a child read that throws after the write landed still reports committed: true (createMeet and saveMeetState)', async () => {
+    const fakeDb = createFakePromoterDb();
+    const api = SA.createSupabasePromoterApi(fakeDb);
+    const realChildren = fakeDb.selectChildren.bind(fakeDb);
+    let failChildren = false;
+    fakeDb.selectChildren = async (id) => {
+      if (failChildren) throw new Error('children read timed out');
+      return realChildren(id);
+    };
+    const origRpc = fakeDb.rpc.bind(fakeDb);
+    fakeDb.rpc = async (fn, params) => {
+      const out = await origRpc(fn, params);
+      if (fn === 'zt_create_meet' || fn === 'zt_save_meet_config') failChildren = true;
+      return out;
+    };
+
+    const before = (await api.listMyMeets()).data.length;
+    const created = await api.createMeet({ name: 'R3 Commit Fault', date: '2027-03-06', slug: 'r3-commit-fault' });
+    expect(created.data).toBeNull();
+    expect(created.committed).toBe(true);
+    expect(created.error).toMatch(/created, but it could not be loaded afterwards/);
+    expect(created.error).toMatch(/do not create it again/);
+    failChildren = false;
+    expect((await api.listMyMeets()).data.length).toBe(before + 1);
+
+    const first = await api.getMeet('srv-meet-upcoming-1');
+    const saved = await api.saveMeetState('srv-meet-upcoming-1', first.data.state, { expectedUpdatedAt: first.data.summary.updatedAt });
+    expect(saved.data).toBeNull();
+    expect(saved.committed).toBe(true);
+    expect(saved.error).toMatch(/saved, but the page could not refresh \(children read timed out\)/);
+    failChildren = false;
+
+    // and a failure BEFORE the write is still a plain, uncommitted error
+    fakeDb.rpc = async (fn) => { if (fn === 'zt_create_meet') throw new Error('slug taken'); return origRpc(fn); };
+    const refused = await api.createMeet({ name: 'Nope', date: '2027-03-06', slug: 'r3-commit-fault' });
+    expect(refused.committed).toBeUndefined();
+    expect(refused.error).toMatch(/slug taken/);
+  });
 });
 
 describe('supabaseApi: accept/decline mapping of athleteId', () => {

@@ -35,6 +35,7 @@ export default function PromoterDashboardClient() {
   const [slugEdited, setSlugEdited] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);   // R3: a create that landed but could not be read back
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -78,6 +79,7 @@ export default function PromoterDashboardClient() {
   const handleCreateMeet = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateError(null);
+    setNotice(null);
     setCreating(true);
 
     const computedSlug = slugEdited && newSlug.trim() ? slugify(newSlug) : slugify(newName);
@@ -88,6 +90,16 @@ export default function PromoterDashboardClient() {
     });
     setCreating(false);
 
+    if (res.committed && !res.data) {
+      // R3: the meet exists; do not leave the form armed for a second create. Close it and reload the list.
+      setCreateOpen(false);
+      setNewName('');
+      setNewSlug('');
+      setSlugEdited(false);
+      await refresh();
+      setNotice(res.error ?? 'The meet was created, but it could not be loaded afterwards. The list below was reloaded; do not create it again.');
+      return;
+    }
     if (res.error || !res.data) {
       setCreateError(res.error ?? 'Could not create meet.');
       return;
@@ -233,6 +245,15 @@ export default function PromoterDashboardClient() {
         >
           <AlertTriangle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
           <span>{loadError}</span>
+        </div>
+      )}
+      {notice && (
+        <div
+          role="status"
+          className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-amber-200 text-xs font-bold flex items-center gap-2.5"
+        >
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+          <span>{notice}</span>
         </div>
       )}
 

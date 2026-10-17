@@ -9,7 +9,8 @@
 --          accepted, unscored athlete failed with 23502 (reproduced on staging 10/17). Column-list SET NULL (PG 15+)
 --          and the status RPC unlinks before it deletes.
 -- 2. MED   zt_submit_registration: length bounds, approved waiver versions, unique active (meet, division, email),
---          per-IP and per-meet throttles, deadline applies to waitlist too, inbox cap per meet.
+--          per-IP and per-meet throttles, deadline applies to waitlist too, inbox cap per meet. Bodyweight bound
+--          revised 10/17 pm (Astra rehearsal R7): 1..1000 as the message says; 0.5 used to pass. Re-apply after 007.
 -- 3. MED   zt_save_meet_config: roster cannot exceed athlete_cap; an accepted registration's athlete keeps its division.
 -- 4. MED   zt_update_listing RPC with the C3 expected-revision check (the client used a bare PATCH).
 -- 5. MED   zt_meet_by_join_code no longer returns admin_pin; zt_check_admin_pin verifies a PIN server-side (throttled).
@@ -195,7 +196,7 @@ begin
     exception when others then
       raise exception 'Bodyweight must be a number.' using errcode = 'P0001';
     end;
-    if v_bodyweight <= 0 or v_bodyweight > 1000 then
+    if v_bodyweight < 1 or v_bodyweight > 1000 then   -- R7 (rehearsal): matches the message; 0.5 used to pass
       raise exception 'Bodyweight must be between 1 and 1000.' using errcode = 'P0001';
     end if;
   else

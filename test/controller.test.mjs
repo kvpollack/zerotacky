@@ -716,9 +716,9 @@ describe('SyncController account binding + publish errors (gate round)', () => {
     assert.equal(a.ctl.status.publishError, null);
   });
 
-  test('checkAdminPin asks the server with the join code; false when not linked', async () => {
+  test('checkAdminPin asks the server with the join code; null when not linked (R1: the hook then uses local state)', async () => {
     const a = a4Controller();
-    assert.equal(await a.ctl.checkAdminPin('1234'), false);
+    assert.equal(await a.ctl.checkAdminPin('1234'), null);
     assert.equal(a.log.length, 0);
     a.ctl.attach({ state: a.st, slug: 'g', joinCode: 'ZZZ999', latestServerAt: null, updatedAt: null }, 'device');
     const p = a.ctl.checkAdminPin('1234');
@@ -726,5 +726,77 @@ describe('SyncController account binding + publish errors (gate round)', () => {
     assert.deepEqual(call.args, { p_code: 'ZZZ999', p_pin: '1234' });
     // the fake resolves rpc calls with the publish shape; anything but `true` is a refusal
     assert.equal(await p, false);
+  });
+
+  // Astra rehearsal R2 (10/17): a re-publish whose pre-pull fails must not go ahead with the stale roster.
+  test('publish aborts when the pre-publish flush/pull fails; nothing reaches the server, publishError says why', async () => {
+    const srv = fakeServer();
+    const admin = phone(srv, 'a-r2', P.getInitialSeedState('strongfest-2026'), clock);
+    await admin.ctl.publish({ slug: 'r2' }, 'GOODKEY');
+    const athletesBefore = srv.db.athletes.length;
+    const calls = srv.log.length;
+    // roster shrinks locally while the network is down
+    admin.mutate((s) => ({ ...s, athletes: s.athletes.slice(1) }));
+    srv.setOffline(true);
+    await assert.rejects(admin.ctl.publish({ slug: 'r2' }, 'GOODKEY'), /Not published: could not fetch the latest/);
+    assert.match(admin.ctl.status.publishError, /Not published/);
+    srv.setOffline(false);
+    assert.equal(srv.db.athletes.length, athletesBefore);
+    assert.ok(!srv.log.slice(calls).some((e) => e.path.endsWith('/rpc/zt_publish_meet')));
+    // back online: the retry publishes and clears the message
+    await admin.ctl.publish({ slug: 'r2' }, 'GOODKEY');
+    assert.equal(admin.ctl.status.publishError, null);
+    assert.equal(srv.db.athletes.length, athletesBefore - 1);
+  });
+
+  // Astra rehearsal R5 (10/17): roster removals on the admin phone survive the poll until the republish carries them.
+  test('R5: a locally removed athlete is not resurrected by a pull; the republish deletes it on the server', async () => {
+    const srv = fakeServer();
+    const admin = phone(srv, 'a-r5', P.getInitialSeedState('strongfest-2026'), clock);
+    await admin.ctl.publish({ slug: 'r5' }, 'GOODKEY');
+    const gone = admin.state.athletes[2];
+    admin.mutate((s) => ({ ...s, athletes: s.athletes.filter((a) => a.id !== gone.id) }));
+    await admin.ctl.tick();                                     // the 3 s poll before the 1.5 s republish fires
+    assert.ok(!admin.state.athletes.some((a) => a.id === gone.id), 'pull brought the deleted athlete back');
+    assert.ok(srv.db.athletes.some((a) => a.id === gone.id));   // still on the server until the publish
+    await admin.ctl.publish({ slug: 'r5' }, 'GOODKEY');
+    assert.ok(!srv.db.athletes.some((a) => a.id === gone.id));
+    // a judge phone sees the roster shrink
+    const judge = phone(srv, 'j-r5', P.getInitialSeedState('york-iron-2026'), clock);
+    const remote = await judge.ctl.lookupJoinCode(admin.ctl.link.joinCode);
+    assert.ok(!remote.state.athletes.some((a) => a.id === gone.id));
+  });
+  test('R5: removing a scored athlete is refused by the server; publishError says so and the next pull restores the athlete', async () => {
+    const srv = fakeServer();
+    const admin = phone(srv, 'a-r5b', P.getInitialSeedState('strongfest-2026'), clock);
+    await admin.ctl.publish({ slug: 'r5b' }, 'GOODKEY');
+    const judge = phone(srv, 'j-r5b', P.getInitialSeedState('york-iron-2026'), clock);
+    const remote = await judge.ctl.lookupJoinCode(admin.ctl.link.joinCode);
+    judge.state = remote.state; judge.ctl.attach(remote);
+    judge.mutate((s) => score(s, 0, 0, { reps: 5, locked: true }, T += 1000));
+    await judge.ctl.tick();
+    await admin.ctl.tick();
+    const scored = admin.state.athletes[0];
+    assert.ok(admin.state.results.some((r) => r.athleteId === scored.id));
+    admin.mutate((s) => ({ ...s, athletes: s.athletes.filter((a) => a.id !== scored.id) }));
+    await admin.ctl.tick();
+    assert.ok(!admin.state.athletes.some((a) => a.id === scored.id));
+    await assert.rejects(admin.ctl.publish({ slug: 'r5b' }, 'GOODKEY'), /recorded result/);
+    assert.match(admin.ctl.status.publishError, /recorded result/);
+    assert.ok(srv.db.athletes.some((a) => a.id === scored.id));
+    await admin.ctl.tick();
+    assert.ok(admin.state.athletes.some((a) => a.id === scored.id), 'refused deletion was not restored by the pull');
+  });
+  test('R1: the admin phone publishes without a PIN and the server keeps its own (null admin_pin never overwrites)', async () => {
+    const srv = fakeServer();
+    const admin = phone(srv, 'a-r1', P.getInitialSeedState('strongfest-2026'), clock);
+    admin.state = { ...admin.state, meet: { ...admin.state.meet, adminPin: '7391' } };
+    await admin.ctl.publish({ slug: 'r1' }, 'GOODKEY');
+    assert.equal(srv.db.meets[0].admin_pin, '7391');
+    const { adminPin: _x, ...noPin } = admin.state.meet;
+    void _x;
+    admin.state = { ...admin.state, meet: noPin };
+    await admin.ctl.publish({ slug: 'r1' }, 'GOODKEY');
+    assert.equal(srv.db.meets[0].admin_pin, '7391');
   });
 });

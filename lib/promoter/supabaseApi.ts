@@ -258,6 +258,9 @@ export function createSupabasePromoterApi(
       date: string;
       slug?: string;
     }): Promise<ApiResult<PromoterMeetDetail>> {
+      // R3 (Astra rehearsal 10/17): once the RPC has landed, any later failure (re-read, child reads) must still say
+      // committed: true, or the dashboard re-enables Create and the promoter makes the meet twice.
+      let committed = false;
       try {
         const authCheck = await requireSignedInUser();
         if (!authCheck.user) {
@@ -283,6 +286,7 @@ export function createSupabasePromoterApi(
         if (!serverId) {
           return { data: null, error: 'Could not create meet.' };
         }
+        committed = true;
 
         const fullMeetRow =
           'division_count' in created ? (created as PromoterMeetRow) : await db.selectMeet(serverId);
@@ -292,6 +296,9 @@ export function createSupabasePromoterApi(
         const detail = await buildMeetDetail(fullMeetRow);
         return { data: detail, error: null };
       } catch (e) {
+        if (committed) {
+          return { data: null, committed: true, error: `The meet was created, but it could not be loaded afterwards (${errMessage(e)}). Reload the dashboard; do not create it again.` };
+        }
         return { data: null, error: errMessage(e) };
       }
     },
@@ -301,6 +308,7 @@ export function createSupabasePromoterApi(
       state: AppState,
       opts?: { expectedUpdatedAt?: string }
     ): Promise<ApiResult<PromoterMeetDetail>> {
+      let committed = false;   // R3: set once zt_save_meet_config returns
       try {
         const authCheck = await requireSignedInUser();
         if (!authCheck.user) {
@@ -373,6 +381,7 @@ export function createSupabasePromoterApi(
           p_athletes: rows.athletes,
           p_expected_updated_at: opts?.expectedUpdatedAt ?? null,
         });
+        committed = true;
 
         let rereadRow: PromoterMeetRow | null = null;
         let rereadError: string | null = null;
@@ -387,6 +396,9 @@ export function createSupabasePromoterApi(
         const detail = await buildMeetDetail(rereadRow);
         return { data: detail, error: null };
       } catch (e) {
+        if (committed) {
+          return { data: null, committed: true, error: `Your changes were saved, but the page could not refresh (${errMessage(e)}). Reload to see the saved version.` };
+        }
         return { data: null, error: errMessage(e) };
       }
     },
@@ -396,6 +408,7 @@ export function createSupabasePromoterApi(
       patch: Partial<MeetListing>,
       opts?: { expectedUpdatedAt?: string | null }
     ): Promise<ApiResult<PromoterMeetSummary>> {
+      let committed = false;   // R3: set once zt_update_listing returns
       try {
         const authCheck = await requireSignedInUser();
         if (!authCheck.user) {
@@ -417,6 +430,7 @@ export function createSupabasePromoterApi(
         }
 
         await db.updateMeetListing(serverId, listingPatchToColumns(patch), opts?.expectedUpdatedAt ?? null);
+        committed = true;
         let updatedRow: PromoterMeetRow | null = null;
         let rereadError: string | null = null;
         try {
@@ -429,6 +443,9 @@ export function createSupabasePromoterApi(
         }
         return { data: rowToPromoterMeetSummary(updatedRow), error: null };
       } catch (e) {
+        if (committed) {
+          return { data: null, committed: true, error: `Listing saved, but the page could not refresh (${errMessage(e)}). Reload to see the saved version.` };
+        }
         return { data: null, error: errMessage(e) };
       }
     },

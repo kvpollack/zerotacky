@@ -130,6 +130,11 @@ export class SyncController {
   private queue: QueueItem[];
   private known = new Map<string, number>();        // result id -> updatedAt last seen remote/pushed
   private knownAthletes = new Map<string, string>(); // athlete id -> sig last seen remote/pushed
+  // Athletes the admin phone removed locally and has not yet published away (R5, Astra rehearsal 10/17). Deletions
+  // travel only in zt_publish_meet; until that lands, pulls must not resurrect them. Cleared when a publish succeeds
+  // (the server agrees) or is refused for a non-network reason (the server said no: the next pull brings them back
+  // and status.publishError says why). In memory only: a reload before the republish lets the pull restore them.
+  private removedAthletes = new Set<string>();
   private busy = false;
   // Astra A4: bumped on every token change. Work that started under an older generation does not update the link,
   // the queue, the watermarks or local state when it completes.
@@ -161,6 +166,7 @@ export class SyncController {
   private seedKnown(state: AppState): void {
     this.known.clear();
     this.knownAthletes.clear();
+    this.removedAthletes.clear();
     for (const r of state.results) this.known.set(r.id, r.updatedAt ?? 0);
     for (const a of state.athletes) this.knownAthletes.set(a.id, athleteSig(a));
   }
@@ -175,7 +181,7 @@ export class SyncController {
   private setLink(link: SyncLink | null): void {
     this.link = link;
     writeLink(this.o.storage, link);
-    if (!link) { this.queue = []; this.persistQueue(); this.known.clear(); this.knownAthletes.clear(); }
+    if (!link) { this.queue = []; this.persistQueue(); this.known.clear(); this.knownAthletes.clear(); this.removedAthletes.clear(); }
     this.setStatus({ state: link ? 'idle' : 'off', error: null, dropped: 0, publishError: null });
   }
 
@@ -230,9 +236,17 @@ export class SyncController {
   // `publishKey` is null when the phone is signed in (setAccessToken) and the server should use auth.uid(). A signed-in
   // phone that also holds a key sends both: that is how an ownerless meet published with the key is claimed (006).
   async publish(extra: Omit<PublishExtra, 'meetId' | 'deviceId'>, publishKey: string | null): Promise<SyncLink> {
-    // Re-publish is authoritative for the roster, so first bring in anything the floor phones added.
+    // Re-publish is authoritative for the roster, so first bring in anything the floor phones added. R2 (Astra
+    // rehearsal 10/17): if that pre-pull fails, stop. Publishing a stale roster would tell the server to delete
+    // athletes this phone has simply not seen yet (the server refuses the dangerous cases since 008, but the
+    // harmless-looking ones would still vanish). The admin sees the refusal in the Sync panel and can retry.
     if (this.link && this.link.localMeetId === this.o.getState().meet.id) {
-      try { await this.flush(); await this.pull(); } catch { /* publish proceeds with what we have */ }
+      try { await this.flush(); await this.pull(); } catch (e) {
+        const why = e instanceof Error ? e.message : String(e);
+        const msg = `Not published: could not fetch the latest scores and roster first (${why}). Check the connection and try again.`;
+        this.setStatus({ publishError: msg });
+        throw new Error(msg);
+      }
     }
     const state = this.o.getState();
     const meetId = this.link?.localMeetId === state.meet.id ? this.link.meetId : newMeetUuid();
@@ -256,14 +270,18 @@ export class SyncController {
     } catch (e) {
       this.fail(e);
       this.setStatus({ publishError: e instanceof Error ? e.message : String(e) });
+      // The server refused (scored athlete, accepted registration, cap...): stop shielding local deletions so the
+      // next pull restores the server's roster on this phone. A network failure keeps them pending for the retry.
+      if (!isNetworkError(e)) this.removedAthletes.clear();
       throw e;
     }
   }
 
-  // Joined phone: ask the server whether `pin` is this meet's admin PIN (zt_check_admin_pin, 007). The join RPC no
-  // longer returns admin_pin, so this is the only way a volunteer phone can unlock admin controls.
-  async checkAdminPin(pin: string): Promise<boolean> {
-    if (!this.link) return false;
+  // Linked phone: ask the server whether `pin` is this meet's admin PIN (zt_check_admin_pin, 007). The join RPC no
+  // longer returns admin_pin, so this is the only way a volunteer phone can unlock admin controls. Resolves null when
+  // this phone is not linked, so the caller can fall back to its own local meet's PIN.
+  async checkAdminPin(pin: string): Promise<boolean | null> {
+    if (!this.link) return null;
     return checkAdminPin(this.o.client, this.link.joinCode, pin);
   }
 
@@ -311,12 +329,21 @@ export class SyncController {
         added++;
       }
     }
+    const localAthletes = new Set<string>();
     for (const a of state.athletes) {
+      localAthletes.add(a.id);
       const sig = athleteSig(a);
       if (this.knownAthletes.get(a.id) !== sig) {
         this.queue = enqueue(this.queue, { table: 'athletes', id: a.id, row: athleteToRow(a, this.link.meetId) as unknown as Record<string, unknown> }, this.now());
         this.knownAthletes.set(a.id, sig);
         added++;
+      }
+    }
+    // Admin phone: an athlete we knew about that is gone locally was deleted here. Remember it so the next pull does
+    // not bring it back before the republish (the hook republishes on roster-id changes) carries the deletion.
+    if (this.link.role === 'admin') {
+      for (const id of Array.from(this.knownAthletes.keys())) {
+        if (!localAthletes.has(id)) { this.knownAthletes.delete(id); this.removedAthletes.add(id); }
       }
     }
     if (added) { this.persistQueue(); this.setStatus({}); }
@@ -402,8 +429,11 @@ export class SyncController {
       if (changed) patch.results = merged;
     }
     // An empty roster from the server (meet missing, wiped, or a bad filter) never erases a local one.
-    if (!hasPendingAthletes && (athletes.length > 0 || state.athletes.length === 0)) {
-      const { merged, changed } = mergeAthletes(state.athletes, athletes);
+    const incomingAthletes = this.link.role === 'admin' && this.removedAthletes.size
+      ? athletes.filter((a) => !this.removedAthletes.has(a.id))   // pending local deletions (R5)
+      : athletes;
+    if (!hasPendingAthletes && (incomingAthletes.length > 0 || state.athletes.length === 0)) {
+      const { merged, changed } = mergeAthletes(state.athletes, incomingAthletes);
       if (changed) {
         patch.athletes = merged;
         for (const a of merged) this.knownAthletes.set(a.id, athleteSig(a));
