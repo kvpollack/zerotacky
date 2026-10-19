@@ -3,7 +3,7 @@ import type { AppState, Athlete, Division, EventDef, Meet, Result } from '../typ
 
 export interface MeetRow {
   id: string; slug: string; name: string; date: string | null; owner_id?: string | null;
-  join_code?: string; admin_pin: string; run_order_method: string; tiebreaker_rule: string;
+  join_code?: string; admin_pin: string | null; run_order_method: string; tiebreaker_rule: string;
   available_plates: number[]; collar_weight_per_pair: number; stations: { id: string; label: string }[];
   is_demo: boolean;
   updated_at?: string;   // server-side; set by zt_publish_meet, read by pullChanges as the config watermark
@@ -44,7 +44,7 @@ export function meetToRow(meet: Meet, extra: PublishExtra): MeetRow {
     slug: extra.slug,
     name: meet.name,
     date: meet.date || null,
-    admin_pin: meet.adminPin || '1050',
+    admin_pin: meet.adminPin || null,   // null = keep the server's PIN (008); a joined phone never holds it
     run_order_method: meet.runOrderMethod,
     tiebreaker_rule: meet.tiebreakerRule,
     available_plates: [...meet.availablePlates],
@@ -86,7 +86,7 @@ export function resultToRow(r: Result, meetId: string, deviceId: string | null =
 // ---------- from rows ----------
 export function rowToMeet(row: MeetRow): Meet {
   return {
-    id: row.id, name: row.name, date: row.date ?? '', adminPin: row.admin_pin,
+    id: row.id, name: row.name, date: row.date ?? '', adminPin: row.admin_pin ?? undefined,
     runOrderMethod: row.run_order_method as Meet['runOrderMethod'],
     tiebreakerRule: row.tiebreaker_rule as Meet['tiebreakerRule'],
     availablePlates: [...row.available_plates].map(Number).sort((a, b) => b - a),

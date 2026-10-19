@@ -13,15 +13,17 @@ function memStorage() {
   return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k), _m: m };
 }
 
-// A fake "phone": state holder + controller wired like the hook would.
-function phone(server, deviceId, initialState, now) {
+// A fake "phone": state holder + controller wired like the hook would. `asyncIncoming` applies onIncoming on the
+// next macrotask, the way React commits a setState (Astra G2-H2: the synchronous default hid a real race).
+function phone(server, deviceId, initialState, now, { asyncIncoming = false } = {}) {
   const storage = memStorage();
   const box = { state: initialState, incoming: [] , statuses: [] };
   const client = C.createSyncClient({ url: 'https://x.supabase.co', anonKey: 'A', fetchImpl: server.fetchImpl });
+  const apply = (patch) => { box.incoming.push(patch); box.state = { ...box.state, ...patch }; };
   const ctl = new K.SyncController({
     client, storage, deviceId,
     getState: () => box.state,
-    onIncoming: (patch) => { box.incoming.push(patch); box.state = { ...box.state, ...patch }; },
+    onIncoming: (patch) => { if (asyncIncoming) setTimeout(() => apply(patch), 0); else apply(patch); },
     onStatus: (s) => box.statuses.push(s.state),
     now,
   });
@@ -442,5 +444,388 @@ describe('controller helpers', () => {
     assert.equal(K.isNetworkError(new C.SyncError(503, 'x')), true);
     assert.equal(K.isNetworkError(new TypeError('Failed to fetch')), true);
     assert.equal(K.isNetworkError(new C.SyncError(401, 'x')), false);
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------------
+// Sign-out behaviour (Astra A4, 10/17). Own fake client: every call records the bearer it was made under, and
+// promises can be held open to simulate work in flight across a sign-out.
+// ---------------------------------------------------------------------------------------------------------------
+const A4MB = await import('../lib/meetBuilder.ts');
+
+// Each call is { kind, table|fn, token, joinCode, resolve, reject } and resolves only when the test says so,
+// unless `auto` is true.
+function a4FakeClient(log, { token = null, joinCode = null, auto = true } = {}) {
+  const pend = (kind, name, extra = {}) =>
+    new Promise((resolve, reject) => {
+      const entry = { kind, name, token, joinCode, ...extra, resolve, reject };
+      log.push(entry);
+      if (auto) resolve(entry.autoValue ?? undefined);
+    });
+  const client = {
+    select: (table, query) => pend('select', table, { query, autoValue: [] }),
+    upsert: (table, rows) => pend('upsert', table, { rows }),
+    insert: (table, rows) => pend('insert', table, { rows, autoValue: rows }),
+    update: (table) => pend('update', table),
+    del: (table) => pend('del', table),
+    rpc: (fn, args) => pend('rpc', fn, { args, autoValue: { id: 'srv-uuid-1', join_code: 'ABC234' } }),
+    withJoinCode: (code) => a4FakeClient(log, { token, joinCode: code, auto }),
+    withAccessToken: (t) => a4FakeClient(log, { token: t ?? null, joinCode, auto }),
+  };
+  return client;
+}
+
+function a4Controller({ auto = true, storage = memStorage(), state } = {}) {
+  const log = [];
+  const st = state ?? A4MB.createBlankMeet('A4 Meet', '2026-11-01');
+  const statuses = [];
+  const ctl = new K.SyncController({
+    client: a4FakeClient(log, { auto }),
+    storage,
+    deviceId: 'dev-test',
+    getState: () => st,
+    onIncoming: () => {},
+    onStatus: (s) => statuses.push({ ...s }),
+  });
+  return { ctl, log, statuses, st, storage };
+}
+
+describe('SyncController sign-out (A4)', () => {
+  test('account publish tags the link auth=account; key publish tags auth=key; attach tags auth=join', async () => {
+    const a = a4Controller();
+    a.ctl.setAccessToken('TOKEN_A');
+    const link = await a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, null);
+    assert.equal(link.auth, 'account');
+    assert.equal(a.log.at(-1).token, 'TOKEN_A');
+
+    const k = a4Controller();
+    const klink = await k.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, 'legacy-key');
+    assert.equal(klink.auth, 'key');
+
+    const j = a4Controller();
+    const jl = j.ctl.attach({ state: j.st, slug: 'a4-meet', joinCode: 'ZZZ999', latestServerAt: null, updatedAt: null }, 'device');
+    assert.equal(jl.auth, 'join');
+  });
+
+  test('keyless publish with no token is refused before any network call', async () => {
+    const a = a4Controller();
+    await assert.rejects(() => a.ctl.publish({ slug: 'x', stations: [], isDemo: false }, null), /Sign in/);
+    assert.equal(a.log.length, 0);
+  });
+
+  test('sign-out pauses an account link: queue kept, nothing sent, status paused; sign-in resumes', async () => {
+    const a = a4Controller();
+    a.ctl.setAccessToken('TOKEN_A');
+    await a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, null);
+    a.log.length = 0;
+
+    a.ctl.setAccessToken(null);
+    assert.equal(a.ctl.paused, true);
+    assert.equal(a.ctl.status.state, 'paused');
+    assert.match(a.ctl.status.error, /sign back in/i);
+
+    a.ctl.setLive({ station: 'A', current_event_id: null, current_division_id: null, current_athlete_id: null, lane2_athlete_id: null });
+    assert.equal(a.ctl.status.pending, 1, 'queued, not dropped');
+    await a.ctl.tick();
+    await a.ctl.flush();
+    await a.ctl.pull();
+    assert.equal(a.log.length, 0, 'no network while paused');
+    assert.ok(a.ctl.link, 'link kept');
+
+    a.ctl.setAccessToken('TOKEN_A');
+    assert.equal(a.ctl.paused, false);
+    assert.equal(a.ctl.status.state, 'idle');
+    await a.ctl.tick();
+    const upserts = a.log.filter((e) => e.kind === 'upsert');
+    assert.equal(upserts.length, 1);
+    assert.equal(upserts[0].token, 'TOKEN_A');
+    assert.equal(a.ctl.status.pending, 0);
+  });
+
+  test('key and join links are accountless by design: sign-out does not pause them', async () => {
+    const k = a4Controller();
+    k.ctl.setAccessToken('TOKEN_A');
+    await k.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, 'legacy-key');
+    k.ctl.setAccessToken(null);
+    assert.equal(k.ctl.paused, false);
+    assert.equal(k.ctl.status.state, 'idle');
+
+    const j = a4Controller();
+    j.ctl.attach({ state: j.st, slug: 'a4-meet', joinCode: 'ZZZ999', latestServerAt: null, updatedAt: null }, 'device');
+    j.ctl.setAccessToken('TOKEN_A');
+    j.ctl.setAccessToken(null);
+    assert.equal(j.ctl.paused, false);
+  });
+
+  test('a publish in flight when the account signs out does not create the link (session generation)', async () => {
+    const a = a4Controller({ auto: false });
+    a.ctl.setAccessToken('OLD_TOKEN');
+    const p = a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, null);
+    await Promise.resolve();
+    const rpc = a.log.find((e) => e.kind === 'rpc' && e.name === 'zt_publish_meet');
+    assert.ok(rpc, 'publish rpc sent');
+    assert.equal(rpc.token, 'OLD_TOKEN');
+
+    a.ctl.setAccessToken(null);        // sign out while the server is still working
+    rpc.resolve({ id: 'srv-uuid-1', join_code: 'ABC234' });   // ...and then the old call completes
+    await assert.rejects(p, /Sign-in changed/);
+    assert.equal(a.ctl.link, null, 'no admin link recreated from a stale completion');
+    assert.equal(a.storage.getItem(K.LINK_KEY), null);
+  });
+
+  test('a flush in flight across a sign-out leaves the queue alone and sends nothing more', async () => {
+    const a = a4Controller({ auto: false });
+    a.ctl.setAccessToken('TOKEN_A');
+    const pub = a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, null);
+    await Promise.resolve();
+    a.log.find((e) => e.kind === 'rpc').resolve({ id: 'srv-uuid-1', join_code: 'ABC234' });
+    await pub;
+    a.log.length = 0;
+
+    a.ctl.setLive({ station: 'A', current_event_id: null, current_division_id: null, current_athlete_id: null, lane2_athlete_id: null });
+    const f = a.ctl.flush();
+    await Promise.resolve();
+    const up = a.log.find((e) => e.kind === 'upsert');
+    assert.ok(up);
+    a.ctl.setAccessToken(null);
+    up.resolve();
+    await f;
+    assert.equal(a.ctl.status.pending, 1, 'queue kept for the next session');
+    assert.equal(a.log.filter((e) => e.kind === 'upsert').length, 1, 'no anonymous follow-up write');
+  });
+
+  test('legacy stored links without auth are treated as key (admin) or join (device)', () => {
+    const storage = memStorage();
+    storage.setItem(K.LINK_KEY, JSON.stringify({ meetId: 'srv-uuid-1', localMeetId: 'x', slug: 's', joinCode: 'ABC234', role: 'admin', since: null }));
+    const a = a4Controller({ storage });
+    assert.equal(a.ctl.linkAuth(a.ctl.link), 'key');
+    assert.equal(a.ctl.paused, false);
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------------
+// Astra gate round (10/17 pm): an account link is bound to the user that published it; publish refusals persist in
+// status.publishError; joined phones verify the admin PIN server-side.
+// ---------------------------------------------------------------------------------------------------------------
+describe('SyncController account binding + publish errors (gate round)', () => {
+  test('account publish records the user id on the link', async () => {
+    const a = a4Controller();
+    a.ctl.setAccessToken('TOKEN_A', 'user-a');
+    const link = await a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null);
+    assert.equal(link.auth, 'account');
+    assert.equal(link.userId, 'user-a');
+    const stored = JSON.parse(a.storage.getItem(K.LINK_KEY));
+    assert.equal(stored.userId, 'user-a');
+  });
+
+  test('a different signed-in account does not resume the queue: still paused, nothing sent, clear message', async () => {
+    const a = a4Controller();
+    a.ctl.setAccessToken('TOKEN_A', 'user-a');
+    await a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null);
+    a.ctl.setAccessToken(null);
+    a.ctl.setLive({ station: 'A', current_event_id: null, current_division_id: null, current_athlete_id: null, lane2_athlete_id: null });
+    a.log.length = 0;
+
+    a.ctl.setAccessToken('TOKEN_B', 'user-b');
+    assert.equal(a.ctl.paused, true);
+    assert.equal(a.ctl.status.state, 'paused');
+    assert.match(a.ctl.status.error, /different ZeroTacky account/);
+    await a.ctl.tick();
+    await a.ctl.flush();
+    assert.equal(a.log.length, 0, 'no network under the other account');
+    assert.equal(a.ctl.status.pending, 1, 'queue kept for the owner');
+    await assert.rejects(() => a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null), /different ZeroTacky account/);
+    assert.equal(a.log.length, 0);
+
+    // the owner comes back: resumes and flushes under their token
+    a.ctl.setAccessToken('TOKEN_A', 'user-a');
+    assert.equal(a.ctl.paused, false);
+    await a.ctl.tick();
+    const upserts = a.log.filter((e) => e.kind === 'upsert');
+    assert.equal(upserts.length, 1);
+    assert.equal(upserts[0].token, 'TOKEN_A');
+  });
+
+  test('a link written before user ids existed (no userId) resumes for any token, as before', async () => {
+    const storage = memStorage();
+    storage.setItem(K.LINK_KEY, JSON.stringify({ meetId: 'srv-uuid-1', localMeetId: 'x', slug: 'g', joinCode: 'ABC234', role: 'admin', auth: 'account', since: null }));
+    const a = a4Controller({ storage });
+    assert.equal(a.ctl.paused, true, 'no token yet');
+    a.ctl.setAccessToken('TOKEN_B', 'user-b');
+    assert.equal(a.ctl.paused, false);
+  });
+
+  test('a signed-in phone that also holds a key sends the key (claim path) and the link is a key link', async () => {
+    const a = a4Controller();
+    a.ctl.setAccessToken('TOKEN_A', 'user-a');
+    const link = await a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, 'legacy-key');
+    const call = a.log.find((e) => e.kind === 'rpc' && e.name === 'zt_publish_meet');
+    assert.equal(call.args.p_key, 'legacy-key');
+    assert.equal(call.token, 'TOKEN_A');
+    assert.equal(link.auth, 'key');
+    a.ctl.setAccessToken(null);
+    assert.equal(a.ctl.paused, false, 'key links are accountless');
+  });
+
+  // Resolve pending fake calls (newest first is fine) until `stop(entry)` matches one, which is returned unresolved.
+  // Yields through a timer so the controller's own awaits get to run; bounded so a bug fails instead of hanging.
+  // (Windows timers tick at ~15 ms, so the round budget stays small.)
+  async function driveUntil(a, stop, value = (e) => e.autoValue) {
+    let idle = 0;
+    for (let i = 0; i < 120; i++) {
+      const hit = a.log.find((e) => !e.done && stop(e));
+      if (hit) return hit;
+      const next = a.log.find((e) => !e.done);
+      if (next) { idle = 0; next.done = true; next.resolve(value(next)); } else if (++idle >= 6) return null;   // nothing pending: drained
+      await new Promise((r) => setTimeout(r, 0));
+    }
+    throw new Error('driveUntil: no matching call after 120 rounds');
+  }
+  const PUBLISH_OK = (e) => (e.kind === 'rpc' ? { id: 'srv-uuid-1', join_code: 'ABC234' } : e.autoValue);
+  const isPublish = (e) => e.kind === 'rpc' && e.name === 'zt_publish_meet';
+  const never = () => false;
+
+  test('a refused publish stays visible in status.publishError across successful ticks; the next good publish clears it', async () => {
+    const a = a4Controller({ auto: false });
+    a.ctl.setAccessToken('TOKEN_A', 'user-a');
+    const p1 = a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null);
+    const first = await driveUntil(a, isPublish);
+    first.done = true; first.resolve(PUBLISH_OK(first));
+    await p1;
+    assert.equal(a.ctl.status.publishError, null);
+
+    const p2 = a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null).catch((e) => e);
+    const rpc = await driveUntil(a, isPublish);
+    rpc.done = true;
+    rpc.reject(new C.SyncError(400, 'Jessica Rucci has 1 recorded result(s) and cannot be removed.'));
+    const err = await p2;
+    assert.match(err.message, /recorded result/);
+    assert.match(a.ctl.status.publishError, /recorded result/);
+    assert.equal(a.ctl.status.state, 'error');
+
+    // a successful tick clears `error` but keeps `publishError`
+    const t = a.ctl.tick();
+    assert.equal(await driveUntil(a, never), null);   // drains everything the tick asks for
+    await t;
+    assert.equal(a.ctl.status.state, 'idle');
+    assert.equal(a.ctl.status.error, null);
+    assert.match(a.ctl.status.publishError, /recorded result/);
+
+    const p3 = a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null);
+    const third = await driveUntil(a, isPublish);
+    third.done = true; third.resolve(PUBLISH_OK(third));
+    await p3;
+    assert.equal(a.ctl.status.publishError, null);
+  });
+
+  test('checkAdminPin asks the server with the join code; null when not linked (R1: the hook then uses local state)', async () => {
+    const a = a4Controller();
+    assert.equal(await a.ctl.checkAdminPin('1234'), null);
+    assert.equal(a.log.length, 0);
+    a.ctl.attach({ state: a.st, slug: 'g', joinCode: 'ZZZ999', latestServerAt: null, updatedAt: null }, 'device');
+    const p = a.ctl.checkAdminPin('1234');
+    const call = a.log.find((e) => e.kind === 'rpc' && e.name === 'zt_check_admin_pin');
+    assert.deepEqual(call.args, { p_code: 'ZZZ999', p_pin: '1234' });
+    // the fake resolves rpc calls with the publish shape; anything but `true` is a refusal
+    assert.equal(await p, false);
+  });
+
+  // Astra rehearsal R2 (10/17): a re-publish whose pre-pull fails must not go ahead with the stale roster.
+  test('publish aborts when the pre-publish flush/pull fails; nothing reaches the server, publishError says why', async () => {
+    const srv = fakeServer();
+    const admin = phone(srv, 'a-r2', P.getInitialSeedState('strongfest-2026'), clock);
+    await admin.ctl.publish({ slug: 'r2' }, 'GOODKEY');
+    const athletesBefore = srv.db.athletes.length;
+    const calls = srv.log.length;
+    // roster shrinks locally while the network is down
+    admin.mutate((s) => ({ ...s, athletes: s.athletes.slice(1) }));
+    srv.setOffline(true);
+    await assert.rejects(admin.ctl.publish({ slug: 'r2' }, 'GOODKEY'), /Not published: could not fetch the latest/);
+    assert.match(admin.ctl.status.publishError, /Not published/);
+    srv.setOffline(false);
+    assert.equal(srv.db.athletes.length, athletesBefore);
+    assert.ok(!srv.log.slice(calls).some((e) => e.path.endsWith('/rpc/zt_publish_meet')));
+    // back online: the retry publishes and clears the message
+    await admin.ctl.publish({ slug: 'r2' }, 'GOODKEY');
+    assert.equal(admin.ctl.status.publishError, null);
+    assert.equal(srv.db.athletes.length, athletesBefore - 1);
+  });
+
+  // Astra rehearsal R5 (10/17): roster removals on the admin phone survive the poll until the republish carries them.
+  test('R5: a locally removed athlete is not resurrected by a pull; the republish deletes it on the server', async () => {
+    const srv = fakeServer();
+    const admin = phone(srv, 'a-r5', P.getInitialSeedState('strongfest-2026'), clock);
+    await admin.ctl.publish({ slug: 'r5' }, 'GOODKEY');
+    const gone = admin.state.athletes[2];
+    admin.mutate((s) => ({ ...s, athletes: s.athletes.filter((a) => a.id !== gone.id) }));
+    await admin.ctl.tick();                                     // the 3 s poll before the 1.5 s republish fires
+    assert.ok(!admin.state.athletes.some((a) => a.id === gone.id), 'pull brought the deleted athlete back');
+    assert.ok(srv.db.athletes.some((a) => a.id === gone.id));   // still on the server until the publish
+    await admin.ctl.publish({ slug: 'r5' }, 'GOODKEY');
+    assert.ok(!srv.db.athletes.some((a) => a.id === gone.id));
+    // a judge phone sees the roster shrink
+    const judge = phone(srv, 'j-r5', P.getInitialSeedState('york-iron-2026'), clock);
+    const remote = await judge.ctl.lookupJoinCode(admin.ctl.link.joinCode);
+    assert.ok(!remote.state.athletes.some((a) => a.id === gone.id));
+  });
+  test('R5: removing a scored athlete is refused by the server; publishError says so and the next pull restores the athlete', async () => {
+    const srv = fakeServer();
+    const admin = phone(srv, 'a-r5b', P.getInitialSeedState('strongfest-2026'), clock);
+    await admin.ctl.publish({ slug: 'r5b' }, 'GOODKEY');
+    const judge = phone(srv, 'j-r5b', P.getInitialSeedState('york-iron-2026'), clock);
+    const remote = await judge.ctl.lookupJoinCode(admin.ctl.link.joinCode);
+    judge.state = remote.state; judge.ctl.attach(remote);
+    judge.mutate((s) => score(s, 0, 0, { reps: 5, locked: true }, T += 1000));
+    await judge.ctl.tick();
+    await admin.ctl.tick();
+    const scored = admin.state.athletes[0];
+    assert.ok(admin.state.results.some((r) => r.athleteId === scored.id));
+    admin.mutate((s) => ({ ...s, athletes: s.athletes.filter((a) => a.id !== scored.id) }));
+    await admin.ctl.tick();
+    assert.ok(!admin.state.athletes.some((a) => a.id === scored.id));
+    await assert.rejects(admin.ctl.publish({ slug: 'r5b' }, 'GOODKEY'), /recorded result/);
+    assert.match(admin.ctl.status.publishError, /recorded result/);
+    assert.ok(srv.db.athletes.some((a) => a.id === scored.id));
+    await admin.ctl.tick();
+    assert.ok(admin.state.athletes.some((a) => a.id === scored.id), 'refused deletion was not restored by the pull');
+  });
+  // Astra gate 2, G2-H2 (10/17 night): the pull's merged roster reaches React asynchronously; publish must not read
+  // the stale pre-pull state. The judge adds a walk-on; the stale admin's first healthy publish has to keep it.
+  test('G2-H2: a walk-on fetched by the pre-publish pull is in the publish payload even before the host commits it', async () => {
+    const srv = fakeServer();
+    const admin = phone(srv, 'a-h2', P.getInitialSeedState('strongfest-2026'), clock, { asyncIncoming: true });
+    await admin.ctl.publish({ slug: 'h2' }, 'GOODKEY');
+    const judge = phone(srv, 'j-h2', P.getInitialSeedState('york-iron-2026'), clock);
+    const remote = await judge.ctl.lookupJoinCode(admin.ctl.link.joinCode);
+    judge.state = remote.state; judge.ctl.attach(remote);
+    const walkon = { ...judge.state.athletes[0], id: 'walkon-h2', name: 'Walk On', lotNumber: 99 };
+    judge.mutate((s) => ({ ...s, athletes: [...s.athletes, walkon] }));
+    await judge.ctl.tick();
+    assert.ok(srv.db.athletes.some((a) => a.id === 'walkon-h2'));
+    // admin edits a weight (a config change -> republish) while its React state still lacks the walk-on
+    admin.mutate((s) => ({ ...s, meet: { ...s.meet, collarWeightPerPair: 5 } }));
+    assert.ok(!admin.state.athletes.some((a) => a.id === 'walkon-h2'));
+    const calls = srv.log.length;
+    await admin.ctl.publish({ slug: 'h2' }, 'GOODKEY');
+    assert.ok(!admin.state.athletes.some((a) => a.id === 'walkon-h2'), 'test premise: host has not committed the pull yet');
+    const pub = srv.log.slice(calls).find((e) => e.path.endsWith('/rpc/zt_publish_meet'));
+    assert.ok(pub.body.p_athletes.some((a) => a.id === 'walkon-h2'), 'publish payload omitted the pulled walk-on');
+    assert.ok(srv.db.athletes.some((a) => a.id === 'walkon-h2'), 'server lost the walk-on');
+    await new Promise((r) => setTimeout(r, 5));
+    assert.ok(admin.state.athletes.some((a) => a.id === 'walkon-h2'));   // and the host catches up
+    const again = await judge.ctl.lookupJoinCode(admin.ctl.link.joinCode);
+    assert.ok(again.state.athletes.some((a) => a.id === 'walkon-h2'));
+  });
+  test('R1: the admin phone publishes without a PIN and the server keeps its own (null admin_pin never overwrites)', async () => {
+    const srv = fakeServer();
+    const admin = phone(srv, 'a-r1', P.getInitialSeedState('strongfest-2026'), clock);
+    admin.state = { ...admin.state, meet: { ...admin.state.meet, adminPin: '7391' } };
+    await admin.ctl.publish({ slug: 'r1' }, 'GOODKEY');
+    assert.equal(srv.db.meets[0].admin_pin, '7391');
+    const { adminPin: _x, ...noPin } = admin.state.meet;
+    void _x;
+    admin.state = { ...admin.state, meet: noPin };
+    await admin.ctl.publish({ slug: 'r1' }, 'GOODKEY');
+    assert.equal(srv.db.meets[0].admin_pin, '7391');
   });
 });

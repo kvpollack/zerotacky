@@ -133,10 +133,10 @@ export function normalizeState(raw: unknown): AppState {
     tiebreakerRule: rawMeet.tiebreakerRule === 'final_event' ? 'final_event' : 'event_wins',
     availablePlates,
     collarWeightPerPair: Number(rawMeet.collarWeightPerPair) || 0,
-    adminPin:
-      typeof rawMeet.adminPin === 'string' && rawMeet.adminPin.trim() !== ''
-        ? rawMeet.adminPin.trim()
-        : '1050',
+    // Absent stays absent (R1, Astra rehearsal 10/17): a phone that joined by code never receives the PIN (007), and
+    // filling in '1050' here made useRoleLock compare locally instead of asking the server. createBlankMeet and the
+    // presets still start a fresh local meet at '1050'.
+    ...(typeof rawMeet.adminPin === 'string' && rawMeet.adminPin.trim() !== '' ? { adminPin: rawMeet.adminPin.trim() } : {}),
     isDemo,
     stations,
     slug,

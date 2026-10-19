@@ -183,14 +183,16 @@ export default function MeetSection({
             type="text"
             inputMode="numeric"
             maxLength={6}
-            value={meet.adminPin ?? '1050'}
+            value={meet.adminPin ?? ''}
+            placeholder="Set on the publishing phone"
             onChange={(e) => {
               const digits = e.target.value.replace(/\D/g, '').slice(0, 6);
               updateMeetConfig({ adminPin: digits });
             }}
             onBlur={() => {
+              // R1: an absent PIN (phone that joined by code) stays absent; a typed PIN shorter than 4 digits resets
               const cur = String(meet.adminPin ?? '');
-              if (cur.length < 4) updateMeetConfig({ adminPin: '1050' });
+              if (cur.length > 0 && cur.length < 4) updateMeetConfig({ adminPin: '1050' });
             }}
             className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-sm font-mono font-bold text-zt-text"
           />

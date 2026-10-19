@@ -1,0 +1,869 @@
+{
+  "auth": {
+    "signedIn": true,
+    "userId": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8"
+  },
+  "created": {
+    "status": 200,
+    "body": {
+      "id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+      "date": "2026-12-05",
+      "name": "Astra Gate3 20261017",
+      "slug": "astra-gate3-20261017",
+      "venue": null,
+      "is_demo": false,
+      "owner_id": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8",
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "admin_pin": "7391",
+      "join_code": "T93TUQ",
+      "created_at": "2026-10-17T22:06:22.32596+00:00",
+      "federation": null,
+      "updated_at": "2026-10-17T22:06:22.32596+00:00",
+      "athlete_cap": null,
+      "athlete_count": 0,
+      "pending_count": 0,
+      "division_count": 0,
+      "results_status": "not_started",
+      "tiebreaker_rule": "event_wins",
+      "available_plates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "is_public_listed": false,
+      "promoter_contact": null,
+      "run_order_method": "reverse_overall",
+      "entry_fee_display": null,
+      "competition_status": "upcoming",
+      "registration_count": 0,
+      "registration_status": "not_provided",
+      "registration_deadline": null,
+      "collar_weight_per_pair": 0
+    }
+  },
+  "initialPublish": {
+    "status": 200,
+    "body": {
+      "id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+      "join_code": "T93TUQ"
+    }
+  },
+  "joinPinAbsent": null,
+  "nullPinUI": {
+    "status": 200,
+    "sent": null,
+    "stored": "7391"
+  },
+  "pinShapes": {
+    "absent": {
+      "status": 200,
+      "stored": "7391"
+    },
+    "blank": {
+      "status": 200,
+      "stored": "7391"
+    }
+  },
+  "staleBefore": [
+    "Gate3 One"
+  ],
+  "healthyStale": {
+    "status": 200,
+    "names": [
+      "Gate3 One",
+      "Gate3 Walkon Two",
+      "Gate3 Walkon One"
+    ],
+    "server": [
+      {
+        "id": "g3-one",
+        "name": "Gate3 One"
+      },
+      {
+        "id": "ath-1792274837240-2",
+        "name": "Gate3 Walkon Two"
+      },
+      {
+        "id": "ath-1792274836524",
+        "name": "Gate3 Walkon One"
+      }
+    ],
+    "judge": [
+      "Gate3 One",
+      "Gate3 Walkon One",
+      "Gate3 Walkon Two"
+    ]
+  },
+  "reloadBefore": [
+    "Gate3 One",
+    "Gate3 Walkon Two",
+    "Gate3 Walkon One"
+  ],
+  "reloadStale": {
+    "status": 200,
+    "names": [
+      "Gate3 One",
+      "Gate3 Walkon Two",
+      "Gate3 Walkon One",
+      "Gate3 Reload One",
+      "Gate3 Reload Two"
+    ],
+    "server": [
+      {
+        "id": "g3-one",
+        "name": "Gate3 One"
+      },
+      {
+        "id": "ath-1792274837240-2",
+        "name": "Gate3 Walkon Two"
+      },
+      {
+        "id": "ath-1792274847073-3",
+        "name": "Gate3 Reload One"
+      },
+      {
+        "id": "ath-1792274847273-4",
+        "name": "Gate3 Reload Two"
+      },
+      {
+        "id": "ath-1792274836524",
+        "name": "Gate3 Walkon One"
+      }
+    ],
+    "judge": [
+      "Gate3 One",
+      "Gate3 Walkon One",
+      "Gate3 Walkon Two",
+      "Gate3 Reload One",
+      "Gate3 Reload Two"
+    ]
+  },
+  "capacitySetupPublish": {
+    "status": 200,
+    "body": {
+      "id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+      "join_code": "T93TUQ"
+    }
+  },
+  "capacityListingSetup": {
+    "status": 200,
+    "body": {
+      "id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+      "date": "2026-12-05",
+      "name": "Astra Gate3 20261017",
+      "slug": "astra-gate3-20261017",
+      "venue": null,
+      "is_demo": false,
+      "owner_id": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8",
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "admin_pin": "7391",
+      "join_code": "T93TUQ",
+      "created_at": "2026-10-17T22:06:22.32596+00:00",
+      "federation": null,
+      "updated_at": "2026-10-17T22:07:46.291152+00:00",
+      "athlete_cap": 3,
+      "results_status": "not_started",
+      "tiebreaker_rule": "event_wins",
+      "available_plates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "is_public_listed": false,
+      "promoter_contact": null,
+      "run_order_method": "reverse_overall",
+      "entry_fee_display": null,
+      "competition_status": "upcoming",
+      "registration_status": "open",
+      "registration_deadline": null,
+      "collar_weight_per_pair": 0
+    }
+  },
+  "registration": {
+    "status": 200,
+    "body": {
+      "id": "3f01fc1d-0385-4925-afec-d74421593e33",
+      "status": "pending"
+    }
+  },
+  "accept": {
+    "status": 200,
+    "body": {
+      "id": "3f01fc1d-0385-4925-afec-d74421593e33",
+      "name": "Gate3 Registrant",
+      "paid": false,
+      "email": "astra-gate3-registrant@zerotacky.com",
+      "status": "accepted",
+      "meet_id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+      "user_id": null,
+      "athlete_id": "reg-ath-3f01fc1d",
+      "bodyweight": null,
+      "created_at": "2026-10-17T22:07:46.40008+00:00",
+      "updated_at": "2026-10-17T22:07:46.502384+00:00",
+      "waitlisted": false,
+      "division_id": "g3-open",
+      "waiver_version": "a995ce0eab26",
+      "emergency_contact": "Gate3 Contact 2025550100",
+      "waiver_accepted_at": "2026-10-17T22:07:46.40008+00:00"
+    }
+  },
+  "fourthFloorAdd": {
+    "status": 201
+  },
+  "closeOverCapUI": {
+    "status": 200,
+    "body": {
+      "id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+      "date": "2026-12-05",
+      "name": "Astra Gate3 20261017",
+      "slug": "astra-gate3-20261017",
+      "venue": null,
+      "is_demo": false,
+      "owner_id": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8",
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "admin_pin": "7391",
+      "join_code": "T93TUQ",
+      "created_at": "2026-10-17T22:06:22.32596+00:00",
+      "federation": null,
+      "updated_at": "2026-10-17T22:08:14.020332+00:00",
+      "athlete_cap": 3,
+      "results_status": "not_started",
+      "tiebreaker_rule": "event_wins",
+      "available_plates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "is_public_listed": false,
+      "promoter_contact": null,
+      "run_order_method": "reverse_overall",
+      "entry_fee_display": null,
+      "competition_status": "upcoming",
+      "registration_status": "closed",
+      "registration_deadline": null,
+      "collar_weight_per_pair": 0
+    }
+  },
+  "unchangedOverCapSave": {
+    "status": 200,
+    "body": {
+      "id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2"
+    }
+  },
+  "fifthDashboardRefusal": "The roster has 5 athletes but the listing cap is 3. Raise the cap in Listing or remove athletes before saving.",
+  "lowerCapUI": {
+    "status": 200,
+    "cap": 2
+  },
+  "floorDivisionMove": {
+    "status": 200
+  },
+  "floorDivisionUI": "Gate3 Registrant\nastra-gate3-registrant@zerotacky.com\n\t\nGate3 Contact 2025550100\tGate3 Open\ncompeting in Gate3 Alternate\n\t\nACCEPTED\nOn Roster (Lot #1)\n\tSigned 2026-10-17\tUNPAID\t2026-10-17\t\nACCEPT\nDECLINE\nWITHDRAW",
+  "dashboardDivisionMoveBack": {
+    "status": 200
+  },
+  "dashboardDivisionBackUI": "Gate3 Registrant\nastra-gate3-registrant@zerotacky.com\n\t\nGate3 Contact 2025550100\tGate3 Open\t\nACCEPTED\nOn Roster (Lot #5)\n\tSigned 2026-10-17\tUNPAID\t2026-10-17\t\nACCEPT\nDECLINE\nWITHDRAW",
+  "dashboardDivisionMoveAlt": {
+    "status": 200
+  },
+  "dashboardDivisionAltUI": "Gate3 Registrant\nastra-gate3-registrant@zerotacky.com\n\t\nGate3 Contact 2025550100\tGate3 Open\ncompeting in Gate3 Alternate\n\t\nACCEPTED\nOn Roster (Lot #1)\n\tSigned 2026-10-17\tUNPAID\t2026-10-17\t\nACCEPT\nDECLINE\nWITHDRAW",
+  "registrationDivisionAfter": {
+    "status": 200,
+    "body": [
+      {
+        "id": "3f01fc1d-0385-4925-afec-d74421593e33",
+        "name": "Gate3 Registrant",
+        "paid": false,
+        "email": "astra-gate3-registrant@zerotacky.com",
+        "status": "accepted",
+        "meet_id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+        "user_id": null,
+        "athlete_id": "reg-ath-3f01fc1d",
+        "bodyweight": null,
+        "created_at": "2026-10-17T22:07:46.40008+00:00",
+        "updated_at": "2026-10-17T22:07:46.502384+00:00",
+        "waitlisted": false,
+        "division_id": "g3-open",
+        "waiver_version": "a995ce0eab26",
+        "emergency_contact": "Gate3 Contact 2025550100",
+        "waiver_accepted_at": "2026-10-17T22:07:46.40008+00:00"
+      }
+    ]
+  },
+  "missingRegisterBody": "Running a meet today? Scoring is at /scorer. Volunteers join at /join.\nOpen Meet-Day App\nVolunteer Join (/join)\nZEROTACKY\nOVERVIEW\nFIND A SHOW\nSTRONGMAN GYMS\nACCOUNT\nSIGN IN\nBACK TO STRONGMAN SHOWS\nNo competition at /register/astra-gate3-no-such-meet\n\nCheck the link from the promoter, or browse the shows list.\n\nBROWSE SHOWS\nZEROTACKY\n\nOffline-first strongman meet scoring, live multi-phone sync, and competition discovery.\n\nHome\nShows\nGyms\nAccount\nMeet-Day App",
+  "venue": {
+    "array": {
+      "status": 400,
+      "value": "Venue must be an object with facilityName, streetAddress, city, state, postalCode and country."
+    },
+    "nested": {
+      "status": 400,
+      "value": "Venue field \"city\" must be text."
+    },
+    "numeric": {
+      "status": 400,
+      "value": "Venue field \"city\" must be text."
+    },
+    "unknown": {
+      "status": 400,
+      "value": "Venue has an unexpected field \"planet\"."
+    },
+    "long": {
+      "status": 400,
+      "value": "Venue field \"city\" is too long (120 characters max)."
+    },
+    "listedMissing": {
+      "status": 400,
+      "value": "Publicly listed meets with a venue must include City, State and Country."
+    },
+    "normal": {
+      "status": 200,
+      "value": {
+        "city": "York",
+        "state": "PA",
+        "country": "US"
+      }
+    }
+  },
+  "venueRestore": {
+    "status": 200,
+    "body": {
+      "id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+      "date": "2026-12-05",
+      "name": "Astra Gate3 20261017",
+      "slug": "astra-gate3-20261017",
+      "venue": null,
+      "is_demo": false,
+      "owner_id": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8",
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "admin_pin": "7391",
+      "join_code": "T93TUQ",
+      "created_at": "2026-10-17T22:06:22.32596+00:00",
+      "federation": null,
+      "updated_at": "2026-10-17T22:09:23.58029+00:00",
+      "athlete_cap": 2,
+      "results_status": "not_started",
+      "tiebreaker_rule": "event_wins",
+      "available_plates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "is_public_listed": false,
+      "promoter_contact": null,
+      "run_order_method": "reverse_overall",
+      "entry_fee_display": null,
+      "competition_status": "upcoming",
+      "registration_status": "closed",
+      "registration_deadline": null,
+      "collar_weight_per_pair": 0
+    }
+  },
+  "reopenedForCapProbe": {
+    "status": 200,
+    "body": {
+      "id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+      "date": "2026-12-05",
+      "name": "Astra Gate3 20261017",
+      "slug": "astra-gate3-20261017",
+      "venue": null,
+      "is_demo": false,
+      "owner_id": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8",
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "admin_pin": "7391",
+      "join_code": "T93TUQ",
+      "created_at": "2026-10-17T22:06:22.32596+00:00",
+      "federation": null,
+      "updated_at": "2026-10-17T22:09:23.679323+00:00",
+      "athlete_cap": 2,
+      "results_status": "not_started",
+      "tiebreaker_rule": "event_wins",
+      "available_plates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "is_public_listed": false,
+      "promoter_contact": null,
+      "run_order_method": "reverse_overall",
+      "entry_fee_display": null,
+      "competition_status": "upcoming",
+      "registration_status": "open",
+      "registration_deadline": null,
+      "collar_weight_per_pair": 0
+    }
+  },
+  "intakeStillRefused": {
+    "status": 400,
+    "body": {
+      "code": "P0001",
+      "details": null,
+      "hint": null,
+      "message": "Astra Gate3 20261017 is full (4 of 2 spots taken). Contact the promoter to ask about a waitlist."
+    }
+  },
+  "closedFinal": {
+    "status": 200,
+    "body": {
+      "id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+      "date": "2026-12-05",
+      "name": "Astra Gate3 20261017",
+      "slug": "astra-gate3-20261017",
+      "venue": null,
+      "is_demo": false,
+      "owner_id": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8",
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "admin_pin": "7391",
+      "join_code": "T93TUQ",
+      "created_at": "2026-10-17T22:06:22.32596+00:00",
+      "federation": null,
+      "updated_at": "2026-10-17T22:09:23.870488+00:00",
+      "athlete_cap": 2,
+      "results_status": "not_started",
+      "tiebreaker_rule": "event_wins",
+      "available_plates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "is_public_listed": false,
+      "promoter_contact": null,
+      "run_order_method": "reverse_overall",
+      "entry_fee_display": null,
+      "competition_status": "upcoming",
+      "registration_status": "closed",
+      "registration_deadline": null,
+      "collar_weight_per_pair": 0
+    }
+  },
+  "directUpdateDenied": {
+    "status": 403,
+    "body": {
+      "code": "42501",
+      "details": null,
+      "hint": "Grant the required privileges to the current role with: GRANT UPDATE ON public.meets TO authenticated;",
+      "message": "permission denied for table meets"
+    }
+  },
+  "scoreSpot": {
+    "status": 201
+  },
+  "unscoredDeletion": {
+    "status": 200,
+    "body": {
+      "id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+      "join_code": "T93TUQ"
+    }
+  },
+  "scoredDeletion": {
+    "status": 400,
+    "body": {
+      "code": "P0001",
+      "details": null,
+      "hint": null,
+      "message": "Athlete Gate3 One has 1 recorded result(s) and cannot be removed. Mark the athlete withdrawn, or Reset scores first."
+    }
+  },
+  "scoredRestored": true,
+  "acceptedStillProtected": {
+    "status": 400,
+    "body": {
+      "code": "P0001",
+      "details": null,
+      "hint": null,
+      "message": "Gate3 Registrant is on the roster through an accepted registration. Decline or withdraw that registration in the promoter dashboard instead of deleting the athlete."
+    }
+  },
+  "failedPrepullStillAborts": {
+    "publishCalls": 0,
+    "message": "Not published: could not fetch the latest scores and roster first (Failed to fetch). Check the connection and try again."
+  },
+  "finalMeet": {
+    "status": 200,
+    "body": {
+      "id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+      "date": "2026-12-05",
+      "name": "Astra Gate3 20261017",
+      "slug": "astra-gate3-20261017",
+      "venue": null,
+      "is_demo": false,
+      "owner_id": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8",
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "admin_pin": "7391",
+      "join_code": "T93TUQ",
+      "created_at": "2026-10-17T22:06:22.32596+00:00",
+      "federation": null,
+      "updated_at": "2026-10-17T22:09:55.708648+00:00",
+      "athlete_cap": 2,
+      "athlete_count": 3,
+      "pending_count": 0,
+      "division_count": 2,
+      "results_status": "not_started",
+      "tiebreaker_rule": "event_wins",
+      "available_plates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "is_public_listed": false,
+      "promoter_contact": null,
+      "run_order_method": "reverse_overall",
+      "entry_fee_display": null,
+      "competition_status": "upcoming",
+      "registration_count": 1,
+      "registration_status": "closed",
+      "registration_deadline": null,
+      "collar_weight_per_pair": 0
+    }
+  },
+  "finalRows": {
+    "athletes": [
+      {
+        "id": "g3-one",
+        "meet_id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+        "division_id": "g3-open",
+        "name": "Gate3 One",
+        "bodyweight": null,
+        "lot_number": 1,
+        "status": "active",
+        "rack_heights": {}
+      },
+      {
+        "id": "ath-1792274868006",
+        "meet_id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+        "division_id": "g3-open",
+        "name": "Gate3 Cap Walkon",
+        "bodyweight": null,
+        "lot_number": 4,
+        "status": "active",
+        "rack_heights": {}
+      },
+      {
+        "id": "reg-ath-3f01fc1d",
+        "meet_id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+        "division_id": "g3-alt",
+        "name": "Gate3 Registrant",
+        "bodyweight": null,
+        "lot_number": 1,
+        "status": "active",
+        "rack_heights": {}
+      }
+    ],
+    "events": [
+      {
+        "id": "g3-press",
+        "meet_id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+        "event_number": 1,
+        "name": "Gate3 Press",
+        "scoring_type": "reps",
+        "time_cap_seconds": 60,
+        "lanes": 1,
+        "loading_points": 2,
+        "weight_entry_mode": "total",
+        "implement_empty_weight": 45,
+        "config": {
+          "divisionWeights": {
+            "g3-alt": 95,
+            "g3-open": 135
+          }
+        }
+      }
+    ],
+    "divisions": [
+      {
+        "id": "g3-open",
+        "meet_id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+        "name": "Gate3 Open",
+        "flight": "A",
+        "sort_order": 1
+      },
+      {
+        "id": "g3-alt",
+        "meet_id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+        "name": "Gate3 Alternate",
+        "flight": "A",
+        "sort_order": 2
+      }
+    ],
+    "results": [
+      {
+        "id": "g3-press_g3-one",
+        "meet_id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+        "event_id": "g3-press",
+        "athlete_id": "g3-one",
+        "payload": {
+          "reps": 1,
+          "tier": "heavy",
+          "didNotStart": false
+        },
+        "locked": false,
+        "updated_at": "2026-10-17T22:09:51.28+00:00",
+        "updated_by": "dev-3d3a669f",
+        "server_at": "2026-10-17T22:09:55.717271+00:00"
+      }
+    ]
+  },
+  "finalRegistrations": {
+    "status": 200,
+    "body": [
+      {
+        "id": "3f01fc1d-0385-4925-afec-d74421593e33",
+        "name": "Gate3 Registrant",
+        "paid": false,
+        "email": "astra-gate3-registrant@zerotacky.com",
+        "status": "accepted",
+        "meet_id": "b7c3328b-ce65-41ce-a72d-acd4adc24fa2",
+        "user_id": null,
+        "athlete_id": "reg-ath-3f01fc1d",
+        "bodyweight": null,
+        "created_at": "2026-10-17T22:07:46.40008+00:00",
+        "updated_at": "2026-10-17T22:07:46.502384+00:00",
+        "waitlisted": false,
+        "division_id": "g3-open",
+        "waiver_version": "a995ce0eab26",
+        "emergency_contact": "Gate3 Contact 2025550100",
+        "waiver_accepted_at": "2026-10-17T22:07:46.40008+00:00"
+      }
+    ]
+  },
+  "finalJudge": {
+    "athletes": [
+      {
+        "id": "g3-one",
+        "name": "Gate3 One",
+        "division": "g3-open"
+      },
+      {
+        "id": "reg-ath-3f01fc1d",
+        "name": "Gate3 Registrant",
+        "division": "g3-alt"
+      },
+      {
+        "id": "ath-1792274868006",
+        "name": "Gate3 Cap Walkon",
+        "division": "g3-open"
+      }
+    ],
+    "results": [
+      {
+        "id": "g3-press_g3-one",
+        "eventId": "g3-press",
+        "athleteId": "g3-one",
+        "tier": "heavy",
+        "reps": 1,
+        "didNotStart": false,
+        "updatedAt": 1792274991347,
+        "locked": true
+      }
+    ]
+  },
+  "saveResponses": [
+    {
+      "phone": "admin",
+      "url": "https://hryiqiopkihkcrkdyllg.supabase.co/rest/v1/rpc/zt_save_meet_config",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "phone": "admin",
+      "url": "https://hryiqiopkihkcrkdyllg.supabase.co/rest/v1/rpc/zt_save_meet_config",
+      "status": 400,
+      "method": "POST"
+    },
+    {
+      "phone": "admin",
+      "url": "https://hryiqiopkihkcrkdyllg.supabase.co/rest/v1/rpc/zt_save_meet_config",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "phone": "admin",
+      "url": "https://hryiqiopkihkcrkdyllg.supabase.co/rest/v1/rpc/zt_save_meet_config",
+      "status": 200,
+      "method": "POST"
+    }
+  ],
+  "suite": {
+    "pass": 214,
+    "fail": 0,
+    "files": 16,
+    "expectCalls": 158,
+    "tscExit": 0,
+    "commit": "52c7abb9c65ffa338fb2e9967579daf94d160150",
+    "trackedBlobs": 182
+  },
+  "upgradeEvidenceReview": {
+    "snapshotsEqual": true,
+    "permissionsEqual": true,
+    "structureCounts": {
+      "rls": 12,
+      "defacl": 6,
+      "grants": 56,
+      "colpriv": 453,
+      "columns": 124,
+      "indexes": 18,
+      "policies": 19,
+      "triggers": 10,
+      "fn_grants": 54,
+      "functions": 28,
+      "constraints": 38
+    },
+    "snapshotScope": "selected field projections and counts, not complete row contents",
+    "claimProbe": [
+      {
+        "step": "v01",
+        "outcome": "profile trigger rows for new user = 1"
+      },
+      {
+        "step": "v02",
+        "outcome": "auth.uid() = aaaaaaaa-0000-4000-8000-00000000aaaa"
+      },
+      {
+        "step": "v03",
+        "outcome": "keyless signed-in publish -> 42501 this meet was published with a publish key; enter the key once to claim it for your account"
+      },
+      {
+        "step": "v04",
+        "outcome": "after refusal owner=null pin=7391"
+      },
+      {
+        "step": "v05",
+        "outcome": "wrong key signed-in publish -> 42501 this meet was published with a publish key; enter the key once to claim it for your account"
+      },
+      {
+        "step": "v06",
+        "outcome": "key+JWT publish -> owner=aaaaaaaa-0000-4000-8000-00000000aaaa pin=7391 join=XXPEQ9"
+      },
+      {
+        "step": "v07",
+        "outcome": "owner membership rows = 1"
+      },
+      {
+        "step": "v08",
+        "outcome": "locked results after claim = 1"
+      },
+      {
+        "step": "v09",
+        "outcome": "owner keyless republish -> ok"
+      },
+      {
+        "step": "v10",
+        "outcome": "stranger keyless publish -> 42501 this meet belongs to another promoter"
+      },
+      {
+        "step": "v11",
+        "outcome": "anon keyless publish -> 42501 sign in or provide a valid publish key"
+      }
+    ]
+  },
+  "negativeControl": {
+    "isolatedUnfixedMutationExit": 1,
+    "message": "publish payload omitted the pulled walk-on",
+    "sourceCheckoutModified": false
+  }
+}

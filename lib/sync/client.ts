@@ -6,7 +6,7 @@ export interface SyncConfig {
   url: string;          // https://xxxx.supabase.co
   anonKey: string;
   joinCode?: string;
-  accessToken?: string; // promoter session (Phase 2); falls back to anon key
+  accessToken?: string; // signed-in promoter's Supabase JWT (v2); falls back to anon key
   fetchImpl?: typeof fetch;
 }
 
@@ -26,6 +26,7 @@ export interface SyncClient {
   del(table: string, query: string): Promise<void>;
   rpc<T = unknown>(fn: string, args: Record<string, unknown>): Promise<T>;
   withJoinCode(code: string): SyncClient;
+  withAccessToken(token: string | null | undefined): SyncClient; // v2: signed-in promoter; null = back to anon
 }
 
 export function readSyncEnv(): { url: string; anonKey: string } | null {
@@ -84,6 +85,7 @@ export function createSyncClient(cfg: SyncConfig): SyncClient {
     del: (table, query) => call(`/rest/v1/${table}?${query}`, { method: 'DELETE', headers: headers({ Prefer: 'return=minimal' }) }),
     rpc: (fn, args) => call(`/rest/v1/rpc/${fn}`, { method: 'POST', headers: headers(), body: JSON.stringify(args) }),
     withJoinCode: (code) => createSyncClient({ ...cfg, joinCode: code }),
+    withAccessToken: (token) => createSyncClient({ ...cfg, accessToken: token || undefined }),
   };
   return client;
 }

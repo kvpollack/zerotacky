@@ -1,0 +1,20 @@
+# Gate run 2: ZeroTacky v2 after the rehearsal fixes (2026-10-17, night)
+
+Your rehearsal report (`audits/astra-2026-10-17-rehearsal.md`) is answered line by line in `PROMOTER_NOTES.md` section 6. Server side: `supabase/008_publish_guards.sql` (new, applied to staging) and a one-line revision of `supabase/007_gate_fixes.sql` (R7, re-applied). Both HIGH findings were reproduced before the fix and re-run after it: R1 live on a linked phone (local state 1050, server PIN 7391: 1050 refused, 7391 unlocked), R2 on staging in a rolled-back block (`~/.aki/tmp/zt/verify_008.sql`, quoted in section 6). Kurt decides the merge date; this run is to tell him whether the code is ready, not when.
+
+## Access
+Same as the rehearsal brief: working copy at the HEAD Kurt names, staging preview `https://zerotacky-git-v2-kvpollack-6654.vercel.app`, your account `astra-gate-20261017@zerotacky.com`, the staging publish key Kurt pastes. Expect `tsc` clean and `bun test test/` 211 pass across 16 files. Your second account is still unconfirmed unless Kurt says otherwise. Your rehearsal rows (meets `astra-rehearsal-20261017`, `astra-commit-fault-*`, registrations `4552d90a`, `ea4cd1c8`, `27252407`) are untouched.
+
+## Part 1: verdict per line of section 6
+Fixed / partial / not fixed / regressed, with file:line or a staging observation. Push hardest on:
+- **R1.** `hooks/useRoleLock.js`, `lib/meetBuilder.ts`, `hooks/useMeetSync.js` (`checkAdminPin` resolves null when unlinked), `components/setup/MeetSetup.jsx`, `components/setup/builder/MeetSection.jsx`. Join a meet, edit `ZEROTACKY_OFFLINE_STATE_V2.meet.adminPin` and `ZEROTACKY_SYNC_LINK_V1.role` in localStorage, reload, try to unlock. Then find anything a phone unlocked that way can do that the server should refuse (it should be nothing: JWT, publish key or join code gate every write).
+- **R2.** 008 `zt_publish_meet`. Repeat your step 10 (stale second admin phone). Expected: the stale publish is refused with the "accepted registration" message if it would drop an accepted registrant, refused with the 004 message if it would drop a scored athlete, and otherwise goes through (a stale phone can still drop an unscored, unregistered walk-on: the pre-pull is supposed to prevent that, so test it with the network cut on the stale phone and report whether the publish aborted). Read the "deliberately not added" paragraph and say whether you agree.
+- **R5.** `lib/sync/controller.ts` `removedAthletes`. On the admin phone delete an unscored athlete and watch the 3 s poll: it must not come back, and the republish must remove it on the server (judge phone shrinks). Delete a scored one: refusal in the Sync panel, athlete back on the next poll. Then reload the admin phone between delete and republish and report what happens (documented as harmless).
+- **R3.** `lib/promoter/supabaseApi.ts` (`committed` flag through the outer catch), `components/promoter/PromoterDashboardClient.tsx` (notice, list reload, Create not re-armed). Fault the child read if you can; otherwise the test `R3:` in `test/supabaseApi.test.mjs` is the evidence.
+- **R4.** As the owner, PATCH `/rest/v1/meets?id=eq.<id>` with `{"athlete_cap":1}` and with any listing column: expect `42501`. Also try DELETE on `meets` and `profiles`, and a write through `zt_public_meets`.
+
+## Part 2: re-run only what changed
+Rehearsal steps 3 (PIN), 5 (guard from the phone, now with the roster republish), 7 (registration to judge, then Withdraw on the dashboard), 9 (cap, now also with a walk-on added on the admin phone after the cap is full: the walk-on should sync and the Sync panel should NOT show a cap refusal), 10 (stale publish). Steps 1, 2, 4, 6, 8, 11 passed and are not expected to change; spot-check 4 and 11 if time allows.
+
+## Report
+`audits/astra-2026-10-17-gate2.md`: Part 1 table, Part 2 observations with exact messages, rows created, and a verdict with the same three options as before (merge as is / merge after listed fixes / do not merge) with reasons. Astra dates are advisory.

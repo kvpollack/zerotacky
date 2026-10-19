@@ -1,22 +1,16 @@
 import type { Metadata } from 'next';
 import WebsiteShell from '@/components/website/WebsiteShell';
-import AccountPreviewClient from '@/components/website/AccountPreviewClient';
-import { listDemoPersonas, listPublicGyms } from '@/lib/website/data';
+import AccountClient from '@/components/website/AccountClient';
 
 export const metadata: Metadata = {
-  title: 'Account & Capability Dashboard Preview — ZeroTacky',
-  description:
-    'Preview overlapping Athlete, Promoter, and Gym Owner capabilities on a single ZeroTacky account.',
+  title: 'Account — ZeroTacky',
+  description: 'Sign in to ZeroTacky: compete, run shows and list your gym from one account.',
 };
 
-export default async function WebsiteAccountPreviewPage() {
-  const personas = listDemoPersonas();
-  const gymsRes = await listPublicGyms();
-  const gyms = gymsRes.data ?? [];
-
+export default function WebsiteAccountPage() {
   return (
     <WebsiteShell activeNav="account">
-      <AccountPreviewClient personas={personas} gyms={gyms} />
+      <AccountClient />
     </WebsiteShell>
   );
 }

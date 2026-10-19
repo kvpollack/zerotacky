@@ -131,7 +131,7 @@ export default function Header({
             <input
               type="password"
               inputMode="numeric"
-              placeholder={`Enter Promoter PIN (${meet.adminPin || '1050'})`}
+              placeholder="Enter Promoter PIN"
               value={pinInput}
               onChange={(e) => {
                 setPinInput(e.target.value);
@@ -156,7 +156,7 @@ export default function Header({
             >
               Cancel
             </button>
-            {pinError && <span className="text-xs font-bold text-red-400">Wrong PIN</span>}
+            {pinError && <span className="text-xs font-bold text-red-400">{typeof pinError === 'string' ? pinError : 'Wrong PIN'}</span>}
           </div>
         )}
 

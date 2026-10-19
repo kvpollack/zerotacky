@@ -54,7 +54,13 @@ export function fakeServer() {
       if (body.p_key !== 'GOODKEY') return reply(403, { message: 'invalid publish key' });
       const existing = db.meets.find((x) => x.slug === body.p_meet.slug) ?? db.meets.find((x) => x.id === body.p_meet.id);
       const m = { ...body.p_meet, id: existing?.id ?? body.p_meet.id };
+      // 004 result guard (and 008 publish guards): a removed athlete with a recorded result is refused as a whole.
+      const keepAth = new Set(body.p_athletes.map((r) => r.id));
+      const scored = db.athletes.find((a) => a.meet_id === m.id && !keepAth.has(a.id) && db.results.some((r) => r.meet_id === m.id && r.athlete_id === a.id));
+      if (scored) return reply(400, { message: `${scored.name} has a recorded result and cannot be removed from the roster. Mark the athlete withdrawn on meet day instead.` });
       const join_code = existing?.join_code ?? `JC${String(++joinCodeCounter).padStart(4, '0')}`;
+      // 008: a null admin_pin keeps the server's
+      if (m.admin_pin == null) m.admin_pin = existing?.admin_pin ?? '1050';
       upsert('meets', [{ ...m, join_code, updated_at: serverNow() }]);   // RPC: updated_at = now()
       for (const t of ['divisions', 'events', 'athletes']) {
         upsert(t, body[`p_${t}`].map((r) => ({ ...r, meet_id: m.id })));   // RPC stamps children with the resolved id

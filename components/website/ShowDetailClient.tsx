@@ -33,13 +33,15 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
   const sortedEvents = [...show.state.events].sort((a, b) => a.eventNumber - b.eventNumber);
 
   const [selectedDivId, setSelectedDivId] = useState<string>(sortedDivisions[0]?.id ?? 'ALL');
-  const [registrationNoticeOpen, setRegistrationNoticeOpen] = useState(false);
 
   const life = describeShowLifecycle(
     show.competitionStatus,
     show.registrationStatus,
     show.resultsStatus
   );
+
+  const canRegisterInApp =
+    show.registrationStatus === 'open' || show.registrationStatus === 'waitlist';
 
   const visibleDivisionResults =
     selectedDivId === 'ALL'
@@ -158,23 +160,23 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
               External Registration Page
               <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
             </a>
+          ) : canRegisterInApp ? (
+            <Link
+              href={`/register/${show.slug}`}
+              className="px-4 py-2.5 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase tracking-wider inline-flex items-center gap-1.5 shadow"
+            >
+              {show.registrationStatus === 'waitlist' ? 'Join Waitlist →' : 'Register Now →'}
+            </Link>
           ) : (
             <button
               type="button"
-              onClick={() => setRegistrationNoticeOpen((v) => !v)}
-              className="px-3.5 py-2.5 rounded-xl bg-zt-inset border border-zt-border text-zt-muted font-extrabold text-xs uppercase"
+              disabled
+              className="px-3.5 py-2.5 rounded-xl bg-zt-inset border border-zt-border text-zt-muted font-extrabold text-xs uppercase opacity-60 cursor-not-allowed"
             >
-              In-App Registration Status
+              {life.registrationLabel}
             </button>
           )}
         </div>
-
-        {registrationNoticeOpen && (
-          <div className="p-3 rounded-xl bg-zt-inset border border-zt-border text-xs text-zt-text-2 font-semibold">
-            Native ZeroTacky athlete registration and payment processing are not connected in this
-            pass. Use the promoter&apos;s external registration link when supplied.
-          </div>
-        )}
       </section>
 
       {/* SECTION A: LIVE SHOW CALLOUT */}

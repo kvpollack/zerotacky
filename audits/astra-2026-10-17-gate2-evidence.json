@@ -1,0 +1,1111 @@
+{
+  "auth": {
+    "signedIn": true,
+    "userId": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8"
+  },
+  "createPublish": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "join_code": "93UQWA"
+    }
+  },
+  "link": {
+    "meetId": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+    "localMeetId": "meet-1792269014858",
+    "slug": "astra-gate2-20261017",
+    "joinCode": "93UQWA",
+    "role": "admin",
+    "auth": "account",
+    "userId": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8",
+    "since": null
+  },
+  "joinedPin": null,
+  "pinChecks": [
+    {
+      "pin": "1050",
+      "status": 200,
+      "body": false
+    },
+    {
+      "pin": "7391",
+      "status": 200,
+      "body": true
+    }
+  ],
+  "serverUnlock": true,
+  "listingInitial": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "date": "2026-10-17",
+      "name": "Astra Gate2 20261017",
+      "slug": "astra-gate2-20261017",
+      "venue": null,
+      "is_demo": false,
+      "owner_id": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8",
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "admin_pin": "7391",
+      "join_code": "93UQWA",
+      "created_at": "2026-10-17T20:30:15.461598+00:00",
+      "federation": null,
+      "updated_at": "2026-10-17T20:30:34.115861+00:00",
+      "athlete_cap": 4,
+      "results_status": "not_started",
+      "tiebreaker_rule": "event_wins",
+      "available_plates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "is_public_listed": false,
+      "promoter_contact": "astra-gate-20261017@zerotacky.com",
+      "run_order_method": "reverse_overall",
+      "entry_fee_display": null,
+      "competition_status": "upcoming",
+      "registration_status": "open",
+      "registration_deadline": null,
+      "collar_weight_per_pair": 0
+    }
+  },
+  "directWrites": {
+    "cap": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT UPDATE ON public.meets TO authenticated;",
+        "message": "permission denied for table meets"
+      }
+    },
+    "listing": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT UPDATE ON public.meets TO authenticated;",
+        "message": "permission denied for table meets"
+      }
+    },
+    "delete_meet": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT DELETE ON public.meets TO authenticated;",
+        "message": "permission denied for table meets"
+      }
+    },
+    "delete_profile": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT DELETE ON public.profiles TO authenticated;",
+        "message": "permission denied for table profiles"
+      }
+    },
+    "view_write": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for view zt_public_meets"
+      }
+    }
+  },
+  "nullPinBefore": "7391",
+  "nullPinPublish": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "join_code": "93UQWA"
+    }
+  },
+  "nullPinAfter": "1050",
+  "pinRestore": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "join_code": "93UQWA"
+    }
+  },
+  "anonPrivileges": {
+    "zt_update_listing": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "Sign in required to update listing."
+      }
+    },
+    "zt_publish_meet": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "sign in or provide a valid publish key"
+      }
+    },
+    "zt_get_my_meet": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "Sign in required to view meet configuration."
+      }
+    }
+  },
+  "deleteUnscored": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "join_code": "93UQWA"
+    }
+  },
+  "deleteReachedJudge": true,
+  "reloadRestoresUnpublishedDeletion": true,
+  "deleteScored": {
+    "status": 400,
+    "body": {
+      "code": "P0001",
+      "details": null,
+      "hint": null,
+      "message": "Athlete Gate2 Scored has 1 recorded result(s) and cannot be removed. Mark the athlete withdrawn, or Reset scores first."
+    }
+  },
+  "scoredRestored": true,
+  "scoredErrorText": "ZEROTACKY\nAstra Gate2 20261017\nStation 1\nStation 2\nAll\n[Station 1] Gate2 Open\nEv 1: Gate2 Press\n1. MEET DETAILS, STATIONS & RULES\nMEET NAME\nMEET DATE\nURL SLUG (CLOUD SYNC)\nSTATIONS / FLIGHTS (2)\nMin 1 station\nA\n1 div\nB\n0 divs\nADD STATION\nADMIN PIN (4\u20136 DIGITS)\nCOLLAR WEIGHT / PAIR (LBS)\nRUN ORDER METHODOLOGY (EVENTS 2+)\nReverse Overall Pts\nReverse Prev Event\nOVERALL PODIUM TIEBREAKER\nMost Event Wins\nFinal Event Score\nAVAILABLE GYM PLATES (TAP TO ENABLE/DISABLE)\n100 lb\n55 lb\n45 lb\n35 lb\n25 lb\n15 lb\n10 lb\n5 lb\n2.5 lb\n2. DIVISIONS (1)\nAssign each division to a station\nStation 1 (A)\nStation 2 (B)\n2 ath\nStation 1\nStation 2\nADD\n3. EVENTS (1)\nADD EVENT\nEV 1\nREPS\n60s \u2022 1 Lane \u2022 2pt\nGate2 Press\n4. ATHLETES (2)\nBULK ADD\nGate2 Open\nADD\nGate2 Open(2 athletes)\nDRAW LOTS\n5. MEETS, DEMO PRESETS & READINESS CHECK\nNEW BLANK MEET\nLOAD PRE-BUILT DEMO MEET\nAll Out Strongfest 2026\nDEMO\nThe Power Plant Gym\nYork Iron Classic 2026\nDEMO\nYork, PA\nVALIDATE MEET READINESS\nRESULTS\n1 score on this device\nResults CSV\nADVANCED SETTINGS\nHide\nVOLUNTEER PHONE ROLE LOCK\nUnlock PIN: 7391\nLock Judge\nLock Pit Crew\nLock Spectator\nBACKUP & EXPORT\n1 score on this device\nBackup (JSON)\nCopy Standings\nRestore from File\nAUTO-SNAPSHOTS (1)\nLIVE SYNC\nidle\nJOIN CODE\n/astra-gate2-20261017 \u00b7 admin\n93UQWA\nJOIN LINK\nSCOREBOARD\nhttps://zerotacky-git-v2-kvpollack-6654.vercel.app/m/astra-gate2-20261017\nLast publish was refused: 400: Athlete Gate2 Scored has 1 recorded result(s) and cannot be removed. Mark the athlete withdrawn, or Reset scores first. Config changes since then are not online.\nPUBLISHING AS\nAstra Gate Delete Me\nACCOUNT\nPublished this meet with a publish key before? Enter it once to claim it for this account.\nPUBLISH UPDATE\nConfig changes (weights, events, roster adds and removals) re-publish automatically from this phone. If the server refuses one (an athlete with a recorded result, or on the roster through an accepted registration), the reason shows here and the roster comes back.\nLEAVE MEET (KEEP SCORES ON THIS PHONE)\nCLEAR ALL SCORES\nPROMOTER THEME\nCalibrated Steel\nCalibrated Steel\nGraphite \u2022 Comp Red \u2022 Calibrated Blue\nPower Plant Volt\nMidnight \u2022 Cyan \u2022 Neon Volt\nIron & Brass\nCharcoal \u2022 Brass \u2022 Rust Crimson\nFederation Navy\nOxford Navy \u2022 Sky \u2022 Gold Medal\nHighland Timber\nPine Slate \u2022 Copper \u2022 Sage\nTitanium & Cobalt\nTitanium \u2022 Cobalt \u2022 Teal\nSpotlight Venom\nObsidian \u2022 Violet \u2022 Laser Rose\nOutdoor Daylight\nChalk \u2022 White \u2022 Royal Cobalt\nAnvil Gunmetal\nBlue-Grey Slate \u2022 Safety Amber \u2022 Forged Cyan\nArena Scoreboard 40ft\nPitch Black \u2022 Optic Yellow \u2022 Signal Cyan\nFoundry Oxide\nWarm Iron \u2022 Molten Orange \u2022 Patina Green\nGym Chalk & Concrete\nConcrete Charcoal \u2022 Chalk Mint \u2022 Comp Coral\nWarm Pavement\nWarm Stone \u2022 Crimson Iron \u2022 Deep Navy\nJUDGE PAD\nPIT CREW\nSTANDINGS\nMEET SETUP",
+  "registration": {
+    "status": 200,
+    "body": {
+      "id": "11a4de98-e9f4-428e-8bc2-c2b6977d2762",
+      "status": "pending"
+    }
+  },
+  "accept": {
+    "status": 200,
+    "body": {
+      "id": "11a4de98-e9f4-428e-8bc2-c2b6977d2762",
+      "name": "Gate2 Registrant",
+      "paid": false,
+      "email": "astra-gate2-registrant@zerotacky.com",
+      "status": "accepted",
+      "meet_id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "user_id": null,
+      "athlete_id": "reg-ath-11a4de98",
+      "bodyweight": null,
+      "created_at": "2026-10-17T20:31:31.205574+00:00",
+      "updated_at": "2026-10-17T20:31:32.362281+00:00",
+      "waitlisted": false,
+      "division_id": "div-1792269014925-2",
+      "waiver_version": "a995ce0eab26",
+      "emergency_contact": "Gate2 Contact 2025550100",
+      "waiver_accepted_at": "2026-10-17T20:31:31.205574+00:00"
+    }
+  },
+  "withdrawUI": {
+    "status": 200,
+    "body": {
+      "id": "11a4de98-e9f4-428e-8bc2-c2b6977d2762",
+      "name": "Gate2 Registrant",
+      "paid": false,
+      "email": "astra-gate2-registrant@zerotacky.com",
+      "status": "withdrawn",
+      "meet_id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "user_id": null,
+      "athlete_id": null,
+      "bodyweight": null,
+      "created_at": "2026-10-17T20:31:31.205574+00:00",
+      "updated_at": "2026-10-17T20:31:34.746579+00:00",
+      "waitlisted": false,
+      "division_id": "div-1792269014925-2",
+      "waiver_version": "a995ce0eab26",
+      "emergency_contact": "Gate2 Contact 2025550100",
+      "waiver_accepted_at": "2026-10-17T20:31:31.205574+00:00"
+    }
+  },
+  "weightHalf": {
+    "status": 400,
+    "body": {
+      "code": "P0001",
+      "details": null,
+      "hint": null,
+      "message": "Bodyweight must be between 1 and 1000."
+    }
+  },
+  "weightOne": {
+    "status": 200,
+    "body": {
+      "id": "93f0734c-5757-4b43-af0f-4293829af598",
+      "status": "pending"
+    }
+  },
+  "reaccept": {
+    "status": 200,
+    "body": {
+      "id": "11a4de98-e9f4-428e-8bc2-c2b6977d2762",
+      "name": "Gate2 Registrant",
+      "paid": false,
+      "email": "astra-gate2-registrant@zerotacky.com",
+      "status": "accepted",
+      "meet_id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "user_id": null,
+      "athlete_id": "reg-ath-11a4de98",
+      "bodyweight": null,
+      "created_at": "2026-10-17T20:31:31.205574+00:00",
+      "updated_at": "2026-10-17T20:32:02.051417+00:00",
+      "waitlisted": false,
+      "division_id": "div-1792269014925-2",
+      "waiver_version": "a995ce0eab26",
+      "emergency_contact": "Gate2 Contact 2025550100",
+      "waiver_accepted_at": "2026-10-17T20:31:31.205574+00:00"
+    }
+  },
+  "registrationReachedJudge": true,
+  "acceptedStale": {
+    "status": 400,
+    "body": {
+      "code": "P0001",
+      "details": null,
+      "hint": null,
+      "message": "Gate2 Registrant is on the roster through an accepted registration. Decline or withdraw that registration in the promoter dashboard instead of deleting the athlete."
+    }
+  },
+  "scoredStale": {
+    "status": 400,
+    "body": {
+      "code": "P0001",
+      "details": null,
+      "hint": null,
+      "message": "Athlete Gate2 Scored has 1 recorded result(s) and cannot be removed. Mark the athlete withdrawn, or Reset scores first."
+    }
+  },
+  "protectedRowsAfter": {
+    "status": 200,
+    "body": [
+      {
+        "id": "ath-1792269015257-6",
+        "name": "Gate2 Reload"
+      },
+      {
+        "id": "ath-1792269015158-4",
+        "name": "Gate2 Scored"
+      },
+      {
+        "id": "reg-ath-11a4de98",
+        "name": "Gate2 Registrant"
+      }
+    ]
+  },
+  "capSet": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "date": "2026-10-17",
+      "name": "Astra Gate2 20261017",
+      "slug": "astra-gate2-20261017",
+      "venue": null,
+      "is_demo": false,
+      "owner_id": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8",
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "admin_pin": "7391",
+      "join_code": "93UQWA",
+      "created_at": "2026-10-17T20:30:15.461598+00:00",
+      "federation": null,
+      "updated_at": "2026-10-17T20:35:45.245001+00:00",
+      "athlete_cap": 3,
+      "results_status": "not_started",
+      "tiebreaker_rule": "event_wins",
+      "available_plates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "is_public_listed": false,
+      "promoter_contact": "astra-gate-20261017@zerotacky.com",
+      "run_order_method": "reverse_overall",
+      "entry_fee_display": null,
+      "competition_status": "upcoming",
+      "registration_status": "open",
+      "registration_deadline": null,
+      "collar_weight_per_pair": 0
+    }
+  },
+  "capSubmit": {
+    "status": 400,
+    "body": {
+      "code": "P0001",
+      "details": null,
+      "hint": null,
+      "message": "Astra Gate2 20261017 is full (3 of 3 spots taken). Contact the promoter to ask about a waitlist."
+    }
+  },
+  "capAccept": {
+    "status": 400,
+    "body": {
+      "code": "P0001",
+      "details": null,
+      "hint": null,
+      "message": "Astra Gate2 20261017 is at its athlete cap (3). Raise the cap in Listing before accepting Gate2 Bound Probe."
+    }
+  },
+  "walkonPublish": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "join_code": "93UQWA"
+    }
+  },
+  "walkonReachedJudge": true,
+  "walkonCapError": false,
+  "failedPrepull": {
+    "blockedGets": 32,
+    "publishCalls": 0,
+    "message": "\noffline\nNot published: could not fetch the latest scores and roster first (Failed to fetch). Check the connection and try again.\nJOIN CODE\n/astra-gate2-20261017 \u00b7 admin\n93UQWA\nJOIN LINK\nSCOREBOARD\nhttps://zerotacky-git-v2-kvpollack-6654.vercel.app/m/astra-gate2-20261017\nFailed to fetch\nLast publish was refused: Not published: could not fetch the latest scores and roster first (Failed to fetch). Check the connection and try again. Config changes since then are not online.\nPUBLISHING AS\nastra-gate-20261017\nACCOUNT\nPublished this meet with a publish key before? Enter it once to claim it for this account.\nPUBLISH UPDATE\nConfig changes (weights, events, roster adds and removals) re-publish automatically from this phone. If the server refuses one (an athlete with a recorded result, or on the roster through an accepted registration), the reason shows here and the roster comes back.\nLEAVE MEET (KEEP SCORES ON THIS PHONE)\nCLEAR ALL SCORES\n"
+  },
+  "prepullRecovery": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "join_code": "93UQWA"
+    },
+    "hasWalkon": true
+  },
+  "keyedNullBefore": "7391",
+  "keyedNullPublish": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "join_code": "93UQWA"
+    },
+    "sentAdminPin": null
+  },
+  "keyedNullAfter": "1050",
+  "createCommitFault": {
+    "status": 200,
+    "body": {
+      "id": "b3f2bca2-be55-44a9-82f8-c92bbc628180",
+      "date": "2026-12-05",
+      "name": "Astra Gate2 Commit Fault",
+      "slug": "astra-gate2-commit-fault",
+      "venue": null,
+      "is_demo": false,
+      "owner_id": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8",
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "admin_pin": "1050",
+      "join_code": "6A6YKX",
+      "created_at": "2026-10-17T20:38:11.510859+00:00",
+      "federation": null,
+      "updated_at": "2026-10-17T20:38:11.510859+00:00",
+      "athlete_cap": null,
+      "athlete_count": 0,
+      "pending_count": 0,
+      "division_count": 0,
+      "results_status": "not_started",
+      "tiebreaker_rule": "event_wins",
+      "available_plates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "is_public_listed": false,
+      "promoter_contact": null,
+      "run_order_method": "reverse_overall",
+      "entry_fee_display": null,
+      "competition_status": "upcoming",
+      "registration_count": 0,
+      "registration_status": "not_provided",
+      "registration_deadline": null,
+      "collar_weight_per_pair": 0
+    }
+  },
+  "createFaultUI": {
+    "body": "Running a meet today? Scoring is at /scorer. Volunteers join at /join.\nOpen Meet-Day App\nVolunteer Join (/join)\nZEROTACKY\nOVERVIEW\nFIND A SHOW\nSTRONGMAN GYMS\nACCOUNT\nAstra Gate Delete Me\nPROMOTER DASHBOARD\nSigned in as Astra Gate Delete Me (astra-gate-20261017@zerotacky.com)\nMy Meets\n\nConfigure divisions, events, weights, listing details, and athlete registrations on your laptop. Use the meet-day phone scorer for floor edits and live scoring.\n\nNEW MEET\nThe meet was created, but it could not be loaded afterwards (TypeError: Failed to fetch). Reload the dashboard; do not create it again.\nUPCOMING\nUNLISTED\nREGISTRATION NOT PROVIDED\nNO RESULTS YET\nAstra Gate2 Commit Fault\n2026-12-05\n/astra-gate2-commit-fault\n0\nDIVISIONS\n0\nATHLETES\n0\nACCEPTED\n0\nPENDING\nREG FORM\nOPEN \u2192\nUPCOMING\nUNLISTED\nREGISTRATION OPEN\nNO RESULTS YET\nAstra Gate2 20261017\n2026-10-17\n/astra-gate2-20261017\n1\nDIVISIONS\n3\nATHLETES\n1\nACCEPTED\n1\nPENDING\nREG FORM\nOPEN \u2192\nUPCOMING\nUNLISTED\nREGISTRATION NOT PROVIDED\nNO RESULTS YET\nAstra Commit Fault Retry 20261017\n2026-12-05\n/astra-commit-fault-retry-20261017\n0\nDIVISIONS\n0\nATHLETES\n0\nACCEPTED\n0\nPENDING\nREG FORM\nOPEN \u2192\nUPCOMING\nUNLISTED\nREGISTRATION NOT PROVIDED\nNO RESULTS YET\nAstra Commit Fault 20261017\n2026-12-05\n/astra-commit-fault-20261017\n0\nDIVISIONS\n0\nATHLETES\n0\nACCEPTED\n0\nPENDING\nREG FORM\nOPEN \u2192\nUPCOMING\nLISTED\nREGISTRATION CLOSED\nNO RESULTS YET\nAstra Rehearsal 20261017\n2026-10-17\n/astra-rehearsal-20261017\n2\nDIVISIONS\n6\nATHLETES\n2\nACCEPTED\n1\nPENDING\nREG FORM\nOPEN \u2192\nZEROTACKY\n\nOffline-first strongman meet scoring, live multi-phone sync, and competition discovery.\n\nHome\nShows\nGyms\nAccount\nMeet-Day App",
+    "formGone": true
+  },
+  "raceAdd": {
+    "status": 200,
+    "sentNames": [
+      "Gate2 Reload",
+      "Gate2 Scored",
+      "Gate2 Registrant",
+      "Gate2 Prepull Race"
+    ]
+  },
+  "raceServerBefore": {
+    "status": 200,
+    "body": [
+      {
+        "id": "ath-1792269512873",
+        "name": "Gate2 Prepull Race"
+      },
+      {
+        "id": "ath-1792269015257-6",
+        "name": "Gate2 Reload"
+      },
+      {
+        "id": "ath-1792269015158-4",
+        "name": "Gate2 Scored"
+      },
+      {
+        "id": "reg-ath-11a4de98",
+        "name": "Gate2 Registrant"
+      }
+    ]
+  },
+  "healthyStalePublish": {
+    "status": 200,
+    "sentNames": [
+      "Gate2 Reload",
+      "Gate2 Scored",
+      "Gate2 Registrant"
+    ],
+    "localNamesAfter": [
+      "Gate2 Reload",
+      "Gate2 Scored",
+      "Gate2 Registrant",
+      "Gate2 Prepull Race"
+    ]
+  },
+  "raceServerAfter": {
+    "status": 200,
+    "body": [
+      {
+        "id": "ath-1792269015257-6",
+        "name": "Gate2 Reload"
+      },
+      {
+        "id": "ath-1792269015158-4",
+        "name": "Gate2 Scored"
+      },
+      {
+        "id": "reg-ath-11a4de98",
+        "name": "Gate2 Registrant"
+      }
+    ]
+  },
+  "healthyPrepullTrace": [
+    {
+      "kind": "pull",
+      "names": [
+        "Gate2 Prepull Race",
+        "Gate2 Prepull Race Two",
+        "Gate2 Reload",
+        "Gate2 Scored",
+        "Gate2 Registrant"
+      ]
+    },
+    {
+      "kind": "publish",
+      "status": 200,
+      "names": [
+        "Gate2 Reload",
+        "Gate2 Scored",
+        "Gate2 Registrant"
+      ]
+    },
+    {
+      "kind": "pull",
+      "names": [
+        "Gate2 Reload",
+        "Gate2 Scored",
+        "Gate2 Registrant"
+      ]
+    },
+    {
+      "kind": "pull",
+      "names": [
+        "Gate2 Reload",
+        "Gate2 Scored",
+        "Gate2 Registrant"
+      ]
+    },
+    {
+      "kind": "publish",
+      "status": 200,
+      "names": [
+        "Gate2 Reload",
+        "Gate2 Scored",
+        "Gate2 Registrant"
+      ]
+    }
+  ],
+  "raceAfterNaturalTicks": {
+    "server": {
+      "status": 200,
+      "body": [
+        {
+          "id": "ath-1792269015257-6",
+          "name": "Gate2 Reload"
+        },
+        {
+          "id": "ath-1792269015158-4",
+          "name": "Gate2 Scored"
+        },
+        {
+          "id": "reg-ath-11a4de98",
+          "name": "Gate2 Registrant"
+        }
+      ]
+    },
+    "judgeNames": [
+      "Gate2 Scored",
+      "Gate2 Reload",
+      "Gate2 Registrant",
+      "Gate2 Prepull Race",
+      "Gate2 Prepull Race Two"
+    ],
+    "staleNames": [
+      "Gate2 Reload",
+      "Gate2 Scored",
+      "Gate2 Registrant"
+    ]
+  },
+  "healthyPrepullJudgeLostWalkons": true,
+  "pinRestoredFinal": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "join_code": "93UQWA"
+    }
+  },
+  "altDivisionPublish": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "join_code": "93UQWA"
+    }
+  },
+  "anonNoJoinAthleteWrite": {
+    "status": 401,
+    "body": {
+      "code": "42501",
+      "details": null,
+      "hint": null,
+      "message": "new row violates row-level security policy for table \"athletes\""
+    }
+  },
+  "acceptedWeighinMove": {
+    "status": 200,
+    "body": [
+      {
+        "id": "reg-ath-11a4de98",
+        "meet_id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+        "division_id": "gate2-alt",
+        "name": "Gate2 Registrant",
+        "bodyweight": null,
+        "lot_number": 4,
+        "status": "active",
+        "rack_heights": {}
+      }
+    ]
+  },
+  "acceptedMovedPublish": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "join_code": "93UQWA"
+    }
+  },
+  "acceptedDivisionMismatch": {
+    "athleteDivision": "gate2-alt",
+    "registration": {
+      "status": 200,
+      "body": [
+        {
+          "id": "93f0734c-5757-4b43-af0f-4293829af598",
+          "name": "Gate2 Bound Probe",
+          "paid": false,
+          "email": "astra-gate2-bound@zerotacky.com",
+          "status": "pending",
+          "meet_id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+          "user_id": null,
+          "athlete_id": null,
+          "bodyweight": 1,
+          "created_at": "2026-10-17T20:32:01.956583+00:00",
+          "updated_at": "2026-10-17T20:32:01.956583+00:00",
+          "waitlisted": false,
+          "division_id": "div-1792269014925-2",
+          "waiver_version": "a995ce0eab26",
+          "emergency_contact": "Gate2 Contact 2025550100",
+          "waiver_accepted_at": "2026-10-17T20:32:01.956583+00:00"
+        },
+        {
+          "id": "11a4de98-e9f4-428e-8bc2-c2b6977d2762",
+          "name": "Gate2 Registrant",
+          "paid": false,
+          "email": "astra-gate2-registrant@zerotacky.com",
+          "status": "accepted",
+          "meet_id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+          "user_id": null,
+          "athlete_id": "reg-ath-11a4de98",
+          "bodyweight": null,
+          "created_at": "2026-10-17T20:31:31.205574+00:00",
+          "updated_at": "2026-10-17T20:32:02.051417+00:00",
+          "waitlisted": false,
+          "division_id": "div-1792269014925-2",
+          "waiver_version": "a995ce0eab26",
+          "emergency_contact": "Gate2 Contact 2025550100",
+          "waiver_accepted_at": "2026-10-17T20:31:31.205574+00:00"
+        }
+      ]
+    }
+  },
+  "movedDivisionNoopSave": {
+    "status": 400,
+    "body": {
+      "code": "P0001",
+      "details": null,
+      "hint": null,
+      "message": "Gate2 Registrant registered for a specific division. To move them, decline or withdraw the registration and accept it again under the new division."
+    }
+  },
+  "divisionRestore": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "join_code": "93UQWA"
+    }
+  },
+  "tamperedPinChecks": [
+    {
+      "pin": "8642",
+      "status": 200,
+      "body": false
+    },
+    {
+      "pin": "7391",
+      "status": 200,
+      "body": true
+    }
+  ],
+  "tamperedServerUnlock": true,
+  "projectorSpot": {
+    "body": "LIVE SCOREBOARD\nAstra Gate2 20261017\nPHONE\nupdated 4:40:21 PM\nSTATION 1 \u00b7 UP NOW\nGate2 Scored\nEv 1 Gate2 Press \u00b7 Gate2 Open\nSTATION 2 \u00b7 UP NOW\nidle\nAll\nGate2 Open\nGATE2 OPEN\n3 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tTOTAL\n1\t\nGate2 Scored\n\t3\n1 rep\n\t3\n2\t\nGate2 Reload\n\t0\n\u2014\n\t0\n3\t\nGate2 Registrant\n\t0\n\u2014\n\t0\nZEROTACKY \u00b7 refreshes every 4s"
+  },
+  "rotation": {
+    "status": 200,
+    "body": {
+      "joinCode": "EN58DD"
+    }
+  },
+  "oldCodeLookup": {
+    "status": 200,
+    "body": {
+      "id": null,
+      "slug": null,
+      "name": null,
+      "date": null,
+      "owner_id": null,
+      "join_code": null,
+      "admin_pin": null,
+      "run_order_method": null,
+      "tiebreaker_rule": null,
+      "available_plates": null,
+      "collar_weight_per_pair": null,
+      "stations": null,
+      "is_demo": null,
+      "created_at": null,
+      "updated_at": null,
+      "competition_status": null,
+      "registration_status": null,
+      "results_status": null,
+      "is_public_listed": null,
+      "venue": null,
+      "federation": null,
+      "entry_fee_display": null,
+      "registration_deadline": null,
+      "athlete_cap": null,
+      "promoter_contact": null
+    }
+  },
+  "oldCodeWrite": {
+    "status": 401,
+    "body": {
+      "code": "42501",
+      "details": null,
+      "hint": null,
+      "message": "new row violates row-level security policy for table \"live_state\""
+    }
+  },
+  "newCodeLookup": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "slug": "astra-gate2-20261017",
+      "name": "Astra Gate2 20261017",
+      "date": "2026-10-17",
+      "owner_id": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8",
+      "join_code": "EN58DD",
+      "admin_pin": null,
+      "run_order_method": "reverse_overall",
+      "tiebreaker_rule": "event_wins",
+      "available_plates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "collar_weight_per_pair": 0,
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "is_demo": false,
+      "created_at": "2026-10-17T20:30:15.461598+00:00",
+      "updated_at": "2026-10-17T20:40:22.303869+00:00",
+      "competition_status": "upcoming",
+      "registration_status": "open",
+      "results_status": "not_started",
+      "is_public_listed": false,
+      "venue": null,
+      "federation": null,
+      "entry_fee_display": null,
+      "registration_deadline": null,
+      "athlete_cap": 3,
+      "promoter_contact": "astra-gate-20261017@zerotacky.com"
+    }
+  },
+  "finalTestMeet": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "date": "2026-10-17",
+      "name": "Astra Gate2 20261017",
+      "slug": "astra-gate2-20261017",
+      "venue": null,
+      "is_demo": false,
+      "owner_id": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8",
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "admin_pin": "7391",
+      "join_code": "EN58DD",
+      "created_at": "2026-10-17T20:30:15.461598+00:00",
+      "federation": null,
+      "updated_at": "2026-10-17T20:40:39.348716+00:00",
+      "athlete_cap": 3,
+      "results_status": "not_started",
+      "tiebreaker_rule": "event_wins",
+      "available_plates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "is_public_listed": false,
+      "promoter_contact": "astra-gate-20261017@zerotacky.com",
+      "run_order_method": "reverse_overall",
+      "entry_fee_display": null,
+      "competition_status": "upcoming",
+      "registration_status": "closed",
+      "registration_deadline": null,
+      "collar_weight_per_pair": 0
+    }
+  },
+  "finalRows": {
+    "athletes": {
+      "status": 200,
+      "body": [
+        {
+          "id": "ath-1792269015257-6",
+          "meet_id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+          "division_id": "div-1792269014925-2",
+          "name": "Gate2 Reload",
+          "bodyweight": null,
+          "lot_number": 3,
+          "status": "active",
+          "rack_heights": {}
+        },
+        {
+          "id": "ath-1792269015158-4",
+          "meet_id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+          "division_id": "div-1792269014925-2",
+          "name": "Gate2 Scored",
+          "bodyweight": null,
+          "lot_number": 1,
+          "status": "active",
+          "rack_heights": {}
+        },
+        {
+          "id": "reg-ath-11a4de98",
+          "meet_id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+          "division_id": "div-1792269014925-2",
+          "name": "Gate2 Registrant",
+          "bodyweight": null,
+          "lot_number": 4,
+          "status": "active",
+          "rack_heights": {}
+        }
+      ]
+    },
+    "events": {
+      "status": 200,
+      "body": [
+        {
+          "id": "ev-1792269015024-3",
+          "meet_id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+          "event_number": 1,
+          "name": "Gate2 Press",
+          "scoring_type": "reps",
+          "time_cap_seconds": 60,
+          "lanes": 1,
+          "loading_points": 2,
+          "weight_entry_mode": "total",
+          "implement_empty_weight": 0,
+          "config": {
+            "hasTrumpWeight": false,
+            "divisionWeights": {
+              "div-1792269014925-2": 0
+            },
+            "hasHeightCallout": false,
+            "groundTouchWarning": false,
+            "weightIsAddedPlatesOnly": false
+          }
+        }
+      ]
+    },
+    "divisions": {
+      "status": 200,
+      "body": [
+        {
+          "id": "div-1792269014925-2",
+          "meet_id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+          "name": "Gate2 Open",
+          "flight": "A",
+          "sort_order": 1
+        }
+      ]
+    },
+    "results": {
+      "status": 200,
+      "body": [
+        {
+          "id": "ev-1792269015024-3_ath-1792269015158-4",
+          "meet_id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+          "event_id": "ev-1792269015024-3",
+          "athlete_id": "ath-1792269015158-4",
+          "payload": {
+            "reps": 1,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-17T20:30:31.891+00:00",
+          "updated_by": "dev-4f7fdd1c",
+          "server_at": "2026-10-17T20:39:39.279578+00:00"
+        }
+      ]
+    }
+  },
+  "finalRegistrations": {
+    "status": 200,
+    "body": [
+      {
+        "id": "93f0734c-5757-4b43-af0f-4293829af598",
+        "name": "Gate2 Bound Probe",
+        "paid": false,
+        "email": "astra-gate2-bound@zerotacky.com",
+        "status": "pending",
+        "meet_id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+        "user_id": null,
+        "athlete_id": null,
+        "bodyweight": 1,
+        "created_at": "2026-10-17T20:32:01.956583+00:00",
+        "updated_at": "2026-10-17T20:32:01.956583+00:00",
+        "waitlisted": false,
+        "division_id": "div-1792269014925-2",
+        "waiver_version": "a995ce0eab26",
+        "emergency_contact": "Gate2 Contact 2025550100",
+        "waiver_accepted_at": "2026-10-17T20:32:01.956583+00:00"
+      },
+      {
+        "id": "11a4de98-e9f4-428e-8bc2-c2b6977d2762",
+        "name": "Gate2 Registrant",
+        "paid": false,
+        "email": "astra-gate2-registrant@zerotacky.com",
+        "status": "accepted",
+        "meet_id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+        "user_id": null,
+        "athlete_id": "reg-ath-11a4de98",
+        "bodyweight": null,
+        "created_at": "2026-10-17T20:31:31.205574+00:00",
+        "updated_at": "2026-10-17T20:32:02.051417+00:00",
+        "waitlisted": false,
+        "division_id": "div-1792269014925-2",
+        "waiver_version": "a995ce0eab26",
+        "emergency_contact": "Gate2 Contact 2025550100",
+        "waiver_accepted_at": "2026-10-17T20:31:31.205574+00:00"
+      }
+    ]
+  },
+  "missingRegistrationStyle": "Running a meet today? Scoring is at /scorer. Volunteers join at /join.\nOpen Meet-Day App\nVolunteer Join (/join)\nZEROTACKY\nOVERVIEW\nFIND A SHOW\nSTRONGMAN GYMS\nACCOUNT\nSIGN IN\nBACK TO STRONGMAN SHOWS\nNo competition at /register/astra-gate2-no-such-meet\n\nCheck the link from the promoter, or browse the shows list. Meets created in the preview dashboard exist only in the browser tab that created them.\n\nBROWSE SHOWS\nZEROTACKY\n\nOffline-first strongman meet scoring, live multi-phone sync, and competition discovery.\n\nHome\nShows\nGyms\nAccount\nMeet-Day App",
+  "overCapPolicyPublish": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "join_code": "EN58DD"
+    }
+  },
+  "overCapCloseListing": {
+    "status": 400,
+    "body": {
+      "code": "P0001",
+      "details": null,
+      "hint": null,
+      "message": "The roster already has 4 athletes; the cap cannot be lower than that."
+    }
+  },
+  "capProbeRestore": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "join_code": "EN58DD"
+    }
+  },
+  "finalMeetRead": {
+    "status": 200,
+    "body": {
+      "id": "f929f3eb-a6fb-427d-8fd0-4314e408090d",
+      "date": "2026-10-17",
+      "name": "Astra Gate2 20261017",
+      "slug": "astra-gate2-20261017",
+      "venue": null,
+      "is_demo": false,
+      "owner_id": "182bf6c7-bbfb-4db7-91b0-42f51a92cbf8",
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "admin_pin": "7391",
+      "join_code": "EN58DD",
+      "created_at": "2026-10-17T20:30:15.461598+00:00",
+      "federation": null,
+      "updated_at": "2026-10-17T20:41:25.027408+00:00",
+      "athlete_cap": 3,
+      "athlete_count": 3,
+      "pending_count": 1,
+      "division_count": 1,
+      "results_status": "not_started",
+      "tiebreaker_rule": "event_wins",
+      "available_plates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "is_public_listed": false,
+      "promoter_contact": "astra-gate-20261017@zerotacky.com",
+      "run_order_method": "reverse_overall",
+      "entry_fee_display": null,
+      "competition_status": "upcoming",
+      "registration_count": 1,
+      "registration_status": "closed",
+      "registration_deadline": null,
+      "collar_weight_per_pair": 0
+    }
+  },
+  "historicalRows": {
+    "status": 200,
+    "rows": [
+      {
+        "id": "27252407-d891-4b9b-8614-6b02057e7b6c",
+        "name": "Astra Hostile Probe",
+        "status": "pending",
+        "athlete_id": null,
+        "bodyweight": 0.5
+      },
+      {
+        "id": "ea4cd1c8-ba0f-4809-86e9-ac09030add5f",
+        "name": "Astra Registrant Six",
+        "status": "accepted",
+        "athlete_id": null,
+        "bodyweight": null
+      }
+    ]
+  }
+}

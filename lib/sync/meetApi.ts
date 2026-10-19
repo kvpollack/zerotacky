@@ -67,21 +67,22 @@ export async function fetchMeetBySlug(client: SyncClient, slug: string): Promise
   return toRemoteMeet(meets[0], await fetchChildren(client, meets[0].id));
 }
 
-// Join code -> full meet row (incl. join_code and admin_pin) via a security-definer RPC, so the codes never
-// travel in a public select. Returns null for an unknown code.
+// Join code -> full meet row (incl. join_code; admin_pin is null since 007) via a security-definer RPC, so the codes
+// never travel in a public select. Returns null for an unknown code.
 export async function fetchMeetByJoinCode(client: SyncClient, code: string): Promise<RemoteMeet | null> {
   const meet = await client.rpc<MeetRow | null>('zt_meet_by_join_code', { p_code: code.trim().toUpperCase() });
   if (!meet || !meet.id) return null;
   return toRemoteMeet(meet, await fetchChildren(client, meet.id));
 }
 
-// Publish the full meet (promoter/admin phone). Goes through the zt_publish_meet RPC, which checks the
-// publish key server-side, upserts meet + divisions + events + athletes (authoritative: stale children are
-// removed) and merges results last-writer-wins. Returns the remote meet id and its join code.
-export async function publishMeet(client: SyncClient, state: AppState, extra: PublishExtra, publishKey: string): Promise<{ id: string; joinCode: string }> {
+// Publish the full meet (promoter/admin phone). Goes through the zt_publish_meet RPC, which checks the caller
+// server-side (a signed-in user via the client's access token, or a legacy publish key), upserts meet + divisions +
+// events + athletes (authoritative: stale children are removed) and merges results last-writer-wins. Returns the
+// remote meet id and its join code. `publishKey` may be null when the client carries a session token.
+export async function publishMeet(client: SyncClient, state: AppState, extra: PublishExtra, publishKey: string | null): Promise<{ id: string; joinCode: string }> {
   const rows = stateToRows(state, extra);
   const out = await client.rpc<{ id: string; join_code: string }>('zt_publish_meet', {
-    p_key: publishKey,
+    p_key: publishKey || null,
     p_meet: rows.meet,
     p_divisions: rows.divisions,
     p_events: rows.events,
@@ -89,6 +90,13 @@ export async function publishMeet(client: SyncClient, state: AppState, extra: Pu
     p_results: rows.results,
   });
   return { id: out.id, joinCode: out.join_code };
+}
+
+// 007: a joined phone verifies the admin PIN server-side (throttled per join code). Older servers (main) still return
+// admin_pin from the join RPC and have no such function; the caller falls back to the local compare then.
+export async function checkAdminPin(client: SyncClient, joinCode: string, pin: string): Promise<boolean> {
+  const out = await client.rpc<boolean | null>('zt_check_admin_pin', { p_code: joinCode, p_pin: pin });
+  return out === true;
 }
 
 const CHILD_KEY = 'meet_id,id';

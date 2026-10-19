@@ -151,7 +151,8 @@ export default function MeetSetup({
                   Volunteer Phone Role Lock
                 </span>
                 <span className="text-[10px] font-bold text-zt-muted">
-                  Unlock PIN: {meet.adminPin || '1050'}
+                  {/* R1: a phone that joined by code never holds the PIN; the server checks it */}
+                  {meet.adminPin ? `Unlock PIN: ${meet.adminPin}` : sync?.link ? 'Unlock PIN: set on the publishing phone' : 'Unlock PIN: 1050'}
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2">
