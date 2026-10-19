@@ -55,7 +55,7 @@ export default function AthletesSection({
     <section className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-black uppercase tracking-wider text-zt-primary">
-          4. Athletes ({athletes.length})
+          5. Athletes ({athletes.length})
         </h2>
         <button
           type="button"

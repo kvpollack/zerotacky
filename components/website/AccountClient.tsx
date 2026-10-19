@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Dumbbell, LogOut, Mail, Play, Save, ShieldCheck, Trophy, UserCheck } from 'lucide-react';
+import { Dumbbell, KeyRound, LogOut, Mail, Play, Save, ShieldCheck, Trophy, UserCheck } from 'lucide-react';
 import { useAuth } from '@/lib/auth/useAuth';
 import { profileLabel, roleBadges } from '@/lib/auth/profile';
 
@@ -30,6 +30,61 @@ function errText(e: unknown): string {
   return e && typeof e === 'object' && 'message' in e ? String((e as { message: unknown }).message) : String(e);
 }
 
+// Set / change password. Used right after a reset link (recovery) and from the signed-in page. Supabase's
+// updateUser({ password }) needs a live session, which the reset link provides.
+function PasswordPanel({ recovery, busy, onSubmit, onDismiss }: {
+  recovery: boolean; busy: boolean; onSubmit: (pw: string) => Promise<void>; onDismiss?: () => void;
+}) {
+  const [pw1, setPw1] = useState('');
+  const [pw2, setPw2] = useState('');
+  const [localErr, setLocalErr] = useState<string | null>(null);
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLocalErr(null);
+    if (pw1.length < 8) { setLocalErr('Password needs at least 8 characters.'); return; }
+    if (pw1 !== pw2) { setLocalErr('The two passwords do not match.'); return; }
+    await onSubmit(pw1);
+    setPw1(''); setPw2('');
+  };
+  return (
+    <section
+      aria-labelledby="pw-heading"
+      className={`rounded-2xl p-5 space-y-3 border ${recovery ? 'bg-zt-primary/10 border-zt-primary' : 'bg-zt-surface border-zt-border'}`}
+    >
+      <div className="space-y-1">
+        <h2 id="pw-heading" className="text-base font-black uppercase text-zt-text flex items-center gap-2">
+          <KeyRound className="w-4 h-4 text-zt-primary" aria-hidden="true" />
+          {recovery ? 'Set a new password' : 'Change password'}
+        </h2>
+        <p className="text-xs text-zt-muted">
+          {recovery
+            ? 'You arrived from a password reset link. Choose a new password to finish; you are already signed in on this device.'
+            : 'You stay signed in here. Other devices keep their session until they next refresh.'}
+        </p>
+      </div>
+      <form onSubmit={submit} className="space-y-3 max-w-md">
+        <div>
+          <label htmlFor="pw-new" className={labelCls}>New password (8+ characters)</label>
+          <input id="pw-new" type="password" required minLength={8} value={pw1} onChange={(e) => setPw1(e.target.value)} className={inputCls} autoComplete="new-password" />
+        </div>
+        <div>
+          <label htmlFor="pw-confirm" className={labelCls}>Confirm new password</label>
+          <input id="pw-confirm" type="password" required minLength={8} value={pw2} onChange={(e) => setPw2(e.target.value)} className={inputCls} autoComplete="new-password" />
+        </div>
+        {localErr && <Notice text={localErr} tone="warn" />}
+        <div className="flex flex-wrap gap-2">
+          <button type="submit" disabled={busy} className={primaryBtn}>
+            <KeyRound className="w-3.5 h-3.5" aria-hidden="true" /> {recovery ? 'Save new password' : 'Update password'}
+          </button>
+          {onDismiss && (
+            <button type="button" disabled={busy} onClick={onDismiss} className={quietBtn}>{recovery ? 'Keep my current password' : 'Cancel'}</button>
+          )}
+        </div>
+      </form>
+    </section>
+  );
+}
+
 export default function AccountClient() {
   const auth = useAuth();
   const [mode, setMode] = useState<Mode>('signin');
@@ -38,6 +93,7 @@ export default function AccountClient() {
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ text: string; tone: 'ok' | 'warn' } | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   // profile editor
   const [draftName, setDraftName] = useState('');
@@ -156,6 +212,20 @@ export default function AccountClient() {
                   className={inputCls}
                   autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                 />
+                {mode === 'signin' && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => run(async () => {
+                      if (!email.trim()) throw new Error('Enter your email above first, then tap Forgot password.');
+                      await auth.sendPasswordReset(email);
+                      return `Reset link sent to ${email.trim()}. Open it on this device; it brings you back here to set a new password.`;
+                    })}
+                    className="mt-1.5 text-[11px] font-bold text-zt-primary underline underline-offset-2"
+                  >
+                    Forgot password?
+                  </button>
+                )}
               </div>
             )}
             {mode === 'signup' && (
@@ -188,8 +258,23 @@ export default function AccountClient() {
     { id: 'gym', label: 'Gym owner', hint: 'List your gym, implements and day-pass info for travelling athletes.', value: gymOwner, set: setGymOwner, icon: <Dumbbell className="w-4 h-4 text-zt-secondary" aria-hidden="true" /> },
   ];
 
+  const passwordPanel = (auth.recovery || showPassword) ? (
+    <PasswordPanel
+      recovery={auth.recovery}
+      busy={busy}
+      onSubmit={(pw) => run(async () => {
+        await auth.updatePassword(pw);
+        setShowPassword(false);
+        return 'Password updated. Use it next time you sign in.';
+      })}
+      onDismiss={() => { auth.clearRecovery(); setShowPassword(false); }}
+    />
+  ) : null;
+
   return (
     <div className="space-y-6">
+      {auth.recovery && passwordPanel}
+      {notice && auth.recovery && <Notice {...notice} />}
       <section className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">
@@ -204,12 +289,20 @@ export default function AccountClient() {
               </div>
             )}
           </div>
-          <button type="button" disabled={busy} onClick={() => run(async () => { await auth.signOut(); })} className={quietBtn}>
-            <LogOut className="w-3.5 h-3.5" aria-hidden="true" /> Sign out
-          </button>
+          <div className="flex flex-wrap gap-2">
+            {!auth.recovery && (
+              <button type="button" disabled={busy} aria-pressed={showPassword} onClick={() => { setShowPassword((v) => !v); setNotice(null); }} className={quietBtn}>
+                <KeyRound className="w-3.5 h-3.5" aria-hidden="true" /> Change password
+              </button>
+            )}
+            <button type="button" disabled={busy} onClick={() => run(async () => { await auth.signOut(); })} className={quietBtn}>
+              <LogOut className="w-3.5 h-3.5" aria-hidden="true" /> Sign out
+            </button>
+          </div>
         </div>
         {auth.error && <Notice text={auth.error} tone="warn" />}
       </section>
+      {!auth.recovery && passwordPanel}
 
       <section aria-labelledby="profile-heading" className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-4">
         <div className="border-b border-zt-border pb-3">

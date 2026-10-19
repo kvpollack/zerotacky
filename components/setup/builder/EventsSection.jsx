@@ -44,7 +44,7 @@ export default function EventsSection({
     <section className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-black uppercase tracking-wider text-zt-primary">
-          3. Events ({sortedEvents.length})
+          4. Events ({sortedEvents.length})
         </h2>
         <button
           type="button"

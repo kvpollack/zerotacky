@@ -11,7 +11,8 @@ interface PromoterMeetPageProps {
 // 200 with the client's "Meet not found" state, not a 404, and the title cannot name the meet.
 export async function generateMetadata({ params }: PromoterMeetPageProps): Promise<Metadata> {
   const { serverId } = await params;
-  return { title: `Manage Meet ${serverId} — ZeroTacky Promoter` };
+  void serverId; // resolved in the browser; the client sets document.title to the meet name once it loads
+  return { title: 'Manage Meet — ZeroTacky Promoter' };
 }
 
 export default async function PromoterMeetDetailPage({ params }: PromoterMeetPageProps) {

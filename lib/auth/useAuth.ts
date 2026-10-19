@@ -18,6 +18,12 @@ export interface AuthState {
   signInWithPassword: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, displayName: string) => Promise<'signed_in' | 'check_email'>;
   sendMagicLink: (email: string) => Promise<void>;
+  // Password reset (Kurt 10/19): the email link lands on /website/account with a recovery session; `recovery` is true
+  // until updatePassword succeeds or clearRecovery runs, so the page can lead with "Set a new password".
+  recovery: boolean;
+  sendPasswordReset: (email: string) => Promise<void>;
+  updatePassword: (newPassword: string) => Promise<void>;
+  clearRecovery: () => void;
   signOut: () => Promise<void>;
   updateProfile: (patch: ProfilePatch) => Promise<Profile>;
   refreshProfile: () => Promise<void>;
@@ -36,6 +42,7 @@ export function useAuth(): AuthState {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState<boolean>(!!sb);
   const [error, setError] = useState<string | null>(null);
+  const [recovery, setRecovery] = useState<boolean>(false);
   const userIdRef = useRef<string | null>(null);
 
   const loadProfile = useCallback(async (userId: string | null) => {
@@ -51,14 +58,19 @@ export function useAuth(): AuthState {
   useEffect(() => {
     if (!sb) return undefined;
     let alive = true;
+    // Implicit-flow recovery links carry type=recovery in the hash; supabase-js strips it once it has the session,
+    // so read it here as well as listening for the PASSWORD_RECOVERY event.
+    if (typeof window !== 'undefined' && /(^|[#&])type=recovery(&|$)/.test(window.location.hash)) setRecovery(true);
     sb.auth.getSession().then(({ data }) => {
       if (!alive) return;
       setSession(data.session);
       userIdRef.current = data.session?.user.id ?? null;
       loadProfile(userIdRef.current).finally(() => { if (alive) setLoading(false); });
     });
-    const { data: sub } = sb.auth.onAuthStateChange((_event, s) => {
+    const { data: sub } = sb.auth.onAuthStateChange((event, s) => {
       if (!alive) return;
+      if (event === 'PASSWORD_RECOVERY') setRecovery(true);
+      if (event === 'SIGNED_OUT') setRecovery(false);
       setSession(s);
       const uid = s?.user.id ?? null;
       if (uid !== userIdRef.current) {
@@ -96,6 +108,23 @@ export function useAuth(): AuthState {
     if (e) throw new Error(e.message);
   }, [sb]);
 
+  const sendPasswordReset = useCallback(async (email: string) => {
+    if (!sb) throw new Error(NOT_CONFIGURED);
+    setError(null);
+    const { error: e } = await sb.auth.resetPasswordForEmail(email.trim(), { redirectTo: accountRedirectUrl() });
+    if (e) throw new Error(e.message);
+  }, [sb]);
+
+  const updatePassword = useCallback(async (newPassword: string) => {
+    if (!sb) throw new Error(NOT_CONFIGURED);
+    setError(null);
+    const { error: e } = await sb.auth.updateUser({ password: newPassword });
+    if (e) throw new Error(e.message);
+    setRecovery(false);
+  }, [sb]);
+
+  const clearRecovery = useCallback(() => setRecovery(false), []);
+
   const signOut = useCallback(async () => {
     if (!sb) return;
     const { error: e } = await sb.auth.signOut();
@@ -123,6 +152,10 @@ export function useAuth(): AuthState {
     signInWithPassword,
     signUp,
     sendMagicLink,
+    recovery,
+    sendPasswordReset,
+    updatePassword,
+    clearRecovery,
     signOut,
     updateProfile,
     refreshProfile,

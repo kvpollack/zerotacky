@@ -4,7 +4,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   manifest: '/manifest.json',
-title: 'All Out Strongfest 2026 — Strongman Meet Manager',
+  title: 'ZeroTacky — Strongman Meet Manager',
   description: 'Offline strongman scoring, run order, and plate loading for meet day.',
   generator: 'v0.app',
   icons: {

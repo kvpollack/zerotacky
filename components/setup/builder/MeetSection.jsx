@@ -1,18 +1,40 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
 import { ALL_POSSIBLE_PLATES } from '@/lib/constants';
 import { slugify } from '@/lib/meetBuilder';
 
+// Plain-language copies of the engine rules. Keep in step with lib/engine/runOrder.ts and lib/engine/scoring.ts.
+export const RUN_ORDER_OPTIONS = [
+  {
+    value: 'reverse_overall',
+    label: 'Reverse Overall Pts',
+    explain: 'Lowest overall points lifts first, the current leader goes last. Athletes level on points go by lot number. The usual choice: the podium race builds to the final attempt.',
+  },
+  {
+    value: 'reverse_previous_event',
+    label: 'Reverse Prev Event',
+    explain: 'Only the last event counts: whoever placed last in it goes first, its winner goes last, whatever the overall standings. Athletes tied in that event go lower overall points first.',
+  },
+];
+
+export const TIEBREAK_OPTIONS = [
+  {
+    value: 'event_wins',
+    label: 'Most Event Wins',
+    explain: 'The athlete with more event wins places higher. Still level: the higher score in the final event wins.',
+  },
+  {
+    value: 'final_event',
+    label: 'Final Event Score',
+    explain: 'The athlete who scored higher in the final event places higher. Still level: more event wins.',
+  },
+];
+
 export default function MeetSection({
   meet,
-  divisions,
   updateMeetConfig,
   toggleGymPlate,
-  addStation,
-  updateStation,
-  removeStation,
   allowDemoToggle = true,   // dashboard passes false: meets saved there are always real
 }) {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
@@ -28,16 +50,6 @@ export default function MeetSection({
     updateMeetConfig({ slug: next });
     setSlugDraft(null);
   };
-  const [newStationLabel, setNewStationLabel] = useState('');
-
-  const stations =
-    Array.isArray(meet.stations) && meet.stations.length > 0
-      ? meet.stations
-      : [
-          { id: 'A', label: 'Station 1' },
-          { id: 'B', label: 'Station 2' },
-        ];
-
   const handleNameChange = (nextName) => {
     const patch = { name: nextName };
     if (!slugManuallyEdited) {
@@ -46,17 +58,11 @@ export default function MeetSection({
     updateMeetConfig(patch);
   };
 
-  const handleAddStation = (e) => {
-    e.preventDefault();
-    addStation({ label: newStationLabel.trim() || `Station ${stations.length + 1}` });
-    setNewStationLabel('');
-  };
-
   return (
     <section className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-black uppercase tracking-wider text-zt-primary">
-          1. Meet Details, Stations &amp; Rules
+          1. Meet Details &amp; Rules
         </h2>
         {meet.isDemo && (
           <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
@@ -135,67 +141,6 @@ export default function MeetSection({
         </div>
       </div>
 
-      {/* Stations List (Min 1) */}
-      <div className="pt-2 border-t border-zt-border space-y-2">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-extrabold uppercase text-zt-muted">
-            Stations / Flights ({stations.length})
-          </label>
-          <span className="text-[10px] font-bold text-zt-subtle">Min 1 station</span>
-        </div>
-
-        <div className="space-y-2">
-          {stations.map((st) => {
-            const assignedCount = divisions.filter((d) => d.flight === st.id).length;
-            return (
-              <div
-                key={st.id}
-                className="flex items-center gap-2 bg-zt-inset border border-zt-border rounded-xl p-2"
-              >
-                <span className="px-2 py-1 rounded bg-zt-surface-2 text-[11px] font-black text-zt-primary font-mono">
-                  {st.id}
-                </span>
-                <input
-                  type="text"
-                  value={st.label}
-                  onChange={(e) => updateStation(st.id, { label: e.target.value })}
-                  aria-label={`Station ${st.id} label`}
-                  className="flex-1 bg-zt-surface border border-zt-border-strong rounded-lg px-2.5 py-1.5 text-xs font-bold text-zt-text"
-                />
-                <span className="text-[10px] font-bold text-zt-muted whitespace-nowrap">
-                  {assignedCount} div{assignedCount === 1 ? '' : 's'}
-                </span>
-                <button
-                  type="button"
-                  disabled={stations.length <= 1}
-                  onClick={() => removeStation(st.id)}
-                  title={stations.length <= 1 ? 'At least 1 station required' : `Remove ${st.label}`}
-                  className="p-1.5 rounded-lg bg-zt-surface border border-zt-border-strong text-zt-muted hover:text-red-400 disabled:opacity-30"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-
-        <form onSubmit={handleAddStation} className="flex gap-2">
-          <input
-            type="text"
-            placeholder={`New station label (e.g. Station ${stations.length + 1})...`}
-            value={newStationLabel}
-            onChange={(e) => setNewStationLabel(e.target.value)}
-            className="flex-1 bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
-          />
-          <button
-            type="submit"
-            className="px-3 py-2 rounded-xl bg-zt-surface-2 border border-zt-border-strong text-zt-text font-black text-xs uppercase flex items-center gap-1"
-          >
-            <Plus className="w-3.5 h-3.5" /> Add Station
-          </button>
-        </form>
-      </div>
-
       {/* Admin PIN & Collar Weight */}
       <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zt-border">
         <div>
@@ -236,22 +181,21 @@ export default function MeetSection({
         </div>
       </div>
 
-      {/* Run Order Methodology Toggle */}
+      {/* Run Order Methodology Toggle. Each option explained on screen (Kurt 10/19); text mirrors lib/engine/runOrder.ts. */}
       <div>
         <label className="text-xs font-extrabold uppercase text-zt-muted">
           Run Order Methodology (Events 2+)
         </label>
+        <p className="text-[11px] font-semibold text-zt-muted mt-0.5">Event 1 always runs by lot number. This decides the order for every event after it.</p>
         <div className="grid grid-cols-2 gap-2 mt-1.5">
-          {[
-            ['reverse_overall', 'Reverse Overall Pts'],
-            ['reverse_previous_event', 'Reverse Prev Event'],
-          ].map(([val, label]) => (
+          {RUN_ORDER_OPTIONS.map(({ value, label }) => (
             <button
-              key={val}
+              key={value}
               type="button"
-              onClick={() => updateMeetConfig({ runOrderMethod: val })}
+              aria-pressed={meet.runOrderMethod === value}
+              onClick={() => updateMeetConfig({ runOrderMethod: value })}
               className={`py-2.5 px-3 rounded-xl font-black text-xs border transition ${
-                meet.runOrderMethod === val
+                meet.runOrderMethod === value
                   ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
                   : 'bg-zt-inset text-zt-text-2 border-zt-border'
               }`}
@@ -260,30 +204,43 @@ export default function MeetSection({
             </button>
           ))}
         </div>
+        <div className="mt-1.5 space-y-1">
+          {RUN_ORDER_OPTIONS.map(({ value, label, explain }) => (
+            <p key={value} className={`text-[11px] rounded-lg px-2.5 py-1.5 border ${meet.runOrderMethod === value ? 'bg-zt-primary/10 border-zt-primary/50 text-zt-text font-semibold' : 'bg-zt-inset border-zt-border text-zt-muted'}`}>
+              <strong className="font-black">{label}:</strong> {explain}
+            </p>
+          ))}
+        </div>
       </div>
 
-      {/* Tiebreaker Rule Toggle */}
+      {/* Tiebreaker Rule Toggle, explained the same way; mirrors calculateDivisionStandings in lib/engine/scoring.ts. */}
       <div>
         <label className="text-xs font-extrabold uppercase text-zt-muted">
           Overall Podium Tiebreaker
         </label>
+        <p className="text-[11px] font-semibold text-zt-muted mt-0.5">Used only when two athletes finish on the same total points.</p>
         <div className="grid grid-cols-2 gap-2 mt-1.5">
-          {[
-            ['event_wins', 'Most Event Wins'],
-            ['final_event', 'Final Event Score'],
-          ].map(([val, label]) => (
+          {TIEBREAK_OPTIONS.map(({ value, label }) => (
             <button
-              key={val}
+              key={value}
               type="button"
-              onClick={() => updateMeetConfig({ tiebreakerRule: val })}
+              aria-pressed={meet.tiebreakerRule === value}
+              onClick={() => updateMeetConfig({ tiebreakerRule: value })}
               className={`py-2.5 px-3 rounded-xl font-black text-xs border transition ${
-                meet.tiebreakerRule === val
+                meet.tiebreakerRule === value
                   ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
                   : 'bg-zt-inset text-zt-text-2 border-zt-border'
               }`}
             >
               {label}
             </button>
+          ))}
+        </div>
+        <div className="mt-1.5 space-y-1">
+          {TIEBREAK_OPTIONS.map(({ value, label, explain }) => (
+            <p key={value} className={`text-[11px] rounded-lg px-2.5 py-1.5 border ${meet.tiebreakerRule === value ? 'bg-zt-primary/10 border-zt-primary/50 text-zt-text font-semibold' : 'bg-zt-inset border-zt-border text-zt-muted'}`}>
+              <strong className="font-black">{label}:</strong> {explain}
+            </p>
           ))}
         </div>
       </div>
