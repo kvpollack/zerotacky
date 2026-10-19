@@ -46,11 +46,11 @@ export default async function WebsiteLandingPage() {
           </Link>
 
           <Link
-            href="/scorer"
+            href="/demo"
             className="px-6 py-4 rounded-xl bg-zt-surface-2 border-2 border-zt-border-strong text-zt-text font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 hover:border-zt-primary transition"
           >
             <Play className="w-4 h-4 text-zt-primary" aria-hidden="true" />
-            Run a Meet (Open Scorer)
+            Check Out a Demo Show
           </Link>
 
           <Link
@@ -63,8 +63,9 @@ export default async function WebsiteLandingPage() {
         </div>
 
         <p className="text-xs font-semibold text-zt-muted">
-          Note: Opening <strong>Run a Meet</strong> launches the meet-day scorer on this device using
-          whatever meet is currently stored in local device memory (or the default demo preset).
+          <strong>Check Out a Demo Show</strong> opens the meet-day scorer on this device loaded with a made-up show,
+          so you can score and edit without touching anything real. To run your own meet, open the scorer and tap
+          New Blank Meet in Meet Setup.
         </p>
       </section>
 

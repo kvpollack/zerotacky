@@ -105,7 +105,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
               Account
             </Link>
             <Link href="/scorer" className="hover:text-zt-primary">
-              Meet-Day App
+              Live Scoring Demo
             </Link>
             <Link href="/legal/terms" className="hover:text-zt-primary">
               Terms
