@@ -3,12 +3,14 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Check, LogOut, PhoneCall, UserCheck, Users, X } from 'lucide-react';
 import type { RegistrationRequest } from '@/lib/promoter/contract';
+import { ADULT_AGE, ageOnDate, ageReferenceDate } from '@/lib/promoter/rules';
 import type { Athlete, Division } from '@/lib/types';
 
 interface RegistrationsSectionProps {
   registrations: RegistrationRequest[];
   divisions: Division[];
   athletes: Athlete[];
+  meetDate?: string;           // 009: age on meet day is computed against this (YYYY-MM-DD or '' = today)
   onSetStatus: (
     id: string,
     status: RegistrationRequest['status']
@@ -21,9 +23,11 @@ export default function RegistrationsSection({
   registrations,
   divisions,
   athletes,
+  meetDate = '',
   onSetStatus,
   blockedReason = null,
 }: RegistrationsSectionProps) {
+  const ageReference = ageReferenceDate(meetDate);
   const [busyId, setBusyId] = useState<string | null>(null);
   // Errors are kept per request so the message sits next to the row whose action failed.
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
@@ -120,12 +124,20 @@ export default function RegistrationsSection({
                         <PhoneCall className="w-3 h-3 text-zt-muted" aria-hidden="true" />
                         {reg.emergencyContact || 'not provided'}
                       </span>
-                      {/* 009: an athlete under 18 was registered by this parent/guardian; owner-only like the emergency contact */}
-                      {reg.guardian && (
-                        <span className="block mt-1 text-[10px] font-extrabold text-amber-300">
-                          Under 18. Guardian: {reg.guardian.name} ({reg.guardian.contact})
-                        </span>
-                      )}
+                      {/* 009: age on meet day from the date of birth; owner-only like the emergency contact. Under 18 was
+                          registered by a parent/guardian who still has to sign on paper at check-in. */}
+                      {(() => {
+                        const age = ageOnDate(reg.dateOfBirth, ageReference);
+                        if (age === null && !reg.guardian) return null;
+                        const minor = (age !== null && age < ADULT_AGE) || Boolean(reg.guardian);
+                        return (
+                          <span className={`block mt-1 text-[10px] font-extrabold ${minor ? 'text-amber-300' : 'text-zt-muted'}`}>
+                            {age !== null ? `Age ${age} on meet day.` : 'Under 18.'}
+                            {reg.guardian && ` Guardian: ${reg.guardian.name} (${reg.guardian.contact}).`}
+                            {minor && ' Guardian signature needed at check-in.'}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="py-3 px-2 font-bold text-zt-text-2 whitespace-nowrap">
                       {divName}

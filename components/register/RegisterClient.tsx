@@ -14,7 +14,17 @@ import {
 } from 'lucide-react';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import type { PublicRegistrationMeet } from '@/lib/promoter/contract';
-import { decideRegistrationOutcome, isRegistrationOpen, validateRegistrationInput } from '@/lib/promoter/rules';
+import {
+  ADULT_AGE,
+  ageOnDate,
+  ageReferenceDate,
+  decideRegistrationOutcome,
+  isRegistrationOpen,
+  MIN_ATHLETE_AGE,
+  parseIsoDate,
+  todayIsoDate,
+  validateRegistrationInput,
+} from '@/lib/promoter/rules';
 import { getPromoterApi, isLiveBackend } from '@/lib/promoter/usePromoterApi';
 import MarkdownBlocks from '@/components/legal/MarkdownBlocks';
 import { parseMarkdown } from '@/lib/legal/markdown';
@@ -42,8 +52,8 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
   const [athleteName, setAthleteName] = useState('');
   const [email, setEmail] = useState('');
   const [emergencyContact, setEmergencyContact] = useState('');
-  // 009: athletes under 18 are registered by a parent or legal guardian (waiver section 7)
-  const [athleteAge, setAthleteAge] = useState<'adult' | 'minor' | ''>('');
+  // 009: date of birth; age is judged on the meet date. Under 18 reveals the guardian fields (waiver section 7).
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [guardianName, setGuardianName] = useState('');
   const [guardianContact, setGuardianContact] = useState('');
   const [waiverAccepted, setWaiverAccepted] = useState(false);
@@ -148,6 +158,11 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
     .replace(/\{\{EVENT_DATE\}\}/g, meet.date || 'TBD')
     .replace(/\{\{VENUE_NAME_AND_ADDRESS\}\}/g, venueDisplay);
 
+  // Age on competition day, live as the date is typed; null until the date is complete.
+  const ageOnMeetDay = parseIsoDate(dateOfBirth) ? ageOnDate(dateOfBirth, ageReferenceDate(meet.date)) : null;
+  const isMinor = ageOnMeetDay !== null && ageOnMeetDay >= MIN_ATHLETE_AGE && ageOnMeetDay < ADULT_AGE;
+  const guardianOrNull = isMinor ? { name: guardianName, contact: guardianContact } : null;
+
   const capacityDisplay =
     meet.listing.athleteCap !== null
       ? `${meet.acceptedCount} of ${meet.listing.athleteCap} spots taken`
@@ -159,8 +174,8 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
     const err = validateRegistrationInput(
       {
         slug: meet.slug, divisionId, athleteName, email, emergencyContact,
-        athleteAge,
-        guardian: athleteAge === 'minor' ? { name: guardianName, contact: guardianContact } : null,
+        dateOfBirth,
+        guardian: guardianOrNull,
         waiverAccepted: true, waiverVersion: waiverVersion ?? '',
       },
       meet
@@ -199,8 +214,8 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
       athleteName,
       email,
       emergencyContact,
-      athleteAge: athleteAge === 'minor' ? 'minor' : 'adult',
-      guardian: athleteAge === 'minor' ? { name: guardianName, contact: guardianContact } : null,
+      dateOfBirth,
+      guardian: guardianOrNull,
       waiverAccepted: true,
       waiverVersion,
     });
@@ -496,32 +511,32 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
               </div>
 
               <fieldset className="bg-zt-inset border border-zt-border rounded-xl p-3.5">
-                <legend className="text-[11px] font-extrabold uppercase text-zt-muted px-1">Athlete age *</legend>
-                <div className="flex flex-col gap-2 text-sm font-bold text-zt-text">
-                  <label className="inline-flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="reg-athlete-age"
-                      value="adult"
-                      checked={athleteAge === 'adult'}
-                      onChange={() => setAthleteAge('adult')}
-                      className="w-4 h-4 accent-zt-primary"
-                    />
-                    The athlete is 18 or older
-                  </label>
-                  <label className="inline-flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="reg-athlete-age"
-                      value="minor"
-                      checked={athleteAge === 'minor'}
-                      onChange={() => setAthleteAge('minor')}
-                      className="w-4 h-4 accent-zt-primary"
-                    />
-                    The athlete is under 18, and I am the parent or legal guardian
-                  </label>
-                </div>
-                {athleteAge === 'minor' && (
+                <legend className="text-[11px] font-extrabold uppercase text-zt-muted px-1">Athlete date of birth *</legend>
+                <input
+                  id="reg-date-of-birth"
+                  type="date"
+                  required
+                  value={dateOfBirth}
+                  max={todayIsoDate()}
+                  onChange={(e) => setDateOfBirth(e.target.value)}
+                  aria-describedby="reg-dob-help"
+                  className="w-full sm:w-64 bg-zt-panel border border-zt-border-strong rounded-xl px-3 py-2.5 text-sm font-bold text-zt-text"
+                />
+                <p id="reg-dob-help" className="text-[11px] text-zt-muted mt-1">
+                  {ageOnMeetDay === null && 'Only the promoter sees this. Athletes under 18 on competition day are registered by a parent or legal guardian.'}
+                  {ageOnMeetDay !== null && ageOnMeetDay < MIN_ATHLETE_AGE && (
+                    <span className="text-amber-300 font-bold">
+                      Age {Math.max(ageOnMeetDay, 0)} on competition day. Athletes must be at least {MIN_ATHLETE_AGE}. Contact the promoter about younger athletes.
+                    </span>
+                  )}
+                  {isMinor && (
+                    <span className="text-zt-text font-bold">
+                      Age {ageOnMeetDay} on competition day. A parent or legal guardian must register the athlete and sign the waiver at check-in.
+                    </span>
+                  )}
+                  {ageOnMeetDay !== null && ageOnMeetDay >= ADULT_AGE && `Age ${ageOnMeetDay} on competition day.`}
+                </p>
+                {isMinor && (
                   <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label htmlFor="reg-guardian-name" className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1">
@@ -550,8 +565,9 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                       />
                     </div>
                     <p className="sm:col-span-2 text-[11px] text-zt-muted">
-                      You will accept the waiver on the athlete&apos;s behalf in the next step. The promoter may also ask you to
-                      sign on paper at check-in and sets the minimum age for this competition. Only the promoter sees these details.
+                      By continuing you confirm you are the athlete&apos;s parent or legal guardian. You will accept the waiver on the
+                      athlete&apos;s behalf in the next step and sign it on paper at check-in. The promoter sets the minimum age for
+                      this competition. Only the promoter sees these details.
                     </p>
                   </div>
                 )}
@@ -661,9 +677,13 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                 <div className="flex justify-between gap-2 border-b border-zt-border pb-2">
                   <dt className="font-bold text-zt-muted">Emergency Contact</dt>
                   <dd className="font-bold text-zt-text">{emergencyContact}</dd>
-                  <dt className="font-bold text-zt-muted">Athlete age</dt>
+                </div>
+                <div className="flex justify-between gap-2 border-b border-zt-border pb-2">
+                  <dt className="font-bold text-zt-muted">Date of birth</dt>
                   <dd className="font-bold text-zt-text">
-                    {athleteAge === 'minor' ? `Under 18, registered by ${guardianName} (${guardianContact})` : '18 or older'}
+                    {dateOfBirth}
+                    {ageOnMeetDay !== null && ` (${ageOnMeetDay} on competition day)`}
+                    {isMinor && `, registered by ${guardianName} (${guardianContact}); guardian signs at check-in`}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-2 border-b border-zt-border pb-2">

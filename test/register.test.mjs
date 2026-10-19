@@ -10,7 +10,7 @@ const GOOD = {
   athleteName: 'Riley Competitor (Fake)',
   email: 'riley.competitor@example.com',
   emergencyContact: 'Sam Competitor (spouse) 717-555-0144',
-  athleteAge: 'adult',
+  dateOfBirth: '1990-05-02',
   guardian: null,
   waiverAccepted: true,
   waiverVersion: 'testwaiver01',
@@ -84,15 +84,45 @@ describe('register: pure validation helpers', () => {
     assert.match(FA.validateRegistrationInput({ ...GOOD, emergencyContact: '717-555-0144' }, meet), /needs a name/);
     assert.equal(FA.validateRegistrationInput({ ...GOOD, emergencyContact: 'Jo 5550144' }, meet), null);
     assert.match(FA.validateRegistrationInput({ ...GOOD, divisionId: 'nonexistent-div' }, meet), /valid division/);
-    // 009: minors are registered by a parent or guardian
-    assert.match(FA.validateRegistrationInput({ ...GOOD, athleteAge: '' }, meet), /18 or older/);
-    assert.match(FA.validateRegistrationInput({ ...GOOD, athleteAge: 'minor', guardian: null }, meet), /parent or legal guardian/);
-    assert.match(FA.validateRegistrationInput({ ...GOOD, athleteAge: 'minor', guardian: { name: 'Jo Guardian', contact: '555' } }, meet), /7 digits or an email/);
-    assert.match(FA.validateRegistrationInput({ ...GOOD, athleteAge: 'minor', guardian: { name: 'J', contact: 'g@example.com' } }, meet), /guardian full name/);
-    assert.equal(FA.validateRegistrationInput({ ...GOOD, athleteAge: 'minor', guardian: { name: 'Jo Guardian', contact: 'g@example.com' } }, meet), null);
-    assert.equal(FA.validateRegistrationInput({ ...GOOD, athleteAge: 'minor', guardian: { name: 'Jo Guardian', contact: '717-555-0100' } }, meet), null);
-    assert.equal(FA.validateRegistrationInput({ ...GOOD, athleteAge: 'adult', guardian: null }, meet), null);
+    // 009: date of birth, age judged on the meet date (2026-11-14); minors are registered by a parent or guardian
+    const G = { name: 'Jo Guardian', contact: 'g@example.com' };
+    assert.match(FA.validateRegistrationInput({ ...GOOD, dateOfBirth: '' }, meet), /date of birth/);
+    assert.match(FA.validateRegistrationInput({ ...GOOD, dateOfBirth: '2010-02-30' }, meet), /date of birth/);
+    assert.match(FA.validateRegistrationInput({ ...GOOD, dateOfBirth: '03/04/2010' }, meet), /date of birth/);
+    assert.match(FA.validateRegistrationInput({ ...GOOD, dateOfBirth: '2030-01-01' }, meet), /cannot be in the future/);
+    assert.match(FA.validateRegistrationInput({ ...GOOD, dateOfBirth: '1920-01-01' }, meet), /Check the date of birth/);
+    assert.match(FA.validateRegistrationInput({ ...GOOD, dateOfBirth: '2014-11-15', guardian: G }, meet), /at least 12 on competition day/);
+    assert.equal(FA.validateRegistrationInput({ ...GOOD, dateOfBirth: '2014-11-14', guardian: G }, meet), null, 'turns 12 on meet day');
+    assert.match(FA.validateRegistrationInput({ ...GOOD, dateOfBirth: '2010-03-04', guardian: null }, meet), /parent or legal guardian/);
+    assert.match(FA.validateRegistrationInput({ ...GOOD, dateOfBirth: '2010-03-04', guardian: { name: 'Jo Guardian', contact: '555' } }, meet), /7 digits or an email/);
+    assert.match(FA.validateRegistrationInput({ ...GOOD, dateOfBirth: '2010-03-04', guardian: { name: 'J', contact: 'g@example.com' } }, meet), /guardian full name/);
+    assert.equal(FA.validateRegistrationInput({ ...GOOD, dateOfBirth: '2010-03-04', guardian: G }, meet), null);
+    assert.equal(FA.validateRegistrationInput({ ...GOOD, dateOfBirth: '2010-03-04', guardian: { name: 'Jo Guardian', contact: '717-555-0100' } }, meet), null);
+    assert.match(FA.validateRegistrationInput({ ...GOOD, dateOfBirth: '2008-11-15', guardian: null }, meet), /parent or legal guardian/, '17 the day before turning 18');
+    assert.equal(FA.validateRegistrationInput({ ...GOOD, dateOfBirth: '2008-11-14', guardian: null }, meet), null, 'turns 18 on meet day');
+    assert.equal(FA.validateRegistrationInput({ ...GOOD, dateOfBirth: '1990-05-02', guardian: null }, meet), null);
     assert.match(FA.validateRegistrationInput({ ...GOOD, waiverAccepted: false }, meet), /accept the competition waiver/);
+  });
+
+  test('ageOnDate / parseIsoDate / ageReferenceDate (009)', () => {
+    assert.equal(FA.ageOnDate('2010-03-04', '2026-11-14'), 16);
+    assert.equal(FA.ageOnDate('2008-11-14', '2026-11-14'), 18);
+    assert.equal(FA.ageOnDate('2008-11-15', '2026-11-14'), 17);
+    assert.equal(FA.ageOnDate('2008-02-29', '2026-02-28'), 17, 'leap-day birthday, not yet reached');
+    assert.equal(FA.ageOnDate('2008-02-29', '2026-03-01'), 18);
+    assert.equal(FA.ageOnDate('2030-01-01', '2026-11-14'), -4);
+    assert.equal(FA.ageOnDate('nope', '2026-11-14'), null);
+    assert.equal(FA.ageOnDate('2010-03-04', ''), null);
+    assert.equal(FA.parseIsoDate('2024-02-29').d, 29);
+    assert.equal(FA.parseIsoDate('2023-02-29'), null);
+    assert.equal(FA.parseIsoDate('2010-13-01'), null);
+    assert.equal(FA.ageReferenceDate('2026-11-14', '2026-10-19'), '2026-11-14');
+    assert.equal(FA.ageReferenceDate('', '2026-10-19'), '2026-10-19', 'meet without a date judges age today');
+    assert.equal(FA.isMinorOnMeetDay('2010-03-04', '2026-11-14'), true);
+    assert.equal(FA.isMinorOnMeetDay('1990-05-02', '2026-11-14'), false);
+    assert.equal(FA.isMinorOnMeetDay(null, '2026-11-14'), false);
+    assert.match(FA.validateAthleteAge('2010-03-04', '2026-11-14', null), /parent or legal guardian/);
+    assert.equal(FA.validateAthleteAge('2010-03-04', '2026-11-14', { name: 'Jo Guardian', contact: '717-555-0100' }), null);
   });
 
   test('validateRegistrationInput rejects closed meets', async () => {
@@ -137,7 +167,7 @@ describe('register: submitRegistration into fixtureApi (M10, M19)', () => {
       athleteName: 'Quinn Newcomer (Fake)',
       email: 'Quinn.Newcomer@Example.com',
       emergencyContact: 'Pat Newcomer 717-555-0188',
-      athleteAge: 'adult',
+      dateOfBirth: '1990-05-02',
       guardian: null,
     });
     assert.equal(submitRes.error, null);
@@ -154,24 +184,26 @@ describe('register: submitRegistration into fixtureApi (M10, M19)', () => {
     assert.equal(created.waitlisted, false);
     assert.equal(created.paid, false);
     assert.ok(created.waiverAcceptedAt);
+    assert.equal(created.dateOfBirth, '1990-05-02');
     assert.equal(created.guardian, null);
 
-    // 009: a minor's registration carries the guardian, trimmed; an adult's never does
+    // 009: a minor's registration carries the date of birth and the guardian, trimmed; an adult's never does
     const minorRes = await api.submitRegistration({
       ...GOOD,
       athleteName: 'Teen Newcomer (Fake)',
       email: 'teen.newcomer@example.com',
-      athleteAge: 'minor',
+      dateOfBirth: ' 2010-03-04 ',
       guardian: { name: '  Jordan Newcomer ', contact: ' 717-555-0190 ' },
     });
     assert.equal(minorRes.error, null);
     const minor = (await api.listRegistrations('srv-meet-upcoming-1')).data.find((r) => r.id === minorRes.data.id);
+    assert.equal(minor.dateOfBirth, '2010-03-04');
     assert.deepEqual(minor.guardian, { name: 'Jordan Newcomer', contact: '717-555-0190' });
     const adultWithStrayGuardian = await api.submitRegistration({
       ...GOOD,
       athleteName: 'Stray Guardian (Fake)',
       email: 'stray.guardian@example.com',
-      athleteAge: 'adult',
+      dateOfBirth: '2008-11-14',   // turns 18 on meet day 2026-11-14
       guardian: { name: 'Should Drop', contact: '717-555-0191' },
     });
     assert.equal(adultWithStrayGuardian.error, null);
@@ -252,7 +284,7 @@ describe('register: submitRegistration into fixtureApi (M10, M19)', () => {
       athleteName: 'Skyler Waitlist (Fake)',
       email: 'skyler.waitlist@example.com',
       emergencyContact: 'Morgan Waitlist 856-555-0192',
-      athleteAge: 'adult',
+      dateOfBirth: '1990-05-02',
       guardian: null,
       waiverAccepted: true,
       waiverVersion: 'testwaiver01',

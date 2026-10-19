@@ -2,19 +2,22 @@
 -- athlete rules: minimum age 12, under 18 registered by a parent or guardian who signs the waiver).
 -- Depends on 005 (registrations), 007 (zt_submit_registration, zt_waiver_versions). v2 only until the merge, like 007/008.
 --
--- 1. registrations gains guardian_name / guardian_contact (null = athlete 18 or older). Owner-only: not in the
---    column-level self-select grant from 005, returned only by zt_list_meet_registrations. Never on a public page.
--- 2. zt_submit_registration requires athleteAge 'adult' | 'minor' and, for a minor, guardian {name, contact}.
--- 3. zt_list_meet_registrations returns the two new columns.
+-- 1. registrations gains date_of_birth and guardian_name / guardian_contact (null = athlete 18 or older on meet day).
+--    Owner-only: not in the column-level self-select grant from 005, returned only by zt_list_meet_registrations.
+--    Never on a public page.
+-- 2. zt_submit_registration requires dateOfBirth (YYYY-MM-DD) and judges age on the meet date (today when the meet
+--    has no date): under 12 refused, under 18 needs guardian {name, contact}, 18+ drops any guardian sent.
+-- 3. zt_list_meet_registrations returns the three new columns.
 -- 4. New approved waiver version: legal/WAIVER.md rewritten 10/19 (minors section 7, indemnity, software clause,
 --    copies). The old hash stays listed so rows that accepted it remain valid.
 
+alter table registrations add column if not exists date_of_birth date null;
 alter table registrations add column if not exists guardian_name text null;
 alter table registrations add column if not exists guardian_contact text null;
 alter table registrations drop constraint if exists registrations_guardian_pair;
 alter table registrations add constraint registrations_guardian_pair
   check ((guardian_name is null) = (guardian_contact is null));
-revoke select (guardian_name, guardian_contact) on registrations from anon, authenticated;
+revoke select (date_of_birth, guardian_name, guardian_contact) on registrations from anon, authenticated;
 
 insert into zt_waiver_versions (version, note) values ('3d524437e38f', 'legal/WAIVER.md rewritten 10/19 (minors, indemnity, software, copies); draft pending legal review')
 on conflict (version) do nothing;
@@ -40,7 +43,9 @@ declare
   v_waitlisted boolean;
   v_reg_id uuid;
   v_ip text;
-  v_age text;
+  v_dob_text text;
+  v_dob date;
+  v_age_years int;
   v_guardian jsonb;
   v_g_name text;
   v_g_contact text;
@@ -92,13 +97,29 @@ begin
       using errcode = 'P0001';
   end if;
 
-  -- 009: athletes under 18 are registered by a parent or legal guardian (legal/WAIVER.md section 7). The client
-  -- sends athleteAge 'adult' | 'minor'; a minor needs guardian {name, contact}. Both are owner-only columns.
-  v_age := lower(trim(coalesce(p_input->>'athleteAge', '')));
-  if v_age not in ('adult', 'minor') then
-    raise exception 'Tell us whether the athlete is 18 or older.' using errcode = 'P0001';
+  -- 009: date of birth, judged on the meet date (today when the meet has none). Under 12 refused (Strongman Corp
+  -- minimum); under 18 registered by a parent or legal guardian (legal/WAIVER.md section 7) who signs at check-in.
+  -- Messages match lib/promoter/rules.ts validateAthleteAge. All three columns are owner-only.
+  v_dob_text := trim(coalesce(p_input->>'dateOfBirth', ''));
+  if v_dob_text !~ '^\d{4}-\d{2}-\d{2}$' then
+    raise exception 'Enter the athlete date of birth.' using errcode = 'P0001';
   end if;
-  if v_age = 'minor' then
+  begin
+    v_dob := v_dob_text::date;
+  exception when others then
+    raise exception 'Enter the athlete date of birth.' using errcode = 'P0001';
+  end;
+  if v_dob > current_date then
+    raise exception 'Date of birth cannot be in the future.' using errcode = 'P0001';
+  end if;
+  v_age_years := extract(year from age(coalesce(m.date, current_date)::timestamp, v_dob::timestamp))::int;
+  if v_age_years > 100 then
+    raise exception 'Check the date of birth.' using errcode = 'P0001';
+  end if;
+  if v_age_years < 12 then
+    raise exception 'Athletes must be at least 12 on competition day. Contact the promoter about younger athletes.' using errcode = 'P0001';
+  end if;
+  if v_age_years < 18 then
     v_guardian := case when jsonb_typeof(p_input->'guardian') = 'object' then p_input->'guardian' else '{}'::jsonb end;
     v_g_name := trim(coalesce(v_guardian->>'name', ''));
     v_g_contact := trim(coalesce(v_guardian->>'contact', ''));
@@ -181,11 +202,13 @@ begin
   begin
     insert into registrations (
       meet_id, user_id, athlete_id, division_id, name, email, bodyweight,
-      emergency_contact, status, waitlisted, paid, waiver_accepted_at, waiver_version, guardian_name, guardian_contact
+      emergency_contact, status, waitlisted, paid, waiver_accepted_at, waiver_version,
+      date_of_birth, guardian_name, guardian_contact
     )
     values (
       m.id, auth.uid(), null, v_div_id, v_name, v_email, v_bodyweight,
-      v_emergency, 'pending', v_waitlisted, false, now(), v_waiver_version, v_g_name, v_g_contact
+      v_emergency, 'pending', v_waitlisted, false, now(), v_waiver_version,
+      v_dob, v_g_name, v_g_contact
     )
     returning id into v_reg_id;
   exception when unique_violation then
@@ -220,7 +243,7 @@ begin
     select
       id, meet_id, user_id, athlete_id, division_id, name, email, bodyweight,
       emergency_contact, status, waitlisted, paid, waiver_accepted_at, waiver_version, created_at, updated_at,
-      guardian_name, guardian_contact
+      to_char(date_of_birth, 'YYYY-MM-DD') as date_of_birth, guardian_name, guardian_contact
     from registrations
     where meet_id = p_meet_id
   ) r;

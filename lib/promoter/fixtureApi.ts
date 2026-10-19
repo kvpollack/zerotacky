@@ -29,6 +29,7 @@ import type { AppState } from '../types';
 import {
   clone,
   decideRegistrationOutcome,
+  isMinorOnMeetDay,
   findOrphanedResult,
   ISO_DATE,
   todayIsoDate,
@@ -39,12 +40,18 @@ import {
 
 // The pure rules moved to ./rules (Astra H1, 10/17); re-exported so existing imports and tests keep working.
 export {
+  ageOnDate,
+  ageReferenceDate,
   decideRegistrationOutcome,
   findOrphanedResult,
   isMeetStateDirty,
+  isMinorOnMeetDay,
   isRegistrationOpen,
+  parseIsoDate,
   toPublicRegistrationMeet,
+  validateAthleteAge,
   validateEmergencyContact,
+  validateGuardian,
   validateListingPatch,
   validateRegistrationInput,
 } from './rules';
@@ -617,7 +624,8 @@ export function createFixturePromoterApi(
         waitlisted: outcome.status === 'waitlist',
         waiverAcceptedAt: nowIso,
         waiverVersion: input.waiverVersion,
-        guardian: input.athleteAge === 'minor' && input.guardian
+        dateOfBirth: input.dateOfBirth.trim(),
+        guardian: isMinorOnMeetDay(input.dateOfBirth, pub.date, today()) && input.guardian
           ? { name: input.guardian.name.trim(), contact: input.guardian.contact.trim() }
           : null,
         paid: false,

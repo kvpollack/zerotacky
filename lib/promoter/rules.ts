@@ -143,17 +143,48 @@ export function validateEmergencyContact(value: string): string | null {
   return null;
 }
 
-// 009: athletes under 18 are registered by a parent or legal guardian (legal/WAIVER.md section 7). Mirrors
-// zt_submit_registration: athleteAge must be chosen; a minor needs a guardian name (2..80) and a contact that is a
-// phone with 7+ digits or an email (160 max). Messages match the server's.
-export function validateGuardian(
-  athleteAge: RegistrationSubmission['athleteAge'] | '' | undefined | null,
-  guardian: RegistrationGuardian | null | undefined
-): string | null {
-  if (athleteAge !== 'adult' && athleteAge !== 'minor') {
-    return 'Tell us whether the athlete is 18 or older.';
-  }
-  if (athleteAge === 'adult') return null;
+// 009: date of birth and age on competition day (Kurt 10/19). Industry norm from Strongman Corporation's athlete
+// rules: minimum age 12; under 18 registered by a parent or legal guardian who signs the waiver (legal/WAIVER.md
+// section 7). Age is measured on the meet date, not the day the form is filled in; a meet without a date uses today.
+// Pure string arithmetic so the browser's time zone cannot shift a birthday by a day. Mirrors zt_submit_registration;
+// messages match the server's.
+export const MIN_ATHLETE_AGE = 12;
+export const ADULT_AGE = 18;
+
+export function parseIsoDate(value: string | null | undefined): { y: number; m: number; d: number } | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec((value ?? '').trim());
+  if (!match) return null;
+  const y = Number(match[1]);
+  const m = Number(match[2]);
+  const d = Number(match[3]);
+  if (m < 1 || m > 12 || d < 1) return null;
+  const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate(); // day 0 of the next month = last day of this one
+  if (d > daysInMonth) return null;
+  return { y, m, d };
+}
+
+// Whole years from dob to onDate, or null when either date is malformed. Negative when dob is after onDate.
+export function ageOnDate(dob: string | null | undefined, onDate: string | null | undefined): number | null {
+  const b = parseIsoDate(dob);
+  const o = parseIsoDate(onDate);
+  if (!b || !o) return null;
+  let years = o.y - b.y;
+  if (o.m < b.m || (o.m === b.m && o.d < b.d)) years -= 1;
+  return years;
+}
+
+// The date an athlete's age is judged on: the competition date, or today when the meet has no date yet.
+export function ageReferenceDate(meetDate: string | null | undefined, today: string = todayIsoDate()): string {
+  return parseIsoDate(meetDate) ? (meetDate as string).trim() : today;
+}
+
+export function isMinorOnMeetDay(dob: string | null | undefined, meetDate: string | null | undefined, today: string = todayIsoDate()): boolean {
+  const age = ageOnDate(dob, ageReferenceDate(meetDate, today));
+  return age !== null && age < ADULT_AGE;
+}
+
+// Guardian fields for an athlete under 18: name 2..80, contact a phone with 7+ digits or an email (160 max).
+export function validateGuardian(guardian: RegistrationGuardian | null | undefined): string | null {
   const name = (guardian?.name ?? '').trim();
   const contact = (guardian?.contact ?? '').trim();
   if (name.length < 2) {
@@ -168,12 +199,28 @@ export function validateGuardian(
   return null;
 }
 
+// Date of birth + guardian, judged against the meet date. Returns the first problem or null.
+export function validateAthleteAge(
+  dateOfBirth: string | null | undefined,
+  meetDate: string | null | undefined,
+  guardian: RegistrationGuardian | null | undefined,
+  today: string = todayIsoDate()
+): string | null {
+  if (!parseIsoDate(dateOfBirth)) return 'Enter the athlete date of birth.';
+  const dob = (dateOfBirth as string).trim();
+  if (dob > today) return 'Date of birth cannot be in the future.';
+  const age = ageOnDate(dob, ageReferenceDate(meetDate, today)) ?? 0;
+  if (age > 100) return 'Check the date of birth.';
+  if (age < MIN_ATHLETE_AGE) {
+    return `Athletes must be at least ${MIN_ATHLETE_AGE} on competition day. Contact the promoter about younger athletes.`;
+  }
+  if (age < ADULT_AGE) return validateGuardian(guardian);
+  return null;
+}
+
 // Field-level validation of a public submission against the public meet shape.
 export function validateRegistrationInput(
-  input: Omit<RegistrationSubmission, 'waiverAccepted' | 'athleteAge'> & {
-    waiverAccepted: boolean;
-    athleteAge: RegistrationSubmission['athleteAge'] | ''; // '' = not chosen yet (the form before step 2)
-  },
+  input: Omit<RegistrationSubmission, 'waiverAccepted'> & { waiverAccepted: boolean },
   meet: PublicRegistrationMeet
 ): string | null {
   if (!isRegistrationOpen(meet.listing.registrationStatus)) {
@@ -193,8 +240,8 @@ export function validateRegistrationInput(
   const emergencyErr = validateEmergencyContact(input.emergencyContact);
   if (emergencyErr) return emergencyErr;
 
-  const guardianErr = validateGuardian(input.athleteAge, input.guardian);
-  if (guardianErr) return guardianErr;
+  const ageErr = validateAthleteAge(input.dateOfBirth, meet.date, input.guardian);
+  if (ageErr) return ageErr;
 
   if (!meet.divisions.some((d) => d.id === input.divisionId)) {
     return 'Please select a valid division for this meet.';

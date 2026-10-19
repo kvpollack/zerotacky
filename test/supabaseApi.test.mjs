@@ -402,9 +402,16 @@ function createFakePromoterDb(opts = {}) {
         }
         // mirrors zt_submit_registration (005): a submission without the waiver version is refused (C6)
         if (!String(inp.waiverVersion ?? '').trim()) throw new Error('The waiver version is missing. Reload the page and try again.');
-        // mirrors 009: athleteAge required; a minor needs a guardian; an adult's guardian is dropped
-        if (inp.athleteAge !== 'adult' && inp.athleteAge !== 'minor') throw new Error('Tell us whether the athlete is 18 or older.');
-        if (inp.athleteAge === 'minor' && !(inp.guardian && String(inp.guardian.name ?? '').trim().length >= 2)) {
+        // mirrors 009: dateOfBirth required (YYYY-MM-DD), age judged on the meet date; under 12 refused; a minor needs
+        // a guardian; an adult's guardian is dropped
+        const dob = String(inp.dateOfBirth ?? '').trim();
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dob)) throw new Error('Enter the athlete date of birth.');
+        const ref = meet.date || new Date().toISOString().slice(0, 10);
+        let ageYears = Number(ref.slice(0, 4)) - Number(dob.slice(0, 4));
+        if (ref.slice(5) < dob.slice(5)) ageYears -= 1;
+        if (ageYears < 12) throw new Error('Athletes must be at least 12 on competition day. Contact the promoter about younger athletes.');
+        const isMinor = ageYears < 18;
+        if (isMinor && !(inp.guardian && String(inp.guardian.name ?? '').trim().length >= 2)) {
           throw new Error('An athlete under 18 must be registered by a parent or legal guardian. Enter the guardian full name.');
         }
         const waitlisted = meet.registration_status === 'waitlist';
@@ -425,8 +432,9 @@ function createFakePromoterDb(opts = {}) {
           paid: false,
           waiver_accepted_at: nowIso,
           waiver_version: inp.waiverVersion,
-          guardian_name: inp.athleteAge === 'minor' ? inp.guardian.name : null,
-          guardian_contact: inp.athleteAge === 'minor' ? inp.guardian.contact : null,
+          date_of_birth: dob,
+          guardian_name: isMinor ? inp.guardian.name : null,
+          guardian_contact: isMinor ? inp.guardian.contact : null,
           created_at: nowIso,
           updated_at: nowIso,
         });
@@ -731,7 +739,7 @@ describe('supabaseApi: getPublicMeetBySlug H1 secret check & submitRegistration'
       athleteName: 'Taylor Public (Fake)',
       email: 'taylor.public@example.com',
       emergencyContact: 'Jordan Public 717-555-0199',
-      athleteAge: 'adult',
+      dateOfBirth: '1990-05-02',
       guardian: null,
       waiverAccepted: true,
       waiverVersion: 'testwaiver01',
@@ -747,7 +755,8 @@ describe('supabaseApi: getPublicMeetBySlug H1 secret check & submitRegistration'
     expect(stored.waiverVersion).toBe('testwaiver01');
     expect(stored.waiverAcceptedAt).not.toBeNull();
     expect(stored.guardian).toBeNull();
-    expect(rpc.params.p_input.athleteAge).toBe('adult');
+    expect(stored.dateOfBirth).toBe('1990-05-02');
+    expect(rpc.params.p_input.dateOfBirth).toBe('1990-05-02');
     expect(rpc.params.p_input.guardian).toBeNull();
 
     // 009: a minor's guardian travels in the RPC payload, trimmed, and comes back on the stored request
@@ -758,7 +767,7 @@ describe('supabaseApi: getPublicMeetBySlug H1 secret check & submitRegistration'
       athleteName: 'Teen Public (Fake)',
       email: 'teen.public@example.com',
       emergencyContact: 'Jordan Public 717-555-0199',
-      athleteAge: 'minor',
+      dateOfBirth: '2010-03-04',
       guardian: { name: ' Jordan Public ', contact: ' jordan@example.com ' },
       waiverAccepted: true,
       waiverVersion: 'testwaiver01',
@@ -769,6 +778,25 @@ describe('supabaseApi: getPublicMeetBySlug H1 secret check & submitRegistration'
     fakeDb.setSignedOut(false);
     const storedMinor = (await api.listRegistrations(detail.data.summary.serverId)).data.find((r) => r.id === minor.data.id);
     expect(storedMinor.guardian).toEqual({ name: 'Jordan Public', contact: 'jordan@example.com' });
+    expect(storedMinor.dateOfBirth).toBe('2010-03-04');
+
+    // 009: too young is refused by the client rules before any RPC
+    const rpcCountBefore = fakeDb.rpcCalls.filter((c) => c.fn === 'zt_submit_registration').length;
+    fakeDb.setSignedOut(true);
+    const young = await api.submitRegistration({
+      slug: 'iron-furnace-classic-2026',
+      divisionId: 'ifc-g1',
+      athleteName: 'Kid Public (Fake)',
+      email: 'kid.public@example.com',
+      emergencyContact: 'Jordan Public 717-555-0199',
+      dateOfBirth: '2016-01-01',
+      guardian: { name: 'Jordan Public', contact: 'jordan@example.com' },
+      waiverAccepted: true,
+      waiverVersion: 'testwaiver01',
+    });
+    expect(young.error).toMatch(/at least 12 on competition day/);
+    expect(fakeDb.rpcCalls.filter((c) => c.fn === 'zt_submit_registration').length).toBe(rpcCountBefore);
+    fakeDb.setSignedOut(false);
   });
 });
 
@@ -798,7 +826,7 @@ describe('supabaseApi: every method returns { data: null, error } when db throws
         athleteName: 'Test Athlete',
         email: 'test@example.com',
         emergencyContact: 'Sam Test 717-555-0100',
-        athleteAge: 'adult',
+        dateOfBirth: '1990-05-02',
         guardian: null,
         waiverAccepted: true,
         waiverVersion: 'testwaiver01',

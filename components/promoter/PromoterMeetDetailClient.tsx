@@ -648,6 +648,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             registrations={registrations}
             divisions={workingState.divisions}
             athletes={workingState.athletes}
+            meetDate={workingState.meet.date}
             onSetStatus={handleSetRegistrationStatus}
             blockedReason={registrationsBlockedReason}
           />

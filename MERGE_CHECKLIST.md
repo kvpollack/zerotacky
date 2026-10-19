@@ -34,7 +34,7 @@ Astra's gate 3 verdict at `52c7abb9` was "merge as is for the audited code" (`au
 - [ ] Sign up as Kurt at `/website/account` (confirmation mail arrives if Resend is in; otherwise Slate confirms by SQL that Kurt pastes). Profile saves.
 - [ ] `/legal/terms`, `/legal/privacy`, `/legal/waiver` render; footer links present; the Create-account form shows the Terms sentence.
 - [ ] `/promoter`: Strongfest does not appear (ownerless; it was published with a key). Open Sync on an admin phone signed in as Kurt, enter the new publish key, Publish update: the meet is claimed, `/promoter` lists it, membership row written.
-- [ ] Create a throwaway meet in `/promoter`, list it, cap 2, open registration. `/shows` shows it within 60 s (ISR). `/register/<slug>` submits (waiver stamp recorded); accept it in the dashboard; the athlete appears on the admin phone's roster after the next pull. Decline a second one. Delete the throwaway through the dashboard afterwards.
+- [ ] Create a throwaway meet in `/promoter`, list it, cap 2, open registration. `/shows` shows it within 60 s (ISR). `/register/<slug>` submits (waiver stamp recorded; date of birth asked, a DOB under 18 reveals guardian fields); accept it in the dashboard; the athlete appears on the admin phone's roster after the next pull. Decline a second one. Delete the throwaway through the dashboard afterwards.
 - [ ] Projector `/m/<slug>?layout=tv` renders.
 - [ ] Anything red: Slate reads the browser console and the Supabase logs Kurt pastes; rollback is the dump restore plus a push of main's previous tree (`dbfd3df1`), not a migration reversal.
 

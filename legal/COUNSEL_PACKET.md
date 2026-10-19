@@ -20,7 +20,8 @@ Stored with every registration, in the database (Supabase, United States):
 - athlete name, email, emergency contact (name and phone), chosen division, optional bodyweight;
 - `waiver_accepted_at`: server timestamp of the submission;
 - `waiver_version`: the first 12 hex characters of a SHA-256 hash of the exact waiver file shown. The server refuses a submission whose version is not on its list of approved versions, so a registration can never cite a waiver text that was never published. Current version: `3d524437e38f` (the text in this folder). The previous draft's hash `a995ce0eab26` is also listed because test registrations on staging cite it; no real athlete has accepted either yet;
-- for an athlete under 18: the parent or guardian's name and a phone or email (their presence is the record that the registrant declared the athlete under 18; an adult's registration has neither);
+- the athlete's date of birth (`date_of_birth`); age is computed against the competition date, not the submission date;
+- for an athlete under 18 on competition day: the parent or guardian's name and a phone or email (an adult's registration has neither);
 - the IP address of the submitting device sits in a rate-limit table for about a day (rows older than 24 hours are pruned opportunistically) and is not attached to the registration.
 
 Not recorded: a typed name as a signature, a drawn signature, the rendered copy as the athlete saw it (we can regenerate it from the version plus the competition record), or a confirmation email (outbound email is being set up this week; when it is, we intend to email the athlete a copy of the accepted waiver).
@@ -30,10 +31,10 @@ Not recorded: a typed name as a signature, a drawn signature, the rendered copy 
 Research on the sport's norms: Strongman Corporation's athlete rules (strongmancorporation.com/athlete-info-overview, effective 1/1/2026) set a minimum age of 12 and require that anyone under 18 be registered by a parent or guardian who signs the waivers; Iron Podium, the registration site most promoters use, collects a digital waiver at registration based on the USS/NAS standard forms (ironpodium.com/docs/getting_started), and promoter listings there commonly add that athletes under 18 need a parent or guardian at weigh-in to sign on paper.
 
 Our implementation:
-- Registration asks "Athlete age": "18 or older" or "under 18, and I am the parent or legal guardian". Under 18 requires the guardian's full name and a phone or email. The server refuses a submission without the choice, or a minor without a guardian.
+- Registration asks for the athlete's date of birth and shows the age on competition day as it is typed. Under 12 is refused ("contact the promoter"). Under 18 reveals the guardian's full name and phone or email, both required, with the sentence "By continuing you confirm you are the athlete's parent or legal guardian" and notice that the guardian signs on paper at check-in. The server recomputes the age from the date of birth and the meet date and enforces the same rules, so a client cannot claim adult status by omitting fields.
 - The waiver's section 7 is written in the guardian's voice for a minor: the guardian confirms their status, agrees on the athlete's behalf and on their own, including release and indemnity for claims the athlete may later bring, and accepts that the promoter may require a paper signature at check-in and sets the minimum age.
 - Accounts (Terms section 3): 13 or older; under 18 with a parent or guardian's agreement. An account is not needed to register for a competition.
-- The promoter's dashboard shows "Under 18. Guardian: name (contact)" on the registration.
+- The promoter's dashboard shows "Age N on meet day. Guardian: name (contact). Guardian signature needed at check-in." on the registration.
 
 ## 5. Questions for counsel
 

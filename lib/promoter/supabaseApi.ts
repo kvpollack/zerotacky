@@ -26,6 +26,7 @@ import type {
 } from './db';
 import {
   decideRegistrationOutcome,
+  isMinorOnMeetDay,
   findOrphanedResult,
   toPublicRegistrationMeet,
   validateListingPatch,
@@ -117,6 +118,7 @@ export function rowToRegistrationRequest(row: RegistrationRow): RegistrationRequ
     waitlisted: Boolean(row.waitlisted || row.status === 'waitlist'),
     waiverAcceptedAt: row.waiver_accepted_at ?? null,
     waiverVersion: row.waiver_version ?? null,
+    dateOfBirth: row.date_of_birth ?? null,
     guardian: row.guardian_name ? { name: row.guardian_name, contact: row.guardian_contact ?? '' } : null,
     paid: Boolean(row.paid),
     createdAt: row.created_at,
@@ -610,8 +612,8 @@ export function createSupabasePromoterApi(
               athleteName: input.athleteName.trim(),
               email: input.email.trim().toLowerCase(),
               emergencyContact: input.emergencyContact.trim(),
-              athleteAge: input.athleteAge,
-              guardian: input.athleteAge === 'minor' && input.guardian
+              dateOfBirth: input.dateOfBirth.trim(),
+              guardian: isMinorOnMeetDay(input.dateOfBirth, pubRes.data.date, today()) && input.guardian
                 ? { name: input.guardian.name.trim(), contact: input.guardian.contact.trim() }
                 : null,
               waiverAccepted: input.waiverAccepted,

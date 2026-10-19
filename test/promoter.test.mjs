@@ -256,7 +256,7 @@ describe('fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers',
       divisionId: 'ifc-g1',
       athleteName: 'Alex Sample (Fake)', // same name as the seeded ifc-ath-1
       emergencyContact: 'Sam Sample 717-555-0101',
-      athleteAge: 'adult',
+      dateOfBirth: '1990-05-02',
       guardian: null,
       waiverAccepted: true,
       waiverVersion: 'testwaiver01',
