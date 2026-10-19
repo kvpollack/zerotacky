@@ -8,6 +8,7 @@ import type { AppState } from '../types';
 import {
   emptyListing,
   type ApiResult,
+  type DeletedMeet,
   type MeetListing,
   type PromoterApi,
   type PromoterMeetDetail,
@@ -484,6 +485,25 @@ export function createSupabasePromoterApi(
         }
         await db.updateMeetListing(serverId, { competition_status: 'completed' });
         return { data: { ok: true }, error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    async deleteMeet(serverId: string, opts?: { confirmName?: string }): Promise<ApiResult<DeletedMeet>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) {
+          return { data: null, error: 'Sign in required to delete a meet.' };
+        }
+        const out = await db.rpc<DeletedMeet>('zt_delete_meet', {
+          p_meet_id: serverId,
+          p_confirm_name: opts?.confirmName?.trim() ? opts.confirmName.trim() : null,
+        });
+        if (!out?.id) {
+          return { data: null, error: 'Could not delete the meet.' };
+        }
+        return { data: out, error: null };
       } catch (e) {
         return { data: null, error: errMessage(e) };
       }

@@ -214,6 +214,39 @@ describe('fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, arch
     const after = await api.getMeet('srv-meet-upcoming-1');
     assert.equal(after.data.summary.listing.competitionStatus, 'completed');
   });
+
+  test('deleteMeet (010): name required when the meet has data, refused for live/completed, cascades registrations', async () => {
+    const api = FA.createFixturePromoterApi();
+    const before = (await api.getMeet('srv-meet-upcoming-1')).data;
+    const regsBefore = (await api.listRegistrations('srv-meet-upcoming-1')).data;
+    assert.ok(regsBefore.length > 0);
+
+    const noName = await api.deleteMeet('srv-meet-upcoming-1');
+    assert.equal(noName.data, null);
+    assert.match(noName.error, /Type the meet name exactly/);
+
+    const live = await api.deleteMeet('srv-meet-live-2', { confirmName: 'x' });
+    assert.match(live.error, /live meet cannot be deleted/);
+    const done = await api.deleteMeet('srv-meet-completed-3', { confirmName: 'x' });
+    assert.match(done.error, /completed meet cannot be deleted/);
+
+    const ok = await api.deleteMeet('srv-meet-upcoming-1', { confirmName: before.summary.name.toLowerCase() });
+    assert.equal(ok.error, null);
+    assert.equal(ok.data.deleted.registrations, regsBefore.length);
+    assert.equal(ok.data.deleted.athletes, before.summary.athleteCount);
+    assert.equal((await api.getMeet('srv-meet-upcoming-1')).data, null);
+    const regsAfter = await api.listRegistrations('srv-meet-upcoming-1');
+    assert.ok(regsAfter.data === null || regsAfter.data.length === 0);   // the meet is gone, so the lookup fails
+    assert.ok(!(await api.listMyMeets()).data.some((m) => m.serverId === 'srv-meet-upcoming-1'));
+
+    const created = await api.createMeet({ name: 'Empty Draft', date: '2027-02-06' });
+    const draft = await api.deleteMeet(created.data.summary.serverId);
+    assert.equal(draft.error, null);
+    assert.deepEqual(draft.data.deleted, { divisions: 0, events: 0, athletes: 0, results: 0, registrations: 0 });
+
+    const signedOut = FA.createFixturePromoterApi({ signedOut: true });
+    assert.equal((await signedOut.deleteMeet('srv-meet-live-2')).error, 'Sign in required to delete a meet.');
+  });
 });
 
 describe('fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers', () => {

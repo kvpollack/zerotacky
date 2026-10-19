@@ -50,6 +50,12 @@ export interface PromoterMeetSummary {
   joinCode: string | null;     // only present for the owner; shown on the dashboard, never on public pages
 }
 
+export interface DeletedMeet {
+  id: string;
+  name: string;
+  deleted: { divisions: number; events: number; athletes: number; results: number; registrations: number };
+}
+
 export interface PromoterMeetDetail {
   summary: PromoterMeetSummary;
   state: AppState;             // full meet config + roster + results, same shape the scorer uses
@@ -129,6 +135,7 @@ export interface ApiResult<T> {
 //   updateListing          deny                 allow                      deny
 //   rotateJoinCode         deny                 allow                      deny
 //   archiveMeet            deny                 allow                      deny
+//   deleteMeet             deny                 owner only (not members)   deny
 //   listRegistrations      deny                 allow (incl. emergency)    deny
 //   setRegistrationStatus  deny                 allow (ownership resolved from the stored request's meet)  deny
 //   getPublicMeetBySlug    public projection    same                       same
@@ -160,6 +167,10 @@ export interface PromoterApi {
   updateListing(serverId: string, patch: Partial<MeetListing>, opts?: { expectedUpdatedAt?: string | null }): Promise<ApiResult<PromoterMeetSummary>>;
   rotateJoinCode(serverId: string): Promise<ApiResult<{ joinCode: string }>>;
   archiveMeet(serverId: string): Promise<ApiResult<{ ok: true }>>;   // soft: competitionStatus -> 'completed', isPublicListed unchanged
+  // hard delete (010), owner only. Refused for live/completed meets. When the meet holds any divisions, events, athletes,
+  // results or registrations the server requires opts.confirmName to equal the meet name (case-insensitive, trimmed);
+  // an empty draft deletes without it. Everything under the meet goes with it (cascades). Returns what was removed.
+  deleteMeet(serverId: string, opts?: { confirmName?: string }): Promise<ApiResult<DeletedMeet>>;
 
   // registrations (M4; fixture only until the schema lands)
   listRegistrations(serverId: string): Promise<ApiResult<RegistrationRequest[]>>;

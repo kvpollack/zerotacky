@@ -43,6 +43,7 @@ const PROMOTER_API_METHODS = [
   'updateListing',
   'rotateJoinCode',
   'archiveMeet',
+  'deleteMeet',
   'listRegistrations',
   'setRegistrationStatus',
   'getPublicMeetBySlug',

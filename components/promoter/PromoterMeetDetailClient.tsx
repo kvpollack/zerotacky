@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -66,6 +67,7 @@ interface PromoterMeetDetailClientProps {
 
 export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetailClientProps) {
   const api = usePromoterApi();
+  const router = useRouter();
 
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<PromoterUser | null>(null);
@@ -291,6 +293,15 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
       return { error: `Status changed to ${status}, but the page could not refresh (${problems.join('; ')}). Reload to see the current state.` };
     }
     return { error: null };
+  };
+
+  const handleDeleteMeet = async (confirmName: string | null) => {
+    const res = await api.deleteMeet(serverId, confirmName ? { confirmName } : undefined);
+    if (res.error || !res.data) {
+      return { error: res.error ?? 'Could not delete the meet.', deleted: null };
+    }
+    router.push('/promoter');
+    return { error: null, deleted: res.data };
   };
 
   const handleRotateJoinCode = async () => {
@@ -590,6 +601,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             addStation={addStation}
             updateStation={updateStation}
             removeStation={removeStation}
+            allowDemoToggle={false}
           />
         </div>
 
@@ -657,7 +669,9 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
         <div role="tabpanel" id="panel-meetday" aria-labelledby="tab-meetday" hidden={activeTab !== 'meetday'}>
           <MeetDaySection
             summary={summary}
+            resultCount={workingState.results.length}
             onRotateCode={handleRotateJoinCode}
+            onDelete={handleDeleteMeet}
           />
         </div>
       </div>

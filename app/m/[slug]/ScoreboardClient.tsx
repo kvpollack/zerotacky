@@ -121,7 +121,12 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
         <div className="min-w-0">
           <div className="text-[10px] font-black uppercase tracking-widest text-zt-primary flex items-center gap-1.5">
             <span className={`inline-block w-2 h-2 rounded-full ${error ? 'bg-amber-500' : 'bg-emerald-400 animate-pulse'}`} />
-            Live scoreboard{meet.isDemo ? ' · DEMO' : ''}
+            Live scoreboard
+            {meet.isDemo && (
+              <span className={`font-black uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500 text-black ${tv ? 'text-2xl' : 'text-sm'}`}>
+                DEMO
+              </span>
+            )}
           </div>
           <h1 className={`font-black truncate ${tv ? 'text-3xl' : 'text-xl'}`}>{state.meet.name}</h1>
         </div>

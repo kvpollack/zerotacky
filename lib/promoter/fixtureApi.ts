@@ -10,6 +10,7 @@ import { DEMO_SHOW_RECORDS } from '../website/fixtures';
 import {
   emptyListing,
   type ApiResult,
+  type DeletedMeet,
   type MeetListing,
   type PromoterApi,
   type PromoterMeetDetail,
@@ -486,6 +487,39 @@ export function createFixturePromoterApi(
       };
       found.summary.updatedAt = new Date().toISOString();
       return { data: { ok: true }, error: null };
+    },
+
+    async deleteMeet(serverId: string, opts?: { confirmName?: string }): Promise<ApiResult<DeletedMeet>> {
+      if (signedOut) {
+        return { data: null, error: 'Sign in required to delete a meet.' };
+      }
+      const idx = meets.findIndex((m) => m.summary.serverId === serverId);
+      if (idx < 0) {
+        return { data: null, error: `No meet found with serverId "${serverId}".` };
+      }
+      const found = meets[idx];
+      const status = found.summary.listing.competitionStatus;
+      if (status === 'live' || status === 'completed') {
+        return { data: null, error: `a ${status} meet cannot be deleted. Set it to cancelled on the Listing tab first, or leave it as a record.` };
+      }
+      const mine = registrations.filter((r) => r.meetServerId === serverId);
+      const deleted = {
+        divisions: found.state.divisions.length,
+        events: found.state.events.length,
+        athletes: found.state.athletes.length,
+        results: found.state.results.length,
+        registrations: mine.length,
+      };
+      const total = Object.values(deleted).reduce((a, b) => a + b, 0);
+      const typed = (opts?.confirmName ?? '').trim().toLowerCase();
+      if (total > 0 && typed !== found.summary.name.trim().toLowerCase()) {
+        return { data: null, error: 'this meet has data associated with it. Type the meet name exactly to confirm deletion.' };
+      }
+      meets.splice(idx, 1);
+      for (let i = registrations.length - 1; i >= 0; i--) {
+        if (registrations[i].meetServerId === serverId) registrations.splice(i, 1);
+      }
+      return { data: { id: serverId, name: found.summary.name, deleted }, error: null };
     },
 
     async listRegistrations(

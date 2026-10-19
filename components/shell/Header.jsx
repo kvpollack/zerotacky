@@ -55,7 +55,7 @@ export default function Header({
                 ZEROTACKY
               </span>
               {meet.isDemo && (
-                <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/50">
+                <span className="text-sm font-black uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500 text-black border border-amber-300" title="Demo meet: hidden from the public list. Meet Setup > Meet Details has the switch.">
                   DEMO
                 </span>
               )}

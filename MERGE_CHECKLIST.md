@@ -44,3 +44,10 @@ Astra's gate 3 verdict at `52c7abb9` was "merge as is for the audited code" (`au
 - [ ] Slate: retire the v2 working copy or keep it as the next branch (Kurt's call); staging keeps running the preview alias.
 - [ ] **Kurt**: Astra post-merge smoke audit on prod if wanted (read-only, a throwaway meet); brief would be `audits/astra-brief-prod-smoke.md`, not written yet.
 - [ ] Delete or keep the `zerotacky-upgrade-test` Supabase project.
+
+## 6. Follow-up release (started 10/19 night, after the merge)
+- [x] Role landing + PIN gate for judge/promoter, spectator read-only Next Up (v2 `c2653fb3`, Vercel preview green).
+- [x] `supabase/010_meet_lifecycle.sql` on staging: publish keeps a real meet real; `zt_delete_meet` (owner, not live/completed, name typed when the meet has data). Verified on staging: empty draft deleted; a meet with a division, event, athlete and scored result deleted with full cascade through the 004 guard; wrong name refused client-side; publish rule checked for all three transitions. Catalog: functions 29, policies 19, tables 12.
+- [ ] **Kurt's go**: apply 010 on prod (`python ~/.aki/tmp/zt/sql.py --ref kagitbfthapxmaljsdtz --allow-prod --file supabase/010_meet_lifecycle.sql`, then `prod_check.sql` expecting functions 29). Then push v2 -> main. Then Kurt opens Meet Setup on the admin phone, taps **Mark as Real Meet**, publishes once: `ec1472c8` becomes real and shows on `/shows` once listed. `strongfest-2026-demo` stays demo.
+- [ ] Stations as their own setup step, run-order method explained on screen (ROADMAP s5).
+
