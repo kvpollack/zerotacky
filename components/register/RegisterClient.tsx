@@ -16,6 +16,8 @@ import { describeShowLifecycle } from '@/lib/website/filters';
 import type { PublicRegistrationMeet } from '@/lib/promoter/contract';
 import { decideRegistrationOutcome, isRegistrationOpen, validateRegistrationInput } from '@/lib/promoter/rules';
 import { getPromoterApi, isLiveBackend } from '@/lib/promoter/usePromoterApi';
+import MarkdownBlocks from '@/components/legal/MarkdownBlocks';
+import { parseMarkdown } from '@/lib/legal/markdown';
 
 interface RegisterClientProps {
   slug: string;
@@ -40,6 +42,10 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
   const [athleteName, setAthleteName] = useState('');
   const [email, setEmail] = useState('');
   const [emergencyContact, setEmergencyContact] = useState('');
+  // 009: athletes under 18 are registered by a parent or legal guardian (waiver section 7)
+  const [athleteAge, setAthleteAge] = useState<'adult' | 'minor' | ''>('');
+  const [guardianName, setGuardianName] = useState('');
+  const [guardianContact, setGuardianContact] = useState('');
   const [waiverAccepted, setWaiverAccepted] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
@@ -151,7 +157,12 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
     e.preventDefault();
     setError(null);
     const err = validateRegistrationInput(
-      { slug: meet.slug, divisionId, athleteName, email, emergencyContact, waiverAccepted: true, waiverVersion: waiverVersion ?? '' },
+      {
+        slug: meet.slug, divisionId, athleteName, email, emergencyContact,
+        athleteAge,
+        guardian: athleteAge === 'minor' ? { name: guardianName, contact: guardianContact } : null,
+        waiverAccepted: true, waiverVersion: waiverVersion ?? '',
+      },
       meet
     );
     if (err) {
@@ -188,6 +199,8 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
       athleteName,
       email,
       emergencyContact,
+      athleteAge: athleteAge === 'minor' ? 'minor' : 'adult',
+      guardian: athleteAge === 'minor' ? { name: guardianName, contact: guardianContact } : null,
       waiverAccepted: true,
       waiverVersion,
     });
@@ -482,6 +495,68 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                 </p>
               </div>
 
+              <fieldset className="bg-zt-inset border border-zt-border rounded-xl p-3.5">
+                <legend className="text-[11px] font-extrabold uppercase text-zt-muted px-1">Athlete age *</legend>
+                <div className="flex flex-col gap-2 text-sm font-bold text-zt-text">
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="reg-athlete-age"
+                      value="adult"
+                      checked={athleteAge === 'adult'}
+                      onChange={() => setAthleteAge('adult')}
+                      className="w-4 h-4 accent-zt-primary"
+                    />
+                    The athlete is 18 or older
+                  </label>
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="reg-athlete-age"
+                      value="minor"
+                      checked={athleteAge === 'minor'}
+                      onChange={() => setAthleteAge('minor')}
+                      className="w-4 h-4 accent-zt-primary"
+                    />
+                    The athlete is under 18, and I am the parent or legal guardian
+                  </label>
+                </div>
+                {athleteAge === 'minor' && (
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="reg-guardian-name" className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1">
+                        Parent / guardian full name *
+                      </label>
+                      <input
+                        id="reg-guardian-name"
+                        type="text"
+                        value={guardianName}
+                        onChange={(e) => setGuardianName(e.target.value)}
+                        placeholder="e.g. Jordan Demo"
+                        className="w-full bg-zt-panel border border-zt-border-strong rounded-xl px-3 py-2.5 text-sm font-bold text-zt-text"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="reg-guardian-contact" className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1">
+                        Parent / guardian phone or email *
+                      </label>
+                      <input
+                        id="reg-guardian-contact"
+                        type="text"
+                        value={guardianContact}
+                        onChange={(e) => setGuardianContact(e.target.value)}
+                        placeholder="717-555-0100 or guardian@example.com"
+                        className="w-full bg-zt-panel border border-zt-border-strong rounded-xl px-3 py-2.5 text-sm font-bold text-zt-text"
+                      />
+                    </div>
+                    <p className="sm:col-span-2 text-[11px] text-zt-muted">
+                      You will accept the waiver on the athlete&apos;s behalf in the next step. The promoter may also ask you to
+                      sign on paper at check-in and sets the minimum age for this competition. Only the promoter sees these details.
+                    </p>
+                  </div>
+                )}
+              </fieldset>
+
               <div className="bg-zt-inset border border-zt-border rounded-xl p-3.5 text-xs font-semibold text-zt-text-2">
                 <strong className="text-zt-text uppercase">Entry Fee &amp; Payment Notice:</strong>{' '}
                 Entry fee is{' '}
@@ -516,8 +591,9 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                 </span>
               </div>
 
-              <div className="bg-zt-inset border border-zt-border-strong rounded-xl p-4 max-h-80 overflow-y-auto text-xs text-zt-text-2 whitespace-pre-wrap font-mono leading-relaxed">
-                {renderedWaiver}
+              <div className="bg-zt-inset border border-zt-border-strong rounded-xl p-4 max-h-80 overflow-y-auto space-y-2">
+                {/* same renderer as /legal/waiver; the hash stored with the registration is of the raw file, not of this rendering */}
+                <MarkdownBlocks blocks={parseMarkdown(renderedWaiver)} compact />
               </div>
 
               <label className="flex items-start gap-2.5 p-3.5 rounded-xl bg-zt-inset border border-zt-border-strong cursor-pointer">
@@ -585,6 +661,10 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                 <div className="flex justify-between gap-2 border-b border-zt-border pb-2">
                   <dt className="font-bold text-zt-muted">Emergency Contact</dt>
                   <dd className="font-bold text-zt-text">{emergencyContact}</dd>
+                  <dt className="font-bold text-zt-muted">Athlete age</dt>
+                  <dd className="font-bold text-zt-text">
+                    {athleteAge === 'minor' ? `Under 18, registered by ${guardianName} (${guardianContact})` : '18 or older'}
+                  </dd>
                 </div>
                 <div className="flex justify-between gap-2 border-b border-zt-border pb-2">
                   <dt className="font-bold text-zt-muted">Waiver Acceptance</dt>

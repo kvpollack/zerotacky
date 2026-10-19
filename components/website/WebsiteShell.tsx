@@ -120,6 +120,12 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
             <Link href="/scorer" className="hover:text-zt-primary">
               Meet-Day App
             </Link>
+            <Link href="/legal/terms" className="hover:text-zt-primary">
+              Terms
+            </Link>
+            <Link href="/legal/privacy" className="hover:text-zt-primary">
+              Privacy
+            </Link>
           </div>
         </div>
       </footer>

@@ -120,6 +120,12 @@ export default function RegistrationsSection({
                         <PhoneCall className="w-3 h-3 text-zt-muted" aria-hidden="true" />
                         {reg.emergencyContact || 'not provided'}
                       </span>
+                      {/* 009: an athlete under 18 was registered by this parent/guardian; owner-only like the emergency contact */}
+                      {reg.guardian && (
+                        <span className="block mt-1 text-[10px] font-extrabold text-amber-300">
+                          Under 18. Guardian: {reg.guardian.name} ({reg.guardian.contact})
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 px-2 font-bold text-zt-text-2 whitespace-nowrap">
                       {divName}

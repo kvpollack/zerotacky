@@ -6,6 +6,7 @@ import type {
   MeetListing,
   PromoterMeetDetail,
   PublicRegistrationMeet,
+  RegistrationGuardian,
   RegistrationSubmission,
 } from './contract';
 import type { AppState } from '../types';
@@ -142,9 +143,37 @@ export function validateEmergencyContact(value: string): string | null {
   return null;
 }
 
+// 009: athletes under 18 are registered by a parent or legal guardian (legal/WAIVER.md section 7). Mirrors
+// zt_submit_registration: athleteAge must be chosen; a minor needs a guardian name (2..80) and a contact that is a
+// phone with 7+ digits or an email (160 max). Messages match the server's.
+export function validateGuardian(
+  athleteAge: RegistrationSubmission['athleteAge'] | '' | undefined | null,
+  guardian: RegistrationGuardian | null | undefined
+): string | null {
+  if (athleteAge !== 'adult' && athleteAge !== 'minor') {
+    return 'Tell us whether the athlete is 18 or older.';
+  }
+  if (athleteAge === 'adult') return null;
+  const name = (guardian?.name ?? '').trim();
+  const contact = (guardian?.contact ?? '').trim();
+  if (name.length < 2) {
+    return 'An athlete under 18 must be registered by a parent or legal guardian. Enter the guardian full name.';
+  }
+  if (name.length > 80) return 'Guardian name is too long (80 characters max).';
+  if (contact.length > 160) return 'Guardian contact is too long (160 characters max).';
+  const digits = contact.replace(/[^0-9]/g, '').length;
+  if (digits < 7 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) {
+    return 'Guardian contact needs a phone number with at least 7 digits or an email address.';
+  }
+  return null;
+}
+
 // Field-level validation of a public submission against the public meet shape.
 export function validateRegistrationInput(
-  input: Omit<RegistrationSubmission, 'waiverAccepted'> & { waiverAccepted: boolean },
+  input: Omit<RegistrationSubmission, 'waiverAccepted' | 'athleteAge'> & {
+    waiverAccepted: boolean;
+    athleteAge: RegistrationSubmission['athleteAge'] | ''; // '' = not chosen yet (the form before step 2)
+  },
   meet: PublicRegistrationMeet
 ): string | null {
   if (!isRegistrationOpen(meet.listing.registrationStatus)) {
@@ -163,6 +192,9 @@ export function validateRegistrationInput(
 
   const emergencyErr = validateEmergencyContact(input.emergencyContact);
   if (emergencyErr) return emergencyErr;
+
+  const guardianErr = validateGuardian(input.athleteAge, input.guardian);
+  if (guardianErr) return guardianErr;
 
   if (!meet.divisions.some((d) => d.id === input.divisionId)) {
     return 'Please select a valid division for this meet.';

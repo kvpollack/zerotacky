@@ -68,6 +68,7 @@ export interface RegistrationRequest {
   waitlisted: boolean;         // true when the submission was taken under registrationStatus 'waitlist' (past deadline or at cap); still 'pending' until the promoter decides
   waiverAcceptedAt: string | null;
   waiverVersion: string | null; // sha-256 prefix of the waiver text the athlete saw (RegistrationSubmission.waiverVersion); null for rows older than 10/17
+  guardian: RegistrationGuardian | null; // 009: set when the athlete is under 18 and a parent/guardian registered them; owner-only, never public
   paid: boolean;
   createdAt: string;
 }
@@ -87,12 +88,20 @@ export interface PublicRegistrationMeet {
   acceptedCount: number;         // roster rows holding a spot (accepted requests plus hand-added athletes); compared against athleteCap
 }
 
+// 009: a parent or legal guardian registering an athlete under 18 (legal/WAIVER.md section 7).
+export interface RegistrationGuardian {
+  name: string;     // 2..80 chars
+  contact: string;  // phone with 7+ digits or an email; 160 max
+}
+
 export interface RegistrationSubmission {
   slug: string;
   divisionId: string;
   athleteName: string;
   email: string;
   emergencyContact: string;
+  athleteAge: 'adult' | 'minor';         // 009: the form cannot submit without choosing
+  guardian: RegistrationGuardian | null; // required when athleteAge is 'minor', null otherwise
   waiverAccepted: true;          // the form cannot submit without it
   waiverVersion: string;         // identifies the waiver text shown (first 12 hex chars of sha-256 of legal/WAIVER.md as rendered); stored with the request
 }

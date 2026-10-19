@@ -58,6 +58,8 @@ export interface RegistrationRow {
   paid: boolean;
   waiver_accepted_at: string | null;
   waiver_version: string | null;
+  guardian_name?: string | null;    // 009; absent from rows read before the migration
+  guardian_contact?: string | null;
   created_at: string;
   updated_at: string;
 }

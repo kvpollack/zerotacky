@@ -158,6 +158,13 @@ export default function AccountClient() {
                 />
               </div>
             )}
+            {mode === 'signup' && (
+              <p className="text-[11px] text-zt-muted">
+                By creating an account you agree to the <Link href="/legal/terms" className="text-zt-primary font-bold">Terms of Use</Link> and{' '}
+                <Link href="/legal/privacy" className="text-zt-primary font-bold">Privacy Policy</Link>. You must be 13 or older; under 18 needs a
+                parent or guardian&apos;s agreement.
+              </p>
+            )}
             {notice && <Notice {...notice} />}
             <button type="submit" disabled={busy} className={primaryBtn}>
               {mode === 'magic' ? <Mail className="w-3.5 h-3.5" aria-hidden="true" /> : <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />}

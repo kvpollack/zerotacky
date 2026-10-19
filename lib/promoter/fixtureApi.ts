@@ -617,6 +617,9 @@ export function createFixturePromoterApi(
         waitlisted: outcome.status === 'waitlist',
         waiverAcceptedAt: nowIso,
         waiverVersion: input.waiverVersion,
+        guardian: input.athleteAge === 'minor' && input.guardian
+          ? { name: input.guardian.name.trim(), contact: input.guardian.contact.trim() }
+          : null,
         paid: false,
         createdAt: nowIso,
       };

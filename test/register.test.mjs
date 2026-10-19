@@ -10,6 +10,8 @@ const GOOD = {
   athleteName: 'Riley Competitor (Fake)',
   email: 'riley.competitor@example.com',
   emergencyContact: 'Sam Competitor (spouse) 717-555-0144',
+  athleteAge: 'adult',
+  guardian: null,
   waiverAccepted: true,
   waiverVersion: 'testwaiver01',
 };
@@ -82,6 +84,14 @@ describe('register: pure validation helpers', () => {
     assert.match(FA.validateRegistrationInput({ ...GOOD, emergencyContact: '717-555-0144' }, meet), /needs a name/);
     assert.equal(FA.validateRegistrationInput({ ...GOOD, emergencyContact: 'Jo 5550144' }, meet), null);
     assert.match(FA.validateRegistrationInput({ ...GOOD, divisionId: 'nonexistent-div' }, meet), /valid division/);
+    // 009: minors are registered by a parent or guardian
+    assert.match(FA.validateRegistrationInput({ ...GOOD, athleteAge: '' }, meet), /18 or older/);
+    assert.match(FA.validateRegistrationInput({ ...GOOD, athleteAge: 'minor', guardian: null }, meet), /parent or legal guardian/);
+    assert.match(FA.validateRegistrationInput({ ...GOOD, athleteAge: 'minor', guardian: { name: 'Jo Guardian', contact: '555' } }, meet), /7 digits or an email/);
+    assert.match(FA.validateRegistrationInput({ ...GOOD, athleteAge: 'minor', guardian: { name: 'J', contact: 'g@example.com' } }, meet), /guardian full name/);
+    assert.equal(FA.validateRegistrationInput({ ...GOOD, athleteAge: 'minor', guardian: { name: 'Jo Guardian', contact: 'g@example.com' } }, meet), null);
+    assert.equal(FA.validateRegistrationInput({ ...GOOD, athleteAge: 'minor', guardian: { name: 'Jo Guardian', contact: '717-555-0100' } }, meet), null);
+    assert.equal(FA.validateRegistrationInput({ ...GOOD, athleteAge: 'adult', guardian: null }, meet), null);
     assert.match(FA.validateRegistrationInput({ ...GOOD, waiverAccepted: false }, meet), /accept the competition waiver/);
   });
 
@@ -127,6 +137,8 @@ describe('register: submitRegistration into fixtureApi (M10, M19)', () => {
       athleteName: 'Quinn Newcomer (Fake)',
       email: 'Quinn.Newcomer@Example.com',
       emergencyContact: 'Pat Newcomer 717-555-0188',
+      athleteAge: 'adult',
+      guardian: null,
     });
     assert.equal(submitRes.error, null);
     assert.deepEqual(Object.keys(submitRes.data).sort(), ['id', 'status']);
@@ -142,6 +154,30 @@ describe('register: submitRegistration into fixtureApi (M10, M19)', () => {
     assert.equal(created.waitlisted, false);
     assert.equal(created.paid, false);
     assert.ok(created.waiverAcceptedAt);
+    assert.equal(created.guardian, null);
+
+    // 009: a minor's registration carries the guardian, trimmed; an adult's never does
+    const minorRes = await api.submitRegistration({
+      ...GOOD,
+      athleteName: 'Teen Newcomer (Fake)',
+      email: 'teen.newcomer@example.com',
+      athleteAge: 'minor',
+      guardian: { name: '  Jordan Newcomer ', contact: ' 717-555-0190 ' },
+    });
+    assert.equal(minorRes.error, null);
+    const minor = (await api.listRegistrations('srv-meet-upcoming-1')).data.find((r) => r.id === minorRes.data.id);
+    assert.deepEqual(minor.guardian, { name: 'Jordan Newcomer', contact: '717-555-0190' });
+    const adultWithStrayGuardian = await api.submitRegistration({
+      ...GOOD,
+      athleteName: 'Stray Guardian (Fake)',
+      email: 'stray.guardian@example.com',
+      athleteAge: 'adult',
+      guardian: { name: 'Should Drop', contact: '717-555-0191' },
+    });
+    assert.equal(adultWithStrayGuardian.error, null);
+    assert.equal((await api.listRegistrations('srv-meet-upcoming-1')).data.find((r) => r.id === adultWithStrayGuardian.data.id).guardian, null);
+    await api.setRegistrationStatus(minorRes.data.id, 'declined');
+    await api.setRegistrationStatus(adultWithStrayGuardian.data.id, 'declined');
 
     const afterSubmit = (await api.getMeet('srv-meet-upcoming-1')).data.summary;
     assert.equal(afterSubmit.pendingCount, 6);
@@ -216,6 +252,8 @@ describe('register: submitRegistration into fixtureApi (M10, M19)', () => {
       athleteName: 'Skyler Waitlist (Fake)',
       email: 'skyler.waitlist@example.com',
       emergencyContact: 'Morgan Waitlist 856-555-0192',
+      athleteAge: 'adult',
+      guardian: null,
       waiverAccepted: true,
       waiverVersion: 'testwaiver01',
     });
