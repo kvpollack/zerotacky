@@ -846,6 +846,8 @@ describe('supabaseApi: every method returns { data: null, error } when db throws
       api.rotateJoinCode('srv-meet-upcoming-1'),
       api.archiveMeet('srv-meet-upcoming-1'),
       api.deleteMeet('srv-meet-upcoming-1'),
+      api.listMyAthleteMeets(),
+      api.followShow('iron-furnace-classic-2026', true),
       api.listRegistrations('srv-meet-upcoming-1'),
       api.setRegistrationStatus('reg-ifc-3', 'accepted'),
       api.getPublicMeetBySlug('iron-furnace-classic-2026'),

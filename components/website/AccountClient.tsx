@@ -184,7 +184,7 @@ export default function AccountClient() {
   const dirty = p ? draftName !== p.display_name || athlete !== p.is_athlete || promoter !== p.is_promoter || gymOwner !== p.is_gym_owner : false;
   const roleRows: Array<{ id: string; label: string; hint: string; value: boolean; set: (v: boolean) => void; icon: React.ReactNode }> = [
     { id: 'athlete', label: 'Athlete', hint: 'Register for shows and keep your competition history in one place.', value: athlete, set: setAthlete, icon: <UserCheck className="w-4 h-4 text-zt-primary" aria-hidden="true" /> },
-    { id: 'promoter', label: 'Promoter', hint: p?.is_promoter ? 'Your meets live under My Meets in the header (also below).' : 'Publish and run meets from the scorer and the My Meets dashboard. Save, and My Meets appears in the header.', value: promoter, set: setPromoter, icon: <Trophy className="w-4 h-4 text-zt-primary" aria-hidden="true" /> },
+    { id: 'promoter', label: 'Promoter', hint: 'Publish and run meets from the scorer and the My Meets page. Meets you publish are tied to this account.', value: promoter, set: setPromoter, icon: <Trophy className="w-4 h-4 text-zt-primary" aria-hidden="true" /> },
     { id: 'gym', label: 'Gym owner', hint: 'List your gym, implements and day-pass info for travelling athletes.', value: gymOwner, set: setGymOwner, icon: <Dumbbell className="w-4 h-4 text-zt-secondary" aria-hidden="true" /> },
   ];
 
@@ -258,11 +258,9 @@ export default function AccountClient() {
       <section aria-labelledby="next-heading" className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-3">
         <h2 id="next-heading" className="text-base font-black uppercase text-zt-text">Where to next</h2>
         <div className="flex flex-wrap gap-2">
-          {p?.is_promoter && (
-            <Link href="/promoter" className={primaryBtn}>
-              <Trophy className="w-3.5 h-3.5" aria-hidden="true" /> My Meets (promoter dashboard)
-            </Link>
-          )}
+          <Link href="/promoter" className={primaryBtn}>
+            <Trophy className="w-3.5 h-3.5" aria-hidden="true" /> My Meets
+          </Link>
           <Link href="/scorer" className={primaryBtn}>
             <Play className="w-3.5 h-3.5" aria-hidden="true" /> Meet-day scorer
           </Link>

@@ -44,6 +44,8 @@ const PROMOTER_API_METHODS = [
   'rotateJoinCode',
   'archiveMeet',
   'deleteMeet',
+  'listMyAthleteMeets',
+  'followShow',
   'listRegistrations',
   'setRegistrationStatus',
   'getPublicMeetBySlug',

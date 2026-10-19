@@ -11,6 +11,7 @@ import {
   emptyListing,
   type ApiResult,
   type DeletedMeet,
+  type MyAthleteMeet,
   type MeetListing,
   type PromoterApi,
   type PromoterMeetDetail,
@@ -95,6 +96,7 @@ export function createFixturePromoterApi(
   let user: PromoterUser = clone(DEMO_PROMOTER_USER);
   const meets: PromoterMeetDetail[] = createSeedMeets();
   const registrations: RegistrationRequest[] = createSeedRegistrations();
+  const follows = new Map<string, string>();   // slug -> ISO followed at (010 fixture; this tab only)
   // Display name of the organizer per meet; fixture meets belong to the demo user, bridged /shows records carry
   // their own promoterName.
   const ownerNames = new Map<string, string | null>();
@@ -487,6 +489,37 @@ export function createFixturePromoterApi(
       };
       found.summary.updatedAt = new Date().toISOString();
       return { data: { ok: true }, error: null };
+    },
+
+    async listMyAthleteMeets(): Promise<ApiResult<MyAthleteMeet[]>> {
+      if (signedOut) {
+        return { data: null, error: 'Sign in to see your meets.' };
+      }
+      const rows: MyAthleteMeet[] = [];
+      for (const [slug, at] of follows) {
+        const m = meets.find((x) => x.summary.slug === slug);
+        if (!m) continue;
+        rows.push({
+          meetServerId: m.summary.serverId, slug, name: m.summary.name, date: m.summary.date,
+          competitionStatus: m.summary.listing.competitionStatus, resultsStatus: m.summary.listing.resultsStatus,
+          isPublicListed: m.summary.listing.isPublicListed, kind: 'follow', following: true, registrationStatus: null, waitlisted: false,
+          divisionName: null, createdAt: at,
+        });
+      }
+      return { data: rows, error: null };
+    },
+
+    async followShow(slug: string, follow: boolean): Promise<ApiResult<{ slug: string; following: boolean }>> {
+      if (signedOut) {
+        return { data: null, error: 'Sign in to follow a show.' };
+      }
+      const m = meets.find((x) => x.summary.slug === slug && x.summary.listing.isPublicListed);
+      if (!m) {
+        return { data: null, error: 'This show cannot be followed (not listed).' };
+      }
+      if (follow) follows.set(slug, new Date().toISOString());
+      else follows.delete(slug);
+      return { data: { slug, following: follow }, error: null };
     },
 
     async deleteMeet(serverId: string, opts?: { confirmName?: string }): Promise<ApiResult<DeletedMeet>> {

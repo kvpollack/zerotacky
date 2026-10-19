@@ -56,6 +56,25 @@ export interface DeletedMeet {
   deleted: { divisions: number; events: number; athletes: number; results: number; registrations: number };
 }
 
+// Athlete side of My Meets (010, Kurt 10/19): one row per meet the signed-in account follows or registered for.
+// A registration beats a follow for the same meet. The UI buckets rows with `bucketAthleteMeets` (lib/promoter/rules):
+// Following (kind 'follow'), Registered (registration, meet not completed), Completed (registration, meet completed).
+export interface MyAthleteMeet {
+  meetServerId: string;
+  slug: string;
+  name: string;
+  date: string;                      // YYYY-MM-DD or ''
+  competitionStatus: ShowCompetitionStatus;
+  resultsStatus: ResultsFinalizationStatus;
+  isPublicListed: boolean;           // false = the show page is reachable by link only
+  kind: 'registration' | 'follow';
+  following: boolean; // true when a meet_follows row exists, even when the row's kind is 'registration'
+  registrationStatus: RegistrationRequest['status'] | null;
+  waitlisted: boolean;
+  divisionName: string | null;
+  createdAt: string;                 // when the follow or registration was made
+}
+
 export interface PromoterMeetDetail {
   summary: PromoterMeetSummary;
   state: AppState;             // full meet config + roster + results, same shape the scorer uses
@@ -135,6 +154,8 @@ export interface ApiResult<T> {
 //   updateListing          deny                 allow                      deny
 //   rotateJoinCode         deny                 allow                      deny
 //   archiveMeet            deny                 allow                      deny
+//   listMyAthleteMeets     deny                 own follows + registrations (any account)
+//   followShow             deny                 own row; listed non-demo meets only (any account)
 //   deleteMeet             deny                 owner only (not members)   deny
 //   listRegistrations      deny                 allow (incl. emergency)    deny
 //   setRegistrationStatus  deny                 allow (ownership resolved from the stored request's meet)  deny
@@ -171,6 +192,10 @@ export interface PromoterApi {
   // results or registrations the server requires opts.confirmName to equal the meet name (case-insensitive, trimmed);
   // an empty draft deletes without it. Everything under the meet goes with it (cascades). Returns what was removed.
   deleteMeet(serverId: string, opts?: { confirmName?: string }): Promise<ApiResult<DeletedMeet>>;
+
+  // athlete side of My Meets (010). followShow(slug, false) unfollows. Demo fixtures cannot be followed (no server row).
+  listMyAthleteMeets(): Promise<ApiResult<MyAthleteMeet[]>>;
+  followShow(slug: string, follow: boolean): Promise<ApiResult<{ slug: string; following: boolean }>>;
 
   // registrations (M4; fixture only until the schema lands)
   listRegistrations(serverId: string): Promise<ApiResult<RegistrationRequest[]>>;

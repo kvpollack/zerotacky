@@ -12,8 +12,11 @@
 --    switched off for the transaction (it already returns early once the meets row is gone, this is belt and braces).
 --    Table-level delete on meets stays revoked (008); this RPC is the only way.
 --
--- Verify after applying (compare with prod_check.sql counts; functions +1, policies unchanged):
---   select proname from pg_proc where proname in ('zt_publish_meet','zt_delete_meet');
+-- 3. meet_follows table + zt_follow_meet(slug, bool) + zt_my_athlete_meets(): the athlete side of My Meets (follow a
+--    show, registered upcoming, completed). Added 10/19 night before the prod apply.
+--
+-- Verify after applying (compare with prod_check.sql: functions +3 = 31, policies +1 = 20, tables +1 = 13):
+--   select proname from pg_proc where proname in ('zt_publish_meet','zt_delete_meet','zt_follow_meet','zt_my_athlete_meets');
 
 -- ---------- 1. publish: demo flag is one-way (demo -> real) on existing meets ----------
 create or replace function zt_publish_meet(
@@ -172,3 +175,78 @@ begin
 end $$;
 revoke all on function zt_delete_meet(uuid, text) from public, anon;
 grant execute on function zt_delete_meet(uuid, text) to authenticated;
+
+-- ---------- 3. My Meets for athletes (Kurt 10/19): follow a show, see registrations and completed meets ----------
+-- Follows live by (user, meet). A follow is a bookmark, nothing more: no email, no roster effect. Rows go away
+-- with the user or the meet. Direct table access is own-rows only; the slug-based RPC below is what the site
+-- calls so the client never needs meets.id.
+create table if not exists meet_follows (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  meet_id uuid not null references meets(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (user_id, meet_id)
+);
+alter table meet_follows enable row level security;
+revoke all on meet_follows from anon, authenticated;
+grant select, insert, delete on meet_follows to authenticated;
+drop policy if exists meet_follows_own on meet_follows;
+create policy meet_follows_own on meet_follows for all to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- Follow or unfollow by slug. Only a publicly listed, non-demo meet can be followed (same visibility as /shows).
+-- Returns the resulting state so the button can settle on the server's answer.
+create or replace function zt_follow_meet(p_slug text, p_follow boolean)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare v_uid uuid; v_meet_id uuid;
+begin
+  v_uid := auth.uid();
+  if v_uid is null then
+    raise exception 'Sign in to follow a show.' using errcode = '42501';
+  end if;
+  select id into v_meet_id from meets
+    where lower(slug) = lower(trim(coalesce(p_slug, ''))) and is_public_listed = true and is_demo = false;
+  if v_meet_id is null then
+    raise exception 'This show cannot be followed (not listed).' using errcode = 'P0002';
+  end if;
+  if p_follow then
+    insert into meet_follows (user_id, meet_id) values (v_uid, v_meet_id) on conflict do nothing;
+  else
+    delete from meet_follows where user_id = v_uid and meet_id = v_meet_id;
+  end if;
+  return jsonb_build_object('slug', p_slug, 'following', p_follow);
+end $$;
+revoke all on function zt_follow_meet(text, boolean) from public, anon;
+grant execute on function zt_follow_meet(text, boolean) to authenticated;
+
+-- Everything the signed-in athlete has a relationship with: one row per meet, a registration beating a follow.
+-- kind = 'registration' | 'follow'. The caller sorts into Following / Registered / Completed from competition_status
+-- and registration status. Security definer so an unlisted meet the athlete registered for still shows its name.
+create or replace function zt_my_athlete_meets()
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare v_uid uuid; v_out jsonb;
+begin
+  v_uid := auth.uid();
+  if v_uid is null then
+    raise exception 'Sign in required.' using errcode = 'P0001';
+  end if;
+  select coalesce(jsonb_agg(row_to_json(q)::jsonb order by q.date desc nulls last, q.name), '[]'::jsonb)
+  into v_out
+  from (
+    select distinct on (m.id)
+      m.id as meet_id, m.slug, m.name, m.date, m.competition_status, m.results_status, m.is_public_listed,
+      case when r.id is not null then 'registration' else 'follow' end as kind,
+      (f.user_id is not null) as following,
+      r.id as registration_id, r.status as registration_status, r.waitlisted,
+      d.name as division_name,
+      coalesce(r.created_at, f.created_at) as created_at
+    from meets m
+    left join registrations r on r.meet_id = m.id and r.user_id = v_uid
+    left join divisions d on d.meet_id = m.id and d.id = r.division_id
+    left join meet_follows f on f.meet_id = m.id and f.user_id = v_uid
+    where r.id is not null or f.user_id is not null
+    order by m.id, r.created_at desc nulls last
+  ) q;
+  return v_out;
+end $$;
+revoke all on function zt_my_athlete_meets() from public, anon;
+grant execute on function zt_my_athlete_meets() to authenticated;

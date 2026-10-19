@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import FollowShowButton from './FollowShowButton';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -131,8 +132,8 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
 
         {/* Lifecycle Action Bar */}
         <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-zt-border">
-          {/* demo fixtures have no server meet behind them, so no scoreboard link (it would land on "no meet found") */}
-          {show.liveScoreboardPath && !show.isDemoFixture && (
+          <FollowShowButton slug={show.slug} isDemoFixture={!!show.isDemoFixture} />
+          {show.liveScoreboardPath && (
             <Link
               href={show.liveScoreboardPath}
               className="px-4 py-2.5 rounded-xl bg-emerald-500 text-emerald-950 font-black text-xs uppercase tracking-wider inline-flex items-center gap-2 underline-offset-2 hover:underline"

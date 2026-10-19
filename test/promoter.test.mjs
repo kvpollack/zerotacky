@@ -475,3 +475,55 @@ describe('fixtureApi: venue shape', () => {
     assert.equal(ok.data.listing.venue.facilityName, 'The Power Plant Gym');
   });
 });
+
+// 010 part 3 (10/19 night): athlete My Meets (follows + registrations).
+describe('athlete My Meets: followShow, listMyAthleteMeets, bucketAthleteMeets, athleteMeetBadge', () => {
+  test('followShow adds and removes a listed meet; unlisted slug and signed-out are refused', async () => {
+    const api = FA.createFixturePromoterApi();
+    const empty = await api.listMyAthleteMeets();
+    assert.equal(empty.error, null);
+    assert.deepEqual(empty.data, []);
+    const on = await api.followShow('iron-furnace-classic-2026', true);
+    assert.equal(on.error, null);
+    assert.deepEqual(on.data, { slug: 'iron-furnace-classic-2026', following: true });
+    const mine = await api.listMyAthleteMeets();
+    assert.equal(mine.data.length, 1);
+    assert.equal(mine.data[0].kind, 'follow');
+    assert.equal(mine.data[0].slug, 'iron-furnace-classic-2026');
+    assert.equal(mine.data[0].registrationStatus, null);
+    assert.equal(mine.data[0].following, true);
+    const off = await api.followShow('iron-furnace-classic-2026', false);
+    assert.deepEqual(off.data, { slug: 'iron-furnace-classic-2026', following: false });
+    assert.deepEqual((await api.listMyAthleteMeets()).data, []);
+    const bad = await api.followShow('no-such-show', true);
+    assert.equal(bad.data, null);
+    assert.match(bad.error, /cannot be followed/);
+    const out = FA.createFixturePromoterApi({ signedOut: true });
+    assert.match((await out.followShow('iron-furnace-classic-2026', true)).error, /Sign in/);
+    assert.match((await out.listMyAthleteMeets()).error, /Sign in/);
+  });
+  test('bucketAthleteMeets splits follow / registered / completed and sorts by date', () => {
+    const row = (o) => ({
+      meetServerId: 'x', slug: 'x', name: 'x', date: null, competitionStatus: 'upcoming', resultsStatus: 'none',
+      isPublicListed: true, kind: 'registration', following: false, registrationStatus: 'accepted', waitlisted: false, divisionName: null, createdAt: '2026-01-01', ...o,
+    });
+    const b = R.bucketAthleteMeets([
+      row({ slug: 'f2', kind: 'follow', registrationStatus: null, date: '2026-12-01' }),
+      row({ slug: 'f1', kind: 'follow', registrationStatus: null, date: '2026-11-01' }),
+      row({ slug: 'c-old', competitionStatus: 'completed', date: '2026-05-01' }),
+      row({ slug: 'c-new', competitionStatus: 'completed', date: '2026-09-01' }),
+      row({ slug: 'r-live', competitionStatus: 'live', date: '2026-10-24' }),
+      row({ slug: 'r-up', competitionStatus: 'upcoming', date: '2026-11-14' }),
+    ]);
+    assert.deepEqual(b.following.map((r) => r.slug), ['f1', 'f2']);
+    assert.deepEqual(b.registered.map((r) => r.slug), ['r-live', 'r-up']);
+    assert.deepEqual(b.completed.map((r) => r.slug), ['c-new', 'c-old']);
+    assert.equal(R.athleteMeetBadge(b.following[0]), 'Following');
+    assert.equal(R.athleteMeetBadge(b.registered[0]), 'Registered');
+    assert.equal(R.athleteMeetBadge(b.completed[0]), 'Competed');
+    assert.equal(R.athleteMeetBadge(row({ registrationStatus: 'pending', waitlisted: true })), 'Waitlisted');
+    assert.equal(R.athleteMeetBadge(row({ registrationStatus: 'pending' })), 'Pending approval');
+    assert.equal(R.athleteMeetBadge(row({ registrationStatus: 'declined' })), 'Declined');
+    assert.equal(R.athleteMeetBadge(row({ registrationStatus: 'withdrawn' })), 'Withdrawn');
+  });
+});

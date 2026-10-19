@@ -45,7 +45,7 @@ export interface ShowDataOptions {
   includeDemoShows?: boolean;
 }
 
-function shouldIncludeDemoShows(opts?: ShowDataOptions): boolean {
+export function shouldIncludeDemoShows(opts?: ShowDataOptions): boolean {
   if (opts?.includeDemoShows !== undefined) return opts.includeDemoShows;
   return process.env.NEXT_PUBLIC_ZT_DEMO_SHOWS !== '0';
 }
@@ -238,3 +238,12 @@ export async function getPublicGymBySlug(
 export function listDemoPersonas(): DemoPersonaProfile[] {
   return DEMO_PERSONAS;
 }
+
+// /m/<slug> for a demo fixture (Kurt 10/19): the public scoreboard renders the fixture's state read-only so
+// visitors can see a live and a completed board without a server meet. null when demos are off or no match.
+export function getDemoScoreboardState(slug: string): PublicShowRecord | null {
+  if (!shouldIncludeDemoShows()) return null;
+  const clean = decodeURIComponent(slug ?? '').trim().toLowerCase();
+  return DEMO_SHOW_RECORDS.find((s) => s.slug.toLowerCase() === clean) ?? null;
+}
+
