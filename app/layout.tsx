@@ -1,9 +1,11 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { siteUrl } from '@/lib/website/siteUrl'
 
 export const metadata: Metadata = {
   manifest: '/manifest.json',
+  metadataBase: siteUrl(),
   title: 'ZeroTacky — Strongman Meet Manager',
   description: 'Offline strongman scoring, run order, and plate loading for meet day.',
   generator: 'v0.app',

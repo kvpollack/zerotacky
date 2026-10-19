@@ -6,7 +6,7 @@ import { listPublicGyms, listPublicShows } from '@/lib/website/data';
 import { describeShowLifecycle } from '@/lib/website/filters';
 
 export const metadata: Metadata = {
-  title: 'ZeroTacky — Strongman Shows, Meet Scoring & Gym Directory',
+  title: 'ZeroTacky — Your one stop for strongman: shows, registration, live scoring, and a gym directory',
   description:
     'Find strongman competitions, run offline-first meets with multi-phone sync, and locate gyms with strongman implements.',
 };

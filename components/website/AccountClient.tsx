@@ -255,7 +255,7 @@ export default function AccountClient() {
   const roleRows: Array<{ id: string; label: string; hint: string; value: boolean; set: (v: boolean) => void; icon: React.ReactNode }> = [
     { id: 'athlete', label: 'Athlete', hint: 'Register for shows and keep your competition history in one place.', value: athlete, set: setAthlete, icon: <UserCheck className="w-4 h-4 text-zt-primary" aria-hidden="true" /> },
     { id: 'promoter', label: 'Promoter', hint: 'Publish and run meets from the scorer and the My Meets page. A meet you publish belongs to this account, so only you can change it and it is still there if you switch phones.', value: promoter, set: setPromoter, icon: <Trophy className="w-4 h-4 text-zt-primary" aria-hidden="true" /> },
-    { id: 'gym', label: 'Gym owner', hint: 'List your gym, implements and day-pass info for travelling athletes.', value: gymOwner, set: setGymOwner, icon: <Dumbbell className="w-4 h-4 text-zt-secondary" aria-hidden="true" /> },
+    { id: 'gym', label: 'Gym owner', hint: 'List your gym, implements, and day-pass info for travelling athletes.', value: gymOwner, set: setGymOwner, icon: <Dumbbell className="w-4 h-4 text-zt-secondary" aria-hidden="true" /> },
   ];
 
   const passwordPanel = (auth.recovery || showPassword) ? (

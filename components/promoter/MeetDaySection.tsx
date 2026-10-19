@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, Check, Copy, ExternalLink, KeyRound, RefreshCw, Trash2, Tv } from 'lucide-react';
 import { copyText } from '@/lib/download';
 import type { DeletedMeet, PromoterMeetSummary } from '@/lib/promoter/contract';
 import { isLiveBackend } from '@/lib/promoter/usePromoterApi';
+import MeetDayQrCards from './MeetDayQrCards';
 
 interface MeetDaySectionProps {
   summary: PromoterMeetSummary;
@@ -34,7 +35,7 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
 
   const handleDelete = async () => {
     if (!hasData) {
-      const ok = typeof window !== 'undefined' ? window.confirm(`Delete "${summary.name}"? This draft has no divisions, athletes, results or registrations. This cannot be undone.`) : false;
+      const ok = typeof window !== 'undefined' ? window.confirm(`Delete "${summary.name}"? This draft has no divisions, athletes, results, or registrations. This cannot be undone.`) : false;
       if (!ok) return;
     } else if (!nameMatches) {
       setDeleteError('Type the meet name exactly as shown to confirm.');
@@ -58,6 +59,11 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
     ? `${origin}/join?code=${summary.joinCode}`
     : `${origin}/join`;
   const tvUrl = `${origin}/m/${summary.slug}?layout=tv`;
+  const boardUrl = `${origin}/m/${summary.slug}`;
+  const qrItems = useMemo(() => [
+    { key: 'join', title: 'Judges & pit crew: join this meet', hint: `Scan, then pick your role. Code ${summary.joinCode || 'not set'}.`, url: joinUrl },
+    { key: 'board', title: 'Live scoreboard', hint: 'Scan to follow the standings on your phone.', url: boardUrl },
+  ], [joinUrl, boardUrl, summary.joinCode]);
 
   const handleCopy = async (key: string, value: string) => {
     const ok = await copyText(value);
@@ -110,7 +116,7 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
       <div className="border-b border-zt-border pb-3">
         <h2 className="text-sm font-black uppercase tracking-wider text-zt-primary flex items-center gap-2">
           <Tv className="w-4 h-4" aria-hidden="true" />
-          <span>7. Meet Day Codes &amp; Screen Links</span>
+          <span>8. Meet Day Codes &amp; Screen Links</span>
         </h2>
         <p className="text-xs text-zt-muted mt-0.5">
           {isLiveBackend()
@@ -179,6 +185,9 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
         </div>
       </div>
 
+      {/* QR codes (Kurt 10/19): join link and live board, printable */}
+      <MeetDayQrCards meetName={summary.name} items={qrItems} />
+
       {/* Copyable Route Fields */}
       <div className="space-y-3">
         {copyRows.map((row) => (
@@ -239,7 +248,7 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
                 <span>Delete This Meet</span>
               </div>
               <p className="text-xs text-zt-muted mt-1">
-                Removes the meet, its divisions, events, roster, scores, registrations and the public page for good. Only the
+                Removes the meet, its divisions, events, roster, scores, registrations, and the public page for good. Only the
                 promoter who owns the meet can do this. A live or completed meet cannot be deleted; set it to cancelled on the
                 Listing tab or keep it as a record.
               </p>
@@ -282,7 +291,7 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
                   </label>
                 </div>
               ) : (
-                <p className="text-xs font-bold text-zt-text">This meet has no divisions, athletes, results or registrations yet. Deleting it removes the empty draft.</p>
+                <p className="text-xs font-bold text-zt-text">This meet has no divisions, athletes, results, or registrations yet. Deleting it removes the empty draft.</p>
               )}
               {deleteError && (
                 <div className="p-3 rounded-xl bg-zt-danger/15 border border-zt-danger text-zt-danger-text text-xs font-bold" role="alert">
