@@ -4,7 +4,7 @@ Astra's gate 3 verdict at `52c7abb9` was "merge as is for the audited code" (`au
 
 ## 0. Before the day (any time between 10/24 and the merge)
 - [ ] **Kurt**: regenerate the GitHub PAT and the Supabase PAT (both expire 10/23) into `~/.aki/tmp/zt/github_pat.txt` and `supabase_pat.txt`; revoke the old Supabase PAT if not done. Without the GitHub PAT the push in step 3 is a PR Kurt merges in the browser instead.
-- [ ] **Kurt**: prod Supabase Auth: Site URL `https://www.zerotacky.com`; Redirect URLs `https://www.zerotacky.com/**` and `https://zerotacky-lime.vercel.app/**`. Enable the Email provider.
+- [x] **Kurt**: prod Supabase Auth: Site URL `https://www.zerotacky.com`; Redirect URLs `https://www.zerotacky.com/**` and `https://zerotacky-lime.vercel.app/**`. Enable the Email provider. **Done 10/19** (a `zerotacy` typo in the v2 preview redirect was caught and fixed the same day).
 - [x] **Kurt**: Resend SMTP into prod Supabase Auth > SMTP Settings (ROADMAP section 3, items 2-3). Without it, Supabase's built-in sender is rate-limited and meant for testing; sign-up confirmation mails for real promoters will not reliably arrive. Can be done after the merge if the first promoters are people Kurt confirms by SQL, but it blocks "anyone can sign up". **Done 10/19** (domain verified, DKIM/SPF/DMARC present, test mail delivered to spam with the default template).
 - [x] **Kurt**: `privacy@zerotacky.com` forwarding (operator contact in the privacy page). Separate from Resend. **Done 10/19.**
 - [ ] **Kurt**: paste the six Auth email templates from `emails/` into prod (and staging) per `emails/README.md`; set SMTP sender to `ZeroTacky <no-reply@zerotacky.com>`. Not blocking the merge, but do it before the first real sign-up invite goes out.
