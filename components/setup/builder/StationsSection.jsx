@@ -44,7 +44,7 @@ export default function StationsSection({
       </div>
       <p className="text-xs font-semibold text-zt-text-2">
         A station is one set of implements running its own order. Divisions on the same station run back to back; two
-        stations run at the same time. Decide this once sign-ups are in: a small meet is fine on one station.
+        stations run at the same time in different parts of the gym. Most promoters decide this after sign-ups close, and a small meet is fine on one station.
       </p>
 
       {/* Station list */}
