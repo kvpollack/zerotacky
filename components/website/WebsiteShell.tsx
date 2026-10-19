@@ -7,7 +7,7 @@ import PromoterNavLink from './PromoterNavLink';
 import { readSyncEnv } from '@/lib/sync/client';
 
 interface WebsiteShellProps {
-  activeNav?: 'home' | 'shows' | 'join' | 'gyms' | 'account' | 'promoter';
+  activeNav?: 'home' | 'how' | 'shows' | 'join' | 'gyms' | 'account' | 'promoter';
   children: React.ReactNode;
 }
 
@@ -17,6 +17,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
   const live = readSyncEnv() !== null;
   const navItems: Array<{ id: WebsiteShellProps['activeNav']; label: string; href: string }> = [
     { id: 'home', label: 'Overview', href: '/website' },
+    { id: 'how', label: 'How It Works', href: '/how-it-works' },
     { id: 'shows', label: 'Find a Show', href: '/shows' },
     { id: 'join', label: 'Join a Meet', href: '/join' },
     { id: 'gyms', label: 'Strongman Gyms', href: '/gyms' },
@@ -90,6 +91,9 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
           <div className="flex flex-wrap gap-4 font-bold text-zt-text-2">
             <Link href="/website" className="hover:text-zt-primary">
               Home
+            </Link>
+            <Link href="/how-it-works" className="hover:text-zt-primary">
+              How It Works
             </Link>
             <Link href="/shows" className="hover:text-zt-primary">
               Shows
