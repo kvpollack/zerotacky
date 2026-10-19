@@ -323,7 +323,7 @@ export default function ShowsBrowser({
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
-                    {show.competitionStatus === 'live' && show.liveScoreboardPath && (
+                    {show.competitionStatus === 'live' && show.liveScoreboardPath && !show.isDemoFixture && (
                       <Link
                         href={show.liveScoreboardPath}
                         className="px-3.5 py-2 rounded-xl bg-emerald-500 text-emerald-950 font-black text-xs uppercase tracking-wider"

@@ -192,7 +192,7 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
                 href={row.path}
                 className="text-xs font-extrabold uppercase text-zt-primary hover:underline inline-flex items-center gap-1"
               >
-                Open {row.path}
+                Open
                 <ExternalLink className="w-3 h-3" aria-hidden="true" />
               </Link>
             </div>

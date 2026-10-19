@@ -131,13 +131,14 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
 
         {/* Lifecycle Action Bar */}
         <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-zt-border">
-          {show.liveScoreboardPath && (
+          {/* demo fixtures have no server meet behind them, so no scoreboard link (it would land on "no meet found") */}
+          {show.liveScoreboardPath && !show.isDemoFixture && (
             <Link
               href={show.liveScoreboardPath}
-              className="px-4 py-2.5 rounded-xl bg-emerald-500 text-emerald-950 font-black text-xs uppercase tracking-wider inline-flex items-center gap-2"
+              className="px-4 py-2.5 rounded-xl bg-emerald-500 text-emerald-950 font-black text-xs uppercase tracking-wider inline-flex items-center gap-2 underline-offset-2 hover:underline"
             >
               <Radio className="w-4 h-4" aria-hidden="true" />
-              Open Public Live Scoreboard ({show.liveScoreboardPath})
+              Open Public Live Scoreboard
             </Link>
           )}
 
@@ -150,7 +151,15 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
             </Link>
           )}
 
-          {show.registration.externalRegistrationUrl ? (
+          {show.isDemoFixture ? (
+            <button
+              type="button"
+              disabled
+              className="px-3.5 py-2.5 rounded-xl bg-zt-inset border border-zt-border text-zt-muted font-extrabold text-xs uppercase opacity-60 cursor-not-allowed"
+            >
+              Demo show: registration disabled
+            </button>
+          ) : show.registration.externalRegistrationUrl ? (
             <a
               href={show.registration.externalRegistrationUrl}
               target="_blank"

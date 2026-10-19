@@ -103,7 +103,7 @@ export default async function WebsiteLandingPage() {
             </h3>
             <p className="text-xs text-zt-text-2 leading-relaxed">
               Every score is saved locally first and queued for sync. Volunteers join a meet via a
-              6-character code at <code className="font-mono">/join</code>, locking their phone to
+              6-character code on the <Link href="/join" className="text-zt-primary font-bold underline">Join a Meet</Link> page, locking their phone to
               Judge, Pit Crew, or Spectator mode while the promoter manages divisions, events, and
               weights.
             </p>

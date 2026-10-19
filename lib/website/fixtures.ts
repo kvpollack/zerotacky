@@ -16,18 +16,19 @@ import type {
 } from './types';
 
 export const DEMO_SHOW_RECORDS: PublicShowRecord[] = [
-  // 1. UPCOMING + INCLUSIVE STRENGTH GROUPS (All Out Strongfest 2026)
+  // 1. UPCOMING + INCLUSIVE STRENGTH GROUPS (fictional show in the Strongfest format; renamed 10/19 so it is not
+  //    mistaken for the real All Out Strongfest 2026 once that meet is listed)
   {
     id: 'demo-show-strongfest-2026',
     slug: 'strongfest-2026',
-    name: 'All Out Strongfest 2026',
-    date: '2026-10-24',
+    name: 'Riverside Iron Fest 2026 (Demo Upcoming)',
+    date: '2026-11-14',
     venue: {
-      facilityName: 'The Power Plant Gym',
-      streetAddress: '3104 Market St',
-      city: 'Aston',
+      facilityName: 'Riverside Strength Co. (Fictional)',
+      streetAddress: '100 Mill Race Rd',
+      city: 'Lancaster',
       state: 'PA',
-      postalCode: '19014',
+      postalCode: '17602',
       country: 'US',
     },
     federation: 'Unsanctioned / Inclusive Format',
@@ -47,10 +48,10 @@ export const DEMO_SHOW_RECORDS: PublicShowRecord[] = [
     liveScoreboardPath: '/m/strongfest-2026',
     lastUpdatedIso: '2026-10-16T14:00:00Z',
     summaryNote:
-      'Inclusive strength-grouped competition (Groups 1–5 by working weight rather than gender or bodyweight). First field test of ZeroTacky multi-phone scoring.',
-    promoterName: 'Power Plant Events (Demo Fixture)',
-    hostGymSlug: 'the-power-plant-gym-pa',
-    hostGymName: 'The Power Plant Gym',
+      'Sample inclusive strength-grouped competition (Groups 1–5 by working weight rather than gender or bodyweight). Fictional show with sample data.',
+    promoterName: 'Riverside Strength Events (Demo Fixture)',
+    hostGymSlug: 'susquehanna-strength-barn-pa',
+    hostGymName: 'Riverside Strength Co. (Fictional)',
     scheduleNotes: 'Rules meeting at 8:30 AM EDT. First implement on platform at 9:00 AM EDT.',
     rulesSummary:
       'Athletes compete in five strength-tiered groups (Group 1 through Group 5). Reverse overall standings determine run order after Event 1. Most event wins breaks overall point ties.',
@@ -58,7 +59,6 @@ export const DEMO_SHOW_RECORDS: PublicShowRecord[] = [
       status: 'closed',
       entryFeeDisplay: '$75',
       registrationDeadline: '2026-10-10',
-      externalRegistrationUrl: 'https://ironpodium.com',
       weighInNotes: 'No bodyweight weigh-ins required for strength-grouped divisions.',
       promoterContact: 'Not provided',
       athleteCap: 30,
@@ -67,8 +67,8 @@ export const DEMO_SHOW_RECORDS: PublicShowRecord[] = [
       meet: {
         id: 'demo-show-strongfest-2026',
         slug: 'strongfest-2026',
-        name: 'All Out Strongfest 2026',
-        date: '2026-10-24',
+        name: 'Riverside Iron Fest 2026 (Demo Upcoming)',
+        date: '2026-11-14',
         runOrderMethod: 'reverse_overall',
         tiebreakerRule: 'event_wins',
         availablePlates: [100, 55, 45, 35, 25, 15, 10, 5, 2.5],
@@ -706,8 +706,8 @@ export const DEMO_PERSONAS: DemoPersonaProfile[] = [
         {
           entryId: 'reg-strongfest-g4',
           showSlug: 'strongfest-2026',
-          showName: 'All Out Strongfest 2026',
-          showDate: '2026-10-24',
+          showName: 'Riverside Iron Fest 2026 (Demo Upcoming)',
+          showDate: '2026-11-14',
           divisionName: 'Group 4 (Inclusive)',
           competitionStatus: 'upcoming',
           registrationStatus: 'confirmed',

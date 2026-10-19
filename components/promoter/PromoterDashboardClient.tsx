@@ -172,7 +172,7 @@ export default function PromoterDashboardClient() {
             href="/website/account"
             className="px-5 py-3 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase tracking-wider shadow"
           >
-            Go to Account &amp; Sign-In (/website/account)
+            Go to Account &amp; Sign-In
           </Link>
           {!isLiveBackend() && (
             <a

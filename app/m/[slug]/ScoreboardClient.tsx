@@ -100,7 +100,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   );
 
   if (!env) return shell(<Notice text="Live scoreboard is not configured on this build." />);
-  if (notFound) return shell(<Notice text={`No meet at /m/${slug}.`} />);
+  if (notFound) return shell(<Notice text="No meet found for this scoreboard link. Check the link with the promoter." />);
   if (!state || !meet) return shell(<Notice text={error ? `Could not load: ${error}` : 'Loading…'} />);
 
   const stations = meet.stations?.length ? meet.stations : [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }];

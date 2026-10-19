@@ -5,8 +5,9 @@
 //   (`is_public_listed = true`, `is_demo = false`) meets from Supabase.
 // - When Supabase env vars are absent, falls back to the in-memory `DEMO_SHOW_RECORDS` fixtures so the
 //   offline demo build keeps working with no backend.
-// - When Supabase env vars are present AND `process.env.NEXT_PUBLIC_ZT_DEMO_SHOWS === '1'`, demo fixtures
-//   are appended with `isDemoFixture: true` (default off).
+// - When Supabase env vars are present, demo fixtures are appended with `isDemoFixture: true` unless
+//   `process.env.NEXT_PUBLIC_ZT_DEMO_SHOWS === '0'` (Kurt 10/19: on by default so visitors have shows to click
+//   through; every demo row carries the Demo badge and registration is disabled on it).
 
 import type { MeetListingRow } from '../promoter/db';
 import { createSyncClient, readSyncEnv, type SyncClient } from '../sync/client';
@@ -46,7 +47,7 @@ export interface ShowDataOptions {
 
 function shouldIncludeDemoShows(opts?: ShowDataOptions): boolean {
   if (opts?.includeDemoShows !== undefined) return opts.includeDemoShows;
-  return process.env.NEXT_PUBLIC_ZT_DEMO_SHOWS === '1';
+  return process.env.NEXT_PUBLIC_ZT_DEMO_SHOWS !== '0';
 }
 
 function resolveClient(opts?: ShowDataOptions): SyncClient | null {

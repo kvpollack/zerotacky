@@ -172,7 +172,7 @@ export default function AccountClient() {
             </button>
           </form>
           <p className="text-[11px] text-zt-muted">
-            Meet-day volunteers do not need an account: judges and pit crew join with the meet code at <Link href="/join" className="text-zt-primary font-bold">/join</Link>.
+            Meet-day volunteers do not need an account: judges and pit crew join with the meet code on <Link href="/join" className="text-zt-primary font-bold underline">Join a Meet</Link>.
           </p>
         </section>
       </div>
@@ -184,7 +184,7 @@ export default function AccountClient() {
   const dirty = p ? draftName !== p.display_name || athlete !== p.is_athlete || promoter !== p.is_promoter || gymOwner !== p.is_gym_owner : false;
   const roleRows: Array<{ id: string; label: string; hint: string; value: boolean; set: (v: boolean) => void; icon: React.ReactNode }> = [
     { id: 'athlete', label: 'Athlete', hint: 'Register for shows and keep your competition history in one place.', value: athlete, set: setAthlete, icon: <UserCheck className="w-4 h-4 text-zt-primary" aria-hidden="true" /> },
-    { id: 'promoter', label: 'Promoter', hint: 'Publish and run meets from the scorer. Meets you publish are tied to this account.', value: promoter, set: setPromoter, icon: <Trophy className="w-4 h-4 text-zt-primary" aria-hidden="true" /> },
+    { id: 'promoter', label: 'Promoter', hint: p?.is_promoter ? 'Your meets live under My Meets in the header (also below).' : 'Publish and run meets from the scorer and the My Meets dashboard. Save, and My Meets appears in the header.', value: promoter, set: setPromoter, icon: <Trophy className="w-4 h-4 text-zt-primary" aria-hidden="true" /> },
     { id: 'gym', label: 'Gym owner', hint: 'List your gym, implements and day-pass info for travelling athletes.', value: gymOwner, set: setGymOwner, icon: <Dumbbell className="w-4 h-4 text-zt-secondary" aria-hidden="true" /> },
   ];
 
@@ -260,7 +260,7 @@ export default function AccountClient() {
         <div className="flex flex-wrap gap-2">
           {p?.is_promoter && (
             <Link href="/promoter" className={primaryBtn}>
-              <Trophy className="w-3.5 h-3.5" aria-hidden="true" /> Promoter dashboard
+              <Trophy className="w-3.5 h-3.5" aria-hidden="true" /> My Meets (promoter dashboard)
             </Link>
           )}
           <Link href="/scorer" className={primaryBtn}>

@@ -122,7 +122,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
       <div className="max-w-3xl mx-auto space-y-4">
         <BackToShows />
         <section className="bg-zt-surface border border-zt-border rounded-2xl p-8 text-center space-y-3">
-          <h1 className="text-xl font-black text-zt-text">No competition at /register/{slug}</h1>
+          <h1 className="text-xl font-black text-zt-text">No competition found for this registration link</h1>
           <p className="text-xs sm:text-sm text-zt-text-2 max-w-md mx-auto">
             Check the link from the promoter, or browse the shows list.
             {!isLiveBackend() && ' Meets created in the preview dashboard exist only in the browser tab that created them.'}

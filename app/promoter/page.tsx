@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function PromoterDashboardPage() {
   return (
-    <WebsiteShell>
+    <WebsiteShell activeNav="promoter">
       <PromoterDashboardClient />
     </WebsiteShell>
   );
