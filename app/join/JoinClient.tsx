@@ -3,20 +3,28 @@
 import { useEffect, useState } from 'react';
 import { createSyncClient, readSyncEnv } from '@/lib/sync/client';
 import { SyncController, getDeviceId } from '@/lib/sync/controller';
+import { checkAdminPin } from '@/lib/sync/meetApi';
 import { STORAGE_KEY, ROLE_STORAGE_KEY, DEFAULT_THEME_ID, SNAPSHOT_STORAGE_KEY, SNAPSHOT_LIMIT } from '@/lib/constants';
 import type { RemoteMeet } from '@/lib/sync/meetApi';
 import type { AppState } from '@/lib/types';
 
-type Role = 'judge' | 'pitcrew' | 'spectator';
+// Roles a joined phone can take (Kurt 10/19). The join code alone gets a viewing role; the judge pad and the
+// promoter's setup need the meet PIN, checked on the server (zt_check_admin_pin, rate-limited) and never stored.
+// The chosen role is remembered on the phone (ROLE_STORAGE_KEY), so the PIN is asked once per join.
+type Role = 'admin' | 'judge' | 'pitcrew' | 'spectator';
+const PIN_ROLES: Role[] = ['judge', 'admin'];
 const EMPTY = { meet: { id: '' }, divisions: [], events: [], athletes: [], results: [] } as unknown as AppState;
 
-// Standalone join flow for volunteer phones: code -> preview -> pick role -> the main app opens
-// already attached to the meet. Writes the same localStorage keys the app hydrates from.
+// Standalone join flow for volunteer phones: code -> preview -> pick role (PIN for judge/promoter) -> the main app
+// opens already attached to the meet. Writes the same localStorage keys the app hydrates from.
 export default function JoinClient() {
   const [code, setCode] = useState('');
   const [remote, setRemote] = useState<RemoteMeet | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pinRole, setPinRole] = useState<Role | null>(null);   // which PIN-gated role is being unlocked
+  const [pin, setPin] = useState('');
+  const [pinError, setPinError] = useState<string | null>(null);
   const env = readSyncEnv();
 
   useEffect(() => {
@@ -35,6 +43,28 @@ export default function JoinClient() {
       else setRemote(r);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
+    } finally { setBusy(false); }
+  };
+
+  const chooseRole = (role: Role) => {
+    setPinError(null);
+    setPin('');
+    if (PIN_ROLES.includes(role)) {
+      setPinRole(role);
+      return;
+    }
+    attachAs(role);
+  };
+
+  const submitPin = async () => {
+    if (!remote || !env || !pinRole) return;
+    setBusy(true); setPinError(null);
+    try {
+      const ok = await checkAdminPin(createSyncClient(env), remote.joinCode ?? code, pin.trim());
+      if (!ok) { setPinError('Wrong PIN. Ask the promoter for the meet PIN.'); return; }
+      attachAs(pinRole);
+    } catch (e) {
+      setPinError(e instanceof Error ? e.message : 'Could not check the PIN. Try again.');
     } finally { setBusy(false); }
   };
 
@@ -99,18 +129,75 @@ export default function JoinClient() {
                 {remote.state.meet.date || 'date TBD'} · {remote.state.divisions.length} divisions · {remote.state.athletes.length} athletes
               </div>
             </div>
-            <div className="text-xs font-extrabold uppercase text-zt-muted text-center">This phone will be a</div>
-            <button type="button" onClick={() => attachAs('judge')} className={`${btn} bg-zt-primary text-zt-on-primary`}>Judge</button>
-            <button type="button" onClick={() => attachAs('pitcrew')} className={`${btn} bg-zt-secondary text-zt-on-secondary`}>Pit crew</button>
-            <button type="button" onClick={() => attachAs('spectator')} className={`${btn} bg-zt-surface-2 text-zt-text-2 border border-zt-border`}>Spectator</button>
-            <p className="text-xs text-zt-muted text-center">
-              Joining replaces whatever meet is on this phone. Admin unlock still uses the meet PIN.
-            </p>
+            {pinRole ? (
+              <form onSubmit={(e) => { e.preventDefault(); if (pin.trim().length >= 4) submitPin(); }} className="space-y-3">
+                <div className="text-xs font-extrabold uppercase text-zt-muted text-center">
+                  {pinRole === 'admin' ? 'Promoter' : 'Judge'} access needs the meet PIN
+                </div>
+                <input
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, '').slice(0, 8))}
+                  placeholder="PIN"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  autoFocus
+                  className={field}
+                />
+                <button type="submit" disabled={busy || pin.trim().length < 4} className={`${btn} bg-zt-primary text-zt-on-primary disabled:opacity-40`}>
+                  {busy ? 'Checking…' : `Unlock ${pinRole === 'admin' ? 'promoter' : 'judge'} access`}
+                </button>
+                {pinError && <div className="text-sm font-bold text-zt-danger-text text-center">{pinError}</div>}
+                <p className="text-xs text-zt-muted text-center">
+                  The promoter sets the PIN on the Meet Setup tab. It is checked on the server and remembered on this phone for this meet.
+                </p>
+                <button type="button" onClick={() => setPinRole(null)} className="w-full text-xs font-bold text-zt-muted py-2">Pick a different role</button>
+              </form>
+            ) : (
+              <>
+                <div className="text-xs font-extrabold uppercase text-zt-muted text-center">What is this phone for?</div>
+                <RoleButton
+                  label="Athlete / Spectator"
+                  detail="Standings, events and who is up next. Nothing to unlock."
+                  className="bg-zt-surface-2 text-zt-text border border-zt-border"
+                  onClick={() => chooseRole('spectator')}
+                />
+                <RoleButton
+                  label="Volunteer (pit crew)"
+                  detail="Next up, loading and rack heights, plus standings."
+                  className="bg-zt-secondary text-zt-on-secondary"
+                  onClick={() => chooseRole('pitcrew')}
+                />
+                <RoleButton
+                  label="Judge"
+                  detail="Judge pad for scoring. Needs the meet PIN."
+                  className="bg-zt-primary text-zt-on-primary"
+                  onClick={() => chooseRole('judge')}
+                />
+                <RoleButton
+                  label="Promoter"
+                  detail="Everything, including Meet Setup. Needs the meet PIN."
+                  className="bg-zt-inset text-zt-text border border-zt-border-strong"
+                  onClick={() => chooseRole('admin')}
+                />
+                <p className="text-xs text-zt-muted text-center">
+                  Joining replaces whatever meet is on this phone. You can change the role later from the lock in the header (PIN needed to go up).
+                </p>
+              </>
+            )}
             <button type="button" onClick={() => setRemote(null)} className="w-full text-xs font-bold text-zt-muted py-2">Different code</button>
           </div>
         )}
         <a href="/" className="block text-center text-xs font-bold text-zt-muted py-2">Back</a>
       </div>
     </div>
+  );
+}
+
+function RoleButton({ label, detail, className, onClick }: { label: string; detail: string; className: string; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className={`w-full rounded-xl px-4 py-3 text-left ${className}`}>
+      <div className="font-black text-sm uppercase">{label}</div>
+      <div className="text-xs font-semibold opacity-80 mt-0.5">{detail}</div>
+    </button>
   );
 }

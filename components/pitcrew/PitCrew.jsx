@@ -26,6 +26,7 @@ export default function PitCrew({
   transitionRows,
   upNowPinHeight,
   updateAthleteRackPin,
+  readOnly = false,   // spectator phones: show the floor view, no edits
 }) {
   const tv = layout === 'tv';
   return (
@@ -63,17 +64,23 @@ export default function PitCrew({
 
               <div>
                 <label className="text-[10px] font-extrabold uppercase text-zt-muted">
-                  Update {currentAthlete.name}&apos;s Personal Pin / Height Override
+                  {readOnly ? `${currentAthlete.name}'s Personal Pin / Height` : `Update ${currentAthlete.name}'s Personal Pin / Height Override`}
                 </label>
-                <input
-                  type="text"
-                  placeholder="e.g., Pin 14 (6'4&quot;) or 48&quot; Bar..."
-                  value={currentAthlete.rackHeights?.[currentEvent.id] || ''}
-                  onChange={(e) =>
-                    updateAthleteRackPin(currentAthlete.id, currentEvent.id, e.target.value)
-                  }
-                  className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-sm font-bold text-zt-text"
-                />
+                {readOnly ? (
+                  <div className="w-full mt-1 bg-zt-inset border border-zt-border rounded-xl px-3 py-2 text-sm font-bold text-zt-text">
+                    {currentAthlete.rackHeights?.[currentEvent.id] || 'not set'}
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="e.g., Pin 14 (6'4&quot;) or 48&quot; Bar..."
+                    value={currentAthlete.rackHeights?.[currentEvent.id] || ''}
+                    onChange={(e) =>
+                      updateAthleteRackPin(currentAthlete.id, currentEvent.id, e.target.value)
+                    }
+                    className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-sm font-bold text-zt-text"
+                  />
+                )}
               </div>
             </div>
           )}
@@ -100,7 +107,9 @@ export default function PitCrew({
             {currentEvent.hasTrumpWeight && (
               <div className="grid grid-cols-2 gap-2 bg-zt-inset p-1.5 rounded-xl border border-zt-border">
                 <button
+                  disabled={readOnly}
                   onClick={() => {
+                    if (readOnly) return;
                     setPitCrewUseLightTier(false);
                     setPitCrewCustomWeight('');
                   }}
@@ -111,7 +120,9 @@ export default function PitCrew({
                   Heavy Bar ({currentEvent.divisionWeights[currentDivision.id]} lbs)
                 </button>
                 <button
+                  disabled={readOnly}
                   onClick={() => {
+                    if (readOnly) return;
                     setPitCrewUseLightTier(true);
                     setPitCrewCustomWeight('');
                   }}
@@ -226,7 +237,8 @@ export default function PitCrew({
                   )}
                 </div>
 
-                {/* Custom Weight Tester Input */}
+                {/* Custom Weight Tester Input (crew only; spectators see the floor view) */}
+                {!readOnly && (
                 <div className="pt-2 border-t border-zt-border">
                   <label className="text-[11px] font-extrabold uppercase text-zt-muted">
                     Custom Target Weight Override (Test Rising Bar / Odd Yoke Jumps)
@@ -249,6 +261,7 @@ export default function PitCrew({
                     )}
                   </div>
                 </div>
+                )}
 
                 {plateLoad.warningMessage && (
                   <div className="p-3.5 rounded-xl bg-zt-danger/15 border border-zt-danger text-zt-danger-text text-xs font-bold flex items-start gap-2.5">
