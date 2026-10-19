@@ -169,8 +169,8 @@ export default function AccountClient() {
           <div className="space-y-1">
             <h1 className="text-xl sm:text-2xl font-black text-zt-text">Your ZeroTacky account</h1>
             <p className="text-xs sm:text-sm text-zt-text-2 leading-relaxed">
-              One account covers everything you do in strongman: compete, run shows, list a gym. Promoters publish meets from
-              the scorer with this sign-in instead of a shared key.
+              One account covers everything you do in strongman, whether you compete, run shows or list a gym. If you
+              promote, the meets you publish belong to this account and follow you from phone to phone.
             </p>
           </div>
           {/* Mode switch. Plain toggle buttons (aria-pressed), not a tablist: one form changes shape below, there are no
@@ -254,7 +254,7 @@ export default function AccountClient() {
   const dirty = p ? draftName !== p.display_name || athlete !== p.is_athlete || promoter !== p.is_promoter || gymOwner !== p.is_gym_owner : false;
   const roleRows: Array<{ id: string; label: string; hint: string; value: boolean; set: (v: boolean) => void; icon: React.ReactNode }> = [
     { id: 'athlete', label: 'Athlete', hint: 'Register for shows and keep your competition history in one place.', value: athlete, set: setAthlete, icon: <UserCheck className="w-4 h-4 text-zt-primary" aria-hidden="true" /> },
-    { id: 'promoter', label: 'Promoter', hint: 'Publish and run meets from the scorer and the My Meets page. Meets you publish are tied to this account.', value: promoter, set: setPromoter, icon: <Trophy className="w-4 h-4 text-zt-primary" aria-hidden="true" /> },
+    { id: 'promoter', label: 'Promoter', hint: 'Publish and run meets from the scorer and the My Meets page. A meet you publish belongs to this account, so only you can change it and it is still there if you switch phones.', value: promoter, set: setPromoter, icon: <Trophy className="w-4 h-4 text-zt-primary" aria-hidden="true" /> },
     { id: 'gym', label: 'Gym owner', hint: 'List your gym, implements and day-pass info for travelling athletes.', value: gymOwner, set: setGymOwner, icon: <Dumbbell className="w-4 h-4 text-zt-secondary" aria-hidden="true" /> },
   ];
 
