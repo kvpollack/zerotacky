@@ -45,7 +45,7 @@ export function renderOgCard(card: OgCard): ImageResponse {
             ))}
           </div>
         </div>
-        <div style={{ fontSize: 24, fontWeight: 600, color: '#a1a1aa' }}>Find shows, enter, and follow the live scoreboard at zerotacky.com</div>
+        <div style={{ fontSize: 24, fontWeight: 600, color: '#a1a1aa' }}>Shows, registration, live scoring, and a gym directory at zerotacky.com</div>
       </div>
     ),
     { ...OG_SIZE }

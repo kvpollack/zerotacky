@@ -38,7 +38,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
               <span>ZEROTACKY</span>
             </Link>
             <span className="hidden sm:inline-block text-xs font-bold text-zt-muted">
-              Strongman Shows, Live Scoring &amp; Equipment Directory
+              Your one stop for strongman: shows, registration, live scoring, and a gym directory.
             </span>
             {!live && (
               <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
@@ -85,7 +85,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
           <div className="space-y-1">
             <div className="font-black uppercase tracking-wider text-zt-text">ZEROTACKY</div>
             <p className="text-zt-muted">
-              Offline-first strongman meet scoring, live multi-phone sync, and competition discovery.
+              Your one stop for strongman: shows, registration, live scoring, and a gym directory.
             </p>
           </div>
           <div className="flex flex-wrap gap-4 font-bold text-zt-text-2">

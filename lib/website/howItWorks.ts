@@ -27,7 +27,7 @@ export const HOW_IT_WORKS_TRACKS: HowTrack[] = [
     kicker: 'Running a show',
     title: 'Promoters',
     intro:
-      'You set the meet up once, on your phone or a laptop. When you publish it, every judge, pit crew phone and the public scoreboard see the same divisions, events and scores, so nobody is working from a different copy.',
+      'You set the meet up once, on your phone or a laptop. When you publish it, every judge, pit crew phone, and the public scoreboard see the same divisions, events, and scores, so nobody is working from a different copy.',
     steps: [
       {
         title: 'Create an account and tick Promoter',
@@ -69,7 +69,7 @@ export const HOW_IT_WORKS_TRACKS: HowTrack[] = [
     steps: [
       {
         title: 'Find a show',
-        body: 'Search by name, division, status, state, implement or federation. Each show page has the venue, the divisions and events, and whether registration is open.',
+        body: 'Search by name, division, status, state, implement, or federation. Each show page has the venue, the divisions and events, and whether registration is open.',
         link: { label: 'Find a Show', href: '/shows' },
       },
       {
@@ -83,7 +83,7 @@ export const HOW_IT_WORKS_TRACKS: HowTrack[] = [
       },
       {
         title: 'Track it on My Meets',
-        body: 'Your entry starts as Pending approval until the promoter looks at it, then becomes Registered, Waitlisted or Declined. After the meet it moves to Completed, so over time My Meets becomes a record of where you have competed.',
+        body: 'Your entry starts as Pending approval until the promoter looks at it, then becomes Registered, Waitlisted, or Declined. After the meet it moves to Completed, so over time My Meets becomes a record of where you have competed.',
         link: { label: 'My Meets', href: '/promoter' },
       },
       {
@@ -154,7 +154,7 @@ export const HOW_IT_WORKS_FAQ: HowFaq[] = [
   },
   {
     q: 'Can a promoter delete a meet?',
-    a: 'Yes, from the Meet Day tab, as long as the meet is not running or finished. If the meet already has divisions, athletes, registrations or results, you type its name to confirm. Finished meets are kept so results stay available.',
+    a: 'Yes, from the Meet Day tab, as long as the meet is not running or finished. If the meet already has divisions, athletes, registrations, or results, you type its name to confirm. Finished meets are kept so results stay available.',
   },
   {
     q: 'What happens to my data?',

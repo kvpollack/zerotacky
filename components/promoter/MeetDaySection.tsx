@@ -35,7 +35,7 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
 
   const handleDelete = async () => {
     if (!hasData) {
-      const ok = typeof window !== 'undefined' ? window.confirm(`Delete "${summary.name}"? This draft has no divisions, athletes, results or registrations. This cannot be undone.`) : false;
+      const ok = typeof window !== 'undefined' ? window.confirm(`Delete "${summary.name}"? This draft has no divisions, athletes, results, or registrations. This cannot be undone.`) : false;
       if (!ok) return;
     } else if (!nameMatches) {
       setDeleteError('Type the meet name exactly as shown to confirm.');
@@ -248,7 +248,7 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
                 <span>Delete This Meet</span>
               </div>
               <p className="text-xs text-zt-muted mt-1">
-                Removes the meet, its divisions, events, roster, scores, registrations and the public page for good. Only the
+                Removes the meet, its divisions, events, roster, scores, registrations, and the public page for good. Only the
                 promoter who owns the meet can do this. A live or completed meet cannot be deleted; set it to cancelled on the
                 Listing tab or keep it as a record.
               </p>
@@ -291,7 +291,7 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
                   </label>
                 </div>
               ) : (
-                <p className="text-xs font-bold text-zt-text">This meet has no divisions, athletes, results or registrations yet. Deleting it removes the empty draft.</p>
+                <p className="text-xs font-bold text-zt-text">This meet has no divisions, athletes, results, or registrations yet. Deleting it removes the empty draft.</p>
               )}
               {deleteError && (
                 <div className="p-3 rounded-xl bg-zt-danger/15 border border-zt-danger text-zt-danger-text text-xs font-bold" role="alert">
