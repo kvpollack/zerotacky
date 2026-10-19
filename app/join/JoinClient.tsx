@@ -187,7 +187,12 @@ export default function JoinClient() {
             <button type="button" onClick={() => setRemote(null)} className="w-full text-xs font-bold text-zt-muted py-2">Different code</button>
           </div>
         )}
-        <a href="/" className="block text-center text-xs font-bold text-zt-muted py-2">Back</a>
+        <a
+          href="/website"
+          className="w-full py-3 rounded-xl bg-zt-surface-2 border border-zt-border text-zt-text-2 font-black text-xs uppercase tracking-wider flex items-center justify-center hover:text-zt-text"
+        >
+          Back to ZeroTacky Home
+        </a>
       </div>
     </div>
   );
