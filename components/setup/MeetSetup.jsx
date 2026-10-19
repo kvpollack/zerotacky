@@ -9,6 +9,7 @@ import ResultsCsvCard from './ResultsCsvCard';
 import SyncPanel from './SyncPanel';
 import MeetSection from './builder/MeetSection';
 import DivisionsSection from './builder/DivisionsSection';
+import StationsSection from './builder/StationsSection';
 import EventsSection from './builder/EventsSection';
 import AthletesSection from './builder/AthletesSection';
 import MeetsSection from './builder/MeetsSection';
@@ -64,12 +65,8 @@ export default function MeetSetup({
       {/* 1. Meet Section */}
       <MeetSection
         meet={meet}
-        divisions={divisions}
         updateMeetConfig={updateMeetConfig}
         toggleGymPlate={toggleGymPlate}
-        addStation={addStation}
-        updateStation={updateStation}
-        removeStation={removeStation}
       />
 
       {/* 2. Divisions Section */}
@@ -84,7 +81,18 @@ export default function MeetSetup({
         reorderDivisions={reorderDivisions}
       />
 
-      {/* 3. Events Section */}
+      {/* 3. Stations & floor plan (after divisions; Kurt 10/19) */}
+      <StationsSection
+        meet={meet}
+        divisions={divisions}
+        athletes={athletes}
+        addStation={addStation}
+        updateStation={updateStation}
+        removeStation={removeStation}
+        updateDivision={updateDivision}
+      />
+
+      {/* 4. Events Section */}
       <EventsSection
         divisions={divisions}
         events={events}
@@ -95,7 +103,7 @@ export default function MeetSetup({
         reorderEvents={reorderEvents}
       />
 
-      {/* 4. Athletes Section */}
+      {/* 5. Athletes Section */}
       <AthletesSection
         divisions={divisions}
         athletes={athletes}
@@ -109,7 +117,7 @@ export default function MeetSetup({
         toggleAthleteWithdrawn={toggleAthleteWithdrawn}
       />
 
-      {/* 5. Meets, Demo Presets & Validation Section */}
+      {/* 6. Meets, Demo Presets & Validation Section */}
       <MeetsSection
         state={state}
         meet={meet}

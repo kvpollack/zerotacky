@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import MeetSection from '@/components/setup/builder/MeetSection';
 import DivisionsSection from '@/components/setup/builder/DivisionsSection';
+import StationsSection from '@/components/setup/builder/StationsSection';
 import EventsSection from '@/components/setup/builder/EventsSection';
 import AthletesSection from '@/components/setup/builder/AthletesSection';
 import {
@@ -55,6 +56,7 @@ import MeetDaySection from './MeetDaySection';
 type SectionId =
   | 'meet'
   | 'divisions'
+  | 'stations'
   | 'events'
   | 'athletes'
   | 'listing'
@@ -129,6 +131,10 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   useEffect(() => {
     loadAll();
   }, [loadAll]);
+
+  useEffect(() => {
+    if (detail?.summary.name) document.title = `${detail.summary.name} — Manage Meet — ZeroTacky`;
+  }, [detail?.summary.name]);
 
   const isDirty = useMemo(() => {
     if (!detail || !workingState) return false;
@@ -399,16 +405,17 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   const tabs: Array<{ id: SectionId; number: number; label: string; badge?: string | number }> = [
     { id: 'meet', number: 1, label: 'Meet' },
     { id: 'divisions', number: 2, label: 'Divisions', badge: workingState.divisions.length },
-    { id: 'events', number: 3, label: 'Events', badge: workingState.events.length },
-    { id: 'athletes', number: 4, label: 'Athletes', badge: workingState.athletes.length },
-    { id: 'listing', number: 5, label: 'Listing' },
+    { id: 'stations', number: 3, label: 'Stations', badge: (workingState.meet.stations ?? []).length || undefined },
+    { id: 'events', number: 4, label: 'Events', badge: workingState.events.length },
+    { id: 'athletes', number: 5, label: 'Athletes', badge: workingState.athletes.length },
+    { id: 'listing', number: 6, label: 'Listing' },
     {
       id: 'registrations',
-      number: 6,
+      number: 7,
       label: 'Registrations',
       badge: pendingRegCount > 0 ? `${pendingRegCount} pending` : registrations.length,
     },
-    { id: 'meetday', number: 7, label: 'Meet Day' },
+    { id: 'meetday', number: 8, label: 'Meet Day' },
   ];
 
   const onTabKeyDown = (e: React.KeyboardEvent, index: number) => {
@@ -595,13 +602,21 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
         <div role="tabpanel" id="panel-meet" aria-labelledby="tab-meet" hidden={activeTab !== 'meet'}>
           <MeetSection
             meet={workingState.meet}
-            divisions={workingState.divisions}
             updateMeetConfig={updateMeetConfig}
             toggleGymPlate={toggleGymPlate}
+            allowDemoToggle={false}
+          />
+        </div>
+
+        <div role="tabpanel" id="panel-stations" aria-labelledby="tab-stations" hidden={activeTab !== 'stations'}>
+          <StationsSection
+            meet={workingState.meet}
+            divisions={workingState.divisions}
+            athletes={workingState.athletes}
             addStation={addStation}
             updateStation={updateStation}
             removeStation={removeStation}
-            allowDemoToggle={false}
+            updateDivision={updateDivision}
           />
         </div>
 

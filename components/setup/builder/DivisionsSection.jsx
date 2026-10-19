@@ -23,7 +23,9 @@ export default function DivisionsSection({
   const stationIds = new Set(stations.map((s) => s.id));
 
   const [newDivName, setNewDivName] = useState('');
-  const [newDivFlight, setNewDivFlight] = useState(stations[0]?.id ?? 'A');
+  // New divisions land on the first station; the promoter spreads them across stations in step 3.
+  const newDivFlight = stations[0]?.id ?? 'A';
+  const stationLabel = (id) => stations.find((s) => s.id === id)?.label ?? `Missing (${id})`;
   const [armedDeleteId, setArmedDeleteId] = useState(null);
 
   const sortedDivisions = [...divisions].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -52,7 +54,7 @@ export default function DivisionsSection({
           2. Divisions ({sortedDivisions.length})
         </h2>
         <span className="text-[10px] font-bold text-zt-muted">
-          Assign each division to a station
+          Stations are assigned in step 3
         </span>
       </div>
 
@@ -104,27 +106,12 @@ export default function DivisionsSection({
                     className="flex-1 min-w-0 bg-zt-surface border border-zt-border-strong rounded-lg px-2.5 py-1.5 text-xs font-black text-zt-text"
                   />
 
-                  <select
-                    value={stationIds.has(div.flight) ? div.flight : ''}
-                    onChange={(e) => updateDivision(div.id, { flight: e.target.value })}
-                    aria-label={`Station for ${div.name}`}
-                    className={`bg-zt-surface border rounded-lg px-2 py-1.5 text-xs font-bold ${
-                      invalidStation
-                        ? 'border-red-500 text-red-400'
-                        : 'border-zt-border-strong text-zt-primary'
-                    }`}
+                  <span
+                    className={`text-[10px] font-extrabold px-2 py-1 rounded whitespace-nowrap ${invalidStation ? 'bg-amber-500/15 text-amber-400' : 'bg-zt-surface-2 text-zt-primary'}`}
+                    title="Station (set in step 3)"
                   >
-                    {invalidStation && (
-                      <option value="" disabled>
-                        Missing ({div.flight})
-                      </option>
-                    )}
-                    {stations.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.label} ({s.id})
-                      </option>
-                    ))}
-                  </select>
+                    {stationLabel(div.flight)}
+                  </span>
 
                   <span className="text-[10px] font-extrabold px-2 py-1 rounded bg-zt-surface-2 text-zt-muted whitespace-nowrap">
                     {divAthletes.length} ath
@@ -148,8 +135,8 @@ export default function DivisionsSection({
                   <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-400 px-1">
                     <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
                     <span>
-                      Station &ldquo;{div.flight}&rdquo; was removed; this division is shown under
-                      &ldquo;All&rdquo; until reassigned.
+                      Station &ldquo;{div.flight}&rdquo; was removed; pick a station in step 3 or this division shows under
+                      &ldquo;All&rdquo; only.
                     </span>
                   </div>
                 )}
@@ -197,17 +184,6 @@ export default function DivisionsSection({
           onChange={(e) => setNewDivName(e.target.value)}
           className="flex-1 min-w-0 bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
         />
-        <select
-          value={stationIds.has(newDivFlight) ? newDivFlight : stations[0]?.id ?? 'A'}
-          onChange={(e) => setNewDivFlight(e.target.value)}
-          className="bg-zt-inset border border-zt-border-strong rounded-xl px-2.5 py-2 text-xs font-bold text-zt-primary"
-        >
-          {stations.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.label}
-            </option>
-          ))}
-        </select>
         <button
           type="submit"
           className="bg-zt-primary text-zt-on-primary px-3.5 py-2 rounded-xl font-black text-xs uppercase flex items-center gap-1 flex-shrink-0"

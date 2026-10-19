@@ -37,7 +37,7 @@ export default function MeetsSection({
     <section className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-black uppercase tracking-wider text-zt-primary">
-          5. Meets, Demo Presets &amp; Readiness Check
+          6. Meets, Demo Presets &amp; Readiness Check
         </h2>
         <button
           type="button"
