@@ -5,7 +5,7 @@ import {
   Ban,
   UserMinus,
 } from 'lucide-react';
-import { DEFAULT_PRESET_ID, getInitialSeedState } from '@/lib/presets';
+import { DEFAULT_PRESET_ID, getInitialSeedState, isMeetPresetId } from '@/lib/presets';
 import {
   calculatePlateLoading,
   scoreSingleEvent,
@@ -249,6 +249,26 @@ export default function App() {
       loadMeetPreset(presetId);
     }
   };
+
+  // /scorer?demo=<presetId> from the website's demo chooser (Kurt 10/19). A demo on the device is replaced outright;
+  // a meet someone built themselves gets the usual confirm in Meet Setup step 6 instead. The param is dropped from the
+  // URL so a reload does not load it again.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const demo = params.get('demo');
+    if (demo === null) return;
+    params.delete('demo');
+    const qs = params.toString();
+    window.history.replaceState(null, '', `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash}`);
+    if (!isMeetPresetId(demo)) return;
+    if (meet.isDemo) {
+      if (demo !== (meet.presetId ?? DEFAULT_PRESET_ID)) loadMeetPreset(demo);
+      return;
+    }
+    setPendingPresetId(demo);
+    setActiveTab('setup');
+  }, []);
 
   const pitCrewCallout =
     currentEvent && currentDivision

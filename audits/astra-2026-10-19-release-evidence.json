@@ -1,0 +1,1219 @@
+{
+  "revision": {
+    "head": "f5d992b6bdbe794a893a0eb45a2afb2f58088aa9",
+    "trackedBlobs": 225,
+    "mismatches": [
+      "app/website/page.tsx",
+      "audits/astra-brief-2026-10-19-release.md",
+      "components/strongman-app.jsx",
+      "components/website/WebsiteShell.tsx",
+      "lib/presets/index.ts",
+      "lib/types.ts"
+    ]
+  },
+  "browser": {
+    "createFixture": {
+      "status": 200,
+      "body": {
+        "id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+        "join_code": "TUEC98"
+      }
+    },
+    "demoMonotonic": [
+      {
+        "flag": true,
+        "status": 200,
+        "read": {
+          "status": 200,
+          "body": [
+            {
+              "id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+              "is_demo": true
+            }
+          ]
+        }
+      },
+      {
+        "flag": false,
+        "status": 200,
+        "read": {
+          "status": 200,
+          "body": [
+            {
+              "id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+              "is_demo": false
+            }
+          ]
+        }
+      },
+      {
+        "flag": true,
+        "status": 200,
+        "read": {
+          "status": 200,
+          "body": [
+            {
+              "id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+              "is_demo": false
+            }
+          ]
+        }
+      },
+      {
+        "flag": null,
+        "status": 200,
+        "read": {
+          "status": 200,
+          "body": [
+            {
+              "id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+              "is_demo": false
+            }
+          ]
+        }
+      },
+      {
+        "flag": "omit",
+        "status": 200,
+        "read": {
+          "status": 200,
+          "body": [
+            {
+              "id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+              "is_demo": false
+            }
+          ]
+        }
+      }
+    ],
+    "spectatorNormal": {
+      "body": "ZEROTACKY\nSPECTATOR LOCKED • UNLOCK\nAstra Release Delete Me\nStation 1\nStation 2\nAll\n[Station 1] Release Open\nEv 1: Audit Reps\nOVERALL STANDINGS • RELEASE OPEN\nTiebreaker: Event Wins\nTV\n#1\nRelease Fictional One\nEvent Wins: 0\n0\nTOTAL PTS\nEVENT 1 BREAKDOWN • AUDIT REPS\n#1\nRelease Fictional One\n—\n0 pts\nNEXT UP\nSTANDINGS",
+      "role": "spectator"
+    },
+    "spectatorFloor": {
+      "body": "ZEROTACKY\nSPECTATOR LOCKED • UNLOCK\nAstra Release Delete Me\nStation 1\nStation 2\nAll\n[Station 1] Release Open\nEv 1: Audit Reps\nIMPLEMENT RACK / PIN HEIGHT\nRelease Open\nUP NOW • RELEASE FICTIONAL ONE\n3\nON DECK • END OF DIVISION\n—\nRELEASE FICTIONAL ONE'S PERSONAL PIN / HEIGHT\nnot set\nFIXED IMPLEMENT (NO PLATE LOADING)\nAudit Reps\nEMPTY TARE\n0 lbs\nTV\nFIXED IMPLEMENT LAYOUT (NO PLATE MATH)\nLoad 100 lb Implement\nNEXT GROUP / LIFTER TRANSITION\n\nFinal group of the final event on this station — no further changeover.\n\nNEXT UP\nSTANDINGS",
+      "inputs": 0,
+      "disabledButtons": []
+    },
+    "roleStorageBypass": {
+      "body": "ZEROTACKY\nJUDGE LOCKED • UNLOCK\nAstra Release Delete Me\nStation 1\nStation 2\nAll\n[Station 1] Release Open\nEv 1: Audit Reps\nRUN ORDER (REV OVERALL)\nSingle Platform\nORDER #1\nRelease Fictional One\n0 pts • 3\nMASTER CLOCK (60S CAP)\n0.00s\nSTART\nRESET\nON PLATFORM\nRelease Fictional One\nRack / Pin: 3\nStatus\nScore entry\n-1\n0\nLOCKED REPS\n+1 REP\nLock Score & Advance to Next Athlete\nLast athlete in run order — locks score only\nJUDGE PAD\nPIT CREW\nSTANDINGS",
+      "pinRequests": []
+    },
+    "pinBypassScore": {
+      "body": "ZEROTACKY\nJUDGE LOCKED • UNLOCK\nAstra Release Delete Me\nStation 1\nStation 2\nAll\n[Station 1] Release Open\nEv 1: Audit Reps\nRUN ORDER (REV OVERALL)\nSingle Platform\nORDER #1\nRelease Fictional One\n0 pts • 3\nMASTER CLOCK (60S CAP)\n0.00s\nSTART\nRESET\nON PLATFORM\nRelease Fictional One\nRack / Pin: 3\nStatus\nScore entry\n-1\n1\nLOCKED REPS\n+1 REP\nLock Score & Advance to Next Athlete\nLast athlete in run order — locks score only\nJUDGE PAD\nPIT CREW\nSTANDINGS",
+      "scoreRead": {
+        "status": 200,
+        "body": [
+          {
+            "id": "release-reps_release-one",
+            "payload": {
+              "reps": 1,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "updated_by": "dev-117a5122"
+          }
+        ]
+      },
+      "writes": [
+        {
+          "phone": "public",
+          "url": "https://hryiqiopkihkcrkdyllg.supabase.co/rest/v1/rpc/zt_meet_by_join_code",
+          "status": 200,
+          "method": "POST"
+        },
+        {
+          "phone": "public",
+          "url": "https://hryiqiopkihkcrkdyllg.supabase.co/rest/v1/live_state?on_conflict=meet_id%2Cstation",
+          "status": 201,
+          "method": "POST"
+        },
+        {
+          "phone": "public",
+          "url": "https://hryiqiopkihkcrkdyllg.supabase.co/rest/v1/results?on_conflict=meet_id%2Cid",
+          "status": 201,
+          "method": "POST"
+        }
+      ]
+    },
+    "login": {
+      "email": "slate.staging@zerotacky.com",
+      "uid": "36970762-b3e1-43c2-87f0-d1093816f94e",
+      "success": true
+    },
+    "deleteKeyedAnon": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_delete_meet"
+      }
+    },
+    "deleteNonowner": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "only the promoter who owns this meet can delete it"
+      }
+    },
+    "claim": {
+      "status": 200,
+      "body": {
+        "id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+        "join_code": "TUEC98"
+      }
+    },
+    "followUnlistedRpc": {
+      "status": 500,
+      "body": {
+        "code": "P0002",
+        "details": null,
+        "hint": null,
+        "message": "This show cannot be followed (not listed)."
+      }
+    },
+    "followUnlistedDirect": {
+      "status": 201,
+      "body": [
+        {
+          "user_id": "36970762-b3e1-43c2-87f0-d1093816f94e",
+          "meet_id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+          "created_at": "2026-10-19T22:38:52.834834+00:00"
+        }
+      ]
+    },
+    "myUnlistedFollow": {
+      "status": 200,
+      "body": [
+        {
+          "date": "2026-10-24",
+          "kind": "follow",
+          "name": "Astra Release Delete Me",
+          "slug": "astra-release-20261019",
+          "meet_id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+          "following": true,
+          "created_at": "2026-10-19T22:38:52.834834+00:00",
+          "waitlisted": null,
+          "division_name": null,
+          "results_status": "not_started",
+          "registration_id": null,
+          "is_public_listed": false,
+          "competition_status": "upcoming",
+          "registration_status": null
+        }
+      ]
+    },
+    "followOtherUser": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "new row violates row-level security policy for table \"meet_follows\""
+      }
+    },
+    "listed": {
+      "status": 200,
+      "body": {
+        "id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+        "date": "2026-10-24",
+        "name": "Astra Release Delete Me",
+        "slug": "astra-release-20261019",
+        "venue": {
+          "city": "Testville",
+          "state": "PA",
+          "country": "US"
+        },
+        "is_demo": false,
+        "owner_id": "36970762-b3e1-43c2-87f0-d1093816f94e",
+        "stations": [
+          {
+            "id": "A",
+            "label": "Station 1"
+          },
+          {
+            "id": "B",
+            "label": "Station 2"
+          }
+        ],
+        "admin_pin": "7391",
+        "join_code": "TUEC98",
+        "created_at": "2026-10-19T22:37:36.923609+00:00",
+        "federation": null,
+        "updated_at": "2026-10-19T22:39:08.053586+00:00",
+        "athlete_cap": null,
+        "results_status": "not_started",
+        "tiebreaker_rule": "event_wins",
+        "available_plates": [
+          100,
+          55,
+          45,
+          35,
+          25,
+          15,
+          10,
+          5,
+          2.5
+        ],
+        "is_public_listed": true,
+        "promoter_contact": null,
+        "run_order_method": "reverse_overall",
+        "entry_fee_display": null,
+        "competition_status": "upcoming",
+        "registration_status": "open",
+        "registration_deadline": null,
+        "collar_weight_per_pair": 0
+      }
+    },
+    "followUiRoundtrip": true,
+    "registration": {
+      "status": 200,
+      "body": {
+        "id": "b48399a9-b5f6-4c0d-a5fa-8d265bded46a",
+        "status": "pending"
+      }
+    },
+    "myRegistrationStatuses": [
+      {
+        "setStatus": "pending",
+        "changeStatus": 200,
+        "rows": [
+          {
+            "date": "2026-10-24",
+            "kind": "registration",
+            "name": "Astra Release Delete Me",
+            "slug": "astra-release-20261019",
+            "meet_id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+            "following": true,
+            "created_at": "2026-10-19T22:39:09.99049+00:00",
+            "waitlisted": false,
+            "division_name": "Release Open",
+            "results_status": "not_started",
+            "registration_id": "b48399a9-b5f6-4c0d-a5fa-8d265bded46a",
+            "is_public_listed": true,
+            "competition_status": "upcoming",
+            "registration_status": "pending"
+          }
+        ]
+      },
+      {
+        "setStatus": "accepted",
+        "changeStatus": 200,
+        "rows": [
+          {
+            "date": "2026-10-24",
+            "kind": "registration",
+            "name": "Astra Release Delete Me",
+            "slug": "astra-release-20261019",
+            "meet_id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+            "following": true,
+            "created_at": "2026-10-19T22:39:09.99049+00:00",
+            "waitlisted": false,
+            "division_name": "Release Open",
+            "results_status": "not_started",
+            "registration_id": "b48399a9-b5f6-4c0d-a5fa-8d265bded46a",
+            "is_public_listed": true,
+            "competition_status": "upcoming",
+            "registration_status": "accepted"
+          }
+        ]
+      },
+      {
+        "setStatus": "declined",
+        "changeStatus": 200,
+        "rows": [
+          {
+            "date": "2026-10-24",
+            "kind": "registration",
+            "name": "Astra Release Delete Me",
+            "slug": "astra-release-20261019",
+            "meet_id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+            "following": true,
+            "created_at": "2026-10-19T22:39:09.99049+00:00",
+            "waitlisted": false,
+            "division_name": "Release Open",
+            "results_status": "not_started",
+            "registration_id": "b48399a9-b5f6-4c0d-a5fa-8d265bded46a",
+            "is_public_listed": true,
+            "competition_status": "upcoming",
+            "registration_status": "declined"
+          }
+        ]
+      },
+      {
+        "setStatus": "withdrawn",
+        "changeStatus": 200,
+        "rows": [
+          {
+            "date": "2026-10-24",
+            "kind": "registration",
+            "name": "Astra Release Delete Me",
+            "slug": "astra-release-20261019",
+            "meet_id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+            "following": true,
+            "created_at": "2026-10-19T22:39:09.99049+00:00",
+            "waitlisted": false,
+            "division_name": "Release Open",
+            "results_status": "not_started",
+            "registration_id": "b48399a9-b5f6-4c0d-a5fa-8d265bded46a",
+            "is_public_listed": true,
+            "competition_status": "upcoming",
+            "registration_status": "withdrawn"
+          }
+        ]
+      }
+    ],
+    "qrPrint": {
+      "url": "about:blank",
+      "body": "",
+      "htmlLength": 39
+    },
+    "stationRemoved": {
+      "body": "ZEROTACKY\nOVERVIEW\nHOW IT WORKS\nFIND A SHOW\nJOIN A MEET\nSTRONGMAN GYMS\nACCOUNT\nMY MEETS\nSlate Staging\nBACK TO MY MEETS\nPUBLIC REGISTRATION PAGE\nUPCOMING\nLISTED\nREGISTRATION OPEN\nNO RESULTS YET (1 LOCKED/RECORDED SCORES — READ-ONLY HERE)\nID: 0242b05e-f8f9-4673-b82e-8bc7858b05f7\nAstra Release Delete Me\n2026-10-24 • Slug: /astra-release-20261019 • 1 divisions • 1 events • 1 roster athletes\n1 Setup Check\n1. MEET\n2. DIVISIONS\n1\n3. STATIONS\n1\n4. EVENTS\n1\n5. ATHLETES\n1\n6. LISTING\n7. REGISTRATIONS\n1\n8. MEET DAY\n3. STATIONS & FLOOR PLAN (1)\nMin 1 station\n\nA station is one set of implements running its own order. Divisions on the same station run back to back; two stations run at the same time in different parts of the gym. Most promoters decide this after sign-ups close, and a small meet is fine on one station.\n\nB\n0 divs · 0 ath\nADD STATION\nASSIGN DIVISIONS TO STATIONS\n1 UNASSIGNED\nRelease Open\n1 ath\nStation 2\nStation “A” was removed; pick a station or this division shows under “All” only.\nUNSAVED MEET BUILDER CHANGES\nYour edits to Meet, Divisions, Events, or Athletes are in working memory. Save to commit them.\nDISCARD\nSAVE CHANGES\nZEROTACKY\n\nYour one stop for strongman: shows, registration, live scoring, and a gym directory.\n\nHome\nHow It Works\nShows\nGyms\nAccount\nMeet-Day App\nTerms\nPrivacy",
+      "selects": [
+        {
+          "value": "release-open",
+          "options": [
+            {
+              "value": "release-open",
+              "text": "Release Open"
+            }
+          ]
+        },
+        {
+          "value": "upcoming",
+          "options": [
+            {
+              "value": "upcoming",
+              "text": "Upcoming"
+            },
+            {
+              "value": "live",
+              "text": "Live Now"
+            },
+            {
+              "value": "completed",
+              "text": "Completed"
+            },
+            {
+              "value": "postponed",
+              "text": "Postponed"
+            },
+            {
+              "value": "cancelled",
+              "text": "Cancelled"
+            }
+          ]
+        },
+        {
+          "value": "open",
+          "options": [
+            {
+              "value": "open",
+              "text": "Open"
+            },
+            {
+              "value": "waitlist",
+              "text": "Waitlist Only"
+            },
+            {
+              "value": "closed",
+              "text": "Closed"
+            },
+            {
+              "value": "day_of_only",
+              "text": "Day-Of Entry Only"
+            },
+            {
+              "value": "not_applicable",
+              "text": "Not Applicable"
+            },
+            {
+              "value": "not_provided",
+              "text": "Not Provided"
+            }
+          ]
+        },
+        {
+          "value": "not_started",
+          "options": [
+            {
+              "value": "not_started",
+              "text": "Not Started"
+            },
+            {
+              "value": "in_progress",
+              "text": "In Progress (Live Provisional)"
+            },
+            {
+              "value": "provisional",
+              "text": "Provisional (Pending Audit)"
+            },
+            {
+              "value": "final",
+              "text": "Final (Certifies Official Podiums)"
+            }
+          ]
+        }
+      ]
+    },
+    "stationReadded": {
+      "body": "ZEROTACKY\nOVERVIEW\nHOW IT WORKS\nFIND A SHOW\nJOIN A MEET\nSTRONGMAN GYMS\nACCOUNT\nMY MEETS\nSlate Staging\nBACK TO MY MEETS\nPUBLIC REGISTRATION PAGE\nUPCOMING\nLISTED\nREGISTRATION OPEN\nNO RESULTS YET (1 LOCKED/RECORDED SCORES — READ-ONLY HERE)\nID: 0242b05e-f8f9-4673-b82e-8bc7858b05f7\nAstra Release Delete Me\n2026-10-24 • Slug: /astra-release-20261019 • 1 divisions • 1 events • 1 roster athletes\nMeet Ready to Run\n1. MEET\n2. DIVISIONS\n1\n3. STATIONS\n2\n4. EVENTS\n1\n5. ATHLETES\n1\n6. LISTING\n7. REGISTRATIONS\n1\n8. MEET DAY\n3. STATIONS & FLOOR PLAN (2)\nMin 1 station\n\nA station is one set of implements running its own order. Divisions on the same station run back to back; two stations run at the same time in different parts of the gym. Most promoters decide this after sign-ups close, and a small meet is fine on one station.\n\nB\n0 divs · 0 ath\nA\n1 div · 1 ath\nRelease Open\nADD STATION\nASSIGN DIVISIONS TO STATIONS\nRelease Open\n1 ath\nStation 2\nReplacement Station\nUNSAVED MEET BUILDER CHANGES\nYour edits to Meet, Divisions, Events, or Athletes are in working memory. Save to commit them.\nDISCARD\nSAVE CHANGES\nZEROTACKY\n\nYour one stop for strongman: shows, registration, live scoring, and a gym directory.\n\nHome\nHow It Works\nShows\nGyms\nAccount\nMeet-Day App\nTerms\nPrivacy",
+      "selects": [
+        {
+          "value": "release-open",
+          "options": [
+            {
+              "value": "release-open",
+              "text": "Release Open"
+            }
+          ]
+        },
+        {
+          "value": "upcoming",
+          "options": [
+            {
+              "value": "upcoming",
+              "text": "Upcoming"
+            },
+            {
+              "value": "live",
+              "text": "Live Now"
+            },
+            {
+              "value": "completed",
+              "text": "Completed"
+            },
+            {
+              "value": "postponed",
+              "text": "Postponed"
+            },
+            {
+              "value": "cancelled",
+              "text": "Cancelled"
+            }
+          ]
+        },
+        {
+          "value": "open",
+          "options": [
+            {
+              "value": "open",
+              "text": "Open"
+            },
+            {
+              "value": "waitlist",
+              "text": "Waitlist Only"
+            },
+            {
+              "value": "closed",
+              "text": "Closed"
+            },
+            {
+              "value": "day_of_only",
+              "text": "Day-Of Entry Only"
+            },
+            {
+              "value": "not_applicable",
+              "text": "Not Applicable"
+            },
+            {
+              "value": "not_provided",
+              "text": "Not Provided"
+            }
+          ]
+        },
+        {
+          "value": "not_started",
+          "options": [
+            {
+              "value": "not_started",
+              "text": "Not Started"
+            },
+            {
+              "value": "in_progress",
+              "text": "In Progress (Live Provisional)"
+            },
+            {
+              "value": "provisional",
+              "text": "Provisional (Pending Audit)"
+            },
+            {
+              "value": "final",
+              "text": "Final (Certifies Official Podiums)"
+            }
+          ]
+        }
+      ]
+    },
+    "wrongPin": {
+      "body": "ZEROTACKY\nJoin a meet\nAstra Release Delete Me\n2026-10-24 · 1 divisions · 1 athletes\nJUDGE ACCESS NEEDS THE MEET PIN\nUNLOCK JUDGE ACCESS\nWrong PIN. Ask the promoter for the meet PIN.\n\nThe promoter sets the PIN on the Meet Setup tab. It is checked on the server and remembered on this phone for this meet.\n\nPick a different role\nDifferent code\nBack",
+      "role": null
+    },
+    "correctPin": {
+      "role": "judge",
+      "pinCalls": [
+        {
+          "phone": "judge",
+          "url": "https://hryiqiopkihkcrkdyllg.supabase.co/rest/v1/rpc/zt_check_admin_pin",
+          "status": 200,
+          "method": "POST"
+        },
+        {
+          "phone": "judge",
+          "url": "https://hryiqiopkihkcrkdyllg.supabase.co/rest/v1/rpc/zt_check_admin_pin",
+          "status": 200,
+          "method": "POST"
+        }
+      ]
+    },
+    "fakeRecoverySignedOut": {
+      "body": "ZEROTACKY\nOVERVIEW\nHOW IT WORKS\nFIND A SHOW\nJOIN A MEET\nSTRONGMAN GYMS\nACCOUNT\nSIGN IN\nYour ZeroTacky account\n\nOne account covers everything you do in strongman, whether you compete, run shows or list a gym. If you promote, the meets you publish belong to this account and follow you from phone to phone.\n\nSIGN IN\nCREATE ACCOUNT\nEMAIL ME A LINK\nEMAIL\nPASSWORD\nForgot password?\nSIGN IN\n\nMeet-day volunteers do not need an account: judges and pit crew join with the meet code on Join a Meet.\n\nZEROTACKY\n\nYour one stop for strongman: shows, registration, live scoring, and a gym directory.\n\nHome\nHow It Works\nShows\nGyms\nAccount\nMeet-Day App\nTerms\nPrivacy",
+      "newPasswordPanels": 0
+    },
+    "stationReassign": [
+      "Station 2"
+    ],
+    "fakeRecoverySignedIn": {
+      "panel": 1,
+      "body": "ZEROTACKY\nOVERVIEW\nHOW IT WORKS\nFIND A SHOW\nJOIN A MEET\nSTRONGMAN GYMS\nACCOUNT\nMY MEETS\nSlate Staging\nSET A NEW PASSWORD\n\nYou arrived from a password reset link. Choose a new password to finish; you are already signed in on this device.\n\nNEW PASSWORD (8+ CHARACTERS)\nCONFIRM NEW PASSWORD\nSAVE NEW PASSWORD\nKEEP MY CURRENT PASSWORD\nSIGNED IN\nSlate Staging\nslate.staging@zerotacky.com\nPROMOTER\nSIGN OUT\nPROFILE\n\nPick everything that applies. Most people in this sport wear more than one hat.\n\nDISPLAY NAME\nAthlete\nRegister for shows and keep your competition history in one place.\nPromoter\nPublish and run meets from the scorer and the My Meets page. A meet you publish belongs to this account, so only you can change it and it is still there if you switch phones.\nGym owner\nList your gym, implements, and day-pass info for travelling athletes.\nSAVE PROFILE\nWHERE TO NEXT\nMY MEETS\nMEET-DAY SCORER\nFIND A SHOW\nFIND A GYM\n\nPublishing from the scorer uses this sign-in. The old promoter key still works for phones that are not signed in.\n\nZEROTACKY\n\nYour one stop for strongman: shows, registration, live scoring, and a gym directory.\n\nHome\nHow It Works\nShows\nGyms\nAccount\nMeet-Day App\nTerms\nPrivacy"
+    },
+    "signedoutUpdate": {
+      "status": 403,
+      "body": {
+        "code": 403,
+        "error_code": "bad_jwt",
+        "msg": "invalid claim: missing sub claim"
+      }
+    },
+    "unlist": {
+      "status": 200,
+      "body": {
+        "id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+        "date": "2026-10-24",
+        "name": "Astra Release Delete Me",
+        "slug": "astra-release-20261019",
+        "venue": {
+          "city": "Testville",
+          "state": "PA",
+          "country": "US"
+        },
+        "is_demo": false,
+        "owner_id": "36970762-b3e1-43c2-87f0-d1093816f94e",
+        "stations": [
+          {
+            "id": "A",
+            "label": "Station 1"
+          },
+          {
+            "id": "B",
+            "label": "Station 2"
+          }
+        ],
+        "admin_pin": "7391",
+        "join_code": "TUEC98",
+        "created_at": "2026-10-19T22:37:36.923609+00:00",
+        "federation": null,
+        "updated_at": "2026-10-19T22:40:09.92328+00:00",
+        "athlete_cap": null,
+        "results_status": "not_started",
+        "tiebreaker_rule": "event_wins",
+        "available_plates": [
+          100,
+          55,
+          45,
+          35,
+          25,
+          15,
+          10,
+          5,
+          2.5
+        ],
+        "is_public_listed": false,
+        "promoter_contact": null,
+        "run_order_method": "reverse_overall",
+        "entry_fee_display": null,
+        "competition_status": "upcoming",
+        "registration_status": "open",
+        "registration_deadline": null,
+        "collar_weight_per_pair": 0
+      }
+    },
+    "unfollowAfterUnlist": {
+      "status": 500,
+      "body": {
+        "code": "P0002",
+        "details": null,
+        "hint": null,
+        "message": "This show cannot be followed (not listed)."
+      }
+    },
+    "deleteLifecycleRefusals": [
+      {
+        "status": "live",
+        "change": 200,
+        "delete": {
+          "status": 400,
+          "body": {
+            "code": "P0001",
+            "details": null,
+            "hint": null,
+            "message": "a live meet cannot be deleted. Set it to cancelled on the Listing tab first, or leave it as a record."
+          }
+        }
+      },
+      {
+        "status": "completed",
+        "change": 200,
+        "delete": {
+          "status": 400,
+          "body": {
+            "code": "P0001",
+            "details": null,
+            "hint": null,
+            "message": "a completed meet cannot be deleted. Set it to cancelled on the Listing tab first, or leave it as a record."
+          }
+        }
+      }
+    ],
+    "deleteWrongName": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "this meet has data associated with it. Type the meet name exactly to confirm deletion."
+      }
+    },
+    "demoFixture": {
+      "id": "cd5ec637-a214-4c57-8a12-db7049e7a998",
+      "join_code": "ZL6RY7"
+    },
+    "deleteOtherOwnedName": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "this meet has data associated with it. Type the meet name exactly to confirm deletion."
+      }
+    },
+    "followDemoRpc": {
+      "status": 500,
+      "body": {
+        "code": "P0002",
+        "details": null,
+        "hint": null,
+        "message": "This show cannot be followed (not listed)."
+      }
+    },
+    "followDemoDirect": {
+      "status": 201,
+      "body": [
+        {
+          "user_id": "36970762-b3e1-43c2-87f0-d1093816f94e",
+          "meet_id": "cd5ec637-a214-4c57-8a12-db7049e7a998",
+          "created_at": "2026-10-19T22:40:29.497443+00:00"
+        }
+      ]
+    },
+    "demoBoard": {
+      "body": "LIVE SCOREBOARD\nDEMO\nKeystone Fall Brawl 2026 (Demo Live Show)\nPHONE\nupdated 6:40:50 PM\nMAIN PLATFORM · UP NOW\nidle\nAll\nOpen 105kg\nOpen 82kg\nOPEN 105KG\n3 athletes · Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tTOTAL\n1\t\nDevon Mercer (Demo)\n\t3\n7 reps\n\t–\t–\t3\n2\t\nNolan Vance (Demo)\n\t1.5\n5 reps\n\t–\t–\t1.5\n3\t\nGavin Holt (Demo)\n\t1.5\n5 reps\n\t–\t–\t1.5\nOPEN 82KG\n2 athletes · Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tTOTAL\n1\t\nClara Lindqvist (Demo)\n\t2\n8 reps\n\t–\t–\t2\n2\t\nTessa Morales (Demo)\n\t1\n6 reps\n\t–\t–\t1\nZEROTACKY · refreshes every 4s",
+      "requests": [
+        {
+          "phone": "projector",
+          "url": "https://hryiqiopkihkcrkdyllg.supabase.co/rest/v1/meets?slug=eq.keystone-fall-brawl-2026&select=id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,updated_at&limit=1",
+          "status": 200,
+          "method": "GET"
+        }
+      ]
+    },
+    "alternateJoinBypass": {
+      "body": "ZEROTACKY\nAstra Release Delete Me\nStation 1\nStation 2\nAll\n[Station 1] Release Open\nEv 1: Audit Reps\nRUN ORDER (REV OVERALL)\nSingle Platform\nORDER #1\nRelease Fictional One\n0 pts • 3\nMASTER CLOCK (60S CAP)\n0.00s\nSTART\nRESET\nON PLATFORM\nRelease Fictional One\nRack / Pin: 3\nStatus\nScore entry\n-1\n1\nLOCKED REPS\n+1 REP\nLock Score & Advance to Next Athlete\nLast athlete in run order — locks score only\nJUDGE PAD\nPIT CREW\nSTANDINGS\nMEET SETUP",
+      "role": "admin",
+      "pinRequests": []
+    },
+    "demoNoPolling": [
+      {
+        "phone": "projector",
+        "url": "https://hryiqiopkihkcrkdyllg.supabase.co/rest/v1/meets?slug=eq.keystone-fall-brawl-2026&select=id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,updated_at&limit=1",
+        "status": 200,
+        "method": "GET"
+      }
+    ],
+    "collisionFixture": {
+      "id": "60002f25-33a5-418f-9218-be867566d50a",
+      "join_code": "X24CHT"
+    },
+    "collisionBoard": {
+      "body": "LIVE SCOREBOARD\nAstra Real Collision Delete Me\nPHONE\nupdated 6:47:14 PM\nSTATION 1 · UP NOW\nidle\nSTATION 2 · UP NOW\nidle\nAll\nRelease Open\nRELEASE OPEN\n1 athletes · Tiebreaker: Event Wins\n#\tATHLETE\tE1\tTOTAL\n1\t\nRelease Fictional One\n\t–\t0\nZEROTACKY · refreshes every 4s",
+      "ogTitle": "Keystone Fall Brawl 2026 (Demo Live Show) — Live Scoreboard — ZeroTacky",
+      "documentTitle": "Astra Real Collision Delete Me — Live Scoreboard — ZeroTacky"
+    },
+    "deleteTrimCase": {
+      "status": 200,
+      "body": {
+        "id": "0242b05e-f8f9-4673-b82e-8bc7858b05f7",
+        "name": "Astra Release Delete Me",
+        "deleted": {
+          "events": 1,
+          "results": 1,
+          "athletes": 1,
+          "divisions": 1,
+          "registrations": 1
+        }
+      }
+    },
+    "deleteCascadeRead": {
+      "meets": {
+        "status": 403,
+        "body": {
+          "code": "42501",
+          "details": null,
+          "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.meets TO authenticated;",
+          "message": "permission denied for table meets"
+        }
+      },
+      "divisions": {
+        "status": 200,
+        "body": []
+      },
+      "events": {
+        "status": 200,
+        "body": []
+      },
+      "athletes": {
+        "status": 200,
+        "body": []
+      },
+      "results": {
+        "status": 200,
+        "body": []
+      },
+      "registrations": {
+        "status": 403,
+        "body": {
+          "code": "42501",
+          "details": null,
+          "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.registrations TO authenticated;",
+          "message": "permission denied for table registrations"
+        }
+      },
+      "meet_members": {
+        "status": 200,
+        "body": []
+      },
+      "live_state": {
+        "status": 200,
+        "body": []
+      },
+      "meet_follows": {
+        "status": 200,
+        "body": []
+      }
+    },
+    "guardProbeSeed": {
+      "status": 201,
+      "body": ""
+    },
+    "guardAfterDelete": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "Athlete Release Fictional One has 1 recorded result(s) and cannot be removed. Mark the athlete withdrawn, or Reset scores first."
+      }
+    },
+    "deleteDemoCleanup": {
+      "status": 200,
+      "body": {
+        "id": "cd5ec637-a214-4c57-8a12-db7049e7a998",
+        "name": "Another Audit Meet",
+        "deleted": {
+          "events": 1,
+          "results": 1,
+          "athletes": 1,
+          "divisions": 1,
+          "registrations": 0
+        }
+      }
+    },
+    "deleteCollisionCleanup": {
+      "status": 200,
+      "body": {
+        "id": "60002f25-33a5-418f-9218-be867566d50a",
+        "name": "Astra Real Collision Delete Me",
+        "deleted": {
+          "events": 1,
+          "results": 0,
+          "athletes": 1,
+          "divisions": 1,
+          "registrations": 0
+        }
+      }
+    },
+    "allFixtureRowsGone": {
+      "status": 200,
+      "body": []
+    },
+    "myRelationshipsAfterCleanup": {
+      "status": 200,
+      "auditRows": []
+    },
+    "finalHosts": [
+      "hryiqiopkihkcrkdyllg.supabase.co"
+    ],
+    "resetRequest": {
+      "status": 429,
+      "url": "https://hryiqiopkihkcrkdyllg.supabase.co/auth/v1/recover?redirect_to=https%3A%2F%2Fzerotacky-git-v2-kvpollack-6654.vercel.app%2Fwebsite%2Faccount",
+      "body": {
+        "code": "over_email_send_rate_limit",
+        "message": "email rate limit exceeded"
+      },
+      "email": "astra-gate-20261017@zerotacky.com",
+      "inboxAvailable": false
+    },
+    "browserClosed": true
+  },
+  "sourceChecks": {
+    "reversePreviousTie": {
+      "overall": [
+        {
+          "id": "a2",
+          "points": 3.5
+        },
+        {
+          "id": "a1",
+          "points": 2.5
+        }
+      ],
+      "order": [
+        {
+          "id": "a2",
+          "points": 3.5
+        },
+        {
+          "id": "a1",
+          "points": 2.5
+        }
+      ]
+    },
+    "demosOff": {
+      "board": null,
+      "noBackendShows": 5,
+      "liveBackendShows": 0
+    },
+    "statuses": [
+      {
+        "competitionStatus": "upcoming",
+        "registrationStatus": "pending",
+        "waitlisted": false,
+        "badge": "Pending approval",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "upcoming",
+        "registrationStatus": "pending",
+        "waitlisted": true,
+        "badge": "Waitlisted",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "upcoming",
+        "registrationStatus": "accepted",
+        "waitlisted": false,
+        "badge": "Registered",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "upcoming",
+        "registrationStatus": "accepted",
+        "waitlisted": true,
+        "badge": "Registered",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "upcoming",
+        "registrationStatus": "declined",
+        "waitlisted": false,
+        "badge": "Declined",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "upcoming",
+        "registrationStatus": "declined",
+        "waitlisted": true,
+        "badge": "Declined",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "upcoming",
+        "registrationStatus": "withdrawn",
+        "waitlisted": false,
+        "badge": "Withdrawn",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "upcoming",
+        "registrationStatus": "withdrawn",
+        "waitlisted": true,
+        "badge": "Withdrawn",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "live",
+        "registrationStatus": "pending",
+        "waitlisted": false,
+        "badge": "Pending approval",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "live",
+        "registrationStatus": "pending",
+        "waitlisted": true,
+        "badge": "Waitlisted",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "live",
+        "registrationStatus": "accepted",
+        "waitlisted": false,
+        "badge": "Registered",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "live",
+        "registrationStatus": "accepted",
+        "waitlisted": true,
+        "badge": "Registered",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "live",
+        "registrationStatus": "declined",
+        "waitlisted": false,
+        "badge": "Declined",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "live",
+        "registrationStatus": "declined",
+        "waitlisted": true,
+        "badge": "Declined",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "live",
+        "registrationStatus": "withdrawn",
+        "waitlisted": false,
+        "badge": "Withdrawn",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "live",
+        "registrationStatus": "withdrawn",
+        "waitlisted": true,
+        "badge": "Withdrawn",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "completed",
+        "registrationStatus": "pending",
+        "waitlisted": false,
+        "badge": "Pending approval",
+        "bucket": "completed"
+      },
+      {
+        "competitionStatus": "completed",
+        "registrationStatus": "pending",
+        "waitlisted": true,
+        "badge": "Waitlisted",
+        "bucket": "completed"
+      },
+      {
+        "competitionStatus": "completed",
+        "registrationStatus": "accepted",
+        "waitlisted": false,
+        "badge": "Competed",
+        "bucket": "completed"
+      },
+      {
+        "competitionStatus": "completed",
+        "registrationStatus": "accepted",
+        "waitlisted": true,
+        "badge": "Competed",
+        "bucket": "completed"
+      },
+      {
+        "competitionStatus": "completed",
+        "registrationStatus": "declined",
+        "waitlisted": false,
+        "badge": "Declined",
+        "bucket": "completed"
+      },
+      {
+        "competitionStatus": "completed",
+        "registrationStatus": "declined",
+        "waitlisted": true,
+        "badge": "Declined",
+        "bucket": "completed"
+      },
+      {
+        "competitionStatus": "completed",
+        "registrationStatus": "withdrawn",
+        "waitlisted": false,
+        "badge": "Withdrawn",
+        "bucket": "completed"
+      },
+      {
+        "competitionStatus": "completed",
+        "registrationStatus": "withdrawn",
+        "waitlisted": true,
+        "badge": "Withdrawn",
+        "bucket": "completed"
+      },
+      {
+        "competitionStatus": "cancelled",
+        "registrationStatus": "pending",
+        "waitlisted": false,
+        "badge": "Pending approval",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "cancelled",
+        "registrationStatus": "pending",
+        "waitlisted": true,
+        "badge": "Waitlisted",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "cancelled",
+        "registrationStatus": "accepted",
+        "waitlisted": false,
+        "badge": "Registered",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "cancelled",
+        "registrationStatus": "accepted",
+        "waitlisted": true,
+        "badge": "Registered",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "cancelled",
+        "registrationStatus": "declined",
+        "waitlisted": false,
+        "badge": "Declined",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "cancelled",
+        "registrationStatus": "declined",
+        "waitlisted": true,
+        "badge": "Declined",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "cancelled",
+        "registrationStatus": "withdrawn",
+        "waitlisted": false,
+        "badge": "Withdrawn",
+        "bucket": "registered"
+      },
+      {
+        "competitionStatus": "cancelled",
+        "registrationStatus": "withdrawn",
+        "waitlisted": true,
+        "badge": "Withdrawn",
+        "bucket": "registered"
+      }
+    ],
+    "escapedName": "&lt;/title&gt;&lt;script&gt;alert(&quot;audit&quot;)&lt;/script&gt;&amp;&#39;"
+  },
+  "ogHttp": [
+    {
+      "path": "m",
+      "slug": "astra-release-20261019",
+      "slugLength": 22,
+      "status": 200,
+      "type": "image/png",
+      "bytes": 84960,
+      "png": true
+    },
+    {
+      "path": "m",
+      "slug": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "slugLength": 1600,
+      "status": 200,
+      "type": "image/png",
+      "bytes": 90553,
+      "png": true
+    },
+    {
+      "path": "m",
+      "slug": "日本語-🏋️-試験",
+      "slugLength": 9,
+      "status": 200,
+      "type": "image/png",
+      "bytes": 78618,
+      "png": true
+    },
+    {
+      "path": "m",
+      "slug": "<script>alert(1)</script>",
+      "slugLength": 25,
+      "status": 200,
+      "type": "image/png",
+      "bytes": 83407,
+      "png": true
+    },
+    {
+      "path": "m",
+      "slug": "100%",
+      "error": "HTTP Error 500: Internal Server Error"
+    },
+    {
+      "path": "shows",
+      "slug": "100%",
+      "error": "HTTP Error 500: Internal Server Error"
+    },
+    {
+      "path": "shows",
+      "slug": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "slugLength": 1600,
+      "status": 200,
+      "type": "image/png",
+      "bytes": 71544,
+      "png": true
+    },
+    {
+      "path": "shows",
+      "slug": "日本語-🏋️-試験",
+      "slugLength": 9,
+      "status": 200,
+      "type": "image/png",
+      "bytes": 71544,
+      "png": true
+    },
+    {
+      "path": "shows",
+      "slug": "<script>alert(1)</script>",
+      "slugLength": 25,
+      "status": 200,
+      "type": "image/png",
+      "bytes": 71544,
+      "png": true
+    }
+  ],
+  "ogSource": "[{\"fn\":\"Image\",\"slug\":\"100%\",\"error\":\"URI error\"},{\"fn\":\"Image\",\"slug\":\"%E0%A4%A\",\"error\":\"URI error\"},{\"fn\":\"Image\",\"slug\":\"100%\",\"error\":\"URI error\"},{\"fn\":\"Image\",\"slug\":\"%E0%A4%A\",\"error\":\"URI error\"}]\n",
+  "typecheck": {
+    "exitCode": 0,
+    "output": ""
+  },
+  "testOutput": "bun test v1.3.13 (bf2e2cec)\n\ntest\\auth.test.mjs:\n(pass) v2 auth: access token on the sync client > withAccessToken swaps the bearer; apikey stays anon; null drops back to anon [16.00ms]\n(pass) v2 auth: access token on the sync client > publishMeet sends p_key null for a signed-in publish\n(pass) v2 auth: access token on the sync client > publishMeet with an empty key still sends null (server decides by auth.uid)\n(pass) v2 auth: profile helpers > profileLabel prefers display name, then email local part\n(pass) v2 auth: profile helpers > roleBadges lists the flags that are on, in a fixed order\n\ntest\\client.test.mjs:\n(pass) client: headers and URLs > select builds GET with apikey + Bearer anon, trims trailing slash\n(pass) client: headers and URLs > accessToken replaces anon key in Bearer only\n(pass) client: headers and URLs > withJoinCode adds x-zt-join without mutating the original client\n(pass) client: headers and URLs > upsert: POST with on_conflict and merge-duplicates Prefer, body is the rows\n(pass) client: headers and URLs > insert returns representation\n(pass) client: headers and URLs > update is PATCH with query; del is DELETE\n(pass) client: headers and URLs > rpc posts args to /rest/v1/rpc/<fn> and parses the scalar reply\n(pass) client: responses and errors > 204 and empty bodies resolve to undefined\n(pass) client: responses and errors > non-2xx with PostgREST JSON error -> SyncError with status and message\n(pass) client: responses and errors > non-2xx with non-JSON body -> SyncError with status text\n(pass) client: responses and errors > createSyncClient throws without any fetch\n(pass) readSyncEnv > null when either var is missing; trims trailing slash when present\n(pass) meetApi.publishMeet > one RPC call with the publish key and every table, remote uuid stamped on every row [15.00ms]\n(pass) meetApi.publishMeet > bad key surfaces as SyncError 401/403 from the RPC\n(pass) meetApi.fetch* > fetchMeetBySlug returns a lossless state plus meta; null on miss\n(pass) meetApi.fetch* > fetchMeetByJoinCode goes through the RPC, upper-cases the code, returns join code + null on miss\n(pass) meetApi.pullChanges / push* > pullChanges: no since -> no server_at filter; latestIso = since when nothing new\n(pass) meetApi.pullChanges / push* > pullChanges: watermark is the server clock (gte), not the phones' updated_at\n(pass) meetApi.pullChanges / push* > pushResults/pushAthletes: no-op on empty, otherwise one upsert each\n(pass) meetApi.pullChanges / push* > setLiveState stamps updated_at and upserts on meet_id,station; getLiveState filters by meet\n\ntest\\controller.test.mjs:\n(pass) SyncController: publish + join > admin publishes, device joins by code and receives the same state; re-publish keeps the uuid and code\n(pass) SyncController: publish + join > leave then publish the same slug updates the same remote meet (uuid and join code kept)\n(pass) SyncController: publish + join > bad publish key -> error status, no link; unknown join code -> null\n(pass) SyncController: scores flow between phones > judge scores -> queued -> tick pushes -> admin and board pick it up; no echo re-push\n(pass) SyncController: scores flow between phones > last writer wins both directions: older offline flush loses to a newer server row\n(pass) SyncController: scores flow between phones > queue coalesces rapid edits to one row and survives a reload\n(pass) SyncController: scores flow between phones > athlete edits (scratch, rack pin) sync; local order kept, newcomers appended [16.00ms]\n(pass) SyncController: scores flow between phones > an empty athlete list from the server never wipes the local roster\n(pass) SyncController: scores flow between phones > local reset while linked rewinds the watermark and re-pulls server scores\n(pass) SyncController: scores flow between phones > live_state is queued per station with the newest row winning\n(pass) SyncController: scores flow between phones > switching to a different local meet drops the link and the queue\n(pass) SyncController: scores flow between phones > wrong join code on a write surfaces as error, not offline\n(pass) SyncController: config republish reaches judge phones > attach records meets.updated_at; a plain tick does not re-read config\n(pass) SyncController: config republish reaches judge phones > admin republishes a weight + new station -> judge tick applies divisions/events/meet, keeps local id and PIN\n(pass) SyncController: config republish reaches judge phones > admin phone never re-reads its own config, but tracks the stamp\n(pass) SyncController: resilience (verifier findings) > walk-on + score + rack pin flushes athletes before results (FK order), one tick\n(pass) SyncController: resilience (verifier findings) > a row the server rejects (4xx, not auth) is dropped, the rest flush, pull still runs\n(pass) SyncController: resilience (verifier findings) > bad join code (401) keeps the whole queue and still pulls\n(pass) SyncController: resilience (verifier findings) > tick requested while busy runs once more instead of being dropped\n(pass) SyncController: resilience (verifier findings) > admin re-publish pulls first, so a walk-on added on the floor survives [15.00ms]\n(pass) SyncController: resilience (verifier findings) > unlink during a tick never leaves status idle without a link\n(pass) SyncController: resilience (verifier findings) > athleteSig ignores key order\n(pass) controller helpers > mergeAthletes: unchanged returns same array; order kept; removed dropped\n(pass) controller helpers > getDeviceId is sticky; newMeetUuid is v4-shaped; readLink rejects junk\n(pass) controller helpers > isNetworkError: 5xx and thrown TypeError are network; 4xx is not\n(pass) SyncController sign-out (A4) > account publish tags the link auth=account; key publish tags auth=key; attach tags auth=join\n(pass) SyncController sign-out (A4) > keyless publish with no token is refused before any network call\n(pass) SyncController sign-out (A4) > sign-out pauses an account link: queue kept, nothing sent, status paused; sign-in resumes\n(pass) SyncController sign-out (A4) > key and join links are accountless by design: sign-out does not pause them\n(pass) SyncController sign-out (A4) > a publish in flight when the account signs out does not create the link (session generation)\n(pass) SyncController sign-out (A4) > a flush in flight across a sign-out leaves the queue alone and sends nothing more\n(pass) SyncController sign-out (A4) > legacy stored links without auth are treated as key (admin) or join (device)\n(pass) SyncController account binding + publish errors (gate round) > account publish records the user id on the link\n(pass) SyncController account binding + publish errors (gate round) > a different signed-in account does not resume the queue: still paused, nothing sent, clear message\n(pass) SyncController account binding + publish errors (gate round) > a link written before user ids existed (no userId) resumes for any token, as before\n(pass) SyncController account binding + publish errors (gate round) > a signed-in phone that also holds a key sends the key (claim path) and the link is a key link\n(pass) SyncController account binding + publish errors (gate round) > a refused publish stays visible in status.publishError across successful ticks; the next good publish clears it [266.00ms]\n(pass) SyncController account binding + publish errors (gate round) > checkAdminPin asks the server with the join code; null when not linked (R1: the hook then uses local state)\n(pass) SyncController account binding + publish errors (gate round) > publish aborts when the pre-publish flush/pull fails; nothing reaches the server, publishError says why\n(pass) SyncController account binding + publish errors (gate round) > R5: a locally removed athlete is not resurrected by a pull; the republish deletes it on the server\n(pass) SyncController account binding + publish errors (gate round) > R5: removing a scored athlete is refused by the server; publishError says so and the next pull restores the athlete [15.00ms]\n(pass) SyncController account binding + publish errors (gate round) > G2-H2: a walk-on fetched by the pre-publish pull is in the publish payload even before the host commits it [16.00ms]\n(pass) SyncController account binding + publish errors (gate round) > R1: the admin phone publishes without a PIN and the server keeps its own (null admin_pin never overwrites)\n\ntest\\engine.test.mjs:\n(pass) scoreSingleEvent: reps > N-down-to-1 points, ordered by reps desc\n(pass) scoreSingleEvent: reps > zero reps, DNS and missing result all score 0 points at place N\n(pass) scoreSingleEvent: reps > tie split pools and divides points, flags isTied\n(pass) scoreSingleEvent: reps > three-way tie rounds to 2 decimals\n(pass) scoreSingleEvent: reps > trump weight: 1 heavy rep beats any number of light reps\n(pass) scoreSingleEvent: reps > missing tier defaults to heavy\n(pass) scoreSingleEvent: time_or_distance > any finish beats any DNF; faster time wins; DNF by distance\n(pass) scoreSingleEvent: time_or_distance > time over cap is treated as DNF and ranked by distance\n(pass) scoreSingleEvent: time_or_distance > no time and no distance = zero\n(pass) scoreSingleEvent: time_or_distance > exact time ties split points\n(pass) scoreSingleEvent: time_or_implements > finished beats partial; partial by count then faster split\n(pass) scoreSingleEvent: time_or_implements > partial with no split shows count only and sorts after same count with split\n(pass) scoreSingleEvent: max_weight > rising bar uses heaviest good; pass/fail ignored; override wins\n(pass) calculateDivisionStandings > sums points across scored events, skips events with no results, counts wins\n(pass) calculateDivisionStandings > event_wins tiebreaker then finalEventPoints; final_event tiebreaker reverses priority\n(pass) calculateDivisionStandings > a first place with zero score is not an event win\n(pass) generateEventRunOrder > event 1 by lot number, withdrawn excluded\n(pass) generateEventRunOrder > later event: reverse overall points, lot number breaks ties\n(pass) generateEventRunOrder > later event: reverse previous event place carries previousEventDisplay\n(pass) generateEventRunOrder > event with no prior results falls back to lot order even when later in number\n(pass) generateEventRunOrder > 2-lane events pair consecutive athletes into heats\n(pass) generateEventRunOrder > odd roster leaves lane 1 solo in final heat\n(pass) generateEventRunOrder > height callout: personal pin > division default > Not Set > undefined when disabled\n(pass) calculatePlateLoading > 0 points: fixed implement, no plates\n(pass) calculatePlateLoading > 1 point: loading pin, tare deducted, no collars\n(pass) calculatePlateLoading > 2 points: barbell with collars, greedy stack per sleeve\n(pass) calculatePlateLoading > 4 points per_hand: farmers, target is per hand, total doubles\n(pass) calculatePlateLoading > 4 points total: yoke, uneven remainder warns about center plate\n(pass) calculatePlateLoading > limited inventory leaves unloadable remainder with warning\n(pass) calculatePlateLoading > target lighter than tare warns and loads nothing\n(pass) calculatePlateLoading > override and light tier select the target\n(pass) buildTransitionDeltas > parseMeasure / formatSigned\n(pass) buildTransitionDeltas > event changeover row\n(pass) buildTransitionDeltas > same event, weight delta per side\n(pass) buildTransitionDeltas > numeric stat deltas from pitCrewCallout\n(pass) buildTransitionDeltas > headline-only callouts produce swap/no-change row\n\ntest\\export.test.mjs:\n(pass) export/import > JSON export round-trips through parseImportedState\n(pass) export/import > bare localStorage state is accepted too\n(pass) export/import > rejects garbage and dangling references with readable errors\n(pass) export/import > CSV: header per event, one row per athlete, scores only for scored events, quoting\n(pass) export/import > standings text lists divisions in order with places and points\n(pass) export/import > backup filename is slug + timestamp\n\ntest\\howItWorks.test.mjs:\n(pass) how-it-works copy > three tracks, each with 5-6 numbered steps, and a FAQ\n(pass) how-it-works copy > every link points at a route that exists\n(pass) how-it-works copy > copy carries no em-dashes and no real-meet names\n\ntest\\landing.test.mjs:\n(pass) root splash: readResume > empty phone -> nothing to resume\n(pass) root splash: readResume > scorer opened once, default demo state, no athletes -> nothing\n(pass) root splash: readResume > demo roster without a link -> nothing (demo data is not the promoter's work)\n(pass) root splash: readResume > joined judge phone -> Resume with meet name and role\n(pass) root splash: readResume > published admin phone (no role key) -> Promoter\n(pass) root splash: readResume > offline promoter building a real meet (athletes, no link) -> Offline meet\n(pass) root splash: readResume > corrupt storage -> null, never throws\n(pass) root splash: readResume > link without a meet name -> Untitled meet\n\ntest\\layout.test.mjs:\n(pass) layout mode resolution > viewport decides when nothing else is set\n(pass) layout mode resolution > saved toggle beats the viewport\n(pass) layout mode resolution > ?layout= in the URL beats everything\n(pass) layout mode resolution > junk values fall through\n(pass) layout mode resolution > otherLayout flips\n\ntest\\legal.test.mjs:\n(pass) legal markdown parser > headings, paragraphs, lists, quotes, tables, rules and inline marks\n(pass) legal markdown parser > two trailing spaces are a hard break; a plain newline is a space\n(pass) legal markdown parser > placeholders and emails survive as plain text\n(pass) legal markdown parser > each legal document parses to one H1 and the sections the product relies on\n\ntest\\meetBuilder.test.mjs:\n(pass) slugify & createBlankMeet > slugify produces url-safe lowercase slugs and falls back to meet\n(pass) slugify & createBlankMeet > createBlankMeet initializes two stations, empty arrays, isDemo false, adminPin 1050, and all plates\n(pass) normalizeState > hydrates today Strongfest getInitialSeedState() JSON with isDemo/stations deleted and sets defaults\n(pass) normalizeState > upgrades legacy \"Stn n\" station labels to \"Station n\"; custom labels untouched\n(pass) normalizeState > hydrates a legacy custom save without presetId as isDemo false and fills implementCount on stone events\n(pass) normalizeState > never throws on null or garbage input and falls back to normalized seed state\n(pass) stations CRUD > addStation, updateStation, and removeStation (enforcing min 1 station)\n(pass) divisions CRUD & reorder > addDivision and updateDivision are immutable and assign sortOrder\n(pass) divisions CRUD & reorder > reorderDivisions re-sorts and renumbers sortOrder 1..n\n(pass) divisions CRUD & reorder > removeDivision removes its athletes, their results, and division keys in every event map\n(pass) events CRUD & reorder > addEvent and updateEvent preserve preset pitCrewCallout stats while updating headline\n(pass) events CRUD & reorder > reorderEvents renumbers eventNumber 1..n\n(pass) events CRUD & reorder > removeEvent removes its results, cleans athletes rackHeights[eventId], and renumbers\n(pass) athletes CRUD, moveAthlete & shuffleLots > addAthlete assigns incrementing lotNumbers per division and bulkAddAthletes adds multiple lines [16.00ms]\n(pass) athletes CRUD, moveAthlete & shuffleLots > updateAthlete, moveAthlete (assigns next lot in target division), and removeAthlete (removes results)\n(pass) athletes CRUD, moveAthlete & shuffleLots > shuffleLots is deterministic with injected rng and only shuffles target division\n(pass) validateMeet (all problem types) > both demo presets validate as ok: true with zero problems\n(pass) validateMeet (all problem types) > flags empty meet (no divisions, no events, no athletes)\n(pass) validateMeet (all problem types) > flags division with no athletes (\"Group 3 has no athletes\")\n(pass) validateMeet (all problem types) > flags missing division weight on event (\"Ev 2 has no weight for Group 1\")\n(pass) validateMeet (all problem types) > updateEvent lets a patch clear a division callout but keeps stats for divisions it retains\n(pass) validateMeet (all problem types) > flags duplicate lot numbers within a division (\"Two athletes in Group 2 share lot 3\")\n(pass) validateMeet (all problem types) > flags rising bar event with no bar weights (\"Event 4 is rising bar but has no bar weights\")\n(pass) validateMeet (all problem types) > flags division assigned to a station that was removed\n(pass) validateMeet (all problem types) > flags trump weight event missing divisionLightWeights\n\ntest\\promoter.test.mjs:\n(pass) fixtureApi: session & seeded meets > getCurrentUser returns signed-in demo promoter by default and null when signedOut is set\n(pass) fixtureApi: session & seeded meets > updateProfile updates displayName and role flags\n(pass) fixtureApi: session & seeded meets > seeded meets: upcoming has athleteCount 2, registrationCount 2 (accepted), pendingCount 5\n(pass) fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, archiveMeet > createMeet validates inputs, rejects duplicate slugs, and initializes emptyListing with zero counts\n(pass) fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, archiveMeet > saveMeetState persists divisions while keeping the stored results array byte-for-byte\n(pass) fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, archiveMeet > H3: saveMeetState refuses a state that orphans a result (athlete or event), roster unchanged\n(pass) fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, archiveMeet > L1: saveMeetState refuses a meet date earlier than the registration deadline\n(pass) fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, archiveMeet > updateListing validates deadline <= meetDate, integer athleteCap, promoterContact shape\n(pass) fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, archiveMeet > rotateJoinCode changes the stored 6-char code (re-read) and archiveMeet sets completed\n(pass) fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, archiveMeet > deleteMeet (010): name required when the meet has data, refused for live/completed, cascades registrations\n(pass) fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers > accept creates exactly one roster row linked by athleteId; decline removes exactly that id and updates counts\n(pass) fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers > H2: two registrants with the same name in the same division become two athletes; declining a pending same-name request removes nothing\n(pass) fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers > M6: accept fails when the division no longer exists; roster unchanged\n(pass) fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers > declining or withdrawing an accepted request whose athlete has results is refused; roster and status unchanged\n(pass) fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers > isMeetStateDirty detects config/roster edits and ignores result differences\n(pass) fixtureApi: gate round (cap on roster save, accepted division fixed, listing revision) > C4 / G2-M1: a save that adds athletes beyond the cap is refused; an over-cap roster still saves; the cap may drop below the roster\n(pass) fixtureApi: gate round (cap on roster save, accepted division fixed, listing revision) > M9 / G2-M1: moving an accepted athlete to another division saves; the registration keeps the submitted division as evidence\n(pass) fixtureApi: gate round (cap on roster save, accepted division fixed, listing revision) > C3 (listing): a stale tab cannot flip registration back open; the revision advances on every listing save\n(pass) fixtureApi: venue shape > validateVenueShape: only the six string keys, with limits\n(pass) fixtureApi: venue shape > updateListing refuses a malformed venue and a listed venue without country; accepts the proper shape\n(pass) athlete My Meets: followShow, listMyAthleteMeets, bucketAthleteMeets, athleteMeetBadge > followShow adds and removes a listed meet; unlisted slug and signed-out are refused\n(pass) athlete My Meets: followShow, listMyAthleteMeets, bucketAthleteMeets, athleteMeetBadge > bucketAthleteMeets splits follow / registered / completed and sorts by date\n\ntest\\register.test.mjs:\n(pass) register: public meet shape (H1) > getPublicMeetBySlug returns the allowlisted shape and no owner data\n(pass) register: public meet shape (H1) > getPublicMeetBySlug returns data null, error null for an unknown slug; works without a session\n(pass) register: public meet shape (H1) > bridged /shows fixture carries its own promoter name and contact\n(pass) register: pure validation helpers > isRegistrationOpen allows open and waitlist only\n(pass) register: pure validation helpers > validateRegistrationInput checks name, email, emergency contact (name + 7 digits), division, waiver\n(pass) register: pure validation helpers > ageOnDate / parseIsoDate / ageReferenceDate (009)\n(pass) register: pure validation helpers > validateRegistrationInput rejects closed meets\n(pass) register: pure validation helpers > decideRegistrationOutcome: closed/not_provided error; open past deadline error; open at cap error; waitlist always waitlist\n(pass) register: submitRegistration into fixtureApi (M10, M19) > submission creates a pending request with emergencyContact and athleteId null; counts move\n(pass) register: submitRegistration into fixtureApi (M10, M19) > rejects duplicate active/pending registration for same email and division\n(pass) register: submitRegistration into fixtureApi (M10, M19) > M10: closed meet -> error; open past deadline -> error; open at cap -> error; nothing stored\n(pass) register: submitRegistration into fixtureApi (M10, M19) > M10: waitlist status takes the entry past deadline and at cap, returns status waitlist, stores waitlisted=true\n(pass) register: submitRegistration into fixtureApi (M10, M19) > bridges /shows fixtures: garden-state-winter-wreckage-2026 (waitlist) accepts onto the waitlist\n(pass) register: submitRegistration into fixtureApi (M10, M19) > unknown slug -> error, nothing stored\n\ntest\\shows.data.test.mjs:\n(pass) website data: listPublicShows & getPublicShowBySlug > fallback to fixture shows when backend env is absent\n(pass) website data: listPublicShows & getPublicShowBySlug > with a live backend returns only listed non-demo meets and works with filterPublicShows and standingsAdapter\n(pass) website data: listPublicShows & getPublicShowBySlug > appends demo fixtures with isDemoFixture: true by default (NEXT_PUBLIC_ZT_DEMO_SHOWS unset) and when set to \"1\"\n\ntest\\siteUrl.test.mjs:\n(pass) siteUrl (metadataBase for link previews) > explicit NEXT_PUBLIC_SITE_URL wins\n(pass) siteUrl (metadataBase for link previews) > production on Vercel is www.zerotacky.com, previews use VERCEL_URL, local falls back to :3079\n\ntest\\supabaseApi.test.mjs:\n(pass) supabaseApi: list/detail mapping & the three counts > listMyMeets and getMeet map rows and split athleteCount, pendingCount, and registrationCount\n(pass) supabaseApi: saveMeetState RPC pass-through & H3 orphan guard > saveMeetState calls zt_save_meet_config, preserves results, and surfaces H3 errors when removing a scored athlete or event\n(pass) supabaseApi: saveMeetState RPC pass-through & H3 orphan guard > C3: a save naming a stale revision is refused; the current revision saves; M9: a registration-linked athlete cannot be removed by a roster save\n(pass) supabaseApi: saveMeetState RPC pass-through & H3 orphan guard > gate C3: updateListing passes expectedUpdatedAt to zt_update_listing; a stale listing save is refused; a fresh one lands\n(pass) supabaseApi: saveMeetState RPC pass-through & H3 orphan guard > gate C2: a write that lands but cannot be re-read returns committed: true with a reload message, never a bare failure\n(pass) supabaseApi: saveMeetState RPC pass-through & H3 orphan guard > R3: a child read that throws after the write landed still reports committed: true (createMeet and saveMeetState)\n(pass) supabaseApi: accept/decline mapping of athleteId > accept creates reg-ath-<left(id,8)> and updates counts; decline removes it; scored athlete decline is refused\n(pass) supabaseApi: getPublicMeetBySlug H1 secret check & submitRegistration > getPublicMeetBySlug output contains none of joinCode, adminPin, emergencyContact, ownerId, or results\n(pass) supabaseApi: every method returns { data: null, error } when db throws > never throws an unhandled rejection on database failure [16.00ms]\n(pass) supabaseApi: every method returns { data: null, error } when db throws > getPromoterApi forwards to the lazily loaded fixture when the Supabase client is null (H1)\n(pass) supabaseApi: deleteMeet (010) > a meet with data needs the exact name; then the meet, its children and registrations are gone\n(pass) supabaseApi: deleteMeet (010) > live and completed meets are refused; an empty draft deletes without a name; signed out is refused\n\ntest\\sync.test.mjs:\n(pass) mapping round-trips > strongfest-2026: state -> rows -> state is lossless\n(pass) mapping round-trips > york-iron-2026: state -> rows -> state is lossless\n(pass) mapping round-trips > event config holds every non-column field and nothing else\n(pass) mapping round-trips > result payload excludes ids/locked/updatedAt and row carries ISO time + device\n(pass) mapping round-trips > rowToMeet sorts plates descending and coerces numerics\n(pass) mergeResults (last writer wins) > newer incoming replaces, older incoming ignored, unknown added; unchanged returns same array\n(pass) queue > enqueue coalesces same table+id, keeps order, respects limit [31.00ms]\n(pass) queue > groupByTable and removeFlushed\n(pass) queue > readQueue tolerates garbage; writeQueue swallows errors\n(pass) remote meet id override > stateToRows stamps every row with the remote uuid while local meet.id stays\n\ntest\\themes.test.mjs:\n(pass) themes: constants and globals.css agree > 13 themes, unique ids, two light ones\n(pass) themes: constants and globals.css agree > every theme id has a CSS block with the core variables; light themes also restate text colours and color-scheme\n(pass) themes: constants and globals.css agree > no CSS theme block without a THEMES entry\n\ntest\\waiver.test.mjs:\n(pass) waiver version > sha256(legal/WAIVER.md)[:12] is listed as an approved version in supabase/*.sql\n(pass) waiver version > the server-only helper computes the same prefix the migration lists\n\ntest\\website.test.mjs:\n(pass) website filters: shows & gyms > filters shows by competitionStatus, state, implementTag, and inclusive division query\n(pass) website filters: shows & gyms > returns empty array when no show matches and recovers all on filter reset\n(pass) website filters: shows & gyms > filters gyms by implement tag and day-pass availability\n(pass) website lifecycle & podium certification rules > only completed + final results can render an official finalized podium\n(pass) website lifecycle & podium certification rules > standingsAdapter preserves tied 1st-place overall podiums (#1, #1, #3) and <3 finisher divisions\n(pass) website lifecycle & podium certification rules > provisional completed show marks isOfficialFinal false even when results exist\n\n 229 pass\n 0 fail\n 201 expect() calls\nRan 229 tests across 19 files. [713.00ms]\n"
+}

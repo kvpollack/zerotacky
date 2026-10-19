@@ -179,6 +179,7 @@ export interface MeetPreset {
   id: string;
   label: string;
   sublabel: string;
+  showSlug?: string; // set when the preset is also a public demo show at /shows/<slug>
 }
 
 export interface AppState {
