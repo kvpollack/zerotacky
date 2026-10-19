@@ -45,11 +45,6 @@ export default function RootLanding() {
         </a>
         <p className="text-[11px] text-zt-muted text-center -mt-2">Type the promoter's 6-character code.</p>
 
-        {!resume && (
-          <a href="/scorer" className="block text-center text-xs font-bold text-zt-muted py-2">
-            Promoter? Open the meet-day scorer
-          </a>
-        )}
       </div>
     </div>
   );
