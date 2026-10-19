@@ -7,7 +7,14 @@ import { getDemoScoreboardState } from '@/lib/website/data';
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const demo = getDemoScoreboardState(slug);
-  return { title: demo ? `${demo.name} — Live Scoreboard — ZeroTacky` : 'Live Scoreboard — ZeroTacky' };
+  const title = demo ? `${demo.name} — Live Scoreboard — ZeroTacky` : 'Live Scoreboard — ZeroTacky';
+  const description = 'Standings, event results and who is up next, updating as judges score.';
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: 'website', siteName: 'ZeroTacky', url: `/m/${slug}` },
+    twitter: { card: 'summary_large_image', title, description },
+  };
 }
 
 export default async function ScoreboardPage({ params }: { params: Promise<{ slug: string }> }) {

@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, Check, Copy, ExternalLink, KeyRound, RefreshCw, Trash2, Tv } from 'lucide-react';
 import { copyText } from '@/lib/download';
 import type { DeletedMeet, PromoterMeetSummary } from '@/lib/promoter/contract';
 import { isLiveBackend } from '@/lib/promoter/usePromoterApi';
+import MeetDayQrCards from './MeetDayQrCards';
 
 interface MeetDaySectionProps {
   summary: PromoterMeetSummary;
@@ -58,6 +59,11 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
     ? `${origin}/join?code=${summary.joinCode}`
     : `${origin}/join`;
   const tvUrl = `${origin}/m/${summary.slug}?layout=tv`;
+  const boardUrl = `${origin}/m/${summary.slug}`;
+  const qrItems = useMemo(() => [
+    { key: 'join', title: 'Judges & pit crew: join this meet', hint: `Scan, then pick your role. Code ${summary.joinCode || 'not set'}.`, url: joinUrl },
+    { key: 'board', title: 'Live scoreboard', hint: 'Scan to follow the standings on your phone.', url: boardUrl },
+  ], [joinUrl, boardUrl, summary.joinCode]);
 
   const handleCopy = async (key: string, value: string) => {
     const ok = await copyText(value);
@@ -110,7 +116,7 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
       <div className="border-b border-zt-border pb-3">
         <h2 className="text-sm font-black uppercase tracking-wider text-zt-primary flex items-center gap-2">
           <Tv className="w-4 h-4" aria-hidden="true" />
-          <span>7. Meet Day Codes &amp; Screen Links</span>
+          <span>8. Meet Day Codes &amp; Screen Links</span>
         </h2>
         <p className="text-xs text-zt-muted mt-0.5">
           {isLiveBackend()
@@ -178,6 +184,9 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
           </button>
         </div>
       </div>
+
+      {/* QR codes (Kurt 10/19): join link and live board, printable */}
+      <MeetDayQrCards meetName={summary.name} items={qrItems} />
 
       {/* Copyable Route Fields */}
       <div className="space-y-3">
