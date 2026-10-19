@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import AthleteMeetsSection from './AthleteMeetsSection';
 import {
   AlertTriangle,
   Calendar,
@@ -172,7 +173,7 @@ export default function PromoterDashboardClient() {
             href="/website/account"
             className="px-5 py-3 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase tracking-wider shadow"
           >
-            Go to Account &amp; Sign-In (/website/account)
+            Go to Account &amp; Sign-In
           </Link>
           {!isLiveBackend() && (
             <a
@@ -189,13 +190,15 @@ export default function PromoterDashboardClient() {
 
   return (
     <div className="space-y-6">
+      <AthleteMeetsSection />
+
       {/* Header Bar */}
       <section className="bg-zt-surface border border-zt-border rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-zt-primary flex items-center gap-1.5">
               <Trophy className="w-3.5 h-3.5" aria-hidden="true" />
-              Promoter Dashboard
+              My Meets: Promoting
             </span>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-text-2">
               Signed in as {user.displayName} ({user.email})

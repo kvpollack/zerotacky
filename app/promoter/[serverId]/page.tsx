@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: PromoterMeetPageProps): Promi
 export default async function PromoterMeetDetailPage({ params }: PromoterMeetPageProps) {
   const { serverId } = await params;
   return (
-    <WebsiteShell>
+    <WebsiteShell activeNav="promoter">
       <PromoterMeetDetailClient serverId={serverId} />
     </WebsiteShell>
   );

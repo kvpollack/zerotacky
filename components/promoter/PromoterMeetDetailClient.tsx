@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -66,6 +67,7 @@ interface PromoterMeetDetailClientProps {
 
 export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetailClientProps) {
   const api = usePromoterApi();
+  const router = useRouter();
 
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<PromoterUser | null>(null);
@@ -293,6 +295,15 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     return { error: null };
   };
 
+  const handleDeleteMeet = async (confirmName: string | null) => {
+    const res = await api.deleteMeet(serverId, confirmName ? { confirmName } : undefined);
+    if (res.error || !res.data) {
+      return { error: res.error ?? 'Could not delete the meet.', deleted: null };
+    }
+    router.push('/promoter');
+    return { error: null, deleted: res.data };
+  };
+
   const handleRotateJoinCode = async () => {
     const res = await api.rotateJoinCode(serverId);
     if (res.error || !res.data) {
@@ -344,13 +355,13 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
         <Lock className="w-8 h-8 text-zt-primary mx-auto" aria-hidden="true" />
         <h1 className="text-xl font-black text-zt-text">Sign-in is required</h1>
         <p className="text-xs text-zt-text-2">
-          Sign in at <code className="font-mono">/website/account</code> to manage this meet.
+          Sign in on your <Link href="/website/account" className="text-zt-primary font-bold underline">account page</Link> to manage this meet.
         </p>
         <Link
           href="/website/account"
           className="inline-block px-5 py-2.5 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase"
         >
-          Go to Account (/website/account)
+          Go to Account
         </Link>
       </div>
     );
@@ -421,7 +432,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
           className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase text-zt-muted hover:text-zt-text"
         >
           <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
-          Back to My Meets (/promoter)
+          Back to My Meets
         </Link>
 
         <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -429,7 +440,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             href={`/register/${summary.slug}`}
             className="px-3 py-1.5 rounded-xl bg-zt-inset border border-zt-border-strong text-zt-text-2 hover:text-zt-text font-extrabold uppercase"
           >
-            Public Registration Page (/register/{summary.slug})
+            Public Registration Page
           </Link>
         </div>
       </div>
@@ -590,6 +601,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             addStation={addStation}
             updateStation={updateStation}
             removeStation={removeStation}
+            allowDemoToggle={false}
           />
         </div>
 
@@ -657,7 +669,9 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
         <div role="tabpanel" id="panel-meetday" aria-labelledby="tab-meetday" hidden={activeTab !== 'meetday'}>
           <MeetDaySection
             summary={summary}
+            resultCount={workingState.results.length}
             onRotateCode={handleRotateJoinCode}
+            onDelete={handleDeleteMeet}
           />
         </div>
       </div>

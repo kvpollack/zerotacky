@@ -17,7 +17,8 @@ export default function BottomNav({
           <div className="max-w-xl mx-auto flex justify-around">
             {[
               { id: 'judge', label: 'Judge Pad', icon: ClipboardCheck, roles: ['admin', 'judge'] },
-              { id: 'pitcrew', label: 'Pit Crew', icon: Dumbbell, roles: ['admin', 'pitcrew', 'judge'] },
+              // 10/19 (Kurt): spectators see the floor view too (read-only in PitCrew), labelled for them
+              { id: 'pitcrew', label: roleLock === 'spectator' ? 'Next Up' : 'Pit Crew', icon: Dumbbell, roles: ['admin', 'pitcrew', 'judge', 'spectator'] },
               {
                 id: 'standings',
                 label: 'Standings',

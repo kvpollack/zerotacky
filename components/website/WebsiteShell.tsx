@@ -3,10 +3,11 @@ import Link from 'next/link';
 import WebsiteThemeFrame from './WebsiteThemeFrame';
 import WebsiteThemeControls from './WebsiteThemeControls';
 import WebsiteAccountChip from './WebsiteAccountChip';
+import PromoterNavLink from './PromoterNavLink';
 import { readSyncEnv } from '@/lib/sync/client';
 
 interface WebsiteShellProps {
-  activeNav?: 'home' | 'shows' | 'gyms' | 'account';
+  activeNav?: 'home' | 'shows' | 'join' | 'gyms' | 'account' | 'promoter';
   children: React.ReactNode;
 }
 
@@ -17,37 +18,13 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
   const navItems: Array<{ id: WebsiteShellProps['activeNav']; label: string; href: string }> = [
     { id: 'home', label: 'Overview', href: '/website' },
     { id: 'shows', label: 'Find a Show', href: '/shows' },
+    { id: 'join', label: 'Join a Meet', href: '/join' },
     { id: 'gyms', label: 'Strongman Gyms', href: '/gyms' },
     { id: 'account', label: 'Account', href: '/website/account' },
   ];
 
   return (
     <WebsiteThemeFrame>
-      {/* Top Preview Notice Bar */}
-      <div className="bg-zt-surface-2 border-b border-zt-border px-4 py-2 text-xs">
-        <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            {!live && (
-              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
-                Website Skeleton Preview
-              </span>
-            )}
-            <span className="text-zt-text-2 font-semibold">
-              Running a meet today? Scoring is at <code className="font-mono text-zt-text">/scorer</code>. Volunteers join at{' '}
-              <code className="font-mono text-zt-text">/join</code>.
-            </span>
-          </div>
-          <div className="flex items-center gap-3 font-bold">
-            <Link href="/scorer" className="text-zt-primary hover:underline">
-              Open Meet-Day App
-            </Link>
-            <Link href="/join" className="text-zt-text-2 hover:text-zt-text hover:underline">
-              Volunteer Join (/join)
-            </Link>
-          </div>
-        </div>
-      </div>
-
       {/* Primary Website Header */}
       <header className="bg-zt-surface/95 backdrop-blur border-b border-zt-border sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
@@ -62,6 +39,11 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
             <span className="hidden sm:inline-block text-xs font-bold text-zt-muted">
               Strongman Shows, Live Scoring &amp; Equipment Directory
             </span>
+            {!live && (
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                Website Skeleton Preview
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
@@ -83,6 +65,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
                 </Link>
               );
             })}
+            <PromoterNavLink active={activeNav === 'promoter'} />
           </nav>
           <WebsiteAccountChip />
           <WebsiteThemeControls />

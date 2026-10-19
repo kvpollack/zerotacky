@@ -331,6 +331,34 @@ function createFakePromoterDb(opts = {}) {
         return { joinCode: nextCode };
       }
 
+      if (fn === 'zt_delete_meet') {
+        // mirrors supabase/010_meet_lifecycle.sql: owner only, not live/completed, name typed when data exists, cascades
+        const idx = meets.findIndex((m) => m.id === params.p_meet_id);
+        if (idx < 0) throw new Error('meet not found');
+        const m = meets[idx];
+        if (m.owner_id !== user.id) throw new Error('only the promoter who owns this meet can delete it');
+        if (m.competition_status === 'live' || m.competition_status === 'completed') {
+          throw new Error(`a ${m.competition_status} meet cannot be deleted. Set it to cancelled on the Listing tab first, or leave it as a record.`);
+        }
+        const counts = {
+          divisions: divisions.filter((d) => d.meet_id === m.id).length,
+          events: events.filter((e) => e.meet_id === m.id).length,
+          athletes: athletes.filter((a) => a.meet_id === m.id).length,
+          results: results.filter((r) => r.meet_id === m.id).length,
+          registrations: registrations.filter((r) => r.meet_id === m.id).length,
+        };
+        const total = Object.values(counts).reduce((a, b) => a + b, 0);
+        const typed = (params.p_confirm_name ?? '').trim().toLowerCase();
+        if (total > 0 && typed !== m.name.trim().toLowerCase()) {
+          throw new Error('this meet has data associated with it. Type the meet name exactly to confirm deletion.');
+        }
+        meets.splice(idx, 1);
+        for (const arr of [divisions, events, athletes, results, registrations]) {
+          for (let i = arr.length - 1; i >= 0; i--) if (arr[i].meet_id === m.id) arr.splice(i, 1);
+        }
+        return { id: m.id, name: m.name, deleted: counts };
+      }
+
       if (fn === 'zt_set_registration_status') {
         const reg = registrations.find((r) => r.id === params.p_id);
         if (!reg) throw new Error(`No registration found with id "${params.p_id}".`);
@@ -817,6 +845,9 @@ describe('supabaseApi: every method returns { data: null, error } when db throws
       api.updateListing('srv-meet-upcoming-1', { federation: 'USS' }),
       api.rotateJoinCode('srv-meet-upcoming-1'),
       api.archiveMeet('srv-meet-upcoming-1'),
+      api.deleteMeet('srv-meet-upcoming-1'),
+      api.listMyAthleteMeets(),
+      api.followShow('iron-furnace-classic-2026', true),
       api.listRegistrations('srv-meet-upcoming-1'),
       api.setRegistrationStatus('reg-ifc-3', 'accepted'),
       api.getPublicMeetBySlug('iron-furnace-classic-2026'),
@@ -865,5 +896,62 @@ describe('supabaseApi: every method returns { data: null, error } when db throws
       if (savedKey === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = savedKey;
     }
+  });
+});
+
+describe('supabaseApi: deleteMeet (010)', () => {
+  test('a meet with data needs the exact name; then the meet, its children and registrations are gone', async () => {
+    const fakeDb = createFakePromoterDb();
+    const api = SA.createSupabasePromoterApi(fakeDb);
+    const before = (await api.getMeet('srv-meet-upcoming-1')).data;
+    expect(before.summary.divisionCount).toBeGreaterThan(0);
+
+    const noName = await api.deleteMeet('srv-meet-upcoming-1');
+    expect(noName.data).toBeNull();
+    expect(noName.error).toContain('Type the meet name exactly');
+
+    const wrongName = await api.deleteMeet('srv-meet-upcoming-1', { confirmName: 'Some Other Meet' });
+    expect(wrongName.data).toBeNull();
+
+    const ok = await api.deleteMeet('srv-meet-upcoming-1', { confirmName: `  ${before.summary.name.toUpperCase()} ` });
+    expect(ok.error).toBeNull();
+    expect(ok.data.id).toBe('srv-meet-upcoming-1');
+    expect(ok.data.deleted.divisions).toBe(before.summary.divisionCount);
+    expect(ok.data.deleted.athletes).toBe(before.summary.athleteCount);
+    expect(ok.data.deleted.results).toBe(before.state.results.length);
+    expect(ok.data.deleted.registrations).toBeGreaterThan(0);
+
+    const after = await api.getMeet('srv-meet-upcoming-1');
+    expect(after.data).toBeNull();
+    expect((await api.listMyMeets()).data.some((m) => m.serverId === 'srv-meet-upcoming-1')).toBe(false);
+    const regs = await api.listRegistrations('srv-meet-upcoming-1');
+    expect(regs.data === null || regs.data.length === 0).toBe(true);
+    const rpc = fakeDb.rpcCalls.filter((c) => c.fn === 'zt_delete_meet');
+    expect(rpc.length).toBe(3);
+    expect(rpc[0].params.p_confirm_name).toBeNull();
+    expect(rpc[2].params.p_confirm_name).toBe(before.summary.name.toUpperCase());
+  });
+
+  test('live and completed meets are refused; an empty draft deletes without a name; signed out is refused', async () => {
+    const fakeDb = createFakePromoterDb();
+    const api = SA.createSupabasePromoterApi(fakeDb);
+    const live = await api.deleteMeet('srv-meet-live-2', { confirmName: 'anything' });
+    expect(live.data).toBeNull();
+    expect(live.error).toContain('live meet cannot be deleted');
+    const done = await api.deleteMeet('srv-meet-completed-3', { confirmName: 'anything' });
+    expect(done.data).toBeNull();
+    expect(done.error).toContain('completed meet cannot be deleted');
+
+    const created = await api.createMeet({ name: 'Scratch Draft', date: '2027-01-09' });
+    expect(created.error).toBeNull();
+    const draft = await api.deleteMeet(created.data.summary.serverId);
+    expect(draft.error).toBeNull();
+    expect(Object.values(draft.data.deleted).every((n) => n === 0)).toBe(true);
+    expect((await api.getMeet(created.data.summary.serverId)).data).toBeNull();
+
+    const signedOutDb = createFakePromoterDb({ signedOut: true });
+    const out = await SA.createSupabasePromoterApi(signedOutDb).deleteMeet('srv-meet-upcoming-1');
+    expect(out.error).toBe('Sign in required to delete a meet.');
+    expect(signedOutDb.rpcCalls.filter((c) => c.fn === 'zt_delete_meet').length).toBe(0);
   });
 });

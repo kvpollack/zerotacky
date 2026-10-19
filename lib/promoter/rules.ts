@@ -4,6 +4,7 @@
 
 import type {
   MeetListing,
+  MyAthleteMeet,
   PromoterMeetDetail,
   PublicRegistrationMeet,
   RegistrationGuardian,
@@ -323,5 +324,35 @@ export function toPublicRegistrationMeet(
     })),
     acceptedCount: state.athletes.length,
   };
+}
+
+// ---------- My Meets, athlete side (010) ----------
+
+export interface AthleteMeetBuckets {
+  following: MyAthleteMeet[];   // bookmarked shows, any status
+  registered: MyAthleteMeet[];  // registration on a meet that has not completed (pending, accepted, waitlisted, declined, withdrawn all shown with their badge)
+  completed: MyAthleteMeet[];   // registration on a completed meet (results live on the show page)
+}
+
+// Order inside each bucket: soonest upcoming first for following/registered, most recent first for completed.
+export function bucketAthleteMeets(rows: MyAthleteMeet[]): AthleteMeetBuckets {
+  const byDateAsc = (a: MyAthleteMeet, b: MyAthleteMeet) => (a.date || '9999').localeCompare(b.date || '9999');
+  const byDateDesc = (a: MyAthleteMeet, b: MyAthleteMeet) => (b.date || '').localeCompare(a.date || '');
+  const following = rows.filter((r) => r.kind === 'follow').sort(byDateAsc);
+  const regs = rows.filter((r) => r.kind === 'registration');
+  const completed = regs.filter((r) => r.competitionStatus === 'completed').sort(byDateDesc);
+  const registered = regs.filter((r) => r.competitionStatus !== 'completed').sort(byDateAsc);
+  return { following, registered, completed };
+}
+
+export function athleteMeetBadge(row: MyAthleteMeet): string {
+  if (row.kind === 'follow') return 'Following';
+  switch (row.registrationStatus) {
+    case 'accepted': return row.competitionStatus === 'completed' ? 'Competed' : 'Registered';
+    case 'pending': return row.waitlisted ? 'Waitlisted' : 'Pending approval';
+    case 'declined': return 'Declined';
+    case 'withdrawn': return 'Withdrawn';
+    default: return 'Registered';
+  }
 }
 

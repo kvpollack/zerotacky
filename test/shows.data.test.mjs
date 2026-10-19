@@ -119,7 +119,7 @@ describe('website data: listPublicShows & getPublicShowBySlug', () => {
 
       const detailRes = await D.getPublicShowBySlug('strongfest-2026');
       expect(detailRes.source).toBe('demo');
-      expect(detailRes.data.name).toBe('All Out Strongfest 2026');
+      expect(detailRes.data.name).toBe('Riverside Iron Fest 2026 (Demo Upcoming)');
     } finally {
       if (savedUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
       else process.env.NEXT_PUBLIC_SUPABASE_URL = savedUrl;
@@ -132,7 +132,7 @@ describe('website data: listPublicShows & getPublicShowBySlug', () => {
     const client = createFakeShowsBackend();
     const savedDemoFlag = process.env.NEXT_PUBLIC_ZT_DEMO_SHOWS;
     try {
-      delete process.env.NEXT_PUBLIC_ZT_DEMO_SHOWS;
+      process.env.NEXT_PUBLIC_ZT_DEMO_SHOWS = '0';
 
       const res = await D.listPublicShows({ client });
       expect(res.source).toBe('live_supabase');
@@ -169,10 +169,13 @@ describe('website data: listPublicShows & getPublicShowBySlug', () => {
     }
   });
 
-  test('appends demo fixtures with isDemoFixture: true only when NEXT_PUBLIC_ZT_DEMO_SHOWS === "1"', async () => {
+  test('appends demo fixtures with isDemoFixture: true by default (NEXT_PUBLIC_ZT_DEMO_SHOWS unset) and when set to "1"', async () => {
     const client = createFakeShowsBackend();
     const savedDemoFlag = process.env.NEXT_PUBLIC_ZT_DEMO_SHOWS;
     try {
+      delete process.env.NEXT_PUBLIC_ZT_DEMO_SHOWS;
+      const byDefault = await D.listPublicShows({ client });
+      expect(byDefault.data.filter((s) => s.isDemoFixture).length).toBe(5);
       process.env.NEXT_PUBLIC_ZT_DEMO_SHOWS = '1';
       const withDemos = await D.listPublicShows({ client });
       expect(withDemos.error).toBeNull();

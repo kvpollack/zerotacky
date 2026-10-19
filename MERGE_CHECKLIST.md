@@ -35,7 +35,7 @@ Astra's gate 3 verdict at `52c7abb9` was "merge as is for the audited code" (`au
 - [ ] Sign up as Kurt at `/website/account` (confirmation mail arrives if Resend is in; otherwise Slate confirms by SQL that Kurt pastes). Profile saves.
 - [ ] `/legal/terms`, `/legal/privacy`, `/legal/waiver` render; footer links present; the Create-account form shows the Terms sentence.
 - [ ] `/promoter`: Strongfest does not appear (ownerless; it was published with a key). Open Sync on an admin phone signed in as Kurt, enter the new publish key, Publish update: the meet is claimed, `/promoter` lists it, membership row written.
-- [ ] Create a throwaway meet in `/promoter`, list it, cap 2, open registration. `/shows` shows it within 60 s (ISR). `/register/<slug>` submits (waiver stamp recorded; date of birth asked, a DOB under 18 reveals guardian fields); accept it in the dashboard; the athlete appears on the admin phone's roster after the next pull. Decline a second one. Delete the throwaway through the dashboard afterwards.
+- [ ] Create a throwaway meet in `/promoter`, list it, cap 2, open registration. `/shows` shows it within 60 s (ISR). `/register/<slug>` submits (waiver stamp recorded; date of birth asked, a DOB under 18 reveals guardian fields); accept it in the dashboard; the athlete appears on the admin phone's roster after the next pull. Decline a second one. ~~Delete the throwaway through the dashboard afterwards~~ (no delete exists; found 10/19, spec in ROADMAP s5; Slate deletes by SQL or it stays as the practice meet).
 - [ ] Projector `/m/<slug>?layout=tv` renders.
 - [ ] Anything red: Slate reads the browser console and the Supabase logs Kurt pastes; rollback is the dump restore plus a push of main's previous tree (`dbfd3df1`), not a migration reversal.
 
@@ -44,3 +44,11 @@ Astra's gate 3 verdict at `52c7abb9` was "merge as is for the audited code" (`au
 - [ ] Slate: retire the v2 working copy or keep it as the next branch (Kurt's call); staging keeps running the preview alias.
 - [ ] **Kurt**: Astra post-merge smoke audit on prod if wanted (read-only, a throwaway meet); brief would be `audits/astra-brief-prod-smoke.md`, not written yet.
 - [ ] Delete or keep the `zerotacky-upgrade-test` Supabase project.
+
+## 6. Follow-up release (started 10/19 night, after the merge)
+- [x] Role landing + PIN gate for judge/promoter, spectator read-only Next Up (v2 `c2653fb3`, Vercel preview green).
+- [x] `supabase/010_meet_lifecycle.sql` on staging: publish keeps a real meet real; `zt_delete_meet` (owner, not live/completed, name typed when the meet has data). Verified on staging: empty draft deleted; a meet with a division, event, athlete and scored result deleted with full cascade through the 004 guard; wrong name refused client-side; publish rule checked for all three transitions. Catalog: functions 29, policies 19, tables 12.
+- [ ] **Kurt's go**: apply 010 on prod (`python ~/.aki/tmp/zt/sql.py --ref kagitbfthapxmaljsdtz --allow-prod --file supabase/010_meet_lifecycle.sql`, then `prod_check.sql` expecting functions 31, policies 20, tables 13 after part 3). Then push v2 -> main. Then Kurt opens Meet Setup on the admin phone, taps **Mark as Real Meet**, publishes once: `ec1472c8` becomes real and shows on `/shows` once listed. `strongfest-2026-demo` stays demo.
+- [x] 010 part 3 on staging (10/19 night): `meet_follows`, `zt_follow_meet`, `zt_my_athlete_meets` (+ `following` flag). Browser-checked on staging: Follow -> Following persists across reload, Unfollow clears, demo show button disabled, /promoter shows Registered / Following / Completed for the staging account; demo boards `/m/keystone-fall-brawl-2026` and `/m/iron-valley-summer-slam-2026` render from fixtures with the DEMO badge. Catalog after apply: functions 31, policies 20, tables 13.
+- [ ] Stations as their own setup step, run-order method explained on screen (ROADMAP s5).
+

@@ -13,6 +13,7 @@ import Standings from '@/components/standings/Standings';
 import LeaderboardTable from '@/components/standings/LeaderboardTable';
 import LayoutToggle from '@/components/shell/LayoutToggle';
 import useLayoutMode from '@/hooks/useLayoutMode';
+import { getDemoScoreboardState } from '@/lib/website/data';
 
 const POLL_MS = 4000;
 
@@ -27,6 +28,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   const [live, setLive] = useState<LiveStateRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [demo, setDemo] = useState(false);   // fixture-backed board: no polling, DEMO shown
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [division, setDivision] = useState<string>('ALL');
   const since = useRef<string | null>(null);
@@ -39,15 +41,26 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
     if (t && THEMES.some((x) => x.id === t)) setTheme(t);
   }, []);
 
+  // fixture-backed demo board: used when there is no backend, or when the slug is not on the server but matches a demo show
+  const useDemo = () => {
+    const fx = getDemoScoreboardState(slug);
+    if (!fx) return false;
+    setDemo(true);
+    setMeet({ state: fx.state, slug: fx.slug, stations: fx.state.meet.stations ?? [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }], isDemo: true, latestServerAt: null, updatedAt: null });
+    setState(fx.state);
+    setUpdatedAt(Date.now());
+    return true;
+  };
+
   // initial load
   useEffect(() => {
-    if (!client) return;
+    if (!client) { if (!useDemo()) setNotFound(true); return; }
     let cancelled = false;
     (async () => {
       try {
         const r = await fetchMeetBySlug(client, slug);
         if (cancelled) return;
-        if (!r) { setNotFound(true); return; }
+        if (!r) { if (!useDemo()) setNotFound(true); return; }
         setMeet(r);
         setState(r.state);
         since.current = r.latestServerAt;
@@ -64,7 +77,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   // poll
   const meetId = state?.meet.id;
   useEffect(() => {
-    if (!client || !meetId) return;
+    if (!client || !meetId || demo) return;
     let busy = false;
     const tick = async () => {
       if (busy || document.visibilityState !== 'visible') return;
@@ -91,7 +104,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
     const id = setInterval(tick, POLL_MS);
     document.addEventListener('visibilitychange', tick);
     return () => { clearInterval(id); document.removeEventListener('visibilitychange', tick); };
-  }, [client, meetId]);
+  }, [client, meetId, demo]);
 
   const shell = (children: React.ReactNode) => (
     <div data-zt-theme={theme} className="min-h-screen bg-zt-bg text-zt-text font-sans pb-10">
@@ -100,7 +113,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   );
 
   if (!env) return shell(<Notice text="Live scoreboard is not configured on this build." />);
-  if (notFound) return shell(<Notice text={`No meet at /m/${slug}.`} />);
+  if (notFound) return shell(<Notice text="No meet found for this scoreboard link. Check the link with the promoter." />);
   if (!state || !meet) return shell(<Notice text={error ? `Could not load: ${error}` : 'Loading…'} />);
 
   const stations = meet.stations?.length ? meet.stations : [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }];
@@ -121,7 +134,12 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
         <div className="min-w-0">
           <div className="text-[10px] font-black uppercase tracking-widest text-zt-primary flex items-center gap-1.5">
             <span className={`inline-block w-2 h-2 rounded-full ${error ? 'bg-amber-500' : 'bg-emerald-400 animate-pulse'}`} />
-            Live scoreboard{meet.isDemo ? ' · DEMO' : ''}
+            Live scoreboard
+            {meet.isDemo && (
+              <span className={`font-black uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500 text-black ${tv ? 'text-2xl' : 'text-sm'}`}>
+                DEMO
+              </span>
+            )}
           </div>
           <h1 className={`font-black truncate ${tv ? 'text-3xl' : 'text-xl'}`}>{state.meet.name}</h1>
         </div>

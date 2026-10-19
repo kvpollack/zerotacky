@@ -492,6 +492,7 @@ export default function App() {
             transitionRows={transitionRows}
             upNowPinHeight={upNowPinHeight}
             updateAthleteRackPin={updateAthleteRackPin}
+            readOnly={roleLock === 'spectator'}
           />
         )}
 

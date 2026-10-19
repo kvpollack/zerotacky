@@ -2,18 +2,53 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, Check, Copy, ExternalLink, KeyRound, RefreshCw, Tv } from 'lucide-react';
+import { AlertTriangle, Check, Copy, ExternalLink, KeyRound, RefreshCw, Trash2, Tv } from 'lucide-react';
 import { copyText } from '@/lib/download';
-import type { PromoterMeetSummary } from '@/lib/promoter/contract';
+import type { DeletedMeet, PromoterMeetSummary } from '@/lib/promoter/contract';
 import { isLiveBackend } from '@/lib/promoter/usePromoterApi';
 
 interface MeetDaySectionProps {
   summary: PromoterMeetSummary;
+  resultCount: number;   // state.results.length; the summary carries the other counts
   onRotateCode: () => Promise<{ error: string | null; joinCode: string | null }>;
+  // 010: hard delete, owner only. Resolves with the server's error text or null; the parent navigates away on success.
+  onDelete: (confirmName: string | null) => Promise<{ error: string | null; deleted: DeletedMeet | null }>;
 }
 
-export default function MeetDaySection({ summary, onRotateCode }: MeetDaySectionProps) {
+export default function MeetDaySection({ summary, resultCount, onRotateCode, onDelete }: MeetDaySectionProps) {
   const [rotating, setRotating] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteName, setDeleteName] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const status = summary.listing.competitionStatus;
+  const deletable = status !== 'live' && status !== 'completed';
+  const dataCounts = [
+    { label: 'divisions', n: summary.divisionCount },
+    { label: 'athletes on the roster', n: summary.athleteCount },
+    { label: 'recorded results', n: resultCount },
+    { label: 'registration requests (accepted, pending, waitlisted, declined)', n: summary.registrationCount + summary.pendingCount },
+  ];
+  const hasData = dataCounts.some((c) => c.n > 0);
+  const nameMatches = deleteName.trim().toLowerCase() === summary.name.trim().toLowerCase();
+
+  const handleDelete = async () => {
+    if (!hasData) {
+      const ok = typeof window !== 'undefined' ? window.confirm(`Delete "${summary.name}"? This draft has no divisions, athletes, results or registrations. This cannot be undone.`) : false;
+      if (!ok) return;
+    } else if (!nameMatches) {
+      setDeleteError('Type the meet name exactly as shown to confirm.');
+      return;
+    }
+    setDeleting(true);
+    setDeleteError(null);
+    const res = await onDelete(hasData ? deleteName.trim() : null);
+    if (res.error) {
+      setDeleting(false);
+      setDeleteError(res.error);
+    }
+    // on success the parent navigates to the dashboard; leave the button disabled meanwhile
+  };
   const [error, setError] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
@@ -157,7 +192,7 @@ export default function MeetDaySection({ summary, onRotateCode }: MeetDaySection
                 href={row.path}
                 className="text-xs font-extrabold uppercase text-zt-primary hover:underline inline-flex items-center gap-1"
               >
-                Open {row.path}
+                Open
                 <ExternalLink className="w-3 h-3" aria-hidden="true" />
               </Link>
             </div>
@@ -192,6 +227,91 @@ export default function MeetDaySection({ summary, onRotateCode }: MeetDaySection
           </div>
         ))}
       </div>
+
+      {/* 010: delete meet. Hidden for live/completed meets (archive is the record); a draft deletes on a plain confirm,
+          a meet with data needs the name typed, and the server checks the same name. */}
+      {deletable && (
+        <div className="border-2 border-zt-danger/60 rounded-2xl p-4 space-y-3" data-testid="delete-meet">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div className="text-[11px] font-extrabold uppercase text-zt-danger-text flex items-center gap-1.5">
+                <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Delete This Meet</span>
+              </div>
+              <p className="text-xs text-zt-muted mt-1">
+                Removes the meet, its divisions, events, roster, scores, registrations and the public page for good. Only the
+                promoter who owns the meet can do this. A live or completed meet cannot be deleted; set it to cancelled on the
+                Listing tab or keep it as a record.
+              </p>
+            </div>
+            {!deleteOpen && (
+              <button
+                type="button"
+                onClick={() => { setDeleteOpen(true); setDeleteError(null); }}
+                className="px-4 py-2.5 rounded-xl bg-zt-danger/15 border border-zt-danger text-zt-danger-text font-black text-xs uppercase inline-flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                Delete Meet
+              </button>
+            )}
+          </div>
+
+          {deleteOpen && (
+            <div className="space-y-3">
+              {hasData ? (
+                <div className="rounded-xl bg-zt-danger/15 border-2 border-zt-danger p-4 space-y-2">
+                  <div className="text-sm font-black uppercase tracking-wide text-zt-danger-text flex items-start gap-2">
+                    <AlertTriangle className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+                    <span>This meet has data associated with it. Confirm before deletion.</span>
+                  </div>
+                  <ul className="text-xs font-bold text-zt-text space-y-0.5 pl-7">
+                    {dataCounts.filter((c) => c.n > 0).map((c) => (
+                      <li key={c.label}>{c.n} {c.label}</li>
+                    ))}
+                  </ul>
+                  <label className="block text-[11px] font-extrabold uppercase text-zt-muted pl-7 pt-1">
+                    Type the meet name to confirm: <span className="text-zt-text normal-case">{summary.name}</span>
+                    <input
+                      type="text"
+                      value={deleteName}
+                      onChange={(e) => setDeleteName(e.target.value)}
+                      placeholder={summary.name}
+                      autoComplete="off"
+                      className="w-full mt-1 bg-zt-surface border border-zt-danger rounded-xl px-3 py-2 text-sm font-bold text-zt-text"
+                    />
+                  </label>
+                </div>
+              ) : (
+                <p className="text-xs font-bold text-zt-text">This meet has no divisions, athletes, results or registrations yet. Deleting it removes the empty draft.</p>
+              )}
+              {deleteError && (
+                <div className="p-3 rounded-xl bg-zt-danger/15 border border-zt-danger text-zt-danger-text text-xs font-bold" role="alert">
+                  {deleteError}
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={deleting || (hasData && !nameMatches)}
+                  onClick={handleDelete}
+                  className="px-4 py-2.5 rounded-xl bg-zt-danger text-white font-black text-xs uppercase inline-flex items-center gap-1.5 disabled:opacity-40"
+                >
+                  <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                  {deleting ? 'Deleting…' : hasData ? 'Delete Meet and All Its Data' : 'Delete Empty Meet'}
+                </button>
+                <button
+                  type="button"
+                  disabled={deleting}
+                  onClick={() => { setDeleteOpen(false); setDeleteName(''); setDeleteError(null); }}
+                  className="px-4 py-2.5 rounded-xl bg-zt-surface border border-zt-border-strong text-zt-text font-black text-xs uppercase"
+                >
+                  Keep Meet
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </section>
   );
 }

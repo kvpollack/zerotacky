@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { AlertTriangle, CheckCircle2, Eye, EyeOff, Globe, RotateCcw } from 'lucide-react';
 import type { MeetListing } from '@/lib/promoter/contract';
 import { isLiveBackend } from '@/lib/promoter/usePromoterApi';
@@ -131,7 +132,7 @@ export default function ListingSection({
     } else {
       setSavedNotice(
         isLiveBackend()
-          ? 'Listing settings saved. Listed meets appear on /shows within a minute.'
+          ? 'Listing settings saved. Listed meets appear on Find a Show within a minute.'
           : 'Listing settings saved (preview data, this browser tab only).'
       );
       setTimeout(() => setSavedNotice(null), 4000);
@@ -152,13 +153,13 @@ export default function ListingSection({
           <p className="text-xs text-zt-muted mt-0.5">
             {isLiveBackend() ? (
               <>
-                Controls what the public sees on <code className="font-mono">/shows</code> and{' '}
-                <code className="font-mono">/register/{'<slug>'}</code>. Unlisted meets still open by direct link.
+                Controls what the public sees on <Link href="/shows" className="text-zt-primary font-bold underline">Find a Show</Link> and the
+                meet's registration page. Unlisted meets still open by direct link.
               </>
             ) : (
               <>
                 Preview of the listing fields. Saving here updates this browser tab only; it connects to the live backend
-                (and to <code className="font-mono">/shows</code>) in a later milestone.
+                (and to Find a Show) in a later milestone.
               </>
             )}
           </p>

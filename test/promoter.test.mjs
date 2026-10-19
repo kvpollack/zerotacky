@@ -214,6 +214,39 @@ describe('fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, arch
     const after = await api.getMeet('srv-meet-upcoming-1');
     assert.equal(after.data.summary.listing.competitionStatus, 'completed');
   });
+
+  test('deleteMeet (010): name required when the meet has data, refused for live/completed, cascades registrations', async () => {
+    const api = FA.createFixturePromoterApi();
+    const before = (await api.getMeet('srv-meet-upcoming-1')).data;
+    const regsBefore = (await api.listRegistrations('srv-meet-upcoming-1')).data;
+    assert.ok(regsBefore.length > 0);
+
+    const noName = await api.deleteMeet('srv-meet-upcoming-1');
+    assert.equal(noName.data, null);
+    assert.match(noName.error, /Type the meet name exactly/);
+
+    const live = await api.deleteMeet('srv-meet-live-2', { confirmName: 'x' });
+    assert.match(live.error, /live meet cannot be deleted/);
+    const done = await api.deleteMeet('srv-meet-completed-3', { confirmName: 'x' });
+    assert.match(done.error, /completed meet cannot be deleted/);
+
+    const ok = await api.deleteMeet('srv-meet-upcoming-1', { confirmName: before.summary.name.toLowerCase() });
+    assert.equal(ok.error, null);
+    assert.equal(ok.data.deleted.registrations, regsBefore.length);
+    assert.equal(ok.data.deleted.athletes, before.summary.athleteCount);
+    assert.equal((await api.getMeet('srv-meet-upcoming-1')).data, null);
+    const regsAfter = await api.listRegistrations('srv-meet-upcoming-1');
+    assert.ok(regsAfter.data === null || regsAfter.data.length === 0);   // the meet is gone, so the lookup fails
+    assert.ok(!(await api.listMyMeets()).data.some((m) => m.serverId === 'srv-meet-upcoming-1'));
+
+    const created = await api.createMeet({ name: 'Empty Draft', date: '2027-02-06' });
+    const draft = await api.deleteMeet(created.data.summary.serverId);
+    assert.equal(draft.error, null);
+    assert.deepEqual(draft.data.deleted, { divisions: 0, events: 0, athletes: 0, results: 0, registrations: 0 });
+
+    const signedOut = FA.createFixturePromoterApi({ signedOut: true });
+    assert.equal((await signedOut.deleteMeet('srv-meet-live-2')).error, 'Sign in required to delete a meet.');
+  });
 });
 
 describe('fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers', () => {
@@ -440,5 +473,57 @@ describe('fixtureApi: venue shape', () => {
     const ok = await api.updateListing('srv-meet-upcoming-1', { venue: { facilityName: 'The Power Plant Gym', city: 'York', state: 'PA', country: 'US' } });
     assert.equal(ok.error, null);
     assert.equal(ok.data.listing.venue.facilityName, 'The Power Plant Gym');
+  });
+});
+
+// 010 part 3 (10/19 night): athlete My Meets (follows + registrations).
+describe('athlete My Meets: followShow, listMyAthleteMeets, bucketAthleteMeets, athleteMeetBadge', () => {
+  test('followShow adds and removes a listed meet; unlisted slug and signed-out are refused', async () => {
+    const api = FA.createFixturePromoterApi();
+    const empty = await api.listMyAthleteMeets();
+    assert.equal(empty.error, null);
+    assert.deepEqual(empty.data, []);
+    const on = await api.followShow('iron-furnace-classic-2026', true);
+    assert.equal(on.error, null);
+    assert.deepEqual(on.data, { slug: 'iron-furnace-classic-2026', following: true });
+    const mine = await api.listMyAthleteMeets();
+    assert.equal(mine.data.length, 1);
+    assert.equal(mine.data[0].kind, 'follow');
+    assert.equal(mine.data[0].slug, 'iron-furnace-classic-2026');
+    assert.equal(mine.data[0].registrationStatus, null);
+    assert.equal(mine.data[0].following, true);
+    const off = await api.followShow('iron-furnace-classic-2026', false);
+    assert.deepEqual(off.data, { slug: 'iron-furnace-classic-2026', following: false });
+    assert.deepEqual((await api.listMyAthleteMeets()).data, []);
+    const bad = await api.followShow('no-such-show', true);
+    assert.equal(bad.data, null);
+    assert.match(bad.error, /cannot be followed/);
+    const out = FA.createFixturePromoterApi({ signedOut: true });
+    assert.match((await out.followShow('iron-furnace-classic-2026', true)).error, /Sign in/);
+    assert.match((await out.listMyAthleteMeets()).error, /Sign in/);
+  });
+  test('bucketAthleteMeets splits follow / registered / completed and sorts by date', () => {
+    const row = (o) => ({
+      meetServerId: 'x', slug: 'x', name: 'x', date: null, competitionStatus: 'upcoming', resultsStatus: 'none',
+      isPublicListed: true, kind: 'registration', following: false, registrationStatus: 'accepted', waitlisted: false, divisionName: null, createdAt: '2026-01-01', ...o,
+    });
+    const b = R.bucketAthleteMeets([
+      row({ slug: 'f2', kind: 'follow', registrationStatus: null, date: '2026-12-01' }),
+      row({ slug: 'f1', kind: 'follow', registrationStatus: null, date: '2026-11-01' }),
+      row({ slug: 'c-old', competitionStatus: 'completed', date: '2026-05-01' }),
+      row({ slug: 'c-new', competitionStatus: 'completed', date: '2026-09-01' }),
+      row({ slug: 'r-live', competitionStatus: 'live', date: '2026-10-24' }),
+      row({ slug: 'r-up', competitionStatus: 'upcoming', date: '2026-11-14' }),
+    ]);
+    assert.deepEqual(b.following.map((r) => r.slug), ['f1', 'f2']);
+    assert.deepEqual(b.registered.map((r) => r.slug), ['r-live', 'r-up']);
+    assert.deepEqual(b.completed.map((r) => r.slug), ['c-new', 'c-old']);
+    assert.equal(R.athleteMeetBadge(b.following[0]), 'Following');
+    assert.equal(R.athleteMeetBadge(b.registered[0]), 'Registered');
+    assert.equal(R.athleteMeetBadge(b.completed[0]), 'Competed');
+    assert.equal(R.athleteMeetBadge(row({ registrationStatus: 'pending', waitlisted: true })), 'Waitlisted');
+    assert.equal(R.athleteMeetBadge(row({ registrationStatus: 'pending' })), 'Pending approval');
+    assert.equal(R.athleteMeetBadge(row({ registrationStatus: 'declined' })), 'Declined');
+    assert.equal(R.athleteMeetBadge(row({ registrationStatus: 'withdrawn' })), 'Withdrawn');
   });
 });

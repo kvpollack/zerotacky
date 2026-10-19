@@ -10,6 +10,8 @@ import { DEMO_SHOW_RECORDS } from '../website/fixtures';
 import {
   emptyListing,
   type ApiResult,
+  type DeletedMeet,
+  type MyAthleteMeet,
   type MeetListing,
   type PromoterApi,
   type PromoterMeetDetail,
@@ -94,6 +96,7 @@ export function createFixturePromoterApi(
   let user: PromoterUser = clone(DEMO_PROMOTER_USER);
   const meets: PromoterMeetDetail[] = createSeedMeets();
   const registrations: RegistrationRequest[] = createSeedRegistrations();
+  const follows = new Map<string, string>();   // slug -> ISO followed at (010 fixture; this tab only)
   // Display name of the organizer per meet; fixture meets belong to the demo user, bridged /shows records carry
   // their own promoterName.
   const ownerNames = new Map<string, string | null>();
@@ -486,6 +489,70 @@ export function createFixturePromoterApi(
       };
       found.summary.updatedAt = new Date().toISOString();
       return { data: { ok: true }, error: null };
+    },
+
+    async listMyAthleteMeets(): Promise<ApiResult<MyAthleteMeet[]>> {
+      if (signedOut) {
+        return { data: null, error: 'Sign in to see your meets.' };
+      }
+      const rows: MyAthleteMeet[] = [];
+      for (const [slug, at] of follows) {
+        const m = meets.find((x) => x.summary.slug === slug);
+        if (!m) continue;
+        rows.push({
+          meetServerId: m.summary.serverId, slug, name: m.summary.name, date: m.summary.date,
+          competitionStatus: m.summary.listing.competitionStatus, resultsStatus: m.summary.listing.resultsStatus,
+          isPublicListed: m.summary.listing.isPublicListed, kind: 'follow', following: true, registrationStatus: null, waitlisted: false,
+          divisionName: null, createdAt: at,
+        });
+      }
+      return { data: rows, error: null };
+    },
+
+    async followShow(slug: string, follow: boolean): Promise<ApiResult<{ slug: string; following: boolean }>> {
+      if (signedOut) {
+        return { data: null, error: 'Sign in to follow a show.' };
+      }
+      const m = meets.find((x) => x.summary.slug === slug && x.summary.listing.isPublicListed);
+      if (!m) {
+        return { data: null, error: 'This show cannot be followed (not listed).' };
+      }
+      if (follow) follows.set(slug, new Date().toISOString());
+      else follows.delete(slug);
+      return { data: { slug, following: follow }, error: null };
+    },
+
+    async deleteMeet(serverId: string, opts?: { confirmName?: string }): Promise<ApiResult<DeletedMeet>> {
+      if (signedOut) {
+        return { data: null, error: 'Sign in required to delete a meet.' };
+      }
+      const idx = meets.findIndex((m) => m.summary.serverId === serverId);
+      if (idx < 0) {
+        return { data: null, error: `No meet found with serverId "${serverId}".` };
+      }
+      const found = meets[idx];
+      const status = found.summary.listing.competitionStatus;
+      if (status === 'live' || status === 'completed') {
+        return { data: null, error: `a ${status} meet cannot be deleted. Set it to cancelled on the Listing tab first, or leave it as a record.` };
+      }
+      const mine = registrations.filter((r) => r.meetServerId === serverId);
+      const deleted = {
+        divisions: found.state.divisions.length,
+        events: found.state.events.length,
+        athletes: found.state.athletes.length,
+        results: found.state.results.length,
+        registrations: mine.length,
+      };
+      const total = Object.values(deleted).reduce((a, b) => a + b, 0);
+      const typed = (opts?.confirmName ?? '').trim().toLowerCase();
+      if (total > 0 && typed !== found.summary.name.trim().toLowerCase()) {
+        return { data: null, error: 'this meet has data associated with it. Type the meet name exactly to confirm deletion.' };
+      }
+      meets.splice(idx, 1);
+      for (let i = registrations.length - 1; i >= 0; i--) {
+        if (registrations[i].meetServerId === serverId) registrations.splice(i, 1);
+      }
+      return { data: { id: serverId, name: found.summary.name, deleted }, error: null };
     },
 
     async listRegistrations(

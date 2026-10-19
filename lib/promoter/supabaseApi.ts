@@ -8,6 +8,8 @@ import type { AppState } from '../types';
 import {
   emptyListing,
   type ApiResult,
+  type DeletedMeet,
+  type MyAthleteMeet,
   type MeetListing,
   type PromoterApi,
   type PromoterMeetDetail,
@@ -127,6 +129,23 @@ export function rowToRegistrationRequest(row: RegistrationRow): RegistrationRequ
 
 export interface SupabasePromoterApiOptions {
   today?: () => string;
+}
+
+// zt_my_athlete_meets row (010)
+interface AthleteMeetRow {
+  meet_id: string; slug: string; name: string; date: string | null;
+  competition_status: MyAthleteMeet['competitionStatus']; results_status: MyAthleteMeet['resultsStatus'];
+  is_public_listed: boolean; kind: 'registration' | 'follow'; following?: boolean | null;
+  registration_id: string | null; registration_status: MyAthleteMeet['registrationStatus']; waitlisted: boolean | null;
+  division_name: string | null; created_at: string;
+}
+function rowToMyAthleteMeet(r: AthleteMeetRow): MyAthleteMeet {
+  return {
+    meetServerId: r.meet_id, slug: r.slug, name: r.name, date: r.date ?? '',
+    competitionStatus: r.competition_status, resultsStatus: r.results_status, isPublicListed: !!r.is_public_listed,
+    kind: r.kind, following: r.kind === 'follow' || !!r.following, registrationStatus: r.registration_status ?? null, waitlisted: !!r.waitlisted,
+    divisionName: r.division_name ?? null, createdAt: r.created_at,
+  };
 }
 
 export function createSupabasePromoterApi(
@@ -484,6 +503,54 @@ export function createSupabasePromoterApi(
         }
         await db.updateMeetListing(serverId, { competition_status: 'completed' });
         return { data: { ok: true }, error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    async deleteMeet(serverId: string, opts?: { confirmName?: string }): Promise<ApiResult<DeletedMeet>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) {
+          return { data: null, error: 'Sign in required to delete a meet.' };
+        }
+        const out = await db.rpc<DeletedMeet>('zt_delete_meet', {
+          p_meet_id: serverId,
+          p_confirm_name: opts?.confirmName?.trim() ? opts.confirmName.trim() : null,
+        });
+        if (!out?.id) {
+          return { data: null, error: 'Could not delete the meet.' };
+        }
+        return { data: out, error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    async listMyAthleteMeets(): Promise<ApiResult<MyAthleteMeet[]>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) {
+          return { data: null, error: 'Sign in to see your meets.' };
+        }
+        const rows = await db.rpc<AthleteMeetRow[]>('zt_my_athlete_meets', {});
+        return { data: (Array.isArray(rows) ? rows : []).map(rowToMyAthleteMeet), error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    async followShow(slug: string, follow: boolean): Promise<ApiResult<{ slug: string; following: boolean }>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) {
+          return { data: null, error: 'Sign in to follow a show.' };
+        }
+        const out = await db.rpc<{ slug: string; following: boolean }>('zt_follow_meet', { p_slug: slug, p_follow: follow });
+        if (!out || typeof out.following !== 'boolean') {
+          return { data: null, error: 'Could not update the follow.' };
+        }
+        return { data: { slug, following: out.following }, error: null };
       } catch (e) {
         return { data: null, error: errMessage(e) };
       }
