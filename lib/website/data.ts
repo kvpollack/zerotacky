@@ -50,6 +50,15 @@ export function shouldIncludeDemoShows(opts?: ShowDataOptions): boolean {
   return process.env.NEXT_PUBLIC_ZT_DEMO_SHOWS !== '0';
 }
 
+// Astra R-L3 (10/19): route params arrive already decoded, so a literal "%" (or "100%25") made decodeURIComponent throw
+// and the OG image routes answered 500. Decode once, keep the raw text when the escape is malformed, never throw.
+export function cleanSlug(slug: string | null | undefined): string {
+  const raw = (slug ?? '').trim();
+  let decoded = raw;
+  try { decoded = decodeURIComponent(raw); } catch { /* malformed escape: compare as typed */ }
+  return decoded.trim().toLowerCase();
+}
+
 function resolveClient(opts?: ShowDataOptions): SyncClient | null {
   if (opts?.mode === 'demo') return null;
   if (opts?.client !== undefined) return opts.client;
@@ -77,9 +86,10 @@ export async function listPublicShows(
         error: 'Supabase environment variables (NEXT_PUBLIC_SUPABASE_URL / ANON_KEY) are not configured.',
       };
     }
+    // Astra R-L2 (10/19): a build with demos switched off lists nothing here rather than the fixtures.
     return {
       source: 'demo',
-      data: DEMO_SHOW_RECORDS.map(toPublicShowSummary),
+      data: shouldIncludeDemoShows(opts) ? DEMO_SHOW_RECORDS.map(toPublicShowSummary) : [],
       error: null,
     };
   }
@@ -144,13 +154,13 @@ export async function getPublicShowBySlug(
   slug: string,
   opts: ShowDataOptions = {}
 ): Promise<DataResult<PublicShowRecord>> {
-  const cleanSlug = decodeURIComponent(slug ?? '').trim().toLowerCase();
-  if (!cleanSlug) {
+  const slugKey = cleanSlug(slug);
+  if (!slugKey) {
     return { source: opts.mode === 'live_supabase' ? 'live_supabase' : 'demo', data: null, error: null };
   }
 
   if (opts.mode === 'demo') {
-    const found = DEMO_SHOW_RECORDS.find((s) => s.slug.toLowerCase() === cleanSlug) ?? null;
+    const found = DEMO_SHOW_RECORDS.find((s) => s.slug.toLowerCase() === slugKey) ?? null;
     return { source: 'demo', data: found, error: null };
   }
 
@@ -163,19 +173,19 @@ export async function getPublicShowBySlug(
         error: 'Live Supabase sync is not configured on this build.',
       };
     }
-    const found = DEMO_SHOW_RECORDS.find((s) => s.slug.toLowerCase() === cleanSlug) ?? null;
+    const found = shouldIncludeDemoShows(opts) ? DEMO_SHOW_RECORDS.find((s) => s.slug.toLowerCase() === slugKey) ?? null : null;
     return { source: 'demo', data: found, error: null };
   }
 
   try {
     const meets = await client.select<MeetListingRow>(
       'meets',
-      `slug=eq.${encodeURIComponent(cleanSlug)}&is_public_listed=eq.true&is_demo=eq.false&select=${PUBLIC_SHOW_MEET_COLS}&limit=1`
+      `slug=eq.${encodeURIComponent(slugKey)}&is_public_listed=eq.true&is_demo=eq.false&select=${PUBLIC_SHOW_MEET_COLS}&limit=1`
     );
 
     if (!meets || meets.length === 0) {
       if (shouldIncludeDemoShows(opts)) {
-        const demoFound = DEMO_SHOW_RECORDS.find((s) => s.slug.toLowerCase() === cleanSlug) ?? null;
+        const demoFound = DEMO_SHOW_RECORDS.find((s) => s.slug.toLowerCase() === slugKey) ?? null;
         if (demoFound) {
           return {
             source: 'live_supabase',
@@ -226,8 +236,8 @@ export async function listPublicGyms(): Promise<DataResult<StrongmanGymListing[]
 export async function getPublicGymBySlug(
   slug: string
 ): Promise<DataResult<StrongmanGymListing>> {
-  const cleanSlug = decodeURIComponent(slug).trim().toLowerCase();
-  const found = DEMO_GYM_LISTINGS.find((g) => g.slug.toLowerCase() === cleanSlug) ?? null;
+  const slugKey = cleanSlug(slug);
+  const found = DEMO_GYM_LISTINGS.find((g) => g.slug.toLowerCase() === slugKey) ?? null;
   return {
     source: 'demo',
     data: found,
@@ -243,7 +253,34 @@ export function listDemoPersonas(): DemoPersonaProfile[] {
 // visitors can see a live and a completed board without a server meet. null when demos are off or no match.
 export function getDemoScoreboardState(slug: string): PublicShowRecord | null {
   if (!shouldIncludeDemoShows()) return null;
-  const clean = decodeURIComponent(slug ?? '').trim().toLowerCase();
+  const clean = cleanSlug(slug);
   return DEMO_SHOW_RECORDS.find((s) => s.slug.toLowerCase() === clean) ?? null;
+}
+
+// Server-side name and badge for /m/<slug> metadata and share cards (Astra R-M6, 10/19). A real meet that owns the slug
+// wins; a demo fixture is used only when no server meet has it (or the server cannot be asked). The board itself already
+// loads the real meet in the browser; this keeps the title and OG image telling the same story.
+export interface ScoreboardMeta {
+  name: string;
+  badge: 'DEMO' | 'LIVE';
+  source: 'live_supabase' | 'demo' | 'none';
+}
+export async function getScoreboardMeta(slug: string, opts: ShowDataOptions = {}): Promise<ScoreboardMeta | null> {
+  const slugKey = cleanSlug(slug);
+  if (!slugKey) return null;
+  const client = resolveClient(opts);
+  if (client) {
+    try {
+      const rows = await client.select<{ name: string; is_demo: boolean }>(
+        'meets',
+        `slug=eq.${encodeURIComponent(slugKey)}&select=name,is_demo&limit=1`
+      );
+      if (rows && rows.length > 0) {
+        return { name: rows[0].name, badge: rows[0].is_demo ? 'DEMO' : 'LIVE', source: 'live_supabase' };
+      }
+    } catch { /* fall through to the fixture; the client-side board reports server errors itself */ }
+  }
+  const demo = shouldIncludeDemoShows(opts) ? DEMO_SHOW_RECORDS.find((s) => s.slug.toLowerCase() === slugKey) ?? null : null;
+  return demo ? { name: demo.name, badge: 'DEMO', source: 'demo' } : null;
 }
 

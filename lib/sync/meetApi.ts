@@ -94,9 +94,14 @@ export async function publishMeet(client: SyncClient, state: AppState, extra: Pu
 
 // 007: a joined phone verifies the admin PIN server-side (throttled per join code). Older servers (main) still return
 // admin_pin from the join RPC and have no such function; the caller falls back to the local compare then.
-export async function checkAdminPin(client: SyncClient, joinCode: string, pin: string): Promise<boolean> {
-  const out = await client.rpc<boolean | null>('zt_check_admin_pin', { p_code: joinCode, p_pin: pin });
-  return out === true;
+// 011: a correct PIN returns a grant token (the phone sends it as x-zt-grant on every write); a wrong one returns null.
+export async function checkAdminPin(client: SyncClient, joinCode: string, pin: string, deviceId: string | null = null): Promise<string | null> {
+  const out = await client.rpc<string | null>('zt_check_admin_pin', { p_code: joinCode, p_pin: pin, p_device_id: deviceId });
+  return typeof out === 'string' && out.length > 0 ? out : null;
+}
+
+export async function revokeGrant(client: SyncClient, token: string): Promise<void> {
+  await client.rpc('zt_revoke_grant', { p_token: token });
 }
 
 const CHILD_KEY = 'meet_id,id';

@@ -49,7 +49,7 @@ export default function LeaderboardTable({ division, events, standings, meet, hi
                     row.overallPlace === 1 ? 'bg-zt-primary text-zt-on-primary px-1.5' : 'text-zt-text-2'
                   }`}
                 >
-                  {row.overallPlace}
+                  {row.isTiedOverall ? `T-${row.overallPlace}` : row.overallPlace}
                 </span>
               </td>
               <td className={`${cell} font-black text-zt-text ${tv ? 'text-xl' : 'text-sm'} min-w-0`}>

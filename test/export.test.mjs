@@ -48,7 +48,7 @@ describe('export/import', () => {
     const s = withResults();
     const txt = X.standingsText(s, s.divisions.filter((d) => d.id === 'sf-g1'));
     assert.equal(txt, ['ALL OUT STRONGFEST 2026 (THE POWER PLANT GYM)', '2026-10-24', '', 'Group 1',
-      '1. Jessica Rucci - 4 pts', '2. Emily Shaff - 3 pts', '3. Amber Simcox - 0 pts', '4. Grace Gullo - 0 pts'].join('\n'));
+      '1. Jessica Rucci - 4 pts', '2. Emily Shaff - 3 pts', 'T-3. Amber Simcox - 0 pts', 'T-3. Grace Gullo - 0 pts'].join('\n'));   // R-M5: full ties share the place
   });
   test('backup filename is slug + timestamp', () => {
     assert.equal(X.backupFilename(withResults(), new Date('2026-10-24T13:05:00Z')), 'zerotacky-all-out-strongfest-2026-the-power-plant-2026-10-24-13-05');

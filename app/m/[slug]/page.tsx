@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
 import ScoreboardClient from './ScoreboardClient';
-import { getDemoScoreboardState } from '@/lib/website/data';
+import { getScoreboardMeta } from '@/lib/website/data';
 
-// Real meets are looked up in the browser, so the server title can only name demo fixtures; ScoreboardClient sets
-// document.title to the meet name once it loads.
+// The server asks for the meet that owns the slug (real first, demo fixture second: Astra R-M6) so the title and the
+// share card match the board; ScoreboardClient still sets document.title once the live data arrives.
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const demo = getDemoScoreboardState(slug);
-  const title = demo ? `${demo.name} — Live Scoreboard — ZeroTacky` : 'Live Scoreboard — ZeroTacky';
+  const meta = await getScoreboardMeta(slug);
+  const title = meta ? `${meta.name} — Live Scoreboard — ZeroTacky` : 'Live Scoreboard — ZeroTacky';
   const description = 'Standings, event results and who is up next, updating as judges score.';
   return {
     title,

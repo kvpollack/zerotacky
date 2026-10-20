@@ -233,8 +233,20 @@ export function calculateDivisionStandings(
     }
   });
 
+  // Astra R-M5 (10/19): athletes still level after both tiebreak criteria share the place (1, 1, 3), the way the public
+  // results page already shows ties, instead of being split by sort order.
+  const level = (a: StandingRow, b: StandingRow) =>
+    a.totalPoints === b.totalPoints && a.eventWins === b.eventWins && a.finalEventPoints === b.finalEventPoints;
   rows.forEach((row, idx) => {
-    row.overallPlace = idx + 1;
+    const prev = idx > 0 ? rows[idx - 1] : null;
+    if (prev && level(prev, row)) {
+      row.overallPlace = prev.overallPlace;
+      row.isTiedOverall = true;
+      prev.isTiedOverall = true;
+    } else {
+      row.overallPlace = idx + 1;
+      row.isTiedOverall = false;
+    }
   });
 
   return rows;

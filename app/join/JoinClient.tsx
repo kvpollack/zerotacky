@@ -60,15 +60,16 @@ export default function JoinClient() {
     if (!remote || !env || !pinRole) return;
     setBusy(true); setPinError(null);
     try {
-      const ok = await checkAdminPin(createSyncClient(env), remote.joinCode ?? code, pin.trim());
-      if (!ok) { setPinError('Wrong PIN. Ask the promoter for the meet PIN.'); return; }
-      attachAs(pinRole);
+      const grant = await checkAdminPin(createSyncClient(env), remote.joinCode ?? code, pin.trim(), getDeviceId(localStorage));
+      if (!grant) { setPinError('Wrong PIN. Ask the promoter for the meet PIN.'); return; }
+      attachAs(pinRole, grant);
     } catch (e) {
       setPinError(e instanceof Error ? e.message : 'Could not check the PIN. Try again.');
     } finally { setBusy(false); }
   };
 
-  const attachAs = (role: Role) => {
+  // 011: the grant from a correct PIN rides on the link; without it the server refuses this phone's scores.
+  const attachAs = (role: Role, grant: string | null = null) => {
     if (!remote || !env) return;
     const client = createSyncClient(env);
     const ctl = new SyncController({ client, storage: localStorage, deviceId: getDeviceId(localStorage), getState: () => remote.state, onIncoming: () => {} });
@@ -82,7 +83,7 @@ export default function JoinClient() {
       }
     } catch { /* ignore */ }
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(remote.state)); } catch { /* ignore */ }
-    ctl.attach(remote, 'device');
+    ctl.attach(remote, 'device', grant);
     try { localStorage.setItem(ROLE_STORAGE_KEY, role); } catch { /* ignore */ }
     window.location.href = '/scorer';
   };

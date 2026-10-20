@@ -101,6 +101,15 @@ describe('stations CRUD', () => {
     const afterMin = MB.removeStation(s, 'A');
     assert.equal(afterMin.meet.stations.length, 1);
   });
+  test('R-M4: a new station never takes the id a removed station left on a division', () => {
+    let s = MB.createBlankMeet('Test Meet', '2026-11-01');
+    s = MB.addDivision(s, { id: 'd1', name: 'Open', flight: 'A' });
+    s = MB.removeStation(s, 'A');                    // d1 now points at a station that no longer exists
+    assert.deepEqual(s.meet.stations.map((x) => x.id), ['B']);
+    s = MB.addStation(s, { label: 'Replacement' });
+    assert.deepEqual(s.meet.stations.map((x) => x.id), ['B', 'C']);   // not 'A'
+    assert.equal(s.divisions[0].flight, 'A');       // still visibly unassigned until the promoter picks
+  });
 });
 
 describe('divisions CRUD & reorder', () => {

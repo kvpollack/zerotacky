@@ -45,13 +45,19 @@ export function generateEventRunOrder(
     const prevEvent = completedPriorEvents[completedPriorEvents.length - 1];
     const prevScored = scoreSingleEvent(prevEvent, divisionAthletes, allResults);
     prevScored.forEach((s) => prevScoreLookup.set(s.athleteId, s.displayScore));
-    const rankMap = new Map(prevScored.map((s, idx) => [s.athleteId, idx]));
+    // Astra R-M5 (10/19): athletes tied in the previous event share a place, so compare places (not array index) and
+    // let the documented fallbacks decide: lower overall points first, then lot number. Worst place in the previous
+    // event goes first, its winner goes last.
+    const placeMap = new Map(prevScored.map((s) => [s.athleteId, s.place]));
 
     orderedAthletes = [...activeAthletes].sort((a, b) => {
-      const rankA = rankMap.get(a.id) ?? 999;
-      const rankB = rankMap.get(b.id) ?? 999;
-      if (rankB !== rankA) return rankB - rankA;
-      return (pointsLookup.get(a.id) ?? 0) - (pointsLookup.get(b.id) ?? 0);
+      const placeA = placeMap.get(a.id) ?? 999;
+      const placeB = placeMap.get(b.id) ?? 999;
+      if (placeB !== placeA) return placeB - placeA;
+      const ptsA = pointsLookup.get(a.id) ?? 0;
+      const ptsB = pointsLookup.get(b.id) ?? 0;
+      if (ptsA !== ptsB) return ptsA - ptsB;
+      return a.lotNumber - b.lotNumber;
     });
   } else {
     orderedAthletes = [...activeAthletes].sort((a, b) => {

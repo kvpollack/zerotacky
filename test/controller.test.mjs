@@ -64,7 +64,7 @@ describe('SyncController: publish + join', () => {
     assert.equal(remote.state.meet.id, link.meetId);
     assert.equal(remote.state.athletes.length, admin.state.athletes.length);
     judge.state = remote.state;
-    const jl = judge.ctl.attach(remote);
+    const jl = judge.ctl.attach(remote); await judge.ctl.checkAdminPin('1050');   // 011: scores need the grant a correct PIN issues
     assert.equal(jl.role, 'device');
     assert.equal(jl.joinCode, 'JC0001');
     assert.equal(judge.ctl.status.state, 'idle');
@@ -105,7 +105,7 @@ describe('SyncController: scores flow between phones', () => {
     const judge = phone(srv, 'judge1', { meet: {}, divisions: [], events: [], athletes: [], results: [] }, clock);
     const remote = await judge.ctl.lookupJoinCode('JC0001');
     judge.state = remote.state;
-    judge.ctl.attach(remote);
+    judge.ctl.attach(remote); await judge.ctl.checkAdminPin('1050');   // 011: scores need the grant a correct PIN issues
     const board = phone(srv, 'board1', { meet: {}, divisions: [], events: [], athletes: [], results: [] }, clock);
     const r2 = await board.ctl.lookupJoinCode('JC0001');
     board.state = r2.state; board.ctl.attach(r2);
@@ -258,7 +258,7 @@ describe('SyncController: config republish reaches judge phones', () => {
     const judge = phone(srv, 'judge1', { meet: {}, divisions: [], events: [], athletes: [], results: [] }, clock);
     const remote = await judge.ctl.lookupJoinCode('JC0001');
     judge.state = remote.state;
-    judge.ctl.attach(remote);
+    judge.ctl.attach(remote); await judge.ctl.checkAdminPin('1050');   // 011: scores need the grant a correct PIN issues
     return { srv, admin, judge, remote };
   }
   test('attach records meets.updated_at; a plain tick does not re-read config', async () => {
@@ -311,7 +311,7 @@ describe('SyncController: resilience (verifier findings)', () => {
     const judge = phone(srv, 'judge1', { meet: {}, divisions: [], events: [], athletes: [], results: [] }, clock);
     const remote = await judge.ctl.lookupJoinCode('JC0001');
     judge.state = remote.state;
-    judge.ctl.attach(remote);
+    judge.ctl.attach(remote); await judge.ctl.checkAdminPin('1050');   // 011: scores need the grant a correct PIN issues
     return { srv, admin, judge };
   }
   test('walk-on + score + rack pin flushes athletes before results (FK order), one tick', async () => {
@@ -460,7 +460,9 @@ function a4FakeClient(log, { token = null, joinCode = null, auto = true } = {}) 
     new Promise((resolve, reject) => {
       const entry = { kind, name, token, joinCode, ...extra, resolve, reject };
       log.push(entry);
-      if (auto) resolve(entry.autoValue ?? undefined);
+      // 011: publish mints a grant with a follow-up PIN rpc; the manual-drive tests predate it, so answer that one
+      // immediately (a refusal, which publish treats as best effort) instead of making every test drive it.
+      if (auto || (kind === 'rpc' && name === 'zt_check_admin_pin')) resolve(entry.autoValue ?? undefined);
     });
   const client = {
     select: (table, query) => pend('select', table, { query, autoValue: [] }),
@@ -725,9 +727,10 @@ describe('SyncController account binding + publish errors (gate round)', () => {
     a.ctl.attach({ state: a.st, slug: 'g', joinCode: 'ZZZ999', latestServerAt: null, updatedAt: null }, 'device');
     const p = a.ctl.checkAdminPin('1234');
     const call = a.log.find((e) => e.kind === 'rpc' && e.name === 'zt_check_admin_pin');
-    assert.deepEqual(call.args, { p_code: 'ZZZ999', p_pin: '1234' });
-    // the fake resolves rpc calls with the publish shape; anything but `true` is a refusal
+    assert.deepEqual(call.args, { p_code: 'ZZZ999', p_pin: '1234', p_device_id: 'dev-test' });
+    // the fake resolves rpc calls with the publish shape; anything but a token string is a refusal (011)
     assert.equal(await p, false);
+    assert.equal(a.ctl.link.grant ?? null, null);
   });
 
   // Astra rehearsal R2 (10/17): a re-publish whose pre-pull fails must not go ahead with the stale roster.
@@ -774,7 +777,7 @@ describe('SyncController account binding + publish errors (gate round)', () => {
     await admin.ctl.publish({ slug: 'r5b' }, 'GOODKEY');
     const judge = phone(srv, 'j-r5b', P.getInitialSeedState('york-iron-2026'), clock);
     const remote = await judge.ctl.lookupJoinCode(admin.ctl.link.joinCode);
-    judge.state = remote.state; judge.ctl.attach(remote);
+    judge.state = remote.state; judge.ctl.attach(remote); await judge.ctl.checkAdminPin('1050');   // 011: scores need the grant a correct PIN issues
     judge.mutate((s) => score(s, 0, 0, { reps: 5, locked: true }, T += 1000));
     await judge.ctl.tick();
     await admin.ctl.tick();
@@ -797,7 +800,7 @@ describe('SyncController account binding + publish errors (gate round)', () => {
     await admin.ctl.publish({ slug: 'h2' }, 'GOODKEY');
     const judge = phone(srv, 'j-h2', P.getInitialSeedState('york-iron-2026'), clock);
     const remote = await judge.ctl.lookupJoinCode(admin.ctl.link.joinCode);
-    judge.state = remote.state; judge.ctl.attach(remote);
+    judge.state = remote.state; judge.ctl.attach(remote); await judge.ctl.checkAdminPin('1050');   // 011: scores need the grant a correct PIN issues
     const walkon = { ...judge.state.athletes[0], id: 'walkon-h2', name: 'Walk On', lotNumber: 99 };
     judge.mutate((s) => ({ ...s, athletes: [...s.athletes, walkon] }));
     await judge.ctl.tick();

@@ -9,12 +9,12 @@ export const RUN_ORDER_OPTIONS = [
   {
     value: 'reverse_overall',
     label: 'Reverse Overall Pts',
-    explain: 'Lowest overall points lifts first, the current leader goes last. Athletes level on points go by lot number. The usual choice: the podium race builds to the final attempt.',
+    explain: 'Lowest overall points lifts first and the current leader goes last. Athletes level on points go by lot number. Most promoters pick this so the podium race builds to the final attempt.',
   },
   {
     value: 'reverse_previous_event',
     label: 'Reverse Prev Event',
-    explain: 'Only the last event counts: whoever placed last in it goes first, its winner goes last, whatever the overall standings. Athletes tied in that event go lower overall points first.',
+    explain: 'Only the last event counts. Whoever placed last in it goes first and its winner goes last, whatever the overall standings. Athletes tied in that event go lower overall points first, then by lot number.',
   },
 ];
 
@@ -22,12 +22,12 @@ export const TIEBREAK_OPTIONS = [
   {
     value: 'event_wins',
     label: 'Most Event Wins',
-    explain: 'The athlete with more event wins places higher. Still level: the higher score in the final event wins.',
+    explain: 'The athlete with more event wins places higher. If that is level too, more points in the final event wins. Still level after both: the athletes share the place.',
   },
   {
     value: 'final_event',
     label: 'Final Event Score',
-    explain: 'The athlete who scored higher in the final event places higher. Still level: more event wins.',
+    explain: 'The athlete with more points in the final event places higher. If that is level too, more event wins. Still level after both: the athletes share the place.',
   },
 ];
 

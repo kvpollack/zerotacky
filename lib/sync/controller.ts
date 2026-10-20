@@ -8,7 +8,7 @@ import { mergeResults, resultToRow, athleteToRow } from './mapping';
 import type { PublishExtra } from './mapping';
 import { enqueue, groupByTable, removeFlushed, readQueue, writeQueue } from './queue';
 import type { QueueItem } from './queue';
-import { publishMeet, fetchMeetByJoinCode, fetchMeetBySlug, pullChanges, fetchMeetConfig, checkAdminPin, type MeetConfig } from './meetApi';
+import { publishMeet, fetchMeetByJoinCode, fetchMeetBySlug, pullChanges, fetchMeetConfig, checkAdminPin, revokeGrant, type MeetConfig } from './meetApi';
 import type { RemoteMeet, LiveStateRow } from './meetApi';
 
 export const LINK_KEY = 'ZEROTACKY_SYNC_LINK_V1';
@@ -25,6 +25,9 @@ export interface SyncLink {
   // 'key' (legacy publish key) and 'join' (volunteer join code) links are intentionally accountless and keep going.
   // Absent on links written before 10/17: treated as 'key' for admin and 'join' for device.
   auth?: 'account' | 'key' | 'join';
+  // 011 (Astra R-H1): the grant token the server issued when this phone proved the meet PIN. Sent as x-zt-grant;
+  // results/live_state writes from a joined phone are refused without it. Null until a PIN succeeds on this phone.
+  grant?: string | null;
   // Astra gate MED (10/17 pm): the account an 'account' link was published under. A different signed-in user on the
   // same phone does not resume this link's queue; they unlink (or the owner signs back in).
   userId?: string | null;
@@ -174,7 +177,7 @@ export class SyncController {
   }
 
   private get writer(): SyncClient {
-    return this.link ? this.o.client.withJoinCode(this.link.joinCode) : this.o.client;
+    return this.link ? this.o.client.withJoinCode(this.link.joinCode, this.link.grant ?? null) : this.o.client;
   }
 
   private persistQueue(): void { writeQueue(this.o.storage, this.queue); }
@@ -187,7 +190,11 @@ export class SyncController {
     this.setStatus({ state: link ? 'idle' : 'off', error: null, dropped: 0, publishError: null });
   }
 
-  unlink(): void { this.setLink(null); }
+  unlink(): void {
+    const grant = this.link?.grant;
+    if (grant) revokeGrant(this.o.client, grant).catch(() => { /* best effort; a rotation revokes it anyway */ });
+    this.setLink(null);
+  }
 
   // v2: signed-in promoter. Every later call (publish, pushes, pulls) carries the user's JWT instead of the anon
   // key, so zt_publish_meet sees auth.uid() and the RLS member policies apply. null drops back to anon.
@@ -271,11 +278,20 @@ export class SyncController {
         auth: publishKey === null ? 'account' : 'key',
         userId: this.accessToken ? this.userId : null,
         since: this.link?.meetId === out.id ? this.link.since : null,
+        grant: this.link?.meetId === out.id && this.link.joinCode === out.joinCode ? this.link.grant ?? null : null,
       };
       this.setLink(link);
       this.seedKnown(state);
+      // 011: a signed-in owner writes scores as a member, but a publish-key phone has no account, so it proves the PIN
+      // it just set and carries the grant like a judge would. Best effort: a refusal here does not undo the publish.
+      if (!link.grant) {
+        try {
+          const token = await checkAdminPin(this.o.client, out.joinCode, state.meet.adminPin || '1050', this.o.deviceId);
+          if (token && this.link?.meetId === out.id) this.setLink({ ...this.link, grant: token });
+        } catch { /* member phones do not need it; a judge-style unlock can still mint one later */ }
+      }
       this.setStatus({ state: 'idle', lastSyncAt: this.now(), publishError: null });
-      return link;
+      return this.link ?? link;
     } catch (e) {
       this.fail(e);
       this.setStatus({ publishError: e instanceof Error ? e.message : String(e) });
@@ -289,9 +305,18 @@ export class SyncController {
   // Linked phone: ask the server whether `pin` is this meet's admin PIN (zt_check_admin_pin, 007). The join RPC no
   // longer returns admin_pin, so this is the only way a volunteer phone can unlock admin controls. Resolves null when
   // this phone is not linked, so the caller can fall back to its own local meet's PIN.
+  // 011: a correct PIN also hands this phone a grant token, saved on the link so every later write carries it.
   async checkAdminPin(pin: string): Promise<boolean | null> {
     if (!this.link) return null;
-    return checkAdminPin(this.o.client, this.link.joinCode, pin);
+    const token = await checkAdminPin(this.o.client, this.link.joinCode, pin, this.o.deviceId);
+    if (!token) return false;
+    this.setLink({ ...this.link, grant: token });
+    return true;
+  }
+
+  // Does this phone hold write authority for scores: the promoter's own link, or a joined phone that proved the PIN.
+  get canScore(): boolean {
+    return !!this.link && (this.link.role === 'admin' || !!this.link.grant);
   }
 
   // Judge / pit-crew phone: trade a join code for the meet. Caller applies `remote.state` to the app,
@@ -309,8 +334,8 @@ export class SyncController {
     return fetchMeetBySlug(this.o.client, slug);
   }
 
-  attach(remote: RemoteMeet, role: SyncLink['role'] = 'device'): SyncLink {
-    const link: SyncLink = { meetId: remote.state.meet.id, localMeetId: remote.state.meet.id, slug: remote.slug, joinCode: remote.joinCode ?? '', role, auth: 'join', since: remote.latestServerAt, configAt: remote.updatedAt ?? null };
+  attach(remote: RemoteMeet, role: SyncLink['role'] = 'device', grant: string | null = null): SyncLink {
+    const link: SyncLink = { meetId: remote.state.meet.id, localMeetId: remote.state.meet.id, slug: remote.slug, joinCode: remote.joinCode ?? '', role, auth: 'join', grant, since: remote.latestServerAt, configAt: remote.updatedAt ?? null };
     this.setLink(link);
     this.seedKnown(remote.state);
     this.setStatus({ state: 'idle', lastSyncAt: this.now() });
