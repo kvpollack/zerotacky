@@ -1,0 +1,1871 @@
+{
+  "revision": {
+    "sha": "6d3b46b687700d2ba392731aa8479ad1ade0e47c",
+    "tracked": 304,
+    "mismatches": []
+  },
+  "api-evidence": {
+    "baseline": {
+      "astra": {
+        "id": "745d4f4f-6097-4aa4-b6c1-99b75abb728a",
+        "username": null,
+        "is_public": false,
+        "avatar_path": ""
+      },
+      "slate": {
+        "id": "36970762-b3e1-43c2-87f0-d1093816f94e",
+        "username": "slate_staging",
+        "is_public": true,
+        "avatar_path": "36970762-b3e1-43c2-87f0-d1093816f94e/avatar-1792463253325.png"
+      }
+    },
+    "anonPublic": {
+      "status": 200,
+      "usernames": [
+        "slate_staging"
+      ],
+      "keys": [
+        "id",
+        "username",
+        "display_name",
+        "is_athlete",
+        "is_promoter",
+        "is_gym_owner",
+        "is_trainer",
+        "trainer_in_person",
+        "trainer_online",
+        "favorite_lift",
+        "favorite_lift_note",
+        "location",
+        "home_gym_name",
+        "prs",
+        "socials",
+        "avatar_path",
+        "updated_at"
+      ]
+    },
+    "anonEmail": {
+      "status": 400,
+      "body": {
+        "code": "42703",
+        "details": null,
+        "hint": null,
+        "message": "column zt_public_profiles.email does not exist"
+      }
+    },
+    "anonBase": {
+      "status": 200,
+      "body": []
+    },
+    "anonHolds": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.username_holds TO anon;",
+        "message": "permission denied for table username_holds"
+      }
+    },
+    "astraPublic": {
+      "status": 200,
+      "usernames": [
+        "slate_staging"
+      ],
+      "keys": [
+        "id",
+        "username",
+        "display_name",
+        "is_athlete",
+        "is_promoter",
+        "is_gym_owner",
+        "is_trainer",
+        "trainer_in_person",
+        "trainer_online",
+        "favorite_lift",
+        "favorite_lift_note",
+        "location",
+        "home_gym_name",
+        "prs",
+        "socials",
+        "avatar_path",
+        "updated_at"
+      ]
+    },
+    "astraEmail": {
+      "status": 400,
+      "body": {
+        "code": "42703",
+        "details": null,
+        "hint": null,
+        "message": "column zt_public_profiles.email does not exist"
+      }
+    },
+    "astraBase": {
+      "status": 200,
+      "body": [
+        {
+          "id": "745d4f4f-6097-4aa4-b6c1-99b75abb728a",
+          "username": null
+        }
+      ]
+    },
+    "astraHolds": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.username_holds TO authenticated;",
+        "message": "permission denied for table username_holds"
+      }
+    },
+    "slatePublic": {
+      "status": 200,
+      "usernames": [
+        "slate_staging"
+      ],
+      "keys": [
+        "id",
+        "username",
+        "display_name",
+        "is_athlete",
+        "is_promoter",
+        "is_gym_owner",
+        "is_trainer",
+        "trainer_in_person",
+        "trainer_online",
+        "favorite_lift",
+        "favorite_lift_note",
+        "location",
+        "home_gym_name",
+        "prs",
+        "socials",
+        "avatar_path",
+        "updated_at"
+      ]
+    },
+    "slateEmail": {
+      "status": 400,
+      "body": {
+        "code": "42703",
+        "details": null,
+        "hint": null,
+        "message": "column zt_public_profiles.email does not exist"
+      }
+    },
+    "slateBase": {
+      "status": 200,
+      "body": [
+        {
+          "id": "36970762-b3e1-43c2-87f0-d1093816f94e",
+          "username": "slate_staging"
+        }
+      ]
+    },
+    "slateHolds": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.username_holds TO authenticated;",
+        "message": "permission denied for table username_holds"
+      }
+    },
+    "reservedHelper": {
+      "admin": {
+        "status": 200,
+        "body": true
+      },
+      "administrator": {
+        "status": 200,
+        "body": true
+      },
+      "root": {
+        "status": 200,
+        "body": true
+      },
+      "system": {
+        "status": 200,
+        "body": true
+      },
+      "support": {
+        "status": 200,
+        "body": true
+      },
+      "help": {
+        "status": 200,
+        "body": true
+      },
+      "staff": {
+        "status": 200,
+        "body": true
+      },
+      "team": {
+        "status": 200,
+        "body": true
+      },
+      "official": {
+        "status": 200,
+        "body": true
+      },
+      "moderator": {
+        "status": 200,
+        "body": true
+      },
+      "mod": {
+        "status": 200,
+        "body": true
+      },
+      "zerotacky": {
+        "status": 200,
+        "body": true
+      },
+      "zt": {
+        "status": 200,
+        "body": true
+      },
+      "slate": {
+        "status": 200,
+        "body": true
+      },
+      "api": {
+        "status": 200,
+        "body": true
+      },
+      "www": {
+        "status": 200,
+        "body": true
+      },
+      "app": {
+        "status": 200,
+        "body": true
+      },
+      "athletes": {
+        "status": 200,
+        "body": true
+      },
+      "athlete": {
+        "status": 200,
+        "body": true
+      },
+      "shows": {
+        "status": 200,
+        "body": true
+      },
+      "show": {
+        "status": 200,
+        "body": true
+      },
+      "gyms": {
+        "status": 200,
+        "body": true
+      },
+      "gym": {
+        "status": 200,
+        "body": true
+      },
+      "trainers": {
+        "status": 200,
+        "body": true
+      },
+      "trainer": {
+        "status": 200,
+        "body": true
+      },
+      "promoter": {
+        "status": 200,
+        "body": true
+      },
+      "promoters": {
+        "status": 200,
+        "body": true
+      },
+      "account": {
+        "status": 200,
+        "body": true
+      },
+      "settings": {
+        "status": 200,
+        "body": true
+      },
+      "login": {
+        "status": 200,
+        "body": true
+      },
+      "signin": {
+        "status": 200,
+        "body": true
+      },
+      "signup": {
+        "status": 200,
+        "body": true
+      },
+      "register": {
+        "status": 200,
+        "body": true
+      },
+      "join": {
+        "status": 200,
+        "body": true
+      },
+      "scorer": {
+        "status": 200,
+        "body": true
+      },
+      "demo": {
+        "status": 200,
+        "body": true
+      },
+      "legal": {
+        "status": 200,
+        "body": true
+      },
+      "terms": {
+        "status": 200,
+        "body": true
+      },
+      "privacy": {
+        "status": 200,
+        "body": true
+      },
+      "about": {
+        "status": 200,
+        "body": true
+      },
+      "contact": {
+        "status": 200,
+        "body": true
+      },
+      "me": {
+        "status": 200,
+        "body": true
+      },
+      "you": {
+        "status": 200,
+        "body": true
+      },
+      "null": {
+        "status": 200,
+        "body": true
+      },
+      "undefined": {
+        "status": 200,
+        "body": true
+      },
+      "anonymous": {
+        "status": 200,
+        "body": true
+      },
+      "unknown": {
+        "status": 200,
+        "body": true
+      },
+      "website": {
+        "status": 200,
+        "body": true
+      },
+      "how_it_works": {
+        "status": 200,
+        "body": true
+      },
+      "howitworks": {
+        "status": 200,
+        "body": true
+      },
+      "meets": {
+        "status": 200,
+        "body": true
+      },
+      "meet": {
+        "status": 200,
+        "body": true
+      },
+      "results": {
+        "status": 200,
+        "body": true
+      },
+      "scoreboard": {
+        "status": 200,
+        "body": true
+      },
+      "security": {
+        "status": 200,
+        "body": true
+      },
+      "abuse": {
+        "status": 200,
+        "body": true
+      }
+    },
+    "reservedSet": {
+      "admin": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "administrator": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "root": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "system": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "support": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "help": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "staff": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "team": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "official": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "moderator": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "mod": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "zerotacky": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "zt": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "Usernames are 3 to 30 characters: lowercase letters, numbers and underscores."
+        }
+      },
+      "slate": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "api": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "www": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "app": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "athletes": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "athlete": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "shows": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "show": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "gyms": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "gym": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "trainers": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "trainer": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "promoter": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "promoters": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "account": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "settings": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "login": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "signin": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "signup": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "register": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "join": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "scorer": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "demo": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "legal": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "terms": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "privacy": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "about": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "contact": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "me": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "Usernames are 3 to 30 characters: lowercase letters, numbers and underscores."
+        }
+      },
+      "you": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "null": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "undefined": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "anonymous": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "unknown": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "website": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "how_it_works": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "howitworks": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "meets": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "meet": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "results": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "scoreboard": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "security": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      },
+      "abuse": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "That username is reserved."
+        }
+      }
+    },
+    "websiteOtherAccount": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "That username is reserved."
+      }
+    },
+    "websiteAvailability": {
+      "astra": {
+        "status": 200,
+        "body": false
+      },
+      "slate": {
+        "status": 200,
+        "body": false
+      }
+    },
+    "avatarConstraint": [
+      {
+        "path": "745d4f4f-6097-4aa4-b6c1-99b75abb728a/../x.png",
+        "status": 400,
+        "body": {
+          "code": "23514",
+          "details": null,
+          "hint": null,
+          "message": "new row for relation \"profiles\" violates check constraint \"profiles_avatar_own\""
+        }
+      },
+      {
+        "path": "745d4f4f-6097-4aa4-b6c1-99b75abb728a/./x.png",
+        "status": 400,
+        "body": {
+          "code": "23514",
+          "details": null,
+          "hint": null,
+          "message": "new row for relation \"profiles\" violates check constraint \"profiles_avatar_own\""
+        }
+      },
+      {
+        "path": "745d4f4f-6097-4aa4-b6c1-99b75abb728a//x.png",
+        "status": 400,
+        "body": {
+          "code": "23514",
+          "details": null,
+          "hint": null,
+          "message": "new row for relation \"profiles\" violates check constraint \"profiles_avatar_own\""
+        }
+      },
+      {
+        "path": "745d4f4f-6097-4aa4-b6c1-99b75abb728a/",
+        "status": 400,
+        "body": {
+          "code": "23514",
+          "details": null,
+          "hint": null,
+          "message": "new row for relation \"profiles\" violates check constraint \"profiles_avatar_own\""
+        }
+      },
+      {
+        "path": "/745d4f4f-6097-4aa4-b6c1-99b75abb728a/x.png",
+        "status": 400,
+        "body": {
+          "code": "23514",
+          "details": null,
+          "hint": null,
+          "message": "new row for relation \"profiles\" violates check constraint \"profiles_avatar_own\""
+        }
+      },
+      {
+        "path": "36970762-b3e1-43c2-87f0-d1093816f94e/x.png",
+        "status": 400,
+        "body": {
+          "code": "23514",
+          "details": null,
+          "hint": null,
+          "message": "new row for relation \"profiles\" violates check constraint \"profiles_avatar_own\""
+        }
+      },
+      {
+        "path": "745d4f4f-6097-4aa4-b6c1-99b75abb728a/avatar.png",
+        "status": 204,
+        "body": ""
+      }
+    ],
+    "publicWithoutUsername": {
+      "status": 400,
+      "body": {
+        "code": "23514",
+        "details": null,
+        "hint": null,
+        "message": "new row for relation \"profiles\" violates check constraint \"profiles_public_needs_username\""
+      }
+    },
+    "directUsernamePatch": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT UPDATE ON public.profiles TO authenticated;",
+        "message": "permission denied for table profiles"
+      }
+    },
+    "restore:astra": {
+      "diff": [],
+      "username": null,
+      "is_public": false
+    },
+    "restore:slate": {
+      "diff": [],
+      "username": "slate_staging",
+      "is_public": true
+    }
+  },
+  "browser-evidence": {
+    "checks": {
+      "usernameDrafts": {
+        "drafts": {
+          "name": "Astra UNSAVED retest",
+          "location": "UNSAVED retest location",
+          "gym": "UNSAVED retest gym",
+          "username": "astra_audit_web1021"
+        },
+        "server": {
+          "display_name": "Astra Staging",
+          "location": "",
+          "home_gym_name": "",
+          "username": "astra_audit_web1021"
+        }
+      },
+      "visibility:on": {
+        "drafts": {
+          "name": "Astra UNSAVED retest",
+          "location": "UNSAVED retest location",
+          "gym": "UNSAVED retest gym",
+          "username": "astra_audit_web1021"
+        },
+        "server": {
+          "display_name": "Astra Staging",
+          "location": "",
+          "home_gym_name": "",
+          "username": "astra_audit_web1021",
+          "is_public": true
+        }
+      },
+      "visibility:off": {
+        "drafts": {
+          "name": "Astra UNSAVED retest",
+          "location": "UNSAVED retest location",
+          "gym": "UNSAVED retest gym",
+          "username": "astra_audit_web1021"
+        },
+        "server": {
+          "display_name": "Astra Staging",
+          "location": "",
+          "home_gym_name": "",
+          "username": "astra_audit_web1021",
+          "is_public": false
+        }
+      },
+      "visibility:onAgain": {
+        "drafts": {
+          "name": "Astra UNSAVED retest",
+          "location": "UNSAVED retest location",
+          "gym": "UNSAVED retest gym",
+          "username": "astra_audit_web1021"
+        },
+        "server": {
+          "display_name": "Astra Staging",
+          "location": "",
+          "home_gym_name": "",
+          "username": "astra_audit_web1021",
+          "is_public": true
+        }
+      },
+      "reloadDiscardedOnlyUnsaved": {
+        "name": "Astra Staging",
+        "location": "",
+        "gym": "",
+        "username": "astra_audit_web1021"
+      },
+      "mainSaveAfterUsername": {
+        "display_name": "Astra Retest Saved",
+        "location": "Kansas City, Missouri",
+        "username": "astra_audit_avatar1021",
+        "is_public": true
+      },
+      "mainSaveWithUnsavedUsername": {
+        "drafts": {
+          "name": "Astra Retest Main",
+          "location": "Kansas City, Missouri",
+          "gym": "",
+          "username": "astra_pending_not_saved"
+        },
+        "serverUsername": "astra_audit_avatar1021"
+      },
+      "twoTabTopLevel": {
+        "tab2": {
+          "name": "Astra From Tab One",
+          "location": "TAB2 unsaved location",
+          "gym": "",
+          "username": "astra_audit_avatar1021"
+        },
+        "server": {
+          "display_name": "Astra From Tab One",
+          "location": "Kansas City, Missouri",
+          "home_gym_name": ""
+        }
+      },
+      "twoTabAboutSibling": {
+        "tab2": {
+          "name": "Astra From Tab One",
+          "location": "Kansas City, Missouri",
+          "gym": "Astra saved gym from tab one",
+          "username": "astra_audit_avatar1021"
+        },
+        "server": {
+          "display_name": "Astra From Tab One",
+          "location": "Kansas City, Missouri",
+          "home_gym_name": "Astra saved gym from tab one"
+        },
+        "expectedLocationDraft": "TAB2 MUST SURVIVE"
+      },
+      "storedWebsiteLinks": [
+        {
+          "stored": "mailto:x@y.com",
+          "page": {
+            "status": 200,
+            "headings": [
+              "Astra From Tab One"
+            ],
+            "cache": {
+              "age": "0",
+              "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+              "x-vercel-cache": "MISS"
+            }
+          },
+          "websiteLinks": [],
+          "emailInBody": false
+        },
+        {
+          "stored": "tel:555",
+          "page": {
+            "status": 200,
+            "headings": [
+              "Astra From Tab One"
+            ],
+            "cache": {
+              "age": "0",
+              "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+              "x-vercel-cache": "MISS"
+            }
+          },
+          "websiteLinks": [],
+          "emailInBody": false
+        },
+        {
+          "stored": "javascript:alert(1)",
+          "page": {
+            "status": 200,
+            "headings": [
+              "Astra From Tab One"
+            ],
+            "cache": {
+              "age": "0",
+              "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+              "x-vercel-cache": "MISS"
+            }
+          },
+          "websiteLinks": [],
+          "emailInBody": false
+        },
+        {
+          "stored": "ftp://host",
+          "page": {
+            "status": 200,
+            "headings": [
+              "Astra From Tab One"
+            ],
+            "cache": {
+              "age": "0",
+              "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+              "x-vercel-cache": "MISS"
+            }
+          },
+          "websiteLinks": [],
+          "emailInBody": false
+        },
+        {
+          "stored": "https://user:pw@host",
+          "page": {
+            "status": 200,
+            "headings": [
+              "Astra From Tab One"
+            ],
+            "cache": {
+              "age": "0",
+              "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+              "x-vercel-cache": "MISS"
+            }
+          },
+          "websiteLinks": [],
+          "emailInBody": false
+        },
+        {
+          "stored": "HTTP://Host",
+          "page": {
+            "status": 200,
+            "headings": [
+              "Astra From Tab One"
+            ],
+            "cache": {
+              "age": "0",
+              "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+              "x-vercel-cache": "MISS"
+            }
+          },
+          "websiteLinks": [],
+          "emailInBody": false
+        },
+        {
+          "stored": "localhost:3000",
+          "page": {
+            "status": 200,
+            "headings": [
+              "Astra From Tab One"
+            ],
+            "cache": {
+              "age": "0",
+              "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+              "x-vercel-cache": "MISS"
+            }
+          },
+          "websiteLinks": [],
+          "emailInBody": false
+        },
+        {
+          "stored": "example.com",
+          "page": {
+            "status": 200,
+            "headings": [
+              "Astra From Tab One"
+            ],
+            "cache": {
+              "age": "0",
+              "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+              "x-vercel-cache": "MISS"
+            }
+          },
+          "websiteLinks": [
+            "https://example.com/"
+          ],
+          "emailInBody": false
+        },
+        {
+          "stored": "HTTP://Example.com",
+          "page": {
+            "status": 200,
+            "headings": [
+              "Astra From Tab One"
+            ],
+            "cache": {
+              "age": "0",
+              "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+              "x-vercel-cache": "MISS"
+            }
+          },
+          "websiteLinks": [
+            "http://example.com/"
+          ],
+          "emailInBody": false
+        }
+      ],
+      "clearAtomic": {
+        "status": 200,
+        "username": null,
+        "isPublic": false,
+        "otherChanged": [],
+        "page": {
+          "status": 404,
+          "headings": [
+            "No public profile here"
+          ],
+          "cache": {
+            "age": "0",
+            "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+            "x-vercel-cache": "MISS"
+          }
+        },
+        "elapsedSeconds": 0.883205000005546
+      },
+      "malformedURLs": [],
+      "restore": {
+        "diff": [],
+        "username": null,
+        "is_public": false
+      }
+    },
+    "pageErrors": [],
+    "failure": "Page.goto: net::ERR_HTTP2_PROTOCOL_ERROR at https://zerotacky-git-v2-kvpollack-6654.vercel.app/athletes/100%\nCall log:\n  - navigating to \"https://zerotacky-git-v2-kvpollack-6654.vercel.app/athletes/100%\", waiting until \"load\"\n"
+  },
+  "pure-evidence": {
+    "states": [
+      {
+        "input": "Kansas City, Missouri",
+        "expected": "MO",
+        "actual": "MO"
+      },
+      {
+        "input": "West Virginia",
+        "expected": "WV",
+        "actual": "WV"
+      },
+      {
+        "input": "Virginia Beach, Virginia",
+        "expected": "VA",
+        "actual": "VA"
+      },
+      {
+        "input": "Kansas City",
+        "expected": "",
+        "actual": ""
+      },
+      {
+        "input": "Kansas",
+        "expected": "KS",
+        "actual": "KS"
+      },
+      {
+        "input": "Portland, OR 97201",
+        "expected": "OR",
+        "actual": "OR"
+      },
+      {
+        "input": "Austin, TX, USA",
+        "expected": "TX",
+        "actual": "TX"
+      },
+      {
+        "input": "Portland, Oregon, United States",
+        "expected": "OR",
+        "actual": "OR"
+      },
+      {
+        "input": "Charleston, West Virginia, United States of America",
+        "expected": "WV",
+        "actual": "WV"
+      },
+      {
+        "input": "UK",
+        "expected": "",
+        "actual": ""
+      },
+      {
+        "input": "ZZ",
+        "expected": "",
+        "actual": ""
+      },
+      {
+        "input": "Austin TX United States",
+        "expected": "TX",
+        "actual": ""
+      },
+      {
+        "input": "Columbus Ohio",
+        "expected": "OH",
+        "actual": ""
+      },
+      {
+        "input": "Charleston West Virginia",
+        "expected": "WV",
+        "actual": "WV"
+      }
+    ],
+    "websites": [
+      {
+        "input": "mailto:x@y.com",
+        "clean": "",
+        "href": ""
+      },
+      {
+        "input": "tel:555",
+        "clean": "",
+        "href": ""
+      },
+      {
+        "input": "javascript:alert(1)",
+        "clean": "",
+        "href": ""
+      },
+      {
+        "input": "ftp://host",
+        "clean": "",
+        "href": ""
+      },
+      {
+        "input": "https://user:pw@host",
+        "clean": "",
+        "href": ""
+      },
+      {
+        "input": "HTTP://Host",
+        "clean": "",
+        "href": ""
+      },
+      {
+        "input": "localhost:3000",
+        "clean": "",
+        "href": ""
+      },
+      {
+        "input": "example.com",
+        "clean": "https://example.com/",
+        "href": "https://example.com/"
+      },
+      {
+        "input": "HTTP://Example.com",
+        "clean": "http://example.com/",
+        "href": "http://example.com/"
+      },
+      {
+        "input": "https://user:pw@example.com",
+        "clean": "",
+        "href": ""
+      },
+      {
+        "input": "https://example.com:3000/",
+        "clean": "https://example.com:3000/",
+        "href": "https://example.com:3000/"
+      }
+    ],
+    "params": [
+      {
+        "input": "100%",
+        "clean": "",
+        "calls": [],
+        "result": {
+          "source": "live_supabase",
+          "data": null,
+          "error": null
+        }
+      },
+      {
+        "input": "%",
+        "clean": "",
+        "calls": [],
+        "result": {
+          "source": "live_supabase",
+          "data": null,
+          "error": null
+        }
+      },
+      {
+        "input": "%E0%A4%A",
+        "clean": "",
+        "calls": [],
+        "result": {
+          "source": "live_supabase",
+          "data": null,
+          "error": null
+        }
+      },
+      {
+        "input": "%40SLATE_STAGING",
+        "clean": "slate_staging",
+        "calls": [
+          {
+            "t": "zt_public_profiles",
+            "q": "select=id,username,display_name,is_athlete,is_promoter,is_gym_owner,is_trainer,trainer_in_person,trainer_online,favorite_lift,favorite_lift_note,location,home_gym_name,prs,socials,avatar_path,updated_at&username=eq.slate_staging&limit=1"
+          }
+        ],
+        "result": {
+          "source": "live_supabase",
+          "data": null,
+          "error": null
+        }
+      },
+      {
+        "input": "a b",
+        "clean": "",
+        "calls": [],
+        "result": {
+          "source": "live_supabase",
+          "data": null,
+          "error": null
+        }
+      }
+    ],
+    "reserved": [
+      {
+        "name": "admin",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "administrator",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "root",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "system",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "support",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "help",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "staff",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "team",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "official",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "moderator",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "mod",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "zerotacky",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "zt",
+        "problem": "Usernames are 3 to 30 characters."
+      },
+      {
+        "name": "slate",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "api",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "www",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "app",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "athletes",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "athlete",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "shows",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "show",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "gyms",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "gym",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "trainers",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "trainer",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "promoter",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "promoters",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "account",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "settings",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "login",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "signin",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "signup",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "register",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "join",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "scorer",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "demo",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "legal",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "terms",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "privacy",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "about",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "contact",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "me",
+        "problem": "Usernames are 3 to 30 characters."
+      },
+      {
+        "name": "you",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "null",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "undefined",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "anonymous",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "unknown",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "website",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "how_it_works",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "howitworks",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "meets",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "meet",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "results",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "scoreboard",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "security",
+        "problem": "That username is reserved."
+      },
+      {
+        "name": "abuse",
+        "problem": "That username is reserved."
+      }
+    ],
+    "noBackend": {
+      "source": "demo",
+      "data": [],
+      "error": null
+    }
+  },
+  "empty-evidence": {
+    "emptyText": true,
+    "countText": true,
+    "selects": 2
+  },
+  "remaining-evidence": {
+    "rawHTTP": [
+      {
+        "path": "/athletes/100%",
+        "status": 400,
+        "bodyStart": "400 Bad Request",
+        "cache": {}
+      },
+      {
+        "path": "/athletes/%",
+        "status": 400,
+        "bodyStart": "400 Bad Request",
+        "cache": {}
+      },
+      {
+        "path": "/athletes/%E0%A4%A",
+        "status": 400,
+        "bodyStart": "400 Bad Request",
+        "cache": {}
+      }
+    ],
+    "browserURLs": [
+      {
+        "path": "/athletes/%",
+        "error": "Page.goto: net::ERR_HTTP2_PROTOCOL_ERROR at https://zerotacky-git-v2-kvpollack-6654.vercel.app/athletes/%\n"
+      },
+      {
+        "path": "/athletes/%E0%A4%A",
+        "error": "Page.goto: net::ERR_HTTP2_PROTOCOL_ERROR at https://zerotacky-git-v2-kvpollack-6654.vercel.app/athletes/%E0%A4%A\n"
+      },
+      {
+        "path": "/athletes/100%25",
+        "status": 404,
+        "headings": [
+          "No public profile here"
+        ]
+      },
+      {
+        "path": "/athletes/%25",
+        "status": 404,
+        "headings": [
+          "No public profile here"
+        ]
+      },
+      {
+        "path": "/athletes/%25E0%25A4%25A",
+        "status": 404,
+        "headings": [
+          "No public profile here"
+        ]
+      },
+      {
+        "path": "/athletes/slate_staging",
+        "status": 200,
+        "headings": [
+          "Slate Staging"
+        ]
+      }
+    ],
+    "filters": {
+      "queryState": {
+        "url": "https://zerotacky-git-v2-kvpollack-6654.vercel.app/athletes?state=TN",
+        "selectedState": "ALL"
+      },
+      "trainerTN": 1,
+      "roleNoMatch": true,
+      "searchNoMatch": true,
+      "reset": {
+        "state": "ALL",
+        "role": "ALL",
+        "search": "",
+        "width": 375
+      }
+    },
+    "profiles": {
+      "astra": {
+        "username": null,
+        "is_public": false,
+        "diff": []
+      },
+      "slate": {
+        "username": "slate_staging",
+        "is_public": true,
+        "diff": []
+      }
+    },
+    "finalPublic": {
+      "status": 200,
+      "body": [
+        {
+          "username": "slate_staging"
+        }
+      ]
+    },
+    "finalFingerprint": {
+      "tracked": 304,
+      "mismatches": []
+    }
+  },
+  "suite": {
+    "pass": 337,
+    "fail": 0,
+    "files": 28,
+    "tscExit": 0,
+    "tscDiagnosticsBytes": 0
+  },
+  "verdicts": {
+    "AD-M1": "not cleared",
+    "AD-M2": "cleared for original finding; new parsing gaps documented",
+    "AD-L1": "cleared",
+    "AD-L2": "cleared",
+    "AD-L3": "cleared for original throw; malformed raw transport paths do not all render 404",
+    "AD-L4": "cleared for original scheme/credential defect; single-label hosts remain rejected",
+    "AD-RL1": "new LOW: valid space-separated state formats unclassified",
+    "AD-RL2": "new LOW: state query parameter ignored"
+  },
+  "artifacts": {
+    "astra-2026-10-21-athlete-directory-retest.md": {
+      "sha256": "d3f85817c39a2b42faedd83aae7a59f05f11a91d98098c48e762d427457a533e",
+      "bytes": 14240
+    },
+    "tests.txt": {
+      "sha256": "9c981c6ea2cc1cd033e391c67e6cab382f490b9262b86c3b4901931bc893637b",
+      "bytes": 38178
+    },
+    "tsc.txt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "cleanup": {
+    "temporaryCopiesRemoved": [
+      "astra-session.secret.json",
+      "slate-session.secret.json",
+      "before.secret.json"
+    ],
+    "originalCredentialFilesUntouched": true,
+    "serverSessionsRevoked": false,
+    "note": "Only existing audit usernames were reused; no privileged hold cleanup was performed."
+  }
+}

@@ -1,0 +1,28 @@
+# Disposition: Astra Athlete Directory audit (2026-10-21)
+
+Report: `astra-2026-10-21-athlete-directory.md` at v2 `bb07e4b3`. Verdict was "merge after fixes". Every finding below is fixed on v2; 020 was re-applied on staging (the file is re-runnable). Prod still has neither 020 nor the directory code; both move together on Kurt's go after Astra's retest.
+
+| ID | Sev | Finding | Disposition |
+|---|---|---|---|
+| AD-M1 | MED | Username save / visibility toggle reset every draft in the main form | **Fixed.** `AccountClient.tsx`: drafts reconcile field by field against the previous profile; a draft only follows the server when its own stored value changed or the account changed. Retested on dev: typed an unsaved display name and location, toggled public off and on; both drafts survived, the server kept the originals (confirmed on reload), `is_public` round-tripped. No browser test harness exists in the project, so this is a manual check plus the existing unit suite; Astra's retest should repeat it for the username save path. Copy under the switch no longer tells people to save first. |
+| AD-M2 | MED | `stateFromLocation` scanned names anywhere: Kansas City, Missouri -> KS; West Virginia -> VA | **Fixed.** `athletes.ts`: the state is read from the last comma component (after dropping USA / United States), as a code with optional zip or a full name; a single spaced component tries the trailing two words as a name, then the trailing word as a code. Tests: both Astra cases, "Virginia Beach, Virginia", "Kansas City" -> none, "Kansas" -> KS, plus the earlier set. |
+| AD-L1 | LOW | `website` (and `how_it_works`) not reserved | **Fixed.** Both lists (`zt_username_reserved` in 020, `RESERVED_USERNAMES` in profile.ts) add website, how_it_works, howitworks, meets, meet, results, scoreboard, security, abuse. Staging re-applied; `zt_username_reserved('website')` = true. Astra's existing staging `website` username stays on that account (the check runs on set, not retroactively); harmless, and it is a hold either way. |
+| AD-L2 | LOW | `profiles_avatar_own` accepted `<uid>/../x.png` | **Fixed.** 020 replaces the 013 constraint: owner prefix plus no `.`/`..` segments, no empty segments, no trailing slash. Verified the predicate on staging against seven shapes; the one existing avatar row passes. |
+| AD-L3 | LOW | `cleanUsernameParam` threw on malformed percent-encoding | **Fixed.** Decode is wrapped; malformed input is '' and the loader makes no query. Tests for `100%`, `%`, `%E0%A4%A`. |
+| AD-L4 | LOW | `mailto:` / `tel:` rewritten into https URLs with user-info | **Fixed.** `cleanWebsite` drops any explicit non-http(s) scheme before adding https to a bare host, and drops URLs with credentials. Tests for mailto, tel, javascript, ftp, user:pw@, bare host, HTTP uppercase, `localhost:3000`. |
+
+## Retest round 2 (Astra `astra-2026-10-21-athlete-directory-retest.md`, same night)
+
+| ID | Sev | Finding | Disposition |
+|---|---|---|---|
+| AD-M1 | MED | Two tabs: tab 1 saves a home gym, tab 2's unsaved location is lost when it toggles visibility. The About you group reconciled as one JSON key. | **Fixed.** New `lib/auth/profileDraft.ts` holds the draft type and `reconcileAbout(cur, prev, next)`: each scalar field, each PR row and each social link follows the server only when its own stored value changed. `AccountClient` uses it on every profile refresh after the first. Tests `test/profile_draft.test.mjs` (8): Astra's exact repro, same-member server win, PR row sibling, social sibling, trainer flags, no-change passthrough. Manual repro on dev against staging: typed `TAB2 MUST SURVIVE`, updated home gym server-side as tab 1, toggled visibility; the draft survived, the gym arrived, the server location never changed. Staging profile restored (public on, Riverside Iron). |
+| AD-RL1 | LOW | `Columbus Ohio`, `Austin TX United States` unclassified | **Fixed.** `stateFromLocation` strips a glued country (`COUNTRY_TAIL`) and zip from a single component, then tries the trailing 3/2/1 words as a state name (`district of columbia` added) before the trailing word as a code. One-word names are a documented guess ("Port Washington" reads WA). Tests for both Astra strings plus USA/zip/U.S.A. tails, Seattle Washington, Washington District of Columbia; `Kansas City` still ''. |
+| AD-RL2 | LOW | `/athletes?state=TN` opened on All | **Fixed** (was never built; now is). `app/athletes/page.tsx` reads `state`, `role`, `q` from `searchParams` through `cleanStateParam` / `cleanRoleParam` / `cleanSearchParam` (known state code, offered role, 60-char search, else ALL / '') and seeds `AthletesBrowser`. A linked state with nobody listed stays selected with zero matches instead of snapping to All. Verified on dev: `?state=TN&role=trainer` renders both selects selected. Filters are selects, not chips; brief corrected. |
+
+Totals after round 2: 347 tests, tsc clean.
+
+**Round 3 (Astra `astra-2026-10-21-athlete-directory-retest-2.md`): AD-M1, AD-RL1, AD-RL2 all cleared live on v2 `08b389aa`; no new findings. Directory audit gate CLOSED. Prod waits on Kurt's go (020 first, then the file set to main).**
+
+Residual staging data: the eight hold rows Astra listed stay in `username_holds` (no cleanup RPC by design; they age out of the 30-day rule and block nobody but the other test account). Slate can delete them with direct SQL if they get in the way of a retest.
+
+Prod path when cleared: apply `020_athlete_directory.sql` on prod, then push the directory file set to main (profile.ts, useAuth.ts, athletes.ts, data.ts, the /athletes pages, AthletesBrowser, AccountClient, WebsiteShell, sitemap, tests, audits). Order matters: 020 first, or the account page fails reading `username` / `is_public`.

@@ -2,10 +2,11 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Camera, Dumbbell, KeyRound, LogOut, Mail, Play, Save, ShieldCheck, Trash2, Trophy, UserCheck } from 'lucide-react';
+import { Camera, Dumbbell, Eye, EyeOff, KeyRound, LogOut, Mail, Play, Save, ShieldCheck, Trash2, Trophy, UserCheck } from 'lucide-react';
 import { useAuth } from '@/lib/auth/useAuth';
-import { FAVORITE_LIFT_OPTIONS, MAX_PRS, SOCIAL_KEYS, cleanProfilePatch, profileLabel, roleBadges, type Profile, type ProfilePR, type ProfileSocials } from '@/lib/auth/profile';
+import { FAVORITE_LIFT_OPTIONS, MAX_PRS, SOCIAL_KEYS, USERNAME_MAX, athleteProfilePath, normalizeUsername, profileLabel, roleBadges, usernameProblem, type Profile, type ProfilePR, type ProfileSocials } from '@/lib/auth/profile';
 import { AVATAR_MAX_BYTES, avatarProblem } from '@/lib/auth/avatar';
+import { aboutFromProfile, aboutKey, reconcileAbout, type AboutDraft } from '@/lib/auth/profileDraft';
 import { fetchIsAdmin } from '@/lib/website/myGym';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
 
@@ -17,42 +18,6 @@ const inputCls = 'w-full bg-zt-inset border border-zt-border-strong rounded-lg p
 const labelCls = 'block text-[10px] font-extrabold uppercase text-zt-muted mb-1';
 const primaryBtn = 'px-4 py-2 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase tracking-wider inline-flex items-center gap-1.5 disabled:opacity-40';
 const quietBtn = 'px-3 py-2 rounded-xl bg-zt-surface border border-zt-border-strong text-zt-text font-extrabold text-xs uppercase inline-flex items-center gap-1.5 disabled:opacity-40';
-
-// The optional "about you" block (Kurt 10/20) edits as one object so the dirty check and the save stay in step.
-interface AboutDraft {
-  favorite_lift: string;
-  favorite_lift_note: string;
-  location: string;
-  home_gym_name: string;
-  prs: ProfilePR[];
-  is_trainer: boolean;
-  trainer_in_person: boolean;
-  trainer_online: boolean;
-  socials: ProfileSocials;
-}
-const EMPTY_PR: ProfilePR = { lift: '', value: '' };
-function padPRs(prs: ProfilePR[]): ProfilePR[] {
-  const out = prs.slice(0, MAX_PRS);
-  while (out.length < MAX_PRS) out.push({ ...EMPTY_PR });
-  return out;
-}
-function aboutFromProfile(p: Profile): AboutDraft {
-  return {
-    favorite_lift: p.favorite_lift,
-    favorite_lift_note: p.favorite_lift_note,
-    location: p.location,
-    home_gym_name: p.home_gym_name,
-    prs: padPRs(p.prs),
-    is_trainer: p.is_trainer,
-    trainer_in_person: p.trainer_in_person,
-    trainer_online: p.trainer_online,
-    socials: { ...p.socials },
-  };
-}
-// Compare what the database would hold after a save, so trailing spaces or an empty PR row do not count as changes.
-function aboutKey(a: AboutDraft): string {
-  return JSON.stringify(cleanProfilePatch({ ...a }));
-}
 
 function Notice({ text, tone }: { text: string; tone: 'ok' | 'warn' }) {
   return (
@@ -168,13 +133,29 @@ export default function AccountClient() {
   const [about, setAbout] = useState<AboutDraft | null>(null);
   const [avatarBusy, setAvatarBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  // Public profile (020): username saves on its own (RPC), the visibility switch saves right away too.
+  const [draftUsername, setDraftUsername] = useState('');
+  const [usernameBusy, setUsernameBusy] = useState(false);
+  const [usernameNote, setUsernameNote] = useState<{ text: string; tone: 'ok' | 'warn' } | null>(null);
+  // Reconcile drafts field by field (Astra AD-M1, 10/21). The username form and the visibility switch save on their own
+  // and replace auth.profile; resetting every draft on that change threw away unsaved edits in the main form. Now a
+  // draft only follows the profile when its own stored value changed (or the account changed).
+  const prevProfileRef = useRef<Profile | null>(null);
   useEffect(() => {
-    if (!auth.profile) return;
-    setDraftName(auth.profile.display_name);
-    setAthlete(auth.profile.is_athlete);
-    setPromoter(auth.profile.is_promoter);
-    setGymOwner(auth.profile.is_gym_owner);
-    setAbout(aboutFromProfile(auth.profile));
+    const next = auth.profile;
+    if (!next) { prevProfileRef.current = null; return; }
+    const prev = prevProfileRef.current;
+    prevProfileRef.current = next;
+    const fresh = !prev || prev.id !== next.id;
+    if (fresh || prev.username !== next.username) setDraftUsername(next.username ?? '');
+    if (fresh || prev.display_name !== next.display_name) setDraftName(next.display_name);
+    if (fresh || prev.is_athlete !== next.is_athlete) setAthlete(next.is_athlete);
+    if (fresh || prev.is_promoter !== next.is_promoter) setPromoter(next.is_promoter);
+    if (fresh || prev.is_gym_owner !== next.is_gym_owner) setGymOwner(next.is_gym_owner);
+    // About you reconciles member by member (Astra AD-M1 retest): a saved home gym in another tab must not reset an
+    // unsaved location here. PR rows and social links are their own members.
+    if (fresh) setAbout(aboutFromProfile(next));
+    else setAbout((cur) => reconcileAbout(cur, prev, next));
   }, [auth.profile]);
   const patchAbout = (patch: Partial<AboutDraft>) => setAbout((a) => (a ? { ...a, ...patch } : a));
   const patchPR = (i: number, patch: Partial<ProfilePR>) => setAbout((a) => {
@@ -547,6 +528,82 @@ export default function AccountClient() {
           </form>
         )}
       </section>
+
+      {p && (
+        <section aria-labelledby="public-heading" className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 id="public-heading" className="text-base font-black uppercase text-zt-text">Public profile</h2>
+            {p.is_public && p.username ? (
+              <span className="text-[10px] font-black uppercase px-2 py-1 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 inline-flex items-center gap-1"><Eye className="w-3 h-3" aria-hidden="true" /> Listed</span>
+            ) : (
+              <span className="text-[10px] font-black uppercase px-2 py-1 rounded bg-zt-inset text-zt-muted border border-zt-border inline-flex items-center gap-1"><EyeOff className="w-3 h-3" aria-hidden="true" /> Private</span>
+            )}
+          </div>
+          <p className="text-xs text-zt-text-2">
+            Off by default. Turn it on and your display name, photo, roles, location, home gym, favorite lift, PRs and social
+            handles above show at your own page and in the <Link href="/athletes" className="font-bold text-zt-primary hover:underline">Athletes</Link> list.
+            Your email never shows. You need a username first; it is the address of your page.
+          </p>
+
+          <form
+            className="flex flex-col sm:flex-row sm:items-end gap-2 max-w-lg"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const u = normalizeUsername(draftUsername);
+              const problem = usernameProblem(u);
+              if (problem) { setUsernameNote({ text: problem, tone: 'warn' }); return; }
+              setUsernameBusy(true);
+              setUsernameNote(null);
+              try {
+                const next = await auth.setUsername(u || null);
+                setUsernameNote({ text: next?.username ? `Your page is zerotacky.com${athleteProfilePath(next.username)}` : 'Username cleared. Your profile is private again.', tone: 'ok' });
+              } catch (err) {
+                setUsernameNote({ text: err instanceof Error ? err.message : String(err), tone: 'warn' });
+              } finally {
+                setUsernameBusy(false);
+              }
+            }}
+          >
+            <div className="flex-1">
+              <label htmlFor="profile-username" className={labelCls}>Username</label>
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-black text-zt-muted">@</span>
+                <input id="profile-username" value={draftUsername} onChange={(e) => setDraftUsername(e.target.value)} className={inputCls} maxLength={USERNAME_MAX} autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="yourname" />
+              </div>
+              <div className="text-[10px] text-zt-muted mt-1">3 to 30 characters, lowercase letters, numbers and underscores. If you change it, the old one is held for 30 days so nobody else can grab it right away.</div>
+            </div>
+            <button type="submit" disabled={usernameBusy || normalizeUsername(draftUsername) === (p.username ?? '')} className={quietBtn}>
+              {usernameBusy ? 'Saving…' : p.username ? 'Change username' : 'Set username'}
+            </button>
+          </form>
+          <label className={`flex items-start gap-3 p-3.5 rounded-xl border max-w-lg ${p.username ? 'cursor-pointer' : 'opacity-60'} ${p.is_public ? 'bg-zt-primary/15 border-zt-primary' : 'bg-zt-inset border-zt-border'}`}>
+            <input
+              type="checkbox"
+              checked={p.is_public}
+              disabled={!p.username || busy || usernameBusy}
+              onChange={(e) => {
+                const on = e.target.checked;
+                setUsernameBusy(true);
+                setUsernameNote(null);
+                auth.updateProfile({ is_public: on })
+                  .then(() => setUsernameNote({ text: on ? 'Your profile is public.' : 'Your profile is private.', tone: 'ok' }))
+                  .catch((err) => setUsernameNote({ text: err instanceof Error ? err.message : String(err), tone: 'warn' }))
+                  .finally(() => setUsernameBusy(false));
+              }}
+              className="w-4 h-4 mt-0.5 accent-[var(--zt-primary)]"
+            />
+            <span className="text-xs">
+              <span className="block font-black text-zt-text">Show my profile publicly</span>
+              <span className="block text-zt-muted mt-0.5">
+                {p.username
+                  ? (p.is_public ? <>Live at <Link href={athleteProfilePath(p.username)} className="underline hover:text-zt-text">{athleteProfilePath(p.username)}</Link>. Turn it off any time; the page disappears right away.</> : 'Saves as soon as you tick it. Unsaved edits in the form above stay put until you save them.')
+                  : 'Set a username first.'}
+              </span>
+            </span>
+          </label>
+          {usernameNote && <Notice {...usernameNote} />}
+        </section>
+      )}
 
       <section aria-labelledby="next-heading" className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-3">
         <h2 id="next-heading" className="text-base font-black uppercase text-zt-text">Where to next</h2>

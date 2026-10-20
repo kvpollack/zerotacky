@@ -1,0 +1,1360 @@
+{
+  "revision": {
+    "sha": "bb07e4b32fea21e53d8432fa690789d75ec19e19",
+    "tracked": 300,
+    "mismatches": [
+      "ROADMAP.md",
+      "components/setup/builder/MeetSection.jsx",
+      "components/shell/Header.jsx",
+      "components/strongman-app.jsx"
+    ]
+  },
+  "api-evidence": {
+    "baseline": {
+      "astra": {
+        "id": "745d4f4f-6097-4aa4-b6c1-99b75abb728a",
+        "username": null,
+        "is_public": false
+      },
+      "slate": {
+        "id": "36970762-b3e1-43c2-87f0-d1093816f94e",
+        "username": "slate_staging",
+        "is_public": true
+      }
+    },
+    "anonPublic": {
+      "status": 200,
+      "usernames": [
+        "slate_staging"
+      ],
+      "keys": [
+        "id",
+        "username",
+        "display_name",
+        "is_athlete",
+        "is_promoter",
+        "is_gym_owner",
+        "is_trainer",
+        "trainer_in_person",
+        "trainer_online",
+        "favorite_lift",
+        "favorite_lift_note",
+        "location",
+        "home_gym_name",
+        "prs",
+        "socials",
+        "avatar_path",
+        "updated_at"
+      ]
+    },
+    "anonEmailSelect": {
+      "status": 400,
+      "body": {
+        "code": "42703",
+        "details": null,
+        "hint": null,
+        "message": "column zt_public_profiles.email does not exist"
+      }
+    },
+    "anonBase": {
+      "status": 200,
+      "body": []
+    },
+    "anonHoldsRead": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.username_holds TO anon;",
+        "message": "permission denied for table username_holds"
+      }
+    },
+    "anonHoldsInsert": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT INSERT ON public.username_holds TO anon;",
+        "message": "permission denied for table username_holds"
+      }
+    },
+    "astraPublic": {
+      "status": 200,
+      "usernames": [
+        "slate_staging"
+      ],
+      "keys": [
+        "id",
+        "username",
+        "display_name",
+        "is_athlete",
+        "is_promoter",
+        "is_gym_owner",
+        "is_trainer",
+        "trainer_in_person",
+        "trainer_online",
+        "favorite_lift",
+        "favorite_lift_note",
+        "location",
+        "home_gym_name",
+        "prs",
+        "socials",
+        "avatar_path",
+        "updated_at"
+      ]
+    },
+    "astraEmailSelect": {
+      "status": 400,
+      "body": {
+        "code": "42703",
+        "details": null,
+        "hint": null,
+        "message": "column zt_public_profiles.email does not exist"
+      }
+    },
+    "astraBase": {
+      "status": 200,
+      "body": [
+        {
+          "id": "745d4f4f-6097-4aa4-b6c1-99b75abb728a",
+          "username": null
+        }
+      ]
+    },
+    "astraHoldsRead": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.username_holds TO authenticated;",
+        "message": "permission denied for table username_holds"
+      }
+    },
+    "astraHoldsInsert": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT INSERT ON public.username_holds TO authenticated;",
+        "message": "permission denied for table username_holds"
+      }
+    },
+    "slatePublic": {
+      "status": 200,
+      "usernames": [
+        "slate_staging"
+      ],
+      "keys": [
+        "id",
+        "username",
+        "display_name",
+        "is_athlete",
+        "is_promoter",
+        "is_gym_owner",
+        "is_trainer",
+        "trainer_in_person",
+        "trainer_online",
+        "favorite_lift",
+        "favorite_lift_note",
+        "location",
+        "home_gym_name",
+        "prs",
+        "socials",
+        "avatar_path",
+        "updated_at"
+      ]
+    },
+    "slateEmailSelect": {
+      "status": 400,
+      "body": {
+        "code": "42703",
+        "details": null,
+        "hint": null,
+        "message": "column zt_public_profiles.email does not exist"
+      }
+    },
+    "slateBase": {
+      "status": 200,
+      "body": [
+        {
+          "id": "36970762-b3e1-43c2-87f0-d1093816f94e",
+          "username": "slate_staging"
+        }
+      ]
+    },
+    "slateHoldsRead": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.username_holds TO authenticated;",
+        "message": "permission denied for table username_holds"
+      }
+    },
+    "slateHoldsInsert": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT INSERT ON public.username_holds TO authenticated;",
+        "message": "permission denied for table username_holds"
+      }
+    },
+    "publicWithoutUsername": {
+      "status": 400,
+      "body": {
+        "code": "23514",
+        "details": null,
+        "hint": null,
+        "message": "new row for relation \"profiles\" violates check constraint \"profiles_public_needs_username\""
+      }
+    },
+    "directUsernamePatch": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT UPDATE ON public.profiles TO authenticated;",
+        "message": "permission denied for table profiles"
+      }
+    },
+    "anonSetUsername": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_set_username"
+      }
+    },
+    "anonAvailability": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_username_available"
+      }
+    },
+    "setMixedCase": {
+      "status": 200,
+      "body": "astra_audit_1021a"
+    },
+    "setLeadingAtRawRPC": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "Usernames are 3 to 30 characters: lowercase letters, numbers and underscores."
+      }
+    },
+    "name:ab": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "Usernames are 3 to 30 characters: lowercase letters, numbers and underscores."
+      }
+    },
+    "name:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "Usernames are 3 to 30 characters: lowercase letters, numbers and underscores."
+      }
+    },
+    "name:astra-audit": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "Usernames are 3 to 30 characters: lowercase letters, numbers and underscores."
+      }
+    },
+    "name:athletes": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "That username is reserved."
+      }
+    },
+    "name:shows": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "That username is reserved."
+      }
+    },
+    "name:gyms": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "That username is reserved."
+      }
+    },
+    "name:join": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "That username is reserved."
+      }
+    },
+    "name:scorer": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "That username is reserved."
+      }
+    },
+    "name:demo": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "That username is reserved."
+      }
+    },
+    "name:legal": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "That username is reserved."
+      }
+    },
+    "name:website": {
+      "status": 200,
+      "body": "website"
+    },
+    "name:promoter": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "That username is reserved."
+      }
+    },
+    "name:m": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "Usernames are 3 to 30 characters: lowercase letters, numbers and underscores."
+      }
+    },
+    "name:register": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "That username is reserved."
+      }
+    },
+    "name:api": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "That username is reserved."
+      }
+    },
+    "name:how_it_works": {
+      "status": 200,
+      "body": "how_it_works"
+    },
+    "takenSlateName": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "That username is taken."
+      }
+    },
+    "holdAvailabilityOther": {
+      "status": 200,
+      "body": false
+    },
+    "holdTakeOther": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "That username was released recently and is on hold for 30 days."
+      }
+    },
+    "holdReclaimOwner": {
+      "status": 200,
+      "body": "astra_audit_1021a"
+    },
+    "raceAvailability": {
+      "status": 200,
+      "body": true
+    },
+    "race": [
+      {
+        "identity": "astra",
+        "start": 121715.7793645,
+        "end": 121715.9370795,
+        "result": {
+          "status": 400,
+          "body": {
+            "code": "P0001",
+            "details": null,
+            "hint": null,
+            "message": "That username is taken."
+          }
+        }
+      },
+      {
+        "identity": "slate",
+        "start": 121715.7790003,
+        "end": 121715.9369043,
+        "result": {
+          "status": 200,
+          "body": "astra_audit_race1021"
+        }
+      }
+    ],
+    "raceProfiles": {
+      "astra": "astra_audit_1021a",
+      "slate": "astra_audit_race1021"
+    },
+    "avatar:../outside.png": {
+      "status": 400,
+      "body": {
+        "code": "23514",
+        "details": null,
+        "hint": null,
+        "message": "new row for relation \"profiles\" violates check constraint \"profiles_avatar_own\""
+      }
+    },
+    "avatar:/leading.png": {
+      "status": 400,
+      "body": {
+        "code": "23514",
+        "details": null,
+        "hint": null,
+        "message": "new row for relation \"profiles\" violates check constraint \"profiles_avatar_own\""
+      }
+    },
+    "avatar:745d4f4f-6097-4aa4-b6c1-99b75abb728a/../outside.png": {
+      "status": 200,
+      "body": {
+        "storedAvatar": "745d4f4f-6097-4aa4-b6c1-99b75abb728a/../outside.png"
+      }
+    },
+    "avatar:36970762-b3e1-43c2-87f0-d1093816f94e/avatar.png": {
+      "status": 400,
+      "body": {
+        "code": "23514",
+        "details": null,
+        "hint": null,
+        "message": "new row for relation \"profiles\" violates check constraint \"profiles_avatar_own\""
+      }
+    },
+    "restored:astra": {
+      "nameStatus": 200,
+      "profileStatus": 200,
+      "differencesExceptUpdatedAt": [],
+      "username": null,
+      "is_public": false
+    },
+    "restored:slate": {
+      "nameStatus": 200,
+      "profileStatus": 200,
+      "differencesExceptUpdatedAt": [],
+      "username": "slate_staging",
+      "is_public": true
+    },
+    "auditNames": [
+      "AsTrA_Audit_1021a",
+      "@AsTrA_Audit_1021a",
+      "ab",
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "astra-audit",
+      "athletes",
+      "shows",
+      "gyms",
+      "join",
+      "scorer",
+      "demo",
+      "legal",
+      "website",
+      "astra_audit_1021a",
+      "promoter",
+      "m",
+      "register",
+      "api",
+      "how_it_works",
+      "slate_staging",
+      "astra_audit_1021b",
+      "astra_audit_race1021"
+    ]
+  },
+  "boundary-extra-evidence": {
+    "anonViewUpdate": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for view zt_public_profiles"
+      }
+    },
+    "anonHoldUpdate": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT, UPDATE ON public.username_holds TO anon;",
+        "message": "permission denied for table username_holds"
+      }
+    },
+    "anonHoldDelete": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT, DELETE ON public.username_holds TO anon;",
+        "message": "permission denied for table username_holds"
+      }
+    },
+    "astraViewUpdate": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for view zt_public_profiles"
+      }
+    },
+    "astraHoldUpdate": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT, UPDATE ON public.username_holds TO authenticated;",
+        "message": "permission denied for table username_holds"
+      }
+    },
+    "astraHoldDelete": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT, DELETE ON public.username_holds TO authenticated;",
+        "message": "permission denied for table username_holds"
+      }
+    },
+    "otherProfileUpdate": {
+      "status": 200,
+      "body": []
+    },
+    "slateUnchanged": true
+  },
+  "browser-initial-evidence": {
+    "checks": [
+      {
+        "name": "usernameSaveDrafts",
+        "data": {
+          "nameDraft": "Astra Staging",
+          "locationDraft": "",
+          "serverName": "Astra Staging",
+          "serverLocation": "",
+          "storedUsername": "astra_audit_web1021"
+        }
+      },
+      {
+        "name": "privateProfilePage",
+        "data": {
+          "http": 404,
+          "notFound": true,
+          "cache": {
+            "age": "0",
+            "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+            "x-vercel-cache": "MISS"
+          },
+          "emailInHTML": false,
+          "emailInBody": false
+        }
+      },
+      {
+        "name": "restore",
+        "data": {
+          "status": 204,
+          "differencesExceptUpdatedAt": []
+        }
+      }
+    ],
+    "pageErrors": [],
+    "failure": "Locator.check: Clicking the checkbox did not change its state\nCall log:\n  - waiting for get_by_role(\"checkbox\", name=\"Show my profile publicly\")\n    - locator resolved to <input type=\"checkbox\" class=\"w-4 h-4 mt-0.5 accent-[var(--zt-primary)]\"/>\n  - attempting click action\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - performing click action\n    - click action done\n    - waiting for scheduled navigations to finish\n    - navigations have finished\n"
+  },
+  "browser-evidence": {
+    "checks": [
+      {
+        "name": "visibilitySaveDrafts",
+        "data": {
+          "nameDraft": "Astra Staging",
+          "locationDraft": "",
+          "serverName": "Astra Staging",
+          "serverLocation": "",
+          "isPublic": true
+        }
+      },
+      {
+        "name": "publicProfilePage",
+        "data": {
+          "http": 200,
+          "notFound": false,
+          "cache": {
+            "age": "0",
+            "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+            "x-vercel-cache": "MISS"
+          },
+          "emailInHTML": false,
+          "emailInBody": false
+        }
+      },
+      {
+        "name": "accountPrivacyCopy",
+        "data": "PUBLIC PROFILE\nLISTED\n\nOff by default. Turn it on and your display name, photo, roles, location, home gym, favorite lift, PRs and social handles above show at your own page and in the Athletes list. Your email never shows. You need a username first; it is the address of your page.\n\nUSERNAME\n@\n3 to 30 characters, lowercase letters, numbers and underscores. If you change it, the old one is held for 30 days so nobody else can grab it right away.\nCHANGE USERNAME\nShow my profile publicly\nLive at /athletes/astra_audit_web1021. Turn it off any time; the page disappears right away.\nYour profile is public."
+      },
+      {
+        "name": "mainSaveIndependent",
+        "data": {
+          "displayName": "Astra Directory Audit",
+          "username": "astra_audit_web1021",
+          "isPublic": true
+        }
+      },
+      {
+        "name": "takenNameError",
+        "data": "That username is taken."
+      },
+      {
+        "name": "malformedStoredPage",
+        "data": {
+          "http": 200,
+          "notFound": false,
+          "cache": {
+            "age": "0",
+            "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+            "x-vercel-cache": "MISS"
+          },
+          "emailInHTML": false,
+          "emailInBody": false
+        }
+      },
+      {
+        "name": "malformedRendered",
+        "data": {
+          "profileImages": 0,
+          "dangerousLinks": 0
+        }
+      },
+      {
+        "name": "clearAtomic",
+        "data": {
+          "status": 200,
+          "username": null,
+          "isPublic": false,
+          "otherChanged": []
+        }
+      },
+      {
+        "name": "clearImmediatePage",
+        "data": {
+          "http": 404,
+          "notFound": true,
+          "cache": {
+            "age": "0",
+            "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
+            "x-vercel-cache": "MISS"
+          },
+          "emailInHTML": false,
+          "emailInBody": false
+        }
+      },
+      {
+        "name": "directory",
+        "data": {
+          "http": 200,
+          "notFound": false,
+          "cache": {
+            "age": "39",
+            "cache-control": "public, max-age=0, must-revalidate",
+            "x-vercel-cache": "HIT"
+          },
+          "emailInHTML": false,
+          "emailInBody": false
+        }
+      },
+      {
+        "name": "directorySearch",
+        "data": {
+          "slateCards": 1,
+          "text": "Athletes\n1 LISTED \u2022 1 STATE\n\nPeople who train, compete, run shows or coach, and chose to be listed. Everyone here opted in from their account page and can leave the list any time. Add yourself: pick a username and turn on your public profile.\n\nSEARCH\nSTATE\nAll\nTN\nROLE\nEveryone\nAthlete\nPromoter\nGym owner\nTrainer\nReset\n\n1 listed\n\nSlate Staging\n@slate_staging\nPROMOTER\nTRAINER (IN PERSON)\nNashville, TN\nFavorite lift: Log press"
+        }
+      },
+      {
+        "name": "directoryReset",
+        "data": {
+          "slateCards": 1,
+          "noMatchGone": true
+        }
+      },
+      {
+        "name": "restore",
+        "data": {
+          "status": 204,
+          "differencesExceptUpdatedAt": []
+        }
+      }
+    ],
+    "pageErrors": []
+  },
+  "final-browser-evidence": {
+    "checks": [
+      {
+        "name": "uiClear",
+        "data": {
+          "server": {
+            "status": 200,
+            "body": [
+              {
+                "username": null,
+                "is_public": false
+              }
+            ]
+          },
+          "visibilityDisabled": true,
+          "status": "Username cleared. Your profile is private again."
+        }
+      },
+      {
+        "name": "/athletes/slate_staging",
+        "data": {
+          "status": 200,
+          "headings": [
+            "Slate Staging"
+          ],
+          "emailInBody": false,
+          "profileImages": 1
+        }
+      },
+      {
+        "name": "/athletes/SLATE_STAGING",
+        "data": {
+          "status": 200,
+          "headings": [
+            "Slate Staging"
+          ],
+          "emailInBody": false,
+          "profileImages": 1
+        }
+      },
+      {
+        "name": "/athletes/%40slate_staging",
+        "data": {
+          "status": 200,
+          "headings": [
+            "Slate Staging"
+          ],
+          "emailInBody": false,
+          "profileImages": 1
+        }
+      },
+      {
+        "name": "/athletes/slate_staging/",
+        "data": {
+          "status": 200,
+          "headings": [
+            "Slate Staging"
+          ],
+          "emailInBody": false,
+          "profileImages": 1
+        }
+      },
+      {
+        "name": "/athletes/%25",
+        "data": {
+          "status": 404,
+          "headings": [
+            "No public profile here"
+          ],
+          "emailInBody": false,
+          "profileImages": 0
+        }
+      },
+      {
+        "name": "restored",
+        "data": {
+          "status": 200,
+          "diff": []
+        }
+      }
+    ],
+    "errors": [],
+    "failure": "Locator.select_option: Timeout 15000ms exceeded.\nCall log:\n  - waiting for get_by_label(\"State\", exact=True)\n"
+  },
+  "pages-evidence": [
+    {
+      "path": "/athletes/slate_staging",
+      "status": 200,
+      "notFound": true,
+      "cache": {
+        "Age": "0",
+        "Cache-Control": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "X-Vercel-Cache": "MISS"
+      },
+      "profileMention": true,
+      "length": 42445
+    },
+    {
+      "path": "/athletes/SLATE_STAGING",
+      "status": 200,
+      "notFound": true,
+      "cache": {
+        "Age": "0",
+        "Cache-Control": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "X-Vercel-Cache": "MISS"
+      },
+      "profileMention": true,
+      "length": 42445
+    },
+    {
+      "path": "/athletes/%40slate_staging",
+      "status": 200,
+      "notFound": true,
+      "cache": {
+        "Age": "0",
+        "Cache-Control": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "X-Vercel-Cache": "MISS"
+      },
+      "profileMention": true,
+      "length": 42451
+    },
+    {
+      "path": "/athletes/slate_staging/",
+      "status": 200,
+      "notFound": true,
+      "cache": {
+        "Age": "0",
+        "Cache-Control": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "X-Vercel-Cache": "MISS"
+      },
+      "profileMention": true,
+      "length": 42445
+    },
+    {
+      "path": "/athletes/astra_audit_no_profile",
+      "status": 404,
+      "notFound": true,
+      "cache": {
+        "Age": "0",
+        "Cache-Control": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "X-Vercel-Cache": "MISS"
+      },
+      "profileMention": false,
+      "length": 17573
+    },
+    {
+      "path": "/athletes/%25",
+      "status": 404,
+      "notFound": true,
+      "cache": {
+        "Age": "0",
+        "Cache-Control": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "X-Vercel-Cache": "MISS"
+      },
+      "profileMention": false,
+      "length": 14945
+    },
+    {
+      "path": "/athletes/%E0%A4%A",
+      "status": 400,
+      "notFound": false,
+      "cache": {},
+      "profileMention": false,
+      "length": 15
+    }
+  ],
+  "pure-evidence": {
+    "params": [
+      {
+        "input": "%",
+        "error": "URIError: URI error"
+      },
+      {
+        "input": "%25",
+        "result": ""
+      },
+      {
+        "input": "%E0%A4%A",
+        "error": "URIError: URI error"
+      },
+      {
+        "input": "%40SLATE_STAGING",
+        "result": "slate_staging"
+      },
+      {
+        "input": "SLATE_STAGING",
+        "result": "slate_staging"
+      },
+      {
+        "input": "slate_staging/",
+        "result": ""
+      },
+      {
+        "input": "x\" or 1=1",
+        "result": ""
+      }
+    ],
+    "socials": [
+      {
+        "input": "javascript:alert(1)",
+        "clean": "",
+        "href": ""
+      },
+      {
+        "input": "javascript://example.com/%0Aalert(1)",
+        "clean": "",
+        "href": ""
+      },
+      {
+        "input": "data:text/html,<script>alert(1)</script>",
+        "clean": "",
+        "href": ""
+      },
+      {
+        "input": "ftp://example.com",
+        "clean": "",
+        "href": ""
+      },
+      {
+        "input": "mailto:user@example.com",
+        "clean": "https://mailto:user@example.com/",
+        "href": "https://mailto:user@example.com/"
+      },
+      {
+        "input": "https://example.com",
+        "clean": "https://example.com/",
+        "href": "https://example.com/"
+      },
+      {
+        "input": "example.com",
+        "clean": "https://example.com/",
+        "href": "https://example.com/"
+      }
+    ],
+    "avatars": [
+      {
+        "input": "../foo",
+        "result": ""
+      },
+      {
+        "input": "/foo",
+        "result": ""
+      },
+      {
+        "input": "id/../foo",
+        "result": ""
+      },
+      {
+        "input": "id/%2e%2e/foo",
+        "result": "https://hryiqiopkihkcrkdyllg.supabase.co/storage/v1/object/public/avatars/id/%252e%252e/foo"
+      },
+      {
+        "input": "id/avatar.png",
+        "result": "https://hryiqiopkihkcrkdyllg.supabase.co/storage/v1/object/public/avatars/id/avatar.png"
+      }
+    ],
+    "states": [
+      {
+        "input": "Charleston, West Virginia",
+        "result": "VA"
+      },
+      {
+        "input": "Washington, DC",
+        "result": "DC"
+      },
+      {
+        "input": "Portland, OR",
+        "result": "OR"
+      },
+      {
+        "input": "Paris, France",
+        "result": ""
+      },
+      {
+        "input": "Richmond, Virginia",
+        "result": "VA"
+      }
+    ],
+    "username": {
+      "@AsTrA_Audit_1021": {
+        "normal": "astra_audit_1021",
+        "problem": ""
+      },
+      "website": {
+        "normal": "website",
+        "problem": ""
+      },
+      "admin": {
+        "normal": "admin",
+        "problem": "That username is reserved."
+      },
+      "athletes": {
+        "normal": "athletes",
+        "problem": "That username is reserved."
+      },
+      "m": {
+        "normal": "m",
+        "problem": "Usernames are 3 to 30 characters."
+      }
+    },
+    "loader": [
+      {
+        "input": "%",
+        "error": "URIError: URI error"
+      },
+      {
+        "input": "%25",
+        "result": {
+          "source": "live_supabase",
+          "data": null,
+          "error": null
+        }
+      },
+      {
+        "input": "a b",
+        "result": {
+          "source": "live_supabase",
+          "data": null,
+          "error": null
+        }
+      }
+    ],
+    "rpcLeadingAt": "astra_audit_1021",
+    "rpcArgs": {
+      "n": "zt_set_username",
+      "p": {
+        "p_username": "astra_audit_1021"
+      }
+    }
+  },
+  "filters-evidence": {
+    "trainerTNCount": 1,
+    "roleNoMatch": true,
+    "reset": {
+      "state": "ALL",
+      "role": "ALL",
+      "documentWidth": 375,
+      "viewport": 375
+    }
+  },
+  "state-extra-evidence": [
+    {
+      "location": "Kansas City, Missouri",
+      "expected": "MO",
+      "actual": "KS",
+      "foundByExpectedFilter": 0
+    },
+    {
+      "location": "Charleston, West Virginia",
+      "expected": "WV",
+      "actual": "VA",
+      "foundByExpectedFilter": 0
+    },
+    {
+      "location": "Charleston, WV",
+      "expected": "WV",
+      "actual": "WV",
+      "foundByExpectedFilter": 1
+    },
+    {
+      "location": "Kansas City, MO",
+      "expected": "MO",
+      "actual": "MO",
+      "foundByExpectedFilter": 1
+    }
+  ],
+  "edge-pure-evidence": {
+    "usernameBoundaryLocal": [
+      {
+        "length": 3,
+        "problem": ""
+      },
+      {
+        "length": 30,
+        "problem": ""
+      }
+    ],
+    "nonHttpScheme": [
+      {
+        "raw": "mailto:user@example.com",
+        "clean": {
+          "website": "https://mailto:user@example.com/"
+        },
+        "href": "https://mailto:user@example.com/"
+      },
+      {
+        "raw": "tel:123@example.com",
+        "clean": {
+          "website": "https://tel:123@example.com/"
+        },
+        "href": "https://tel:123@example.com/"
+      }
+    ],
+    "literalPercentError": "URIError: URI error"
+  },
+  "closeout-evidence": {
+    "profiles": {
+      "astra": {
+        "status": 200,
+        "username": null,
+        "isPublic": false,
+        "differencesExceptUpdatedAt": []
+      },
+      "slate": {
+        "status": 200,
+        "username": "slate_staging",
+        "isPublic": true,
+        "differencesExceptUpdatedAt": []
+      }
+    },
+    "source": {
+      "tracked": 300,
+      "mismatches": [
+        "ROADMAP.md",
+        "components/setup/builder/MeetSection.jsx",
+        "components/shell/Header.jsx",
+        "components/strongman-app.jsx"
+      ]
+    },
+    "publicUsernames": {
+      "status": 200,
+      "rows": [
+        {
+          "username": "slate_staging"
+        }
+      ]
+    }
+  },
+  "final-readonly-evidence": {
+    "heldNames": {
+      "astra_audit_1021a": {
+        "owner": "astra",
+        "ownerAvailability": {
+          "status": 200,
+          "body": true
+        },
+        "otherAvailability": {
+          "status": 200,
+          "body": false
+        }
+      },
+      "astra_audit_1021b": {
+        "owner": "astra",
+        "ownerAvailability": {
+          "status": 200,
+          "body": true
+        },
+        "otherAvailability": {
+          "status": 200,
+          "body": false
+        }
+      },
+      "website": {
+        "owner": "astra",
+        "ownerAvailability": {
+          "status": 200,
+          "body": true
+        },
+        "otherAvailability": {
+          "status": 200,
+          "body": false
+        }
+      },
+      "how_it_works": {
+        "owner": "astra",
+        "ownerAvailability": {
+          "status": 200,
+          "body": true
+        },
+        "otherAvailability": {
+          "status": 200,
+          "body": false
+        }
+      },
+      "astra_audit_race1021": {
+        "owner": "slate",
+        "ownerAvailability": {
+          "status": 200,
+          "body": true
+        },
+        "otherAvailability": {
+          "status": 200,
+          "body": false
+        }
+      },
+      "astra_audit_web1021": {
+        "owner": "astra",
+        "ownerAvailability": {
+          "status": 200,
+          "body": true
+        },
+        "otherAvailability": {
+          "status": 200,
+          "body": false
+        }
+      },
+      "astra_audit_avatar1021": {
+        "owner": "astra",
+        "ownerAvailability": {
+          "status": 200,
+          "body": true
+        },
+        "otherAvailability": {
+          "status": 200,
+          "body": false
+        }
+      },
+      "astra_audit_clear1021": {
+        "owner": "astra",
+        "ownerAvailability": {
+          "status": 200,
+          "body": true
+        },
+        "otherAvailability": {
+          "status": 200,
+          "body": false
+        }
+      }
+    },
+    "remainingChecks": {
+      "encodedPercentName": {
+        "status": 404,
+        "headings": [
+          "No public profile here"
+        ]
+      },
+      "filterLabels": {
+        "stateLabelExact": 0,
+        "stateLabelPartial": 1,
+        "roleLabelExact": 0,
+        "roleLabelPartial": 1,
+        "associatedLabels": [
+          {
+            "text": [
+              "StateAllTN"
+            ],
+            "ariaLabel": null
+          },
+          {
+            "text": [
+              "RoleEveryoneAthletePromoterGym ownerTrainer"
+            ],
+            "ariaLabel": null
+          }
+        ]
+      }
+    }
+  },
+  "suite": {
+    "pass": 333,
+    "fail": 0,
+    "files": 28,
+    "testsExit": 0,
+    "tscExit": 0,
+    "tscDiagnosticsBytes": 0
+  },
+  "findings": [
+    {
+      "id": "AD-M1",
+      "severity": "MED",
+      "status": "open"
+    },
+    {
+      "id": "AD-M2",
+      "severity": "MED",
+      "status": "open"
+    },
+    {
+      "id": "AD-L1",
+      "severity": "LOW",
+      "status": "open"
+    },
+    {
+      "id": "AD-L2",
+      "severity": "LOW",
+      "status": "open"
+    },
+    {
+      "id": "AD-L3",
+      "severity": "LOW",
+      "status": "open"
+    },
+    {
+      "id": "AD-L4",
+      "severity": "LOW",
+      "status": "open"
+    }
+  ],
+  "artifacts": {
+    "astra-2026-10-21-athlete-directory.md": {
+      "sha256": "2cc9f143d9d4d073e80c7c9a41dc69e23eb5f71c038632574d8d8ef5f377e3b2",
+      "bytes": 16689
+    },
+    "tests.txt": {
+      "sha256": "0c9e4a13a7a31f18b91516534cd8e3c375b29c2ff1a692221ca5b4337b722794",
+      "bytes": 37810
+    },
+    "tsc.txt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "directory-375.png": {
+      "sha256": "777da69ee928b50b12004c8aae6aa6e0c4140305cf60d1ced3a9d8cf6cb7e80a",
+      "bytes": 36397
+    },
+    "public-profile-375.png": {
+      "sha256": "2333f23158bd65332fcd058c00e0b34caa4c28225aa4b1130b081c14c768de76",
+      "bytes": 32475
+    }
+  },
+  "cleanup": {
+    "removedTemporaryCopies": [
+      "astra-session.secret.json",
+      "slate-session.secret.json",
+      "before.secret.json"
+    ],
+    "originalCredentialFilesUntouched": true,
+    "browserContextsClosedByFinally": true,
+    "serverSignoutPerformed": false,
+    "note": "Session file deletion is not token revocation. Staging name holds remain as documented."
+  }
+}

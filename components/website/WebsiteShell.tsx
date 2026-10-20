@@ -7,7 +7,7 @@ import PromoterNavLink from './PromoterNavLink';
 import { readSyncEnv } from '@/lib/sync/client';
 
 interface WebsiteShellProps {
-  activeNav?: 'home' | 'how' | 'shows' | 'join' | 'gyms' | 'account' | 'promoter';
+  activeNav?: 'home' | 'how' | 'shows' | 'join' | 'gyms' | 'athletes' | 'account' | 'promoter';
   children: React.ReactNode;
 }
 
@@ -21,6 +21,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
     { id: 'shows', label: 'Find a Show', href: '/shows' },
     { id: 'join', label: 'Join a Meet', href: '/join' },
     { id: 'gyms', label: 'Gym Directory', href: '/gyms' },
+    { id: 'athletes', label: 'Athletes', href: '/athletes' },
     { id: 'account', label: 'Account', href: '/website/account' },
   ];
 
@@ -100,6 +101,9 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
             </Link>
             <Link href="/gyms" className="hover:text-zt-primary">
               Gyms
+            </Link>
+            <Link href="/athletes" className="hover:text-zt-primary">
+              Athletes
             </Link>
             <Link href="/website/account" className="hover:text-zt-primary">
               Account

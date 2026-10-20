@@ -20,6 +20,7 @@ import {
   toPublicShowSummary,
 } from './fixtures';
 import { mapGymRowToListing, PUBLIC_GYM_COLS, sortListingsForDisplay, type GymRow } from './supabaseGyms';
+import { cleanUsernameParam, mapPublicProfileRow, PUBLIC_PROFILE_COLS, sortAthletes, type PublicAthlete, type PublicProfileRow } from './athletes';
 import {
   mapMeetBundleToPublicShowRecord,
   mapMeetRowToPublicShowSummary,
@@ -261,6 +262,49 @@ export async function getPublicGymBySlug(
       `select=${PUBLIC_GYM_COLS}&slug=eq.${encodeURIComponent(slugKey)}&status=in.(unclaimed,claimed)&limit=1`
     );
     return { source: 'live_supabase', data: rows.length ? mapGymRowToListing(rows[0]) : null, error: null };
+  } catch (err) {
+    return { source: 'live_supabase', data: null, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
+// Athletes (020, 10/21): the zt_public_profiles view holds only opted-in rows. No demo fixtures on purpose; a build
+// without a backend shows an empty directory rather than invented people.
+export async function listPublicAthletes(opts: ShowDataOptions = {}): Promise<DataResult<PublicAthlete[]>> {
+  const client = resolveClient(opts);
+  if (!client) {
+    return { source: 'demo', data: [], error: null };
+  }
+  const base = readSyncEnv()?.url ?? null;
+  try {
+    const rows = await client.select<PublicProfileRow>(
+      'zt_public_profiles',
+      `select=${PUBLIC_PROFILE_COLS}&order=display_name.asc,username.asc&limit=2000`
+    );
+    return { source: 'live_supabase', data: sortAthletes(rows.map((r) => mapPublicProfileRow(r, base))), error: null };
+  } catch (err) {
+    return { source: 'live_supabase', data: null, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
+export async function getPublicAthleteByUsername(
+  username: string,
+  opts: ShowDataOptions = {}
+): Promise<DataResult<PublicAthlete>> {
+  const key = cleanUsernameParam(username);
+  const client = resolveClient(opts);
+  if (!client) {
+    return { source: 'demo', data: null, error: null };
+  }
+  if (!key) {
+    return { source: 'live_supabase', data: null, error: null };
+  }
+  const base = readSyncEnv()?.url ?? null;
+  try {
+    const rows = await client.select<PublicProfileRow>(
+      'zt_public_profiles',
+      `select=${PUBLIC_PROFILE_COLS}&username=eq.${encodeURIComponent(key)}&limit=1`
+    );
+    return { source: 'live_supabase', data: rows.length ? mapPublicProfileRow(rows[0], base) : null, error: null };
   } catch (err) {
     return { source: 'live_supabase', data: null, error: err instanceof Error ? err.message : String(err) };
   }

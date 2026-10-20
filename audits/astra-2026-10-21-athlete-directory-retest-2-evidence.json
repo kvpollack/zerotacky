@@ -1,0 +1,234 @@
+{
+  "revision": {
+    "sha": "08b389aae836e963270f3cbdeeba3b2d8cb496da",
+    "tracked": 311,
+    "mismatches": []
+  },
+  "browser-evidence": {
+    "checks": {
+      "baseline": {
+        "username": null,
+        "is_public": false,
+        "publicUsernames": [
+          "slate_staging"
+        ]
+      },
+      "homeGymLocation": {
+        "tab2Location": "TAB2 MUST SURVIVE",
+        "tab2Gym": "Astra saved gym from tab one",
+        "serverLocation": "Kansas City, Missouri",
+        "serverGym": "Astra saved gym from tab one",
+        "is_public": true
+      },
+      "prSibling": {
+        "tab2": [
+          {
+            "lift": "Audit Log",
+            "value": "300"
+          },
+          {
+            "lift": "Audit Yoke",
+            "value": "800"
+          },
+          {
+            "lift": "",
+            "value": ""
+          }
+        ],
+        "server": [
+          {
+            "lift": "Audit Log",
+            "value": "300"
+          }
+        ],
+        "is_public": false
+      },
+      "prExplicitSave": [
+        {
+          "lift": "Audit Log",
+          "value": "300"
+        },
+        {
+          "lift": "Audit Yoke",
+          "value": "800"
+        }
+      ],
+      "socialSibling": {
+        "tab2": {
+          "instagram": "astra_unsaved_social",
+          "youtube": "astra_tv",
+          "tiktok": ""
+        },
+        "server": {
+          "youtube": "astra_tv",
+          "instagram": "astra_test"
+        },
+        "is_public": true
+      },
+      "socialExplicitSave": {
+        "youtube": "astra_tv",
+        "instagram": "astra_unsaved_social"
+      },
+      "reloadAfterExplicitSave": true,
+      "restore": {
+        "diff": [],
+        "username": null,
+        "is_public": false
+      },
+      "publicRestored": {
+        "status": 200,
+        "sameRowsAsBefore": true,
+        "usernames": [
+          "slate_staging"
+        ]
+      }
+    },
+    "pageErrors": []
+  },
+  "pure-evidence": {
+    "states": [
+      {
+        "input": "Columbus Ohio",
+        "expected": "OH",
+        "actual": "OH"
+      },
+      {
+        "input": "Austin TX United States",
+        "expected": "TX",
+        "actual": "TX"
+      },
+      {
+        "input": "Kansas City, Missouri",
+        "expected": "MO",
+        "actual": "MO"
+      },
+      {
+        "input": "West Virginia",
+        "expected": "WV",
+        "actual": "WV"
+      },
+      {
+        "input": "Kansas City",
+        "expected": "",
+        "actual": ""
+      },
+      {
+        "input": "Austin TX 78701 USA",
+        "expected": "TX",
+        "actual": "TX"
+      },
+      {
+        "input": "Washington District of Columbia",
+        "expected": "DC",
+        "actual": "DC"
+      }
+    ],
+    "query": {
+      "lowerState": "TN",
+      "invalidState": "ALL",
+      "repeatedState": "PA",
+      "trainer": "trainer",
+      "invalidRole": "ALL",
+      "search": "@Slate",
+      "searchMax": 60
+    }
+  },
+  "filter-evidence": {
+    "cases": [
+      {
+        "query": "state=TN",
+        "http": 200,
+        "state": "TN",
+        "role": "ALL",
+        "search": "",
+        "slateCards": 1,
+        "zeroMatches": false,
+        "reloadState": "TN",
+        "resetState": "ALL",
+        "width": 375
+      },
+      {
+        "query": "state=TN&role=trainer&q=%40slate",
+        "http": 200,
+        "state": "TN",
+        "role": "trainer",
+        "search": "@slate",
+        "slateCards": 1,
+        "zeroMatches": false
+      },
+      {
+        "query": "state=AZ",
+        "http": 200,
+        "state": "AZ",
+        "role": "ALL",
+        "search": "",
+        "slateCards": 0,
+        "zeroMatches": true
+      },
+      {
+        "query": "state=ZZ&role=admin",
+        "http": 200,
+        "state": "ALL",
+        "role": "ALL",
+        "search": "",
+        "slateCards": 1,
+        "zeroMatches": false
+      }
+    ],
+    "errors": []
+  },
+  "final-evidence": {
+    "fingerprint": {
+      "tracked": 311,
+      "mismatches": []
+    },
+    "sqlChangesSincePreviousRetest": [],
+    "profileRestoration": {
+      "differencesExceptUpdatedAt": [],
+      "username": null,
+      "is_public": false
+    },
+    "publicRowsRestored": true,
+    "publicUsernames": [
+      "slate_staging"
+    ]
+  },
+  "suite": {
+    "pass": 347,
+    "fail": 0,
+    "files": 29,
+    "tscExit": 0,
+    "tscDiagnosticBytes": 0
+  },
+  "verdicts": {
+    "AD-M1": "cleared",
+    "AD-RL1": "cleared",
+    "AD-RL2": "cleared"
+  },
+  "artifacts": {
+    "astra-2026-10-21-athlete-directory-retest-2.md": {
+      "bytes": 8730,
+      "sha256": "02c7eae16985faf03425158fc3ac0ef624fdfe56e741058cf8250ff48fe04d7a"
+    },
+    "tests.txt": {
+      "bytes": 39161,
+      "sha256": "ef9c272233e645f60126b46faa34def7a7775143d8806cae2ee9f030888bcae7"
+    },
+    "tsc.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tn-filter.png": {
+      "bytes": 36402,
+      "sha256": "ebabaf5586581349ef128b6ce3ecde603bf156309feaccb76c177eb757143314"
+    }
+  },
+  "cleanup": {
+    "temporaryCopiesRemoved": [
+      "session.secret.json",
+      "before.secret.json"
+    ],
+    "originalCredentialFileUntouched": true,
+    "serverTokenRevoked": false
+  }
+}
