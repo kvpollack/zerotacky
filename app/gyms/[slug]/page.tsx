@@ -51,11 +51,28 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
             <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded bg-zt-inset border border-zt-border text-zt-text-2">
               Last Updated: {gym.lastUpdatedDate}
             </span>
-            {gym.isDemoListing && (
-              <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
-                Demo Listing (fictional)
-              </span>
-            )}
+            <span className="flex flex-wrap items-center gap-1.5">
+              {gym.gymType && (
+                <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded bg-zt-inset border border-zt-border text-zt-text-2">
+                  {gym.gymType === 'mixed' ? 'Strongman + Powerlifting' : gym.gymType}
+                </span>
+              )}
+              {gym.isDemoListing && (
+                <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                  Demo Listing (fictional)
+                </span>
+              )}
+              {gym.claimStatus === 'unclaimed' && (
+                <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded bg-zt-inset border border-dashed border-zt-border-strong text-zt-muted">
+                  Unclaimed listing
+                </span>
+              )}
+              {gym.claimStatus === 'claimed' && (
+                <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/40">
+                  Claimed by the gym
+                </span>
+              )}
+            </span>
           </div>
 
           <div className="space-y-1">
@@ -63,7 +80,9 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
             <div className="text-xs sm:text-sm font-bold text-zt-text-2 flex items-center gap-1.5">
               <MapPin className="w-4 h-4 text-zt-primary" aria-hidden="true" />
               <span>
-                {gym.streetAddress ? gym.streetAddress : `${gym.city}, ${gym.state} (Street address: Not provided)`}
+                {gym.streetAddress
+                  ? `${gym.streetAddress}, ${gym.city}, ${gym.state}${gym.postalCode ? ` ${gym.postalCode}` : ''}`
+                  : `${gym.city}, ${gym.state} (Street address: Not provided)`}
               </span>
             </div>
           </div>
@@ -127,6 +146,32 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
               {gym.dropInPolicy || 'Not provided'}
             </p>
           </div>
+
+          {!gym.isDemoListing && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-zt-border text-xs">
+              <p className="text-zt-muted">
+                {gym.claimStatus === 'claimed'
+                  ? 'Details are maintained by the gym.'
+                  : (
+                    <>
+                      Built from the gym&rsquo;s own website
+                      {gym.sourceUrl ? (<> (<a href={gym.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-zt-text">source</a>)</>) : null}
+                      , checked {gym.lastUpdatedDate}. Nobody from the gym has reviewed it yet.
+                    </>
+                  )}
+              </p>
+              <div className="flex items-center gap-2 shrink-0">
+                {gym.claimStatus === 'unclaimed' && (
+                  <Link href={`/gyms/${gym.slug}/claim`} className="px-3.5 py-2 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase">
+                    Claim this gym
+                  </Link>
+                )}
+                <Link href={`/gyms/${gym.slug}/claim?mode=report`} className="px-3 py-2 rounded-xl bg-zt-inset border border-zt-border text-zt-text-2 font-bold text-xs hover:text-zt-text">
+                  Not right? Report it
+                </Link>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Strongman Equipment Breakdown */}
@@ -139,6 +184,11 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
             <span>Equipment &amp; Specifications ({gym.equipment.length})</span>
           </h2>
 
+          {gym.equipment.length === 0 && (
+            <p className="text-xs font-bold text-zt-muted bg-zt-surface border border-zt-border rounded-2xl p-4">
+              No equipment list yet. The gym&rsquo;s site confirms strongman or powerlifting training but does not name implements; the owner can fill this in after claiming.
+            </p>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {gym.equipment.map((item) => (
               <div

@@ -122,6 +122,7 @@ export interface StrongmanGymListing {
   city: string;
   state: string;
   streetAddress?: string;
+  postalCode?: string;
   websiteUrl?: string;
   contactInfo?: string;
   dayPassAvailability: DayPassAvailability;
@@ -136,6 +137,11 @@ export interface StrongmanGymListing {
   hostedShowSlugs: string[];
   lastUpdatedDate: string; // YYYY-MM-DD
   isDemoListing: boolean;
+  // 015 gyms table (10/20): listings collected from the gym's own site start unclaimed; the owner claims later.
+  gymType?: 'strongman' | 'powerlifting' | 'mixed';
+  claimStatus?: 'unclaimed' | 'claimed';
+  sourceUrl?: string;
+  confidence?: 'high' | 'medium' | 'low';
 }
 
 export type CapabilityArea = 'athlete' | 'promoter' | 'gym_owner';

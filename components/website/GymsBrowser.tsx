@@ -112,7 +112,7 @@ export default function GymsBrowser({
                 type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="e.g. Keystone Forge, York, log, stones"
+                placeholder="e.g. Hercules, Brooklyn, monolift, stones"
                 className="w-full bg-zt-inset border border-zt-border-strong rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm font-bold text-zt-text"
               />
             </div>
@@ -266,11 +266,23 @@ export default function GymsBrowser({
                     {gym.dayPassPriceDisplay ? ` • ${gym.dayPassPriceDisplay}` : ''}
                   </span>
 
-                  {gym.isDemoListing && (
-                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
-                      Demo Listing
-                    </span>
-                  )}
+                  <span className="flex items-center gap-1.5">
+                    {gym.gymType && (
+                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-text-2">
+                        {gym.gymType === 'mixed' ? 'Strongman + Powerlifting' : gym.gymType}
+                      </span>
+                    )}
+                    {gym.isDemoListing && (
+                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                        Demo Listing
+                      </span>
+                    )}
+                    {gym.claimStatus === 'unclaimed' && (
+                      <Link href={`/gyms/${gym.slug}/claim`} className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-zt-inset border border-dashed border-zt-border-strong text-zt-muted hover:text-zt-primary hover:border-zt-primary">
+                        Unclaimed
+                      </Link>
+                    )}
+                  </span>
                 </div>
 
                 <div>
@@ -310,6 +322,9 @@ export default function GymsBrowser({
                     <span>Equipment ({gym.implementTags.length})</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
+                    {gym.implementTags.length === 0 && (
+                      <span className="text-[11px] text-zt-muted">No equipment list yet.</span>
+                    )}
                     {gym.implementTags.map((tag) => (
                       <span
                         key={tag}

@@ -19,6 +19,7 @@ import {
   DEMO_SHOW_RECORDS,
   toPublicShowSummary,
 } from './fixtures';
+import { mapGymRowToListing, PUBLIC_GYM_COLS, sortListingsForDisplay, type GymRow } from './supabaseGyms';
 import {
   mapMeetBundleToPublicShowRecord,
   mapMeetRowToPublicShowSummary,
@@ -225,24 +226,44 @@ export async function getPublicShowBySlug(
   }
 }
 
-export async function listPublicGyms(): Promise<DataResult<StrongmanGymListing[]>> {
-  return {
-    source: 'demo',
-    data: DEMO_GYM_LISTINGS,
-    error: null,
-  };
+// Gyms (015, 10/20): with a backend the directory is the `gyms` table (Argon rounds, page-verified, unclaimed until the
+// owner claims). The fictional fixtures only appear when no backend is configured, so a real directory never mixes
+// made-up gyms into real results.
+export async function listPublicGyms(opts: ShowDataOptions = {}): Promise<DataResult<StrongmanGymListing[]>> {
+  const client = resolveClient(opts);
+  if (!client) {
+    return { source: 'demo', data: DEMO_GYM_LISTINGS, error: null };
+  }
+  try {
+    const rows = await client.select<GymRow>(
+      'gyms',
+      `select=${PUBLIC_GYM_COLS}&status=neq.removed&order=state.asc,city.asc,name.asc&limit=2000`
+    );
+    return { source: 'live_supabase', data: sortListingsForDisplay(rows.map(mapGymRowToListing)), error: null };
+  } catch (err) {
+    return { source: 'live_supabase', data: null, error: err instanceof Error ? err.message : String(err) };
+  }
 }
 
 export async function getPublicGymBySlug(
-  slug: string
+  slug: string,
+  opts: ShowDataOptions = {}
 ): Promise<DataResult<StrongmanGymListing>> {
   const slugKey = cleanSlug(slug);
-  const found = DEMO_GYM_LISTINGS.find((g) => g.slug.toLowerCase() === slugKey) ?? null;
-  return {
-    source: 'demo',
-    data: found,
-    error: null,
-  };
+  const client = resolveClient(opts);
+  if (!client) {
+    const found = DEMO_GYM_LISTINGS.find((g) => g.slug.toLowerCase() === slugKey) ?? null;
+    return { source: 'demo', data: found, error: null };
+  }
+  try {
+    const rows = await client.select<GymRow>(
+      'gyms',
+      `select=${PUBLIC_GYM_COLS}&slug=eq.${encodeURIComponent(slugKey)}&status=neq.removed&limit=1`
+    );
+    return { source: 'live_supabase', data: rows.length ? mapGymRowToListing(rows[0]) : null, error: null };
+  } catch (err) {
+    return { source: 'live_supabase', data: null, error: err instanceof Error ? err.message : String(err) };
+  }
 }
 
 export function listDemoPersonas(): DemoPersonaProfile[] {
