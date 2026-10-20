@@ -67,6 +67,29 @@ describe('stateFromLocation', () => {
     assert.equal(A.stateFromLocation('Portland, Oregon, United States'), 'OR');
     assert.equal(A.stateFromLocation('Austin, TX, U.S.A.'), 'TX');
   });
+  test('Astra AD-RL1: space-separated formats with a one-word state name or a glued country', () => {
+    assert.equal(A.stateFromLocation('Columbus Ohio'), 'OH');
+    assert.equal(A.stateFromLocation('Austin TX United States'), 'TX');
+    assert.equal(A.stateFromLocation('Columbus Ohio USA'), 'OH');
+    assert.equal(A.stateFromLocation('Austin TX 78701 USA'), 'TX');
+    assert.equal(A.stateFromLocation('Seattle Washington'), 'WA');
+    assert.equal(A.stateFromLocation('Washington District of Columbia'), 'DC');
+    assert.equal(A.stateFromLocation('Austin TX U.S.A.'), 'TX');
+    assert.equal(A.stateFromLocation('Kansas City'), '');   // still not KS
+    assert.equal(A.stateFromLocation('United States'), '');
+  });
+  test('Astra AD-RL2: query-string filters validate to a known state / role or ALL', () => {
+    assert.equal(A.cleanStateParam('TN'), 'TN');
+    assert.equal(A.cleanStateParam('tn'), 'TN');
+    assert.equal(A.cleanStateParam(['PA', 'TN']), 'PA');
+    assert.equal(A.cleanStateParam('ZZ'), 'ALL');
+    assert.equal(A.cleanStateParam(undefined), 'ALL');
+    assert.equal(A.cleanRoleParam('trainer'), 'trainer');
+    assert.equal(A.cleanRoleParam('Gym-Owner'), 'gym_owner');
+    assert.equal(A.cleanRoleParam('admin'), 'ALL');
+    assert.equal(A.cleanSearchParam('  @Slate '), '@Slate');
+    assert.equal(A.cleanSearchParam('x'.repeat(100)).length, 60);
+  });
 });
 
 describe('Astra 10/21 LOW follow-ups', () => {

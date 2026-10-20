@@ -3,7 +3,7 @@ import Link from 'next/link';
 import WebsiteShell from '@/components/website/WebsiteShell';
 import AthletesBrowser from '@/components/website/AthletesBrowser';
 import { listPublicAthletes } from '@/lib/website/data';
-import { collectAthleteStates } from '@/lib/website/athletes';
+import { cleanRoleParam, cleanSearchParam, cleanStateParam, collectAthleteStates } from '@/lib/website/athletes';
 
 // Profiles change when people edit them; a 60 s window keeps the list close to live without a query per visit.
 export const revalidate = 60;
@@ -13,7 +13,10 @@ export const metadata: Metadata = {
   description: 'Strongman athletes, promoters, gym owners and trainers who chose to be listed on ZeroTacky.',
 };
 
-export default async function AthletesDirectoryPage() {
+type SearchParams = Record<string, string | string[] | undefined>;
+
+export default async function AthletesDirectoryPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const sp = await searchParams;
   const res = await listPublicAthletes();
   const athletes = res.data ?? [];
   const states = collectAthleteStates(athletes);
@@ -38,7 +41,13 @@ export default async function AthletesDirectoryPage() {
         )}
       </div>
 
-      <AthletesBrowser initialAthletes={athletes} availableStates={states} />
+      <AthletesBrowser
+        initialAthletes={athletes}
+        availableStates={states}
+        initialState={cleanStateParam(sp.state)}
+        initialRole={cleanRoleParam(sp.role)}
+        initialSearch={cleanSearchParam(sp.q)}
+      />
     </WebsiteShell>
   );
 }

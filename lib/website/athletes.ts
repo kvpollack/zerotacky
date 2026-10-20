@@ -67,12 +67,14 @@ const STATE_NAMES: Record<string, string> = {
   'new jersey': 'NJ', 'new mexico': 'NM', 'new york': 'NY', 'north carolina': 'NC', 'north dakota': 'ND', ohio: 'OH',
   oklahoma: 'OK', oregon: 'OR', pennsylvania: 'PA', 'rhode island': 'RI', 'south carolina': 'SC', 'south dakota': 'SD',
   tennessee: 'TN', texas: 'TX', utah: 'UT', vermont: 'VT', virginia: 'VA', washington: 'WA', 'west virginia': 'WV',
-  wisconsin: 'WI', wyoming: 'WY', 'washington dc': 'DC', 'washington, dc': 'DC',
+  wisconsin: 'WI', wyoming: 'WY', 'washington dc': 'DC', 'washington, dc': 'DC', 'district of columbia': 'DC',
 };
 
 const NAME_TO_CODE = new Map(Object.entries(STATE_NAMES));
 const ZIP_TAIL = /\s+\d{5}(-\d{4})?$/;
 const COUNTRY = /^(usa?|u\.s\.a?\.?|united states( of america)?)$/i;
+// Same country words glued to the end of a single component: "Austin TX United States", "Columbus Ohio USA".
+const COUNTRY_TAIL = /\s+(usa|u\.s\.a?\.?|united states( of america)?)\.?$/i;
 
 // One comma-separated component -> state code or ''. "PA", "PA 19014", "Pennsylvania", "West Virginia 25301".
 function stateFromComponent(component: string): string {
@@ -93,15 +95,33 @@ export function stateFromLocation(location: string): string {
   const last = parts[parts.length - 1];
   const whole = stateFromComponent(last);
   if (whole) return whole;
-  // Single component with spaces ("Aston PA 19014", "Charleston West Virginia"): try the trailing one or two words.
-  const words = last.replace(ZIP_TAIL, '').trim().split(/\s+/);
+  // Single component with spaces ("Aston PA 19014", "Charleston West Virginia", "Columbus Ohio", "Austin TX United
+  // States"): drop a trailing country and zip, then try the trailing three, two and one words as a state name, then the
+  // trailing word as a code. One-word names are a guess ("Port Washington" reads WA); the filter is a convenience.
+  const words = last.replace(COUNTRY_TAIL, '').replace(ZIP_TAIL, '').trim().split(/\s+/);
   if (words.length >= 2) {
-    const two = NAME_TO_CODE.get(words.slice(-2).join(' ').toLowerCase());
-    if (two) return two;
-    const one = words[words.length - 1].toUpperCase();
+    for (const n of [3, 2, 1]) {
+      if (words.length <= n) continue;
+      const code = NAME_TO_CODE.get(words.slice(-n).join(' ').toLowerCase());
+      if (code) return code;
+    }
+    const one = words[words.length - 1].toUpperCase().replace(/\./g, '');
     if (one.length === 2 && US_STATES.has(one)) return one;   // "Aston PA"
   }
   return '';
+}
+
+// Query-string filters for /athletes (Astra AD-RL2): a state code we know, a role we offer, or ALL.
+export function cleanStateParam(v: string | string[] | undefined): string {
+  const s = (Array.isArray(v) ? v[0] : v ?? '').trim().toUpperCase();
+  return US_STATES.has(s) ? s : 'ALL';
+}
+export function cleanRoleParam(v: string | string[] | undefined): string {
+  const s = (Array.isArray(v) ? v[0] : v ?? '').trim().toLowerCase().replace(/-/g, '_');
+  return ROLE_OPTIONS.some((o) => o.id === s) ? s : 'ALL';
+}
+export function cleanSearchParam(v: string | string[] | undefined): string {
+  return (Array.isArray(v) ? v[0] : v ?? '').trim().slice(0, 60);
 }
 
 export function avatarUrlFromPath(supabaseUrl: string | null | undefined, path: string): string {

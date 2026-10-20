@@ -4,8 +4,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Camera, Dumbbell, Eye, EyeOff, KeyRound, LogOut, Mail, Play, Save, ShieldCheck, Trash2, Trophy, UserCheck } from 'lucide-react';
 import { useAuth } from '@/lib/auth/useAuth';
-import { FAVORITE_LIFT_OPTIONS, MAX_PRS, SOCIAL_KEYS, USERNAME_MAX, athleteProfilePath, cleanProfilePatch, normalizeUsername, profileLabel, roleBadges, usernameProblem, type Profile, type ProfilePR, type ProfileSocials } from '@/lib/auth/profile';
+import { FAVORITE_LIFT_OPTIONS, MAX_PRS, SOCIAL_KEYS, USERNAME_MAX, athleteProfilePath, normalizeUsername, profileLabel, roleBadges, usernameProblem, type Profile, type ProfilePR, type ProfileSocials } from '@/lib/auth/profile';
 import { AVATAR_MAX_BYTES, avatarProblem } from '@/lib/auth/avatar';
+import { aboutFromProfile, aboutKey, reconcileAbout, type AboutDraft } from '@/lib/auth/profileDraft';
 import { fetchIsAdmin } from '@/lib/website/myGym';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
 
@@ -17,42 +18,6 @@ const inputCls = 'w-full bg-zt-inset border border-zt-border-strong rounded-lg p
 const labelCls = 'block text-[10px] font-extrabold uppercase text-zt-muted mb-1';
 const primaryBtn = 'px-4 py-2 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase tracking-wider inline-flex items-center gap-1.5 disabled:opacity-40';
 const quietBtn = 'px-3 py-2 rounded-xl bg-zt-surface border border-zt-border-strong text-zt-text font-extrabold text-xs uppercase inline-flex items-center gap-1.5 disabled:opacity-40';
-
-// The optional "about you" block (Kurt 10/20) edits as one object so the dirty check and the save stay in step.
-interface AboutDraft {
-  favorite_lift: string;
-  favorite_lift_note: string;
-  location: string;
-  home_gym_name: string;
-  prs: ProfilePR[];
-  is_trainer: boolean;
-  trainer_in_person: boolean;
-  trainer_online: boolean;
-  socials: ProfileSocials;
-}
-const EMPTY_PR: ProfilePR = { lift: '', value: '' };
-function padPRs(prs: ProfilePR[]): ProfilePR[] {
-  const out = prs.slice(0, MAX_PRS);
-  while (out.length < MAX_PRS) out.push({ ...EMPTY_PR });
-  return out;
-}
-function aboutFromProfile(p: Profile): AboutDraft {
-  return {
-    favorite_lift: p.favorite_lift,
-    favorite_lift_note: p.favorite_lift_note,
-    location: p.location,
-    home_gym_name: p.home_gym_name,
-    prs: padPRs(p.prs),
-    is_trainer: p.is_trainer,
-    trainer_in_person: p.trainer_in_person,
-    trainer_online: p.trainer_online,
-    socials: { ...p.socials },
-  };
-}
-// Compare what the database would hold after a save, so trailing spaces or an empty PR row do not count as changes.
-function aboutKey(a: AboutDraft): string {
-  return JSON.stringify(cleanProfilePatch({ ...a }));
-}
 
 function Notice({ text, tone }: { text: string; tone: 'ok' | 'warn' }) {
   return (
@@ -187,7 +152,10 @@ export default function AccountClient() {
     if (fresh || prev.is_athlete !== next.is_athlete) setAthlete(next.is_athlete);
     if (fresh || prev.is_promoter !== next.is_promoter) setPromoter(next.is_promoter);
     if (fresh || prev.is_gym_owner !== next.is_gym_owner) setGymOwner(next.is_gym_owner);
-    if (fresh || aboutKey(aboutFromProfile(prev)) !== aboutKey(aboutFromProfile(next))) setAbout(aboutFromProfile(next));
+    // About you reconciles member by member (Astra AD-M1 retest): a saved home gym in another tab must not reset an
+    // unsaved location here. PR rows and social links are their own members.
+    if (fresh) setAbout(aboutFromProfile(next));
+    else setAbout((cur) => reconcileAbout(cur, prev, next));
   }, [auth.profile]);
   const patchAbout = (patch: Partial<AboutDraft>) => setAbout((a) => (a ? { ...a, ...patch } : a));
   const patchPR = (i: number, patch: Partial<ProfilePR>) => setAbout((a) => {

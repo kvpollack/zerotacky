@@ -9,19 +9,25 @@ import { athleteProfilePath } from '@/lib/auth/profile';
 interface AthletesBrowserProps {
   initialAthletes: PublicAthlete[];
   availableStates: string[];
+  // From the query string (/athletes?state=TN&role=trainer&q=slate), already validated by the page (Astra AD-RL2).
+  initialState?: string;
+  initialRole?: string;
+  initialSearch?: string;
 }
 
 const inputCls = 'w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text focus:outline-none focus:border-zt-primary';
 
-export default function AthletesBrowser({ initialAthletes, availableStates }: AthletesBrowserProps) {
-  const [search, setSearch] = useState('');
-  const [stateFilter, setStateFilter] = useState('ALL');
-  const [role, setRole] = useState('ALL');
+export default function AthletesBrowser({ initialAthletes, availableStates, initialState = 'ALL', initialRole = 'ALL', initialSearch = '' }: AthletesBrowserProps) {
+  const [search, setSearch] = useState(initialSearch);
+  const [stateFilter, setStateFilter] = useState(initialState);
+  const [role, setRole] = useState(initialRole);
 
   const filtered = useMemo(
     () => filterPublicAthletes(initialAthletes, { search, state: stateFilter, role }),
     [initialAthletes, search, stateFilter, role]
   );
+  // A linked state nobody is listed in still shows as selected (with zero matches) rather than snapping to All.
+  const stateOptions = stateFilter === 'ALL' || availableStates.includes(stateFilter) ? availableStates : [...availableStates, stateFilter].sort();
   const active = search.trim() !== '' || stateFilter !== 'ALL' || role !== 'ALL';
   const reset = () => { setSearch(''); setStateFilter('ALL'); setRole('ALL'); };
 
@@ -39,7 +45,7 @@ export default function AthletesBrowser({ initialAthletes, availableStates }: At
           <span className="text-[10px] font-extrabold uppercase text-zt-muted">State</span>
           <select value={stateFilter} onChange={(e) => setStateFilter(e.target.value)} className={inputCls}>
             <option value="ALL">All</option>
-            {availableStates.map((s) => <option key={s} value={s}>{s}</option>)}
+            {stateOptions.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </label>
         <label className="block">
