@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   // Set Stone mark (10/21): flat stone at favicon sizes, the shaded version from 180 px up and on the share card.
   icons: {
     icon: [
+      { url: '/icon-light-16x16.png', media: '(prefers-color-scheme: light)', sizes: '16x16' },
+      { url: '/icon-dark-16x16.png', media: '(prefers-color-scheme: dark)', sizes: '16x16' },
       { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)', sizes: '32x32' },
       { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)', sizes: '32x32' },
       { url: '/icon.svg', type: 'image/svg+xml' },

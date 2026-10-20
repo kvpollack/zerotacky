@@ -66,7 +66,7 @@ export default function AddGymClient() {
             <Dumbbell className="w-5 h-5 text-zt-secondary" aria-hidden="true" /> {done.name} is in for review
           </h1>
           <p className="text-sm text-zt-text-2">
-            We check new gyms by hand, usually within a day or two, and email you when it is live. You can fill in equipment, day passes and drop-in hours on My Gym now; everything you add goes public with the listing.
+            We review new listings by hand; check My Gym for the result. You can fill in equipment, day passes and drop-in hours there now, and everything you add goes public with the listing.
           </p>
           <div className="flex flex-wrap gap-2">
             <Link href="/website/account/gym" className={primaryBtn}>Open My Gym</Link>

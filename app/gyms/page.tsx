@@ -30,7 +30,7 @@ export default async function GymsDirectoryPage() {
           </h1>
           {live ? (
             <span className="text-[11px] font-black uppercase px-2.5 py-1 rounded-lg bg-zt-inset text-zt-text-2 border border-zt-border">
-              {gyms.length} gyms • {states.length} states
+              {gyms.length} gyms • {states.filter((s) => s !== 'DC').length} states{states.includes('DC') ? ' + DC' : ''}
             </span>
           ) : (
             <span className="text-[11px] font-black uppercase px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40">
