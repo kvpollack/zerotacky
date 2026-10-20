@@ -8,7 +8,7 @@ import { useAuth } from '@/lib/auth/useAuth';
 
 // Header account chip for `WebsiteShell`. Renders nothing until the session is known on the client
 // (so server HTML and initial hydration match with no flash), then links to `/website/account`
-// with the signed-in display name or "Sign in".
+// with the signed-in display name; signed out it renders nothing (sign-in lives on the Account tab).
 export default function WebsiteAccountChip() {
   const auth = useAuth();
   const [mounted, setMounted] = useState(false);
@@ -34,12 +34,6 @@ export default function WebsiteAccountChip() {
     );
   }
 
-  return (
-    <Link
-      href="/website/account"
-      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-extrabold uppercase tracking-wide bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong hover:text-zt-text transition"
-    >
-      Sign in
-    </Link>
-  );
+  // Signed out: nothing. The Account nav tab is where sign-in lives (Kurt 10/20).
+  return null;
 }

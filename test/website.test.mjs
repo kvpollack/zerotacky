@@ -37,7 +37,7 @@ describe('website filters: shows & gyms', () => {
   });
 
   test('filters gyms by implement tag and day-pass availability', () => {
-    const basketGyms = F.filterPublicGyms(gyms, { implementTag: 'Basket Deadlift' });
+    const basketGyms = F.filterPublicGyms(gyms, { implementTag: 'Kegs' });
     assert.equal(basketGyms.length, 1);
     assert.equal(basketGyms[0].slug, 'the-power-plant-gym-pa');
 
@@ -105,5 +105,18 @@ describe('website lifecycle & podium certification rules', () => {
     assert.ok(provShow);
     const views = A.buildAllDivisionResultsViews(provShow);
     assert.equal(views[0].isOfficialFinal, false);
+  });
+});
+describe('gym directory equipment (Kurt 10/20)', () => {
+  test('every demo gym tag is a known piece of equipment, and the dropdown follows list order', async () => {
+    const GE = await import('../lib/website/gymEquipment.ts');
+    const FX = await import('../lib/website/fixtures.ts');
+    for (const g of FX.DEMO_GYM_LISTINGS) for (const t of g.implementTags) assert.ok(GE.isKnownEquipment(t), `${g.slug}: ${t}`);
+    assert.ok(!GE.isKnownEquipment('Keg Over Bar'));
+    const F = await import('../lib/website/filters.ts');
+    const tags = GE.sortEquipmentTags(F.collectDistinctImplementTags(FX.DEMO_GYM_LISTINGS));
+    assert.equal(tags[0], 'Log');
+    assert.ok(tags.indexOf('Atlas stones') < tags.indexOf('Kegs'));
+    assert.deepEqual(GE.sortEquipmentTags(['Zebra rack', 'Yoke', 'Log']), ['Log', 'Yoke', 'Zebra rack']);
   });
 });

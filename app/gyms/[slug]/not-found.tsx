@@ -11,7 +11,7 @@ export default function GymNotFound() {
         <h1 className="text-2xl font-black text-zt-text">That gym is not in the gym directory.</h1>
         <div className="flex flex-wrap justify-center gap-3 pt-2">
           <Link href="/gyms" className="px-4 py-2.5 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase">
-            Back to Strongman Gyms
+            Back to the Gym Directory
           </Link>
         </div>
       </div>

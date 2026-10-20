@@ -20,7 +20,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
     { id: 'how', label: 'How It Works', href: '/how-it-works' },
     { id: 'shows', label: 'Find a Show', href: '/shows' },
     { id: 'join', label: 'Join a Meet', href: '/join' },
-    { id: 'gyms', label: 'Strongman Gyms', href: '/gyms' },
+    { id: 'gyms', label: 'Gym Directory', href: '/gyms' },
     { id: 'account', label: 'Account', href: '/website/account' },
   ];
 
