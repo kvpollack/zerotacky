@@ -21,6 +21,8 @@ Report: `astra-2026-10-21-athlete-directory.md` at v2 `bb07e4b3`. Verdict was "m
 
 Totals after round 2: 347 tests, tsc clean.
 
+**Round 3 (Astra `astra-2026-10-21-athlete-directory-retest-2.md`): AD-M1, AD-RL1, AD-RL2 all cleared live on v2 `08b389aa`; no new findings. Directory audit gate CLOSED. Prod waits on Kurt's go (020 first, then the file set to main).**
+
 Residual staging data: the eight hold rows Astra listed stay in `username_holds` (no cleanup RPC by design; they age out of the 30-day rule and block nobody but the other test account). Slate can delete them with direct SQL if they get in the way of a retest.
 
 Prod path when cleared: apply `020_athlete_directory.sql` on prod, then push the directory file set to main (profile.ts, useAuth.ts, athletes.ts, data.ts, the /athletes pages, AthletesBrowser, AccountClient, WebsiteShell, sitemap, tests, audits). Order matters: 020 first, or the account page fails reading `username` / `is_public`.
