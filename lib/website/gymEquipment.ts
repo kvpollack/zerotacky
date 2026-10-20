@@ -22,6 +22,12 @@ export const GYM_EQUIPMENT: ReadonlyArray<{ id: string; label: string }> = [
   { id: 'tire', label: 'Tire' },
   { id: 'power_stairs', label: 'Power stairs' },
   { id: 'turf_lane', label: 'Turf or outdoor lane' },
+  // Powerlifting (10/20): the directory lists powerlifting gyms too, so the collector's five ids get labels.
+  { id: 'comp_bars', label: 'Competition bars' },
+  { id: 'calibrated_plates', label: 'Calibrated plates' },
+  { id: 'monolift', label: 'Monolift' },
+  { id: 'combo_rack', label: 'Combo rack' },
+  { id: 'deadlift_platform', label: 'Deadlift platform' },
 ];
 
 const ORDER = new Map(GYM_EQUIPMENT.map((e, i) => [e.label.toLowerCase(), i]));

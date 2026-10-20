@@ -69,6 +69,27 @@ export default async function WebsiteLandingPage() {
         </p>
       </section>
 
+      {/* Gym owner call-out (Kurt 10/20): the directory ships unclaimed; this is how owners find out and take over. */}
+      <section className="bg-zt-surface border-2 border-zt-secondary/60 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="text-xs font-black uppercase tracking-wider text-zt-secondary flex items-center gap-1.5">
+            <Dumbbell className="w-4 h-4" aria-hidden="true" />
+            <span>Gym owners</span>
+          </div>
+          <h2 className="text-lg sm:text-xl font-black text-zt-text">See if your gym is listed, then claim it.</h2>
+          <p className="text-xs sm:text-sm text-zt-text-2 max-w-2xl">
+            We listed {gyms.length} strongman and powerlifting gyms from their own websites. Claiming yours lets you fix the details,
+            list your implements, and link the shows you host. It is free.
+          </p>
+        </div>
+        <Link
+          href="/gyms"
+          className="px-6 py-4 rounded-xl bg-zt-secondary text-zt-on-secondary font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shrink-0 hover:opacity-95 transition"
+        >
+          Find my gym
+        </Link>
+      </section>
+
       {/* Grounded Capabilities Grid */}
       <section aria-labelledby="how-it-works-heading" className="space-y-3">
         <h2
@@ -225,8 +246,9 @@ export default async function WebsiteLandingPage() {
               Find Gyms With Logs, Stones &amp; Day Passes
             </h2>
             <p className="text-xs text-zt-text-2 leading-relaxed">
-              Explore {gyms.length} sample strongman gym listings with implement inventories, drop-in
-              hours, and day-pass policies.
+              {gymsRes.source === 'live_supabase'
+                ? `${gyms.length} strongman and powerlifting gyms with equipment, day-pass and drop-in details, filterable by distance from your zip.`
+                : `Explore ${gyms.length} sample strongman gym listings with implement inventories, drop-in hours, and day-pass policies.`}
             </p>
           </div>
           <div>

@@ -16,7 +16,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
   // showing real listings, so the bar is a plain pointer to the meet-day app.
   const live = readSyncEnv() !== null;
   const navItems: Array<{ id: WebsiteShellProps['activeNav']; label: string; href: string }> = [
-    { id: 'home', label: 'Overview', href: '/website' },
+    { id: 'home', label: 'Home', href: '/website' },
     { id: 'how', label: 'How It Works', href: '/how-it-works' },
     { id: 'shows', label: 'Find a Show', href: '/shows' },
     { id: 'join', label: 'Join a Meet', href: '/join' },
