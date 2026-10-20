@@ -1,0 +1,225 @@
+{
+  "target": "https://kagitbfthapxmaljsdtz.supabase.co",
+  "methodPolicy": "GET only except authorized test-account sign-in; no write RPC POSTs",
+  "identity": {
+    "id": "c31f043e-0e73-48a0-aa17-938b6a666acf",
+    "emailDomain": "zerotacky.com",
+    "confirmed": true,
+    "admin": {
+      "status": 200,
+      "body": false
+    }
+  },
+  "anon": {
+    "admins": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.zt_admins TO anon;",
+        "message": "permission denied for table zt_admins"
+      }
+    },
+    "pendingGyms": {
+      "status": 200,
+      "count": 0,
+      "detailsOmitted": true
+    },
+    "removedGyms": {
+      "status": 200,
+      "count": 0,
+      "detailsOmitted": true
+    },
+    "ownerIdColumn": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.gyms TO anon;",
+        "message": "permission denied for table gyms"
+      }
+    },
+    "claimStates": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.gym_claims TO anon;",
+        "message": "permission denied for table gym_claims"
+      }
+    },
+    "claimPrivateColumns": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.gym_claims TO anon;",
+        "message": "permission denied for table gym_claims"
+      }
+    },
+    "publicGyms": {
+      "status": 200,
+      "count": 169,
+      "statesExcludingDC": 49,
+      "dc": true,
+      "statuses": [
+        "unclaimed"
+      ],
+      "topSource": [
+        {
+          "id": "71082484-f0b6-4f7d-880a-1562aa5556f0",
+          "slug": "the-top-strength-project-pawtucket-ri",
+          "state": "RI",
+          "status": "unclaimed",
+          "source_url": "https://www.thetopstrengthproject.com/"
+        }
+      ]
+    },
+    "zt_is_admin": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_is_admin"
+      }
+    },
+    "zt_require_admin": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_require_admin"
+      }
+    },
+    "zt_list_gym_claims": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_list_gym_claims"
+      }
+    },
+    "zt_my_gyms": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_my_gyms"
+      }
+    },
+    "zt_my_meets": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_my_meets"
+      }
+    }
+  },
+  "nonadmin": {
+    "admins": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.zt_admins TO authenticated;",
+        "message": "permission denied for table zt_admins"
+      }
+    },
+    "pendingGyms": {
+      "status": 200,
+      "count": 0,
+      "detailsOmitted": true
+    },
+    "removedGyms": {
+      "status": 200,
+      "count": 0,
+      "detailsOmitted": true
+    },
+    "ownerIdColumn": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.gyms TO authenticated;",
+        "message": "permission denied for table gyms"
+      }
+    },
+    "claimStates": {
+      "status": 200,
+      "count": 0,
+      "detailsOmitted": true
+    },
+    "claimPrivateColumns": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.gym_claims TO authenticated;",
+        "message": "permission denied for table gym_claims"
+      }
+    },
+    "publicGyms": {
+      "status": 200,
+      "count": 169,
+      "statesExcludingDC": 49,
+      "dc": true,
+      "statuses": [
+        "unclaimed"
+      ],
+      "topSource": [
+        {
+          "id": "71082484-f0b6-4f7d-880a-1562aa5556f0",
+          "slug": "the-top-strength-project-pawtucket-ri",
+          "state": "RI",
+          "status": "unclaimed",
+          "source_url": "https://www.thetopstrengthproject.com/"
+        }
+      ]
+    },
+    "zt_is_admin": {
+      "status": 200,
+      "body": false
+    },
+    "zt_require_admin": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_require_admin"
+      }
+    },
+    "zt_list_gym_claims": {
+      "status": 200,
+      "body": []
+    },
+    "zt_my_gyms": {
+      "status": 200,
+      "count": 0,
+      "detailsOmitted": true
+    },
+    "zt_my_meets": {
+      "status": 200,
+      "count": 0,
+      "detailsOmitted": true
+    }
+  },
+  "accountEmailSchemaProbe": {
+    "target": "https://kagitbfthapxmaljsdtz.supabase.co",
+    "probe": "non-admin GET zt_list_gym_claims?select=account_email&limit=0",
+    "status": 200,
+    "body": []
+  },
+  "publicSite": {
+    "url": "https://www.zerotacky.com/gyms",
+    "status": 200,
+    "badge169x49Observed": true,
+    "auditNameAbsent": true
+  }
+}
