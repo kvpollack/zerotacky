@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Clock, Dumbbell, ExternalLink, MapPin, Save } from 'lucide-react';
+import { ArrowLeft, Clock, Dumbbell, ExternalLink, MapPin, Plus, Save } from 'lucide-react';
 import { useAuth } from '@/lib/auth/useAuth';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import { GYM_EQUIPMENT } from '@/lib/website/gymEquipment';
@@ -105,12 +105,21 @@ function GymEditor({ row, onSaved }: { row: MyGymRow; onSaved: (r: MyGymRow) => 
         <div>
           <h2 id={`gym-${row.id}`} className="text-base font-black uppercase text-zt-text flex items-center gap-2">
             <Dumbbell className="w-4 h-4 text-zt-secondary" aria-hidden="true" /> {row.name}
+            {row.status === 'pending' && (
+              <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">Awaiting review</span>
+            )}
           </h2>
-          <p className="text-xs text-zt-muted">Claimed listing. What you save here is what athletes see.</p>
+          <p className="text-xs text-zt-muted">
+            {row.status === 'pending'
+              ? 'You added this listing. We check new gyms by hand before they show in the directory; you can keep editing meanwhile.'
+              : 'Claimed listing. What you save here is what athletes see.'}
+          </p>
         </div>
-        <Link href={`/gyms/${row.slug}`} className={quietBtn}>
-          <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" /> View public page
-        </Link>
+        {row.status !== 'pending' && (
+          <Link href={`/gyms/${row.slug}`} className={quietBtn}>
+            <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" /> View public page
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -228,7 +237,9 @@ function GymEditor({ row, onSaved }: { row: MyGymRow; onSaved: (r: MyGymRow) => 
         {dirty && !busy && (
           <button type="button" onClick={() => { setDraft(patchFromRow(row)); setNotice(null); }} className={quietBtn}>Discard changes</button>
         )}
-        <span className="text-[11px] text-zt-muted">Something wrong you cannot fix here, like the name or the web address slug? <Link href={`/gyms/${row.slug}/claim?mode=report`} className="text-zt-primary font-bold">Tell us</Link>.</span>
+        {row.status !== 'pending' && (
+          <span className="text-[11px] text-zt-muted">Something wrong you cannot fix here, like the name or the web address slug? <Link href={`/gyms/${row.slug}/claim?mode=report`} className="text-zt-primary font-bold">Tell us</Link>.</span>
+        )}
       </div>
     </form>
   );
@@ -317,9 +328,14 @@ export default function MyGymClient() {
         <section className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-3 max-w-xl">
           <h2 className="text-base font-black text-zt-text">No gym on this account yet</h2>
           <p className="text-sm text-zt-text-2">
-            Find your gym in the directory and use <strong>Claim this gym</strong> on its page. If your gym is not listed yet, claim any listing&rsquo;s report form to tell us the name, city and website, and we will add it for you to claim.
+            Already in the directory? Open your gym&rsquo;s page and use <strong>Claim this gym</strong>. Not listed yet? Add it here and it is yours from the start.
           </p>
-          <Link href="/gyms" className={primaryBtn}>Find my gym</Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/gyms" className={primaryBtn}>Find my gym</Link>
+            <Link href="/website/account/gym/add" className={quietBtn}>
+              <Plus className="w-3.5 h-3.5" aria-hidden="true" /> Add my gym
+            </Link>
+          </div>
           {rejected.length > 0 && (
             <p className="text-[11px] text-zt-muted">
               {rejected.length === 1 ? 'One earlier claim was not approved.' : `${rejected.length} earlier claims were not approved.`} If that is a mistake, file it again with an email at the gym&rsquo;s own domain.
@@ -327,9 +343,16 @@ export default function MyGymClient() {
           )}
         </section>
       ) : (
-        gyms.map((g) => (
-          <GymEditor key={g.id} row={g} onSaved={(r) => setGyms((list) => (list ?? []).map((x) => (x.id === r.id ? r : x)))} />
-        ))
+        <>
+          {gyms.map((g) => (
+            <GymEditor key={g.id} row={g} onSaved={(r) => setGyms((list) => (list ?? []).map((x) => (x.id === r.id ? r : x)))} />
+          ))}
+          <div>
+            <Link href="/website/account/gym/add" className={quietBtn}>
+              <Plus className="w-3.5 h-3.5" aria-hidden="true" /> Add another gym
+            </Link>
+          </div>
+        </>
       )}
     </div>
   );

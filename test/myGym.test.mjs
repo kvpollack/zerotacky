@@ -71,3 +71,59 @@ describe('zipLatLng', () => {
     assert.equal(await M.zipLatLng('19063', async () => ({ ok: false })), null);
   });
 });
+
+// 017 (10/21): add-my-gym intake and the email-vs-site chip on the approval queue.
+describe('cleanAddGym', () => {
+  const add = () => ({
+    name: ' Iron Yard ', gym_type: 'strongman', street_address: ' 1 Main St ', city: ' Media ', state: 'pa', zip: '19063',
+    website_url: 'ironyard.com', phone: '', instagram: '@ironyard', contact: '', role: ' Owner ', message: 'x'.repeat(1200),
+  });
+  test('cleans and uppercases state, normalises url and handle, clips message', () => {
+    const r = M.cleanAddGym(add());
+    assert.equal(r.problem, null);
+    assert.equal(r.input.name, 'Iron Yard');
+    assert.equal(r.input.state, 'PA');
+    assert.equal(r.input.website_url, 'https://ironyard.com');
+    assert.equal(r.input.instagram, 'ironyard');
+    assert.equal(r.input.role, 'Owner');
+    assert.equal(r.input.message.length, 1000);
+  });
+  test('needs a name, city and 2-letter state', () => {
+    assert.match(M.cleanAddGym({ ...add(), name: 'X' }).problem, /name/);
+    assert.match(M.cleanAddGym({ ...add(), city: ' ' }).problem, /City/);
+    assert.match(M.cleanAddGym({ ...add(), state: 'Penn' }).problem, /City/);
+  });
+  test('zip is optional but must be 5 digits when given', () => {
+    assert.equal(M.cleanAddGym({ ...add(), zip: '' }).problem, null);
+    assert.equal(M.cleanAddGym({ ...add(), zip: '19063-1234' }).problem, null);
+    assert.match(M.cleanAddGym({ ...add(), zip: '1906' }).problem, /Zip/);
+  });
+  test('needs a website or an instagram handle', () => {
+    assert.match(M.cleanAddGym({ ...add(), website_url: '', instagram: '' }).problem, /website or an Instagram/);
+    assert.equal(M.cleanAddGym({ ...add(), website_url: '' }).problem, null);
+    assert.equal(M.cleanAddGym({ ...add(), instagram: '' }).problem, null);
+  });
+  test('unknown gym type falls back to mixed', () => {
+    assert.equal(M.cleanAddGym({ ...add(), gym_type: 'crossfit' }).input.gym_type, 'mixed');
+  });
+});
+
+describe('emailMatchesSite', () => {
+  test('same host, www and subdomains match', () => {
+    assert.equal(M.emailMatchesSite('kurt@ironyard.com', 'https://www.ironyard.com/about'), 'match');
+    assert.equal(M.emailMatchesSite('kurt@mail.ironyard.com', 'ironyard.com'), 'match');
+    assert.equal(M.emailMatchesSite('kurt@ironyard.com', 'shop.ironyard.com'), 'match');
+  });
+  test('different host is a mismatch', () => {
+    assert.equal(M.emailMatchesSite('kurt@otherplace.com', 'https://ironyard.com'), 'mismatch');
+  });
+  test('personal mail providers are generic regardless of site', () => {
+    assert.equal(M.emailMatchesSite('kurt@gmail.com', 'https://ironyard.com'), 'generic');
+    assert.equal(M.emailMatchesSite('kurt@gmail.com', ''), 'generic');
+  });
+  test('no email domain or no site is unknown', () => {
+    assert.equal(M.emailMatchesSite('', 'https://ironyard.com'), 'unknown');
+    assert.equal(M.emailMatchesSite('kurt@ironyard.com', ''), 'unknown');
+    assert.equal(M.emailMatchesSite('kurt@ironyard.com', 'http://[bad'), 'unknown');
+  });
+});
