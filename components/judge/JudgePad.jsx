@@ -9,6 +9,7 @@ import {
   Unlock,
 } from 'lucide-react';
 import MasterClock from './MasterClock';
+import { runOrderShortLabel } from '../setup/builder/MeetSection';
 import StopStampButton from './StopStampButton';
 
 export default function JudgePad({
@@ -52,7 +53,7 @@ export default function JudgePad({
           <div className="bg-zt-surface border border-zt-border rounded-2xl p-3">
             <div className="flex justify-between items-center mb-2">
               <span className="text-[11px] font-extrabold uppercase tracking-wider text-zt-muted">
-                Run Order ({meet.runOrderMethod === 'reverse_overall' ? 'Rev Overall' : 'Rev Prev Ev'})
+                Run Order ({runOrderShortLabel(meet.runOrderMethod)})
               </span>
               <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-zt-surface-2 text-zt-primary">
                 {currentEvent.lanes === 2 ? '2-Lane Head-to-Head' : 'Single Platform'}

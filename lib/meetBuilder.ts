@@ -17,6 +17,7 @@ import type {
 } from './types';
 import { ALL_POSSIBLE_PLATES } from './constants';
 import { getInitialSeedState, MEET_PRESETS } from './presets';
+import { normalizeEventOrder } from './engine/eventOrder';
 
 export const DEFAULT_STATIONS: Station[] = [
   { id: 'A', label: 'Station 1' },
@@ -103,7 +104,8 @@ export function normalizeState(raw: unknown): AppState {
             const id = String(s.id ?? '').trim() || String.fromCharCode(65 + idx);
             // 'Stn 1' was the default label until 10/16; upgrade saved meets so the rename reaches phones.
             const label = (String(s.label ?? '').trim() || `Station ${idx + 1}`).replace(/^Stn (\d+)$/, 'Station $1');
-            return { id, label };
+            const rawOrder = Array.isArray(s.eventOrder) ? s.eventOrder.filter((x): x is string => typeof x === 'string') : undefined;
+            return rawOrder && rawOrder.length > 0 ? { id, label, eventOrder: rawOrder } : { id, label };
           })
       : DEFAULT_STATIONS.map((s) => ({ ...s }));
 
@@ -127,8 +129,8 @@ export function normalizeState(raw: unknown): AppState {
     name: meetName,
     date: typeof rawMeet.date === 'string' ? rawMeet.date : '',
     runOrderMethod:
-      rawMeet.runOrderMethod === 'reverse_previous_event'
-        ? 'reverse_previous_event'
+      rawMeet.runOrderMethod === 'reverse_previous_event' || rawMeet.runOrderMethod === 'lot_order'
+        ? rawMeet.runOrderMethod
         : 'reverse_overall',
     tiebreakerRule: rawMeet.tiebreakerRule === 'final_event' ? 'final_event' : 'event_wins',
     availablePlates,
@@ -221,6 +223,9 @@ export function normalizeState(raw: unknown): AppState {
     .sort((a, b) => a.eventNumber - b.eventNumber)
     .map((e, idx) => ({ ...e, eventNumber: idx + 1 }));
 
+  // Station event orders are only meaningful against the events we just parsed (10/21).
+  meet.stations = syncStationEventOrders(meet.stations ?? [], events);
+
   const rawResults = Array.isArray(unwrapped.results) ? unwrapped.results : [];
   const results: Result[] = rawResults
     .filter((r): r is Record<string, unknown> => Boolean(r && typeof r === 'object'))
@@ -236,6 +241,23 @@ export function normalizeState(raw: unknown): AppState {
 }
 
 // ---------- Stations ----------
+
+// Keep each station's optional event order valid against the current events (10/21). Stations without a custom order,
+// or whose order equals the meet order, carry no `eventOrder` key at all.
+function syncStationEventOrders(stations: Station[], events: EventDef[]): Station[] {
+  return stations.map((s) => {
+    const order = normalizeEventOrder(s.eventOrder, events);
+    const next: Station = { id: s.id, label: s.label };
+    if (order) next.eventOrder = order;
+    return next;
+  });
+}
+
+// Meets that never set stations keep `stations` absent (DEFAULT_STATIONS apply at read time).
+function meetWithSyncedStations(meet: Meet, events: EventDef[]): Meet {
+  if (!meet.stations) return meet;
+  return { ...meet, stations: syncStationEventOrders(meet.stations, events) };
+}
 
 export function addStation(
   state: AppState,
@@ -259,14 +281,21 @@ export function addStation(
 export function updateStation(
   state: AppState,
   stationId: string,
-  patch: { label?: string }
+  patch: { label?: string; eventOrder?: string[] | null }
 ): AppState {
   const existing = state.meet.stations ?? DEFAULT_STATIONS;
-  const stations = existing.map((s) =>
-    s.id === stationId
-      ? { ...s, ...(patch.label !== undefined ? { label: patch.label } : {}) }
-      : { ...s }
-  );
+  const stations = existing.map((s) => {
+    if (s.id !== stationId) return { ...s };
+    const next: Station = { ...s };
+    if (patch.label !== undefined) next.label = patch.label;
+    if ('eventOrder' in patch) {
+      // null or a meet-order list clears the override; anything else is normalised against the current events.
+      const order = normalizeEventOrder(patch.eventOrder ?? undefined, state.events);
+      if (order) next.eventOrder = order;
+      else delete next.eventOrder;
+    }
+    return next;
+  });
   return { ...state, meet: { ...state.meet, stations } };
 }
 
@@ -484,9 +513,11 @@ export function addEvent(
     divisionWeights: { ...defaultWeights, ...(input.divisionWeights ?? {}) },
   });
 
+  const events = [...state.events, created];
   return {
     ...state,
-    events: [...state.events, created],
+    meet: meetWithSyncedStations(state.meet, events),
+    events,
   };
 }
 
@@ -524,6 +555,7 @@ export function removeEvent(state: AppState, eventId: string): AppState {
 
   return {
     ...state,
+    meet: meetWithSyncedStations(state.meet, events),
     events,
     results,
     athletes,
@@ -549,9 +581,11 @@ export function reorderEvents(state: AppState, orderedIds: string[]): AppState {
     }
   }
 
+  const events = reordered.map((e, idx) => ({ ...e, eventNumber: idx + 1 }));
   return {
     ...state,
-    events: reordered.map((e, idx) => ({ ...e, eventNumber: idx + 1 })),
+    meet: meetWithSyncedStations(state.meet, events),
+    events,
   };
 }
 

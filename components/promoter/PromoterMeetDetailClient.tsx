@@ -164,7 +164,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
 
   const addStation = (input?: { id?: string; label?: string }) =>
     setWorkingState((prev) => (prev ? mbAddStation(prev, input) : prev));
-  const updateStation = (stationId: string, patch: { label?: string }) =>
+  const updateStation = (stationId: string, patch: { label?: string; eventOrder?: string[] | null }) =>
     setWorkingState((prev) => (prev ? mbUpdateStation(prev, stationId, patch) : prev));
   const removeStation = (stationId: string) =>
     setWorkingState((prev) => (prev ? mbRemoveStation(prev, stationId) : prev));
@@ -613,6 +613,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             meet={workingState.meet}
             divisions={workingState.divisions}
             athletes={workingState.athletes}
+            events={workingState.events}
             addStation={addStation}
             updateStation={updateStation}
             removeStation={removeStation}

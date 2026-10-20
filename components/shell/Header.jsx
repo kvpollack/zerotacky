@@ -6,6 +6,10 @@ import {
   Sun,
 } from 'lucide-react';
 import SyncDot from './SyncDot';
+import { hasCustomEventOrder, stationById, stationEvents, stationForDivision } from '@/lib/engine';
+
+const ORDINAL = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
+const ordinal = (n) => ORDINAL[n - 1] ?? `${n}th`;
 
 export default function Header({
   athletes,
@@ -33,6 +37,12 @@ export default function Header({
   sync,
   toggleDaylight,
 }) {
+  // Event picker lists events in the order this station runs them (10/21). "Ev n" stays the event's identity; the
+  // station position is only a tag, and only when the station has a custom order.
+  const pickerStation = stationById(meet, stationFlight) ?? stationForDivision(meet, currentDivision);
+  const pickerEvents = stationEvents(pickerStation, events);
+  const showPosition = hasCustomEventOrder(pickerStation, events);
+
   const stations =
     Array.isArray(meet.stations) && meet.stations.length > 0
       ? meet.stations
@@ -203,9 +213,10 @@ export default function Header({
             {events.length === 0 ? (
               <option value="">No Events</option>
             ) : (
-              events.map((ev) => (
+              pickerEvents.map((ev, idx) => (
                 <option key={ev.id} value={ev.id}>
                   Ev {ev.eventNumber}: {ev.name}
+                  {showPosition ? ` · ${ordinal(idx + 1)} here` : ''}
                 </option>
               ))
             )}

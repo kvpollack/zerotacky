@@ -13,6 +13,9 @@ import {
   generateEventRunOrder,
   resolveAthleteHeightCallout,
   buildTransitionDeltas,
+  nextEventOnStation,
+  stationById,
+  stationForDivision,
 } from '@/lib/engine';
 import { createBlankMeet, normalizeState } from '@/lib/meetBuilder';
 import { useMeetState } from '@/hooks/useMeetState';
@@ -135,7 +138,8 @@ export default function App() {
           divisionAthletes,
           events,
           results,
-          meet.runOrderMethod
+          meet.runOrderMethod,
+          meet.stations
         )
       : [];
 
@@ -394,8 +398,14 @@ export default function App() {
   const divisionIndex = currentDivision
     ? filteredDivisions.findIndex((d) => d.id === currentDivision.id)
     : -1;
+  // Next event follows the station's own order (10/21): the filtered station when one is picked, otherwise the current
+  // division's station. With no custom order this is the next eventNumber, as before.
   const nextEventInMeet = currentEvent
-    ? events.find((e) => e.eventNumber === currentEvent.eventNumber + 1)
+    ? nextEventOnStation(
+        stationById(meet, stationFlight) ?? stationForDivision(meet, currentDivision),
+        events,
+        currentEvent.id
+      )
     : undefined;
   const nextSetup =
     currentEvent && divisionIndex >= 0 && divisionIndex < filteredDivisions.length - 1
