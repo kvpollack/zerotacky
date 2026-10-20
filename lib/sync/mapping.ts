@@ -4,7 +4,7 @@ import type { AppState, Athlete, Division, EventDef, Meet, Result } from '../typ
 export interface MeetRow {
   id: string; slug: string; name: string; date: string | null; owner_id?: string | null;
   join_code?: string; admin_pin: string | null; run_order_method: string; tiebreaker_rule: string;
-  available_plates: number[]; collar_weight_per_pair: number; stations: { id: string; label: string }[];
+  available_plates: number[]; collar_weight_per_pair: number; stations: { id: string; label: string; eventOrder?: string[] }[];
   is_demo: boolean;
   updated_at?: string;   // server-side; set by zt_publish_meet, read by pullChanges as the config watermark
 }
@@ -94,7 +94,14 @@ export function rowToMeet(row: MeetRow): Meet {
     slug: row.slug,
     isDemo: !!row.is_demo,
     ...(Array.isArray(row.stations) && row.stations.length > 0
-      ? { stations: row.stations.map((st) => ({ id: String(st.id), label: String(st.label) })) }
+      ? {
+          stations: row.stations.map((st) => ({
+            id: String(st.id),
+            label: String(st.label),
+            // per-station event order (10/21); dropping it here would silently reset phones to meet order
+            ...(Array.isArray(st.eventOrder) ? { eventOrder: st.eventOrder.filter((x): x is string => typeof x === 'string') } : {}),
+          })),
+        }
       : {}),
   };
 }

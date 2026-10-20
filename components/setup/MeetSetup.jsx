@@ -86,6 +86,7 @@ export default function MeetSetup({
         meet={meet}
         divisions={divisions}
         athletes={athletes}
+        events={events}
         addStation={addStation}
         updateStation={updateStation}
         removeStation={removeStation}

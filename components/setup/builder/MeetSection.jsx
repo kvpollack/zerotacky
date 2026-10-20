@@ -16,7 +16,19 @@ export const RUN_ORDER_OPTIONS = [
     label: 'Reverse Prev Event',
     explain: 'Only the last event counts. Whoever placed last in it goes first and its winner goes last, whatever the overall standings. Athletes tied in that event go lower overall points first, then by lot number.',
   },
+  {
+    value: 'lot_order',
+    label: 'Roster Order',
+    short: 'Roster',
+    explain: 'Athletes go in lot order for every event, never reshuffled. Pick this when the order was published ahead of time.',
+  },
 ];
+
+// Short label for tight spots (judge pad strip).
+export function runOrderShortLabel(method) {
+  const opt = RUN_ORDER_OPTIONS.find((o) => o.value === method);
+  return opt?.short ?? (method === 'reverse_overall' ? 'Rev Overall' : 'Rev Prev Ev');
+}
 
 export const TIEBREAK_OPTIONS = [
   {
@@ -181,13 +193,14 @@ export default function MeetSection({
         </div>
       </div>
 
-      {/* Run Order Methodology Toggle. Each option explained on screen (Kurt 10/19); text mirrors lib/engine/runOrder.ts. */}
+      {/* Athlete run order. Each option explained on screen (Kurt 10/19); text mirrors lib/engine/runOrder.ts. Astra EO-L1 (10/21):
+          with per-station event order, "Ev 1" is not always first, so the copy talks about earlier events on the station. */}
       <div>
         <label className="text-xs font-extrabold uppercase text-zt-muted">
-          Run Order Methodology (Events 2+)
+          Athlete run order
         </label>
-        <p className="text-[11px] font-semibold text-zt-muted mt-0.5">Event 1 always runs by lot number. This decides the order for every event after it.</p>
-        <div className="grid grid-cols-2 gap-2 mt-1.5">
+        <p className="text-[11px] font-semibold text-zt-muted mt-0.5">The first event on a station runs by lot number. The reverse methods take over once an earlier event on that station has results.</p>
+        <div className="grid grid-cols-3 gap-2 mt-1.5">
           {RUN_ORDER_OPTIONS.map(({ value, label }) => (
             <button
               key={value}

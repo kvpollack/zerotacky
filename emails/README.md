@@ -1,8 +1,8 @@
 # Email templates
 
 Supabase Auth sends six account emails. The defaults are unstyled with subjects like "Confirm Your Signup" and
-"You have been invited", which is how the 10/19 test landed in spam. These files replace them. Kurt pastes them;
-Slate cannot (the management token is scoped to staging and upgrade-test, and auth config is not in its grants).
+"You have been invited", which is how the 10/19 test landed in spam. These files replace them. **Installed on prod
+10/19; verified byte-identical on 10/21 through the management API (`config/auth`).** Staging still has the defaults.
 
 ## Paste guide (Supabase dashboard, prod `kagitbfthapxmaljsdtz`, then staging `hryiqiopkihkcrkdyllg`)
 

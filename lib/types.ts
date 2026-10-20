@@ -2,7 +2,8 @@
 // Shapes are derived from how the original monolith reads and writes state.
 
 export type ScoringType = 'reps' | 'max_weight' | 'time_or_distance' | 'time_or_implements';
-export type RunOrderMethod = 'reverse_overall' | 'reverse_previous_event';
+// 'lot_order' (10/21): roster order for every event, never reshuffled; for promoters who publish the order ahead of time.
+export type RunOrderMethod = 'reverse_overall' | 'reverse_previous_event' | 'lot_order';
 export type TiebreakerRule = 'event_wins' | 'final_event';
 export type AthleteStatus = 'active' | 'withdrawn';
 export type RoleLock = 'admin' | 'judge' | 'pitcrew' | 'spectator';
@@ -13,6 +14,9 @@ export type WeightEntryMode = 'total' | 'per_hand';
 export interface Station {
   id: string;
   label: string;
+  // Event ids in the order this station runs them (10/21). Absent = meet order (eventNumber). Every division on the
+  // station follows it; the leaderboard keeps Ev 1, 2, 3 columns regardless. Kept valid by lib/engine/eventOrder.ts.
+  eventOrder?: string[];
 }
 
 export interface Meet {

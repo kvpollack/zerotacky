@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
+import { hasCustomEventOrder, moveEventInOrder, stationEvents } from '@/lib/engine';
 
 // Step 3 (Kurt 10/19): stations live after divisions. Divisions get nailed down first; how many stations run, and
 // which divisions share one, is decided later from sign-ups and floor space. A division's `flight` is its station id.
@@ -9,12 +10,14 @@ export default function StationsSection({
   meet,
   divisions,
   athletes,
+  events,
   addStation,
   updateStation,
   removeStation,
   updateDivision,
 }) {
   const [newStationLabel, setNewStationLabel] = useState('');
+  const eventList = Array.isArray(events) ? events : [];
 
   const stations =
     Array.isArray(meet.stations) && meet.stations.length > 0
@@ -85,6 +88,9 @@ export default function StationsSection({
                     </span>
                   ))}
                 </div>
+              )}
+              {eventList.length > 1 && (
+                <StationEventOrder station={st} events={eventList} updateStation={updateStation} />
               )}
             </div>
           );
@@ -162,5 +168,65 @@ export default function StationsSection({
         )}
       </div>
     </section>
+  );
+}
+
+// Per-station event order (10/21). Each station can run the meet's events in its own sequence; the leaderboard and
+// results still show events by their meet number. Arrows swap neighbours; "Meet order" clears the override.
+function StationEventOrder({ station, events, updateStation }) {
+  const ordered = stationEvents(station, events);
+  const custom = hasCustomEventOrder(station, events);
+  const move = (eventId, dir) =>
+    updateStation(station.id, { eventOrder: moveEventInOrder(station, events, eventId, dir) ?? null });
+  return (
+    <div className="pl-1 pt-1 space-y-1">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-extrabold uppercase tracking-wider text-zt-muted">
+          Event order on this station{custom ? '' : ' (meet order)'}
+        </span>
+        {custom && (
+          <button
+            type="button"
+            onClick={() => updateStation(station.id, { eventOrder: null })}
+            className="text-[10px] font-black uppercase text-zt-primary"
+          >
+            Reset to meet order
+          </button>
+        )}
+      </div>
+      <ol className="space-y-1">
+        {ordered.map((ev, idx) => (
+          <li key={ev.id} className="flex items-center gap-1.5 bg-zt-surface border border-zt-border rounded-lg px-2 py-1">
+            <span className="w-4 text-[11px] font-black text-zt-primary font-mono">{idx + 1}.</span>
+            <span className="flex-1 min-w-0 truncate text-[11px] font-bold text-zt-text">
+              <span className="text-zt-muted">Ev {ev.eventNumber}</span> {ev.name}
+            </span>
+            <button
+              type="button"
+              disabled={idx === 0}
+              onClick={() => move(ev.id, -1)}
+              aria-label={`Run ${ev.name} earlier on ${station.label}`}
+              className="p-1 rounded bg-zt-inset border border-zt-border-strong text-zt-text-2 disabled:opacity-30"
+            >
+              <ChevronUp className="w-3 h-3" />
+            </button>
+            <button
+              type="button"
+              disabled={idx === ordered.length - 1}
+              onClick={() => move(ev.id, 1)}
+              aria-label={`Run ${ev.name} later on ${station.label}`}
+              className="p-1 rounded bg-zt-inset border border-zt-border-strong text-zt-text-2 disabled:opacity-30"
+            >
+              <ChevronDown className="w-3 h-3" />
+            </button>
+          </li>
+        ))}
+      </ol>
+      {custom && (
+        <p className="text-[10px] font-semibold text-zt-muted">
+          Divisions here run events in this order. The leaderboard still shows Ev 1, 2, 3 by meet number.
+        </p>
+      )}
+    </div>
   );
 }

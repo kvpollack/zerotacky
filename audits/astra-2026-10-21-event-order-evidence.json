@@ -1,0 +1,908 @@
+{
+  "revision": {
+    "sha": "d090cf88c58a9c0054ee915436df4bf809a74f3a",
+    "tracked": 291,
+    "mismatches": []
+  },
+  "engine": [
+    {
+      "name": "d4 reverse_overall",
+      "pass": true,
+      "details": [
+        "d4a2",
+        "d4a1",
+        "d4a3"
+      ]
+    },
+    {
+      "name": "d4 reverse_previous_event",
+      "pass": true,
+      "details": [
+        "d4a2",
+        "d4a1",
+        "d4a3"
+      ]
+    },
+    {
+      "name": "d4 lot_order",
+      "pass": true,
+      "details": [
+        "d4a1",
+        "d4a2",
+        "d4a3"
+      ]
+    },
+    {
+      "name": "d5 reverse_overall",
+      "pass": true,
+      "details": [
+        "d5a2",
+        "d5a1",
+        "d5a3"
+      ]
+    },
+    {
+      "name": "d5 reverse_previous_event",
+      "pass": true,
+      "details": [
+        "d5a2",
+        "d5a1",
+        "d5a3"
+      ]
+    },
+    {
+      "name": "d5 lot_order",
+      "pass": true,
+      "details": [
+        "d5a1",
+        "d5a2",
+        "d5a3"
+      ]
+    },
+    {
+      "name": "d1 reverse_overall",
+      "pass": true,
+      "details": [
+        "d1a2",
+        "d1a1",
+        "d1a3"
+      ]
+    },
+    {
+      "name": "d1 reverse_previous_event",
+      "pass": true,
+      "details": [
+        "d1a2",
+        "d1a1",
+        "d1a3"
+      ]
+    },
+    {
+      "name": "d1 lot_order",
+      "pass": true,
+      "details": [
+        "d1a1",
+        "d1a2",
+        "d1a3"
+      ]
+    },
+    {
+      "name": "absent/orphan undefined",
+      "pass": true,
+      "details": [
+        "d4a2",
+        "d4a1",
+        "d4a3"
+      ]
+    },
+    {
+      "name": "absent/orphan []",
+      "pass": true,
+      "details": [
+        "d4a2",
+        "d4a1",
+        "d4a3"
+      ]
+    },
+    {
+      "name": "absent/orphan [{\"id\":\"deleted\",\"label\":\"Gone\",\"eventOrder\":[\"e2\",\"e1\"]}]",
+      "pass": true,
+      "details": [
+        "d4a2",
+        "d4a1",
+        "d4a3"
+      ]
+    },
+    {
+      "name": "normalize null",
+      "pass": true,
+      "details": {
+        "normalized": null,
+        "order": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      }
+    },
+    {
+      "name": "normalize undefined",
+      "pass": true,
+      "details": {
+        "normalized": null,
+        "order": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      }
+    },
+    {
+      "name": "normalize \"e2,e1\"",
+      "pass": true,
+      "details": {
+        "normalized": null,
+        "order": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      }
+    },
+    {
+      "name": "normalize {\"0\":\"e2\"}",
+      "pass": true,
+      "details": {
+        "normalized": null,
+        "order": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      }
+    },
+    {
+      "name": "normalize 0",
+      "pass": true,
+      "details": {
+        "normalized": null,
+        "order": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      }
+    },
+    {
+      "name": "normalize [null,4,\"foreign\",\"e2\",\"e2\",\"e1\"]",
+      "pass": true,
+      "details": {
+        "normalized": [
+          "e2",
+          "e1",
+          "e3"
+        ],
+        "order": [
+          "e2",
+          "e1",
+          "e3"
+        ]
+      }
+    },
+    {
+      "name": "normalize [\"foreign\"]",
+      "pass": true,
+      "details": {
+        "normalized": null,
+        "order": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      }
+    },
+    {
+      "name": "normalize [\"e3\",\"e1\"]",
+      "pass": true,
+      "details": {
+        "normalized": [
+          "e3",
+          "e1",
+          "e2"
+        ],
+        "order": [
+          "e3",
+          "e1",
+          "e2"
+        ]
+      }
+    },
+    {
+      "name": "normalize [\"e1\",\"e2\",\"e3\"]",
+      "pass": true,
+      "details": {
+        "normalized": null,
+        "order": [
+          "e1",
+          "e2",
+          "e3"
+        ]
+      }
+    },
+    {
+      "name": "empty events",
+      "pass": true
+    },
+    {
+      "name": "last event roster fixed",
+      "pass": true
+    },
+    {
+      "name": "cross division previous event contamination",
+      "pass": true,
+      "details": {
+        "ownOnly": [
+          {
+            "id": "d4a2",
+            "previous": "2 reps"
+          },
+          {
+            "id": "d4a1",
+            "previous": "7 reps"
+          },
+          {
+            "id": "d4a3",
+            "previous": "10 reps"
+          }
+        ],
+        "withOtherStationAhead": [
+          {
+            "id": "d4a2",
+            "previous": "—"
+          },
+          {
+            "id": "d4a1",
+            "previous": "—"
+          },
+          {
+            "id": "d4a3",
+            "previous": "—"
+          }
+        ]
+      }
+    }
+  ],
+  "extraEngine": [
+    {
+      "name": "all event order permutations and roster methods",
+      "pass": true,
+      "details": {
+        "scenarios": 54
+      }
+    },
+    {
+      "name": "station row absent/null/empty",
+      "pass": true,
+      "details": [
+        {
+          "input": null,
+          "mappedStations": null,
+          "normalizedStations": [
+            {
+              "id": "A",
+              "label": "Station 1"
+            },
+            {
+              "id": "B",
+              "label": "Station 2"
+            }
+          ]
+        },
+        {
+          "input": null,
+          "mappedStations": null,
+          "normalizedStations": [
+            {
+              "id": "A",
+              "label": "Station 1"
+            },
+            {
+              "id": "B",
+              "label": "Station 2"
+            }
+          ]
+        },
+        {
+          "input": [],
+          "mappedStations": null,
+          "normalizedStations": [
+            {
+              "id": "A",
+              "label": "Station 1"
+            },
+            {
+              "id": "B",
+              "label": "Station 2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "arrows inverse no-op and removal key collapse",
+      "pass": true,
+      "details": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ]
+    }
+  ],
+  "legacySource": {
+    "sha": "7ed5033b9feeadde34129a9cf89d5486b03d6310",
+    "files": {
+      "lib/sync/mapping.ts": "2e3432b9e9961b20fd03ff40caab3cd6bd315d11",
+      "lib/meetBuilder.ts": "8967ac3f3c034fba1eb8c6a14ac1d319a4a4a2aa",
+      "lib/engine/runOrder.ts": "aa423147852595d1cb0536720784b578e577124e",
+      "hooks/useMeetSync.js": "201f9e01e5fbfa8eb33c3134b48085a62c5a53e8",
+      "lib/sync/controller.ts": "2853539c458b929fe6db2cd7f2d606aaeff15774"
+    }
+  },
+  "mixedBuild": {
+    "oldMapped": {
+      "id": "04e390d5-d839-4b50-8eb5-0b69c85bc5d2",
+      "name": "Astra Event Order Audit 1021",
+      "date": "2026-10-24",
+      "runOrderMethod": "lot_order",
+      "tiebreakerRule": "event_wins",
+      "availablePlates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "collarWeightPerPair": 0,
+      "slug": "astra-event-order-04e390d5",
+      "isDemo": true,
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ]
+    },
+    "oldReload": {
+      "id": "04e390d5-d839-4b50-8eb5-0b69c85bc5d2",
+      "name": "Astra Event Order Audit 1021",
+      "date": "2026-10-24",
+      "runOrderMethod": "reverse_overall",
+      "tiebreakerRule": "event_wins",
+      "availablePlates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "collarWeightPerPair": 0,
+      "isDemo": true,
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "slug": "astra-event-order-04e390d5"
+    },
+    "newRoster": [
+      "d4a1",
+      "d4a2",
+      "d4a3"
+    ],
+    "oldRoster": [
+      "d4a2",
+      "d4a1",
+      "d4a3"
+    ],
+    "newBasketReverse": [
+      "d4a2",
+      "d4a1",
+      "d4a3"
+    ],
+    "oldBasketReverse": [
+      "d4a1",
+      "d4a2",
+      "d4a3"
+    ]
+  },
+  "stagingPermissions": {
+    "created": {
+      "id": "04e390d5-d839-4b50-8eb5-0b69c85bc5d2",
+      "slug": "astra-event-order-04e390d5",
+      "demo": true,
+      "status": 200
+    },
+    "joinPinAbsent": true,
+    "anonSave": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_save_meet_config"
+      }
+    },
+    "anonGrantSave": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_save_meet_config"
+      }
+    },
+    "nonmemberGrantSave": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "You do not have permission to edit this meet."
+      }
+    },
+    "anonGrantPublish": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "sign in or provide a valid publish key"
+      }
+    },
+    "nonmemberGrantPublish": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "this meet belongs to another promoter"
+      }
+    },
+    "ownerOldSave": {
+      "status": 200,
+      "body": {
+        "id": "04e390d5-d839-4b50-8eb5-0b69c85bc5d2"
+      }
+    },
+    "afterOwnerOldSave": [
+      {
+        "stations": [
+          {
+            "id": "A",
+            "label": "Station 1"
+          },
+          {
+            "id": "B",
+            "label": "Station 2"
+          }
+        ],
+        "run_order_method": "reverse_overall"
+      }
+    ],
+    "restore": 200,
+    "grantRevoke": 204
+  },
+  "browserInitial": {
+    "checks": [
+      {
+        "name": "initialStation2",
+        "data": {
+          "options": [
+            "Ev 2: Keg Over Bar · 1st here",
+            "Ev 1: Basket Deadlift · 2nd here",
+            "Ev 3: Truck Pull · 3rd here"
+          ],
+          "selected": "e1"
+        }
+      },
+      {
+        "name": "station1SelectedStable",
+        "data": {
+          "options": [
+            "Ev 1: Basket Deadlift",
+            "Ev 2: Keg Over Bar",
+            "Ev 3: Truck Pull"
+          ],
+          "selected": "e1",
+          "stable": true
+        }
+      },
+      {
+        "name": "allGroup5",
+        "data": [
+          "Ev 2: Keg Over Bar · 1st here",
+          "Ev 1: Basket Deadlift · 2nd here",
+          "Ev 3: Truck Pull · 3rd here"
+        ]
+      }
+    ],
+    "errors": [],
+    "blocked": [
+      "vercel.live",
+      "vercel.live"
+    ],
+    "failure": "Locator.click: Timeout 16000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"button\", name=\"Pit Crew\", exact=True)\n",
+    "harnessNote": "Initial judge-link seed had no grant, correctly downgraded to spectator. The first three picker checks completed; remaining coverage was rerun with real PIN-issued authority."
+  },
+  "browser": {
+    "checks": [
+      {
+        "name": "pitAllGroup5Keg",
+        "data": "NEXT GROUP / LIFTER TRANSITION\nEV 1 • AUDIT GROUP 1\nNext lifter: Audit d5 Athlete 2 — same Audit Group 5 weight setup, no change.\nEVENT CHANGEOVER\nStrike Ev 2 → Build Ev 1\n280 lb\n100 lb"
+      },
+      {
+        "name": "pitStation2Group5Keg",
+        "data": "NEXT GROUP / LIFTER TRANSITION\nEV 1 • AUDIT GROUP 3\nNext lifter: Audit d5 Athlete 2 — same Audit Group 5 weight setup, no change.\nEVENT CHANGEOVER\nStrike Ev 2 → Build Ev 1\n280 lb\n140 lb"
+      },
+      {
+        "name": "pitStation2Last",
+        "data": "NEXT GROUP / LIFTER TRANSITION\nNext lifter: Audit d5 Athlete 2 — same Audit Group 5 weight setup, no change.\n\nFinal group of the final event on this station — no further changeover."
+      },
+      {
+        "name": "pitAllStation1LastGroupTruck",
+        "data": "NEXT GROUP / LIFTER TRANSITION\nAUDIT GROUP 3\nNext lifter: Audit d2 Athlete 2 — same Audit Group 2 weight setup, no change.\nIMPLEMENT WEIGHT\nADD 10 lb per side (20 lb total)\n320 lb\n340 lb"
+      },
+      {
+        "name": "headerWidth",
+        "data": {
+          "width": 168,
+          "selectedText": "Ev 2: Keg Over Bar · 1st here",
+          "textWidth": 158.53125,
+          "documentWidth": 375,
+          "viewport": 375
+        }
+      },
+      {
+        "name": "arrowClamp",
+        "data": {
+          "firstDisabled": true,
+          "lastDisabled": true
+        }
+      },
+      {
+        "name": "syncReset",
+        "data": {
+          "elapsedSeconds": 2.7768336000008276,
+          "options": [
+            "Ev 1: Basket Deadlift",
+            "Ev 2: Keg Over Bar",
+            "Ev 3: Truck Pull"
+          ],
+          "ownerKeyAbsent": true
+        }
+      },
+      {
+        "name": "syncReorder",
+        "data": {
+          "elapsedSeconds": 2.951466700003948,
+          "options": [
+            "Ev 2: Keg Over Bar · 1st here",
+            "Ev 1: Basket Deadlift · 2nd here",
+            "Ev 3: Truck Pull · 3rd here"
+          ]
+        }
+      },
+      {
+        "name": "reloadOrder",
+        "data": {
+          "stations": [
+            {
+              "id": "A",
+              "label": "Station 1"
+            },
+            {
+              "id": "B",
+              "label": "Station 2",
+              "eventOrder": [
+                "e2",
+                "e1",
+                "e3"
+              ]
+            }
+          ],
+          "options": [
+            "Ev 2: Keg Over Bar · 1st here",
+            "Ev 1: Basket Deadlift · 2nd here",
+            "Ev 3: Truck Pull · 3rd here"
+          ]
+        }
+      },
+      {
+        "name": "reverseOverall d4",
+        "data": [
+          "Order #1Audit d4 Athlete 21 pts",
+          "Order #2Audit d4 Athlete 12 pts",
+          "Order #3Audit d4 Athlete 33 pts"
+        ]
+      },
+      {
+        "name": "reverseOverall d5",
+        "data": [
+          "Order #1Audit d5 Athlete 21 pts",
+          "Order #2Audit d5 Athlete 12 pts",
+          "Order #3Audit d5 Athlete 33 pts"
+        ]
+      },
+      {
+        "name": "reverseOverall d1",
+        "data": [
+          "Order #1Audit d1 Athlete 21 pts",
+          "Order #2Audit d1 Athlete 12 pts",
+          "Order #3Audit d1 Athlete 33 pts"
+        ]
+      },
+      {
+        "name": "lotOrder d4 e1",
+        "data": [
+          "Order #1Audit d4 Athlete 12 pts",
+          "Order #2Audit d4 Athlete 21 pts",
+          "Order #3Audit d4 Athlete 33 pts"
+        ]
+      },
+      {
+        "name": "lotOrder d5 e3",
+        "data": [
+          "Order #1Audit d5 Athlete 12 pts",
+          "Order #2Audit d5 Athlete 21 pts",
+          "Order #3Audit d5 Athlete 33 pts"
+        ]
+      },
+      {
+        "name": "lotOrder d1 e2",
+        "data": [
+          "Order #1Audit d1 Athlete 12 pts",
+          "Order #2Audit d1 Athlete 21 pts",
+          "Order #3Audit d1 Athlete 33 pts"
+        ]
+      },
+      {
+        "name": "methodCopy",
+        "data": "1. MEET DETAILS & RULES\nDEMO PRESET\nTHIS IS A DEMO MEET\n\nHidden from the public shows list, DEMO shown on the scoreboard, registration closed. Built from a preset? Flip this before you publish the real thing.\n\nMARK AS REAL MEET\nMEET NAME\nMEET DATE\nURL SLUG (CLOUD SYNC)\nADMIN PIN (4–6 DIGITS)\nCOLLAR WEIGHT / PAIR (LBS)\nRUN ORDER METHODOLOGY (EVENTS 2+)\n\nEvent 1 always runs by lot number. This decides the order for every event after it.\n\nReverse Overall Pts\nReverse Prev Event\nRoster Order\n\nReverse Overall Pts: Lowest overall points lifts first and the current leader goes last. Athletes level on points go by lot number. Most promoters pick this so the podium race builds to the final attempt.\n\nReverse Prev Event: Only the last event counts. Whoever placed last in it goes first and its winner goes last, whatever the overall standings. Athletes tied in that event go lower overall points first, then by lot number.\n\nRoster Order: Athletes go in lot order for every event, never reshuffled. Pick this when the order was published ahead of time.\n\nOVERALL PODIUM TIEBREAKER\n\nUsed only when two athletes finish on the same total points.\n\nMost Event Wins\nFinal Event Score\n\nMost Event Wins: The athlete with more event wins places higher. If that is level too, more points in the final event wins. Still level after both: the athletes share the place.\n\nFinal Event Score: The athlete with more points in the final event places higher. If that is level too, more event wins. Still level after both: the athletes share the place.\n\nAVAILABLE GYM PLATES (TAP TO ENABLE/DISABLE)\n100 lb\n55 lb\n45 lb\n35 lb\n25 lb\n15 lb\n10 lb\n5 lb\n2.5 lb"
+      },
+      {
+        "name": "removedEventSync",
+        "data": {
+          "events": [
+            "e1",
+            "e2"
+          ],
+          "stations": [
+            {
+              "id": "A",
+              "label": "Station 1"
+            },
+            {
+              "id": "B",
+              "label": "Station 2",
+              "eventOrder": [
+                "e2",
+                "e1"
+              ]
+            }
+          ],
+          "options": [
+            "Ev 1: Basket Deadlift",
+            "Ev 2: Keg Over Bar"
+          ]
+        }
+      }
+    ],
+    "errors": [],
+    "blocked": [
+      "vercel.live",
+      "vercel.live",
+      "vercel.live"
+    ],
+    "grantRevoke": 204
+  },
+  "extraBrowser": {
+    "checks": [
+      {
+        "name": "ordinaryJudgeJoin",
+        "data": {
+          "role": "judge",
+          "hasGrant": true,
+          "setupVisible": 0
+        }
+      },
+      {
+        "name": "uiScoreSave",
+        "data": {
+          "http": 200,
+          "server": {
+            "status": 200,
+            "body": [
+              {
+                "payload": {
+                  "reps": 2,
+                  "tier": "heavy",
+                  "didNotStart": false
+                },
+                "locked": true
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "afterDeleteStation2Picker",
+        "data": [
+          "Ev 2: Keg Over Bar · 1st here",
+          "Ev 1: Basket Deadlift · 2nd here"
+        ]
+      },
+      {
+        "name": "orphan",
+        "data": {
+          "options": [
+            "Ev 1: Basket Deadlift",
+            "Ev 2: Keg Over Bar",
+            "Ev 3: Truck Pull"
+          ],
+          "orderListCount": 2,
+          "bodyHasUnassigned": true
+        }
+      },
+      {
+        "name": "absent",
+        "data": {
+          "options": [
+            "Ev 1: Basket Deadlift",
+            "Ev 2: Keg Over Bar",
+            "Ev 3: Truck Pull"
+          ],
+          "orderListCount": 2,
+          "bodyHasUnassigned": false
+        }
+      },
+      {
+        "name": "oneEvent",
+        "data": {
+          "options": [
+            "Ev 1: Basket Deadlift"
+          ],
+          "orderListCount": 0,
+          "bodyHasUnassigned": false
+        }
+      },
+      {
+        "name": "emptyEvents",
+        "data": {
+          "options": [
+            "No Events"
+          ],
+          "orderListCount": 0,
+          "bodyHasUnassigned": false
+        }
+      },
+      {
+        "name": "invalidOrderString",
+        "data": {
+          "options": [
+            "Ev 1: Basket Deadlift",
+            "Ev 2: Keg Over Bar",
+            "Ev 3: Truck Pull"
+          ],
+          "orderListCount": 2,
+          "bodyHasUnassigned": false
+        }
+      }
+    ],
+    "errors": [],
+    "grantRevokes": [
+      204
+    ]
+  },
+  "cleanup": {
+    "deleted": {
+      "status": 200,
+      "body": {
+        "id": "04e390d5-d839-4b50-8eb5-0b69c85bc5d2",
+        "name": "Astra Event Order Audit 1021",
+        "deleted": {
+          "events": 2,
+          "results": 10,
+          "athletes": 15,
+          "divisions": 5,
+          "registrations": 0
+        }
+      }
+    },
+    "remaining": {
+      "meets": 0,
+      "divisions": 0,
+      "events": 0,
+      "athletes": 0,
+      "results": 0,
+      "live_state": 0,
+      "registrations": 0
+    },
+    "finalRevision": {
+      "sha": "d090cf88c58a9c0054ee915436df4bf809a74f3a",
+      "tracked": 291,
+      "mismatches": [
+        "app/sitemap.ts",
+        "components/website/AccountClient.tsx",
+        "components/website/WebsiteShell.tsx",
+        "lib/auth/profile.ts",
+        "lib/auth/useAuth.ts",
+        "lib/website/data.ts"
+      ]
+    }
+  },
+  "cleanupPreflight": {
+    "status": 200,
+    "body": [
+      {
+        "id": "04e390d5-d839-4b50-8eb5-0b69c85bc5d2",
+        "name": "Astra Event Order Audit 1021",
+        "slug": "astra-event-order-04e390d5",
+        "is_demo": false,
+        "is_public_listed": false,
+        "registration_status": "closed",
+        "competition_status": "upcoming"
+      }
+    ]
+  },
+  "baseline": {
+    "passed": 320,
+    "failed": 0,
+    "files": 27,
+    "typeScriptExit": 0,
+    "typeScriptDiagnostics": 0
+  },
+  "findings": [
+    {
+      "id": "EO-H1",
+      "severity": "HIGH",
+      "disposition": "Open rollout gate: update and verify all devices before enablement"
+    },
+    {
+      "id": "EO-M1",
+      "severity": "MED",
+      "disposition": "Open source fix: station-scope next division under All"
+    },
+    {
+      "id": "EO-L1",
+      "severity": "LOW",
+      "disposition": "Open copy fix: first-on-station rather than Ev 1"
+    },
+    {
+      "id": "EO-L2",
+      "severity": "LOW",
+      "disposition": "Open UI fix: visible position tag at 375 px"
+    }
+  ]
+}

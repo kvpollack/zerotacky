@@ -1,5 +1,6 @@
-import type { Athlete, Division, EventDef, Result, RunOrderItem, RunOrderMethod } from '../types';
+import type { Athlete, Division, EventDef, Result, RunOrderItem, RunOrderMethod, Station } from '../types';
 import { calculateDivisionStandings, scoreSingleEvent } from './scoring';
+import { priorEventsOnStation } from './eventOrder';
 
 export function resolveAthleteHeightCallout(
   event: EventDef,
@@ -20,12 +21,15 @@ export function generateEventRunOrder(
   divisionAthletes: Athlete[],
   allEvents: EventDef[],
   allResults: Result[],
-  method: RunOrderMethod
+  method: RunOrderMethod,
+  stations?: Station[]
 ): RunOrderItem[] {
   const activeAthletes = divisionAthletes.filter((a) => a.status === 'active');
-  const sortedEvents = [...allEvents].sort((a, b) => a.eventNumber - b.eventNumber);
-  const completedPriorEvents = sortedEvents.filter(
-    (e) => e.eventNumber < targetEvent.eventNumber && allResults.some((r) => r.eventId === e.id)
+  // "Prior" means earlier on this division's station (10/21), so Reverse Previous Event follows the floor, not the
+  // event number. Without stations (older callers, tests) it is the meet order.
+  const station = stations?.find((s) => s.id === division.flight);
+  const completedPriorEvents = priorEventsOnStation(station, allEvents, targetEvent).filter((e) =>
+    allResults.some((r) => r.eventId === e.id)
   );
 
   const standings = calculateDivisionStandings(
@@ -39,7 +43,8 @@ export function generateEventRunOrder(
   let orderedAthletes: Athlete[] = [];
   const prevScoreLookup = new Map<string, string>();
 
-  if (completedPriorEvents.length === 0) {
+  if (method === 'lot_order' || completedPriorEvents.length === 0) {
+    // Roster order: lot numbers for every event, never reshuffled (10/21). Also the fallback before anything is scored.
     orderedAthletes = [...activeAthletes].sort((a, b) => a.lotNumber - b.lotNumber);
   } else if (method === 'reverse_previous_event') {
     const prevEvent = completedPriorEvents[completedPriorEvents.length - 1];
