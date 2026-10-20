@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: ShowDetailPageProps): Promise
   return {
     title,
     description,
-    openGraph: { title, description, type: 'website', siteName: 'ZeroTacky', url: `/shows/${show.slug}` },
+    openGraph: { title, description, type: 'website', siteName: 'ZeroTacky', url: `/shows/${show.slug}` , images: ['/og.png'] },
     twitter: { card: 'summary_large_image', title, description },
   };
 }

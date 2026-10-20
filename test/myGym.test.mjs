@@ -127,3 +127,26 @@ describe('emailMatchesSite', () => {
     assert.equal(M.emailMatchesSite('kurt@ironyard.com', 'http://[bad'), 'unknown');
   });
 });
+
+describe('geocodeAddress', () => {
+  const addr = { street_address: '717 School Street', city: 'Pawtucket', state: 'RI', zip: '02860' };
+  test('passes the address to /api/geocode and returns the pin with its source', async () => {
+    const calls = [];
+    const fetchImpl = async (u) => { calls.push(u); return { ok: true, json: async () => ({ lat: 41.85886, lng: -71.37433, source: 'street' }) }; };
+    assert.deepEqual(await M.geocodeAddress(addr, fetchImpl), { lat: 41.85886, lng: -71.37433, source: 'street' });
+    assert.equal(calls.length, 1);
+    const q = new URL('http://x' + calls[0]).searchParams;
+    assert.equal(q.get('street'), '717 School Street');
+    assert.equal(q.get('zip'), '02860');
+  });
+  test('unknown source is reported as zip; 404 and network errors are null', async () => {
+    assert.equal((await M.geocodeAddress(addr, async () => ({ ok: true, json: async () => ({ lat: 1, lng: 2 }) }))).source, 'zip');
+    assert.equal(await M.geocodeAddress(addr, async () => ({ ok: false })), null);
+    assert.equal(await M.geocodeAddress(addr, async () => { throw new Error('offline'); }), null);
+  });
+  test('nothing to geocode without a street or zip', async () => {
+    let called = false;
+    assert.equal(await M.geocodeAddress({ street_address: '', city: 'Media', state: 'PA', zip: '' }, async () => { called = true; return { ok: true, json: async () => ({}) }; }), null);
+    assert.equal(called, false);
+  });
+});

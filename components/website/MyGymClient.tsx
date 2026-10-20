@@ -8,7 +8,7 @@ import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import { GYM_EQUIPMENT } from '@/lib/website/gymEquipment';
 import {
   DAY_PASS_OPTIONS, GYM_LIMITS, GYM_SOCIAL_KEYS, GYM_TYPES, cleanGymPatch, fetchMyClaims, fetchMyGyms, patchFromRow, patchKey,
-  saveMyGym, zipLatLng, type GymPatch, type MyClaimRow, type MyGymRow,
+  geocodeAddress, saveMyGym, type GymPatch, type MyClaimRow, type MyGymRow,
 } from '@/lib/website/myGym';
 
 // My Gym (016, 10/20): the owner of a claimed listing edits it here. One card per gym (most owners have one), pending
@@ -56,10 +56,10 @@ function GymEditor({ row, onSaved }: { row: MyGymRow; onSaved: (r: MyGymRow) => 
     if (!sb) { setNotice({ text: 'Accounts are not configured on this build.', tone: 'warn' }); return; }
     setBusy(true);
     try {
-      // Re-pin from the zip only when the zip changed or the listing never had a pin; a street-level pin from the
-      // loader beats a zip centroid.
-      const needPin = c.patch.zip !== row.zip || row.lat == null;
-      const pin = needPin ? await zipLatLng(c.patch.zip) : null;
+      // Re-pin when any address part changed or the listing never had a pin: street-level via the Census geocoder,
+      // zip centroid as the fallback (geocodeAddress does both).
+      const needPin = c.patch.zip !== row.zip || c.patch.street_address !== row.street_address || c.patch.city !== row.city || c.patch.state !== row.state || row.lat == null;
+      const pin = needPin ? await geocodeAddress(c.patch) : null;
       const saved = await saveMyGym(sb, row.id, c.patch, pin);
       onSaved(saved);
       setNotice({ text: 'Saved. The public listing updates within about five minutes.', tone: 'ok' });
