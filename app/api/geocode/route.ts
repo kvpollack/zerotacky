@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { zipCentroid } from '@/lib/geo/zcta';
+import { censusMatchAgrees, type CensusMatch } from '@/lib/geo/censusMatch';
 
 // GET /api/geocode?street=&city=&state=&zip= -> { lat, lng, source: 'street' | 'zip' } or 404.
 // Street-level pin from the Census geocoder (free, no key, public domain), zip centroid when Census has no match.
@@ -21,17 +22,12 @@ export async function GET(req: Request) {
       const q = new URLSearchParams({ address: `${street}, ${city}, ${state} ${zip}`.trim(), benchmark: 'Public_AR_Current', format: 'json' });
       const res = await fetch(`${CENSUS}?${q}`, { signal: AbortSignal.timeout(8000), next: { revalidate: 604800 } });
       if (res.ok) {
-        const j = (await res.json()) as { result?: { addressMatches?: { matchedAddress: string; coordinates: { x: number; y: number }; addressComponents?: { city?: string; state?: string; zip?: string } }[] } };
+        const j = (await res.json()) as { result?: { addressMatches?: CensusMatch[] } };
         const m = j.result?.addressMatches?.[0];
-        // Accept the match only when the number, state, and whichever of zip/city we were given agree with it; the
-        // Census "nearest" answer can be the right number on a different street or town (Astra G-L2).
-        const ac = m?.addressComponents ?? {};
-        const sameNumber = !!m && m.matchedAddress.split(' ')[0] === street.split(' ')[0];
-        const sameState = !ac.state || ac.state.toUpperCase() === state;
-        const sameZip = !zip || !ac.zip || ac.zip === zip.slice(0, 5);
-        const sameCity = !city || !ac.city || ac.city.toUpperCase() === city.toUpperCase();
-        if (m && sameNumber && sameState && sameZip && sameCity) {
-          return NextResponse.json({ lat: Math.round(m.coordinates.y * 1e5) / 1e5, lng: Math.round(m.coordinates.x * 1e5) / 1e5, source: 'street' }, { headers });
+        // Accept the match only when number, state and whichever of zip/city we were given are present in the match and
+        // agree; a response with no components is not evidence (Astra G-L2). Logic in lib/geo/censusMatch.ts, tested.
+        if (censusMatchAgrees(m, { street, city, state, zip })) {
+          return NextResponse.json({ lat: Math.round(m!.coordinates!.y * 1e5) / 1e5, lng: Math.round(m!.coordinates!.x * 1e5) / 1e5, source: 'street' }, { headers });
         }
       }
     } catch {
