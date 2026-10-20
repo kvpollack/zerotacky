@@ -88,10 +88,14 @@ export function cleanHandle(raw: unknown): string {
 export function cleanWebsite(raw: unknown): string {
   let s = str(raw, 400);
   if (!s) return '';
+  // An explicit scheme that is not http(s) is dropped, never rewritten (Astra AD-L4: "mailto:a@b" used to become
+  // https://a@b). Only a bare hostname gets https:// in front.
+  if (/^[a-z][a-z0-9+.-]*:/i.test(s) && !/^https?:\/\//i.test(s)) return '';
   if (!/^https?:\/\//i.test(s)) s = `https://${s}`;
   try {
     const u = new URL(s);
     if (u.protocol !== 'https:' && u.protocol !== 'http:') return '';
+    if (u.username || u.password) return '';   // no credentials in a profile link
     if (!u.hostname.includes('.')) return '';
     const out = u.toString();
     return out.length <= LIMITS.website ? out : ''; // never cut a URL mid-escape (Astra P-L2)
@@ -232,6 +236,7 @@ export const RESERVED_USERNAMES: ReadonlySet<string> = new Set([
   'zerotacky', 'zt', 'slate', 'api', 'www', 'app', 'athletes', 'athlete', 'shows', 'show', 'gyms', 'gym', 'trainers',
   'trainer', 'promoter', 'promoters', 'account', 'settings', 'login', 'signin', 'signup', 'register', 'join', 'scorer',
   'demo', 'legal', 'terms', 'privacy', 'about', 'contact', 'me', 'you', 'null', 'undefined', 'anonymous', 'unknown',
+  'website', 'how_it_works', 'howitworks', 'meets', 'meet', 'results', 'scoreboard', 'security', 'abuse',
 ]);
 
 // What the database will store for this input: lowercased, trimmed, leading @ dropped. '' means "clear".

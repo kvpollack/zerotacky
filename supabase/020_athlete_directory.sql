@@ -143,3 +143,26 @@ grant select on zt_public_profiles to anon, authenticated;
 --   select username, is_public from profiles where username is not null;
 --   select count(*) from zt_public_profiles;                       -- as anon via REST: /rest/v1/zt_public_profiles
 --   select zt_username_available('admin');                         -- false (reserved) as any signed-in user
+
+-- ---------- Astra 10/21 directory audit follow-ups (safe to re-run) ----------
+-- AD-L1: route words the first list missed. Mirrors RESERVED_USERNAMES in lib/auth/profile.ts.
+create or replace function zt_username_reserved(p text) returns boolean language sql immutable as $$
+  select p = any (array[
+    'admin', 'administrator', 'root', 'system', 'support', 'help', 'staff', 'team', 'official', 'moderator', 'mod',
+    'zerotacky', 'zt', 'slate', 'api', 'www', 'app', 'athletes', 'athlete', 'shows', 'show', 'gyms', 'gym', 'trainers',
+    'trainer', 'promoter', 'promoters', 'account', 'settings', 'login', 'signin', 'signup', 'register', 'join', 'scorer',
+    'demo', 'legal', 'terms', 'privacy', 'about', 'contact', 'me', 'you', 'null', 'undefined', 'anonymous', 'unknown',
+    'website', 'how_it_works', 'howitworks', 'meets', 'meet', 'results', 'scoreboard', 'security', 'abuse'
+  ]);
+$$;
+
+-- AD-L2: the 013 avatar constraint only checked the owner-folder prefix, so '<uid>/../x.png' passed. Match the public
+-- renderer: no '.' or '..' segments, no empty segments, one file under the owner's folder.
+alter table profiles drop constraint if exists profiles_avatar_own;
+alter table profiles add constraint profiles_avatar_own check (
+  avatar_path = ''
+  or (avatar_path like (id::text || '/%')
+      and avatar_path !~ '(^|/)\.\.?(/|$)'
+      and avatar_path !~ '//'
+      and avatar_path !~ '/$')
+);

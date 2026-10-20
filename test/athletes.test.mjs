@@ -55,6 +55,44 @@ describe('stateFromLocation', () => {
     assert.equal(A.stateFromLocation('in the gym'), '');   // "in" is not Indiana
     assert.equal(A.stateFromLocation(''), '');
   });
+  test('Astra AD-M2: the state is read from the end, not the first name that appears', () => {
+    assert.equal(A.stateFromLocation('Kansas City, Missouri'), 'MO');
+    assert.equal(A.stateFromLocation('Kansas City, MO'), 'MO');
+    assert.equal(A.stateFromLocation('Charleston, West Virginia'), 'WV');
+    assert.equal(A.stateFromLocation('Charleston West Virginia 25301'), 'WV');
+    assert.equal(A.stateFromLocation('Charleston, WV'), 'WV');
+    assert.equal(A.stateFromLocation('Virginia Beach, Virginia'), 'VA');
+    assert.equal(A.stateFromLocation('Kansas City'), '');
+    assert.equal(A.stateFromLocation('Kansas'), 'KS');
+    assert.equal(A.stateFromLocation('Portland, Oregon, United States'), 'OR');
+    assert.equal(A.stateFromLocation('Austin, TX, U.S.A.'), 'TX');
+  });
+});
+
+describe('Astra 10/21 LOW follow-ups', () => {
+  test('AD-L3: malformed percent-encoding never throws', async () => {
+    assert.equal(A.cleanUsernameParam('100%'), '');
+    assert.equal(A.cleanUsernameParam('%'), '');
+    assert.equal(A.cleanUsernameParam('%E0%A4%A'), '');
+    const calls = [];
+    const client = { select: async (t, q) => { calls.push(q); return []; } };
+    const res = await D.getPublicAthleteByUsername('%', { client });
+    assert.equal(res.data, null);
+    assert.equal(calls.length, 0);
+  });
+  test('AD-L4: explicit non-http schemes and credentials are dropped, bare hosts still get https', () => {
+    assert.equal(PR.cleanWebsite('mailto:user@example.com'), '');
+    assert.equal(PR.cleanWebsite('tel:123@example.com'), '');
+    assert.equal(PR.cleanWebsite('javascript:alert(1)'), '');
+    assert.equal(PR.cleanWebsite('ftp://example.com/x'), '');
+    assert.equal(PR.cleanWebsite('https://user:pw@example.com/'), '');
+    assert.equal(PR.cleanWebsite('example.com/kurt'), 'https://example.com/kurt');
+    assert.equal(PR.cleanWebsite('HTTP://Example.com'), 'http://example.com/');
+    assert.equal(PR.cleanWebsite('localhost:3000'), '');   // scheme-shaped, not a site
+  });
+  test('AD-L1: route words are reserved on the client too', () => {
+    for (const w of ['website', 'how_it_works', 'meets', 'results']) assert.match(PR.usernameProblem(w), /reserved/);
+  });
 });
 
 describe('mapPublicProfileRow', () => {

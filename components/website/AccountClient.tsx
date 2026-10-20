@@ -172,14 +172,22 @@ export default function AccountClient() {
   const [draftUsername, setDraftUsername] = useState('');
   const [usernameBusy, setUsernameBusy] = useState(false);
   const [usernameNote, setUsernameNote] = useState<{ text: string; tone: 'ok' | 'warn' } | null>(null);
+  // Reconcile drafts field by field (Astra AD-M1, 10/21). The username form and the visibility switch save on their own
+  // and replace auth.profile; resetting every draft on that change threw away unsaved edits in the main form. Now a
+  // draft only follows the profile when its own stored value changed (or the account changed).
+  const prevProfileRef = useRef<Profile | null>(null);
   useEffect(() => {
-    if (!auth.profile) return;
-    setDraftUsername(auth.profile.username ?? '');
-    setDraftName(auth.profile.display_name);
-    setAthlete(auth.profile.is_athlete);
-    setPromoter(auth.profile.is_promoter);
-    setGymOwner(auth.profile.is_gym_owner);
-    setAbout(aboutFromProfile(auth.profile));
+    const next = auth.profile;
+    if (!next) { prevProfileRef.current = null; return; }
+    const prev = prevProfileRef.current;
+    prevProfileRef.current = next;
+    const fresh = !prev || prev.id !== next.id;
+    if (fresh || prev.username !== next.username) setDraftUsername(next.username ?? '');
+    if (fresh || prev.display_name !== next.display_name) setDraftName(next.display_name);
+    if (fresh || prev.is_athlete !== next.is_athlete) setAthlete(next.is_athlete);
+    if (fresh || prev.is_promoter !== next.is_promoter) setPromoter(next.is_promoter);
+    if (fresh || prev.is_gym_owner !== next.is_gym_owner) setGymOwner(next.is_gym_owner);
+    if (fresh || aboutKey(aboutFromProfile(prev)) !== aboutKey(aboutFromProfile(next))) setAbout(aboutFromProfile(next));
   }, [auth.profile]);
   const patchAbout = (patch: Partial<AboutDraft>) => setAbout((a) => (a ? { ...a, ...patch } : a));
   const patchPR = (i: number, patch: Partial<ProfilePR>) => setAbout((a) => {
@@ -620,7 +628,7 @@ export default function AccountClient() {
               <span className="block font-black text-zt-text">Show my profile publicly</span>
               <span className="block text-zt-muted mt-0.5">
                 {p.username
-                  ? (p.is_public ? <>Live at <Link href={athleteProfilePath(p.username)} className="underline hover:text-zt-text">{athleteProfilePath(p.username)}</Link>. Turn it off any time; the page disappears right away.</> : 'Saves as soon as you tick it. Save the profile above first if you have unsaved edits.')
+                  ? (p.is_public ? <>Live at <Link href={athleteProfilePath(p.username)} className="underline hover:text-zt-text">{athleteProfilePath(p.username)}</Link>. Turn it off any time; the page disappears right away.</> : 'Saves as soon as you tick it. Unsaved edits in the form above stay put until you save them.')
                   : 'Set a username first.'}
               </span>
             </span>

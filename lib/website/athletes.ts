@@ -70,20 +70,36 @@ const STATE_NAMES: Record<string, string> = {
   wisconsin: 'WI', wyoming: 'WY', 'washington dc': 'DC', 'washington, dc': 'DC',
 };
 
-// "Aston, PA", "Aston PA 19014", "Pennsylvania", "Columbus, Ohio, USA" -> state code; anything else ''.
+const NAME_TO_CODE = new Map(Object.entries(STATE_NAMES));
+const ZIP_TAIL = /\s+\d{5}(-\d{4})?$/;
+const COUNTRY = /^(usa?|u\.s\.a?\.?|united states( of america)?)$/i;
+
+// One comma-separated component -> state code or ''. "PA", "PA 19014", "Pennsylvania", "West Virginia 25301".
+function stateFromComponent(component: string): string {
+  const c = component.trim().replace(ZIP_TAIL, '').trim();
+  if (!c) return '';
+  const upper = c.toUpperCase().replace(/\./g, '');
+  if (upper.length === 2 && US_STATES.has(upper)) return upper;
+  return NAME_TO_CODE.get(c.toLowerCase().replace(/\s+/g, ' ')) ?? '';
+}
+
+// "Aston, PA", "Aston PA 19014", "Kansas City, Missouri", "Charleston, West Virginia", "Columbus, Ohio, USA" -> code;
+// "Nashville", "Kansas City", "London, UK", "in the gym" -> ''. The state is read from the END of the location (Astra
+// AD-M2: a substring scan put Kansas City, Missouri in KS and West Virginia in VA), with trailing country dropped.
 export function stateFromLocation(location: string): string {
-  const loc = (location ?? '').trim();
-  if (!loc) return '';
-  // A code wins when it ends the string or is followed only by a zip ("Aston PA 19014"); "in the gym" is not Indiana.
-  const tokens = loc.toUpperCase().replace(/\b(U\.?S\.?A?\.?|UNITED STATES)\b/g, '').split(/[\s,]+/).filter(Boolean);
-  for (let i = tokens.length - 1; i >= 0; i--) {
-    const t = tokens[i].replace(/[^A-Z]/g, '');
-    const rest = tokens.slice(i + 1);
-    if (t.length === 2 && tokens[i].length === 2 && US_STATES.has(t) && rest.every((r) => /^\d{5}(-\d{4})?$/.test(r))) return t;
-  }
-  const lower = loc.toLowerCase();
-  for (const [name, code] of Object.entries(STATE_NAMES)) {
-    if (new RegExp(`(^|[\\s,])${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[\\s,])`).test(lower)) return code;
+  const parts = (location ?? '').split(',').map((p) => p.trim()).filter(Boolean);
+  while (parts.length && COUNTRY.test(parts[parts.length - 1])) parts.pop();
+  if (!parts.length) return '';
+  const last = parts[parts.length - 1];
+  const whole = stateFromComponent(last);
+  if (whole) return whole;
+  // Single component with spaces ("Aston PA 19014", "Charleston West Virginia"): try the trailing one or two words.
+  const words = last.replace(ZIP_TAIL, '').trim().split(/\s+/);
+  if (words.length >= 2) {
+    const two = NAME_TO_CODE.get(words.slice(-2).join(' ').toLowerCase());
+    if (two) return two;
+    const one = words[words.length - 1].toUpperCase();
+    if (one.length === 2 && US_STATES.has(one)) return one;   // "Aston PA"
   }
   return '';
 }
@@ -160,6 +176,12 @@ export function collectAthleteStates(list: PublicAthlete[]): string[] {
 
 // Usernames arrive from the URL; keep the lookup to the shape the database allows.
 export function cleanUsernameParam(raw: string | null | undefined): string {
-  const u = decodeURIComponent(raw ?? '').trim().replace(/^@+/, '').toLowerCase();
+  let decoded = raw ?? '';
+  try {
+    decoded = decodeURIComponent(decoded);
+  } catch {
+    return '';   // malformed percent-encoding (Astra AD-L3): not a username, never a throw
+  }
+  const u = decoded.trim().replace(/^@+/, '').toLowerCase();
   return /^[a-z0-9_]{3,30}$/.test(u) ? u : '';
 }
