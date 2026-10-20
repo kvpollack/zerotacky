@@ -91,7 +91,8 @@ export function cleanWebsite(raw: unknown): string {
     const u = new URL(s);
     if (u.protocol !== 'https:' && u.protocol !== 'http:') return '';
     if (!u.hostname.includes('.')) return '';
-    return u.toString().slice(0, LIMITS.website);
+    const out = u.toString();
+    return out.length <= LIMITS.website ? out : ''; // never cut a URL mid-escape (Astra P-L2)
   } catch {
     return '';
   }
@@ -213,6 +214,6 @@ export function socialUrl(key: SocialKey, value: string): string {
     case 'youtube': return `https://www.youtube.com/@${v}`;
     case 'x': return `https://x.com/${v}`;
     case 'facebook': return `https://www.facebook.com/${v}`;
-    case 'website': return value;
+    case 'website': return /^https?:\/\/[^\s]+$/i.test(value) ? value : ''; // stored values may come from REST clients (P-L2)
   }
 }

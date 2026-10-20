@@ -83,7 +83,7 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
                   : 'Not provided'}
               </div>
               <div className="text-[11px] font-bold text-zt-primary mt-0.5">
-                Price: {gym.dayPassPriceDisplay || 'Not provided'}
+                {gym.dayPassPriceDisplay ? `Price: ${gym.dayPassPriceDisplay}` : 'The day-pass price has not been provided.'}
               </div>
             </div>
 
@@ -114,7 +114,7 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
                   <ExternalLink className="w-3 h-3" aria-hidden="true" />
                 </a>
               ) : (
-                <div className="text-[11px] text-zt-muted mt-1">Booking link: Not provided</div>
+                <div className="text-[11px] text-zt-muted mt-1">No booking link has been provided.</div>
               )}
             </div>
           </div>

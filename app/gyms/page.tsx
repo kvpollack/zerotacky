@@ -29,9 +29,9 @@ export default async function GymsDirectoryPage() {
           </span>
         </div>
         <p className="text-xs sm:text-sm text-zt-text-2 max-w-3xl">
-          Find a place to train with real strongman equipment. Filter by distance from your zip, equipment, and day-pass policy;
-          anything a gym has not told us shows as <strong>Not provided</strong>. These listings are fictional
-          demos. Gym owners adding their own gym is next on the roadmap.
+          Find a place to train with real strongman equipment. Filter by distance from your zip, equipment, and day-pass policy.
+          Missing details are marked <strong>Not provided</strong>. These listings are fictional demos; gym owners
+          adding their own gym is next on the roadmap.
         </p>
       </div>
 

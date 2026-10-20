@@ -17,7 +17,7 @@ const DAY_PASS_LABELS: Record<DayPassAvailability, string> = {
   available: 'Day Pass Available',
   by_appointment: 'Drop-In By Appointment',
   not_available: 'Members Only',
-  not_provided: 'Day Pass: Not provided',
+  not_provided: 'Day pass not provided',
 };
 
 export default function GymsBrowser({

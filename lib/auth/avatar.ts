@@ -27,15 +27,40 @@ export function avatarPublicUrl(sb: SupabaseClient, path: string): string {
   return sb.storage.from(AVATAR_BUCKET).getPublicUrl(path).data.publicUrl;
 }
 
-// Upload, then drop the previous object. Returns the new path for the profile row. Removing the old file is
-// best effort: a leftover costs a few hundred KB, a failed upload would cost the user their photo.
-export async function uploadAvatar(sb: SupabaseClient, userId: string, file: File, previousPath: string): Promise<string> {
+// Upload the new file only; the caller saves the path, then calls finishAvatarReplace. Order matters (Astra P-H1):
+// upload new -> save new path -> best-effort remove old. If the save fails, the old photo stays valid and the
+// orphaned new upload is removed best effort, so no state ever points at a deleted object.
+export async function uploadAvatar(sb: SupabaseClient, userId: string, file: File): Promise<string> {
   const problem = avatarProblem(file);
   if (problem) throw new Error(problem);
   const path = avatarObjectPath(userId, file.type);
   const { error } = await sb.storage.from(AVATAR_BUCKET).upload(path, file, { contentType: file.type, upsert: false, cacheControl: '31536000' });
   if (error) throw new Error(error.message);
-  if (previousPath && previousPath !== path) await sb.storage.from(AVATAR_BUCKET).remove([previousPath]).catch(() => undefined);
+  return path;
+}
+
+// Best effort: a leftover object costs a few hundred KB, a thrown error here would cost the user their photo.
+export async function removeAvatarQuietly(sb: SupabaseClient, path: string): Promise<void> {
+  if (!path) return;
+  await sb.storage.from(AVATAR_BUCKET).remove([path]).catch(() => undefined);
+}
+
+// Full replace with the safe order. `savePath` is the profile write; it throws on failure.
+export async function replaceAvatar(
+  sb: SupabaseClient,
+  userId: string,
+  file: File,
+  previousPath: string,
+  savePath: (path: string) => Promise<void>,
+): Promise<string> {
+  const path = await uploadAvatar(sb, userId, file);
+  try {
+    await savePath(path);
+  } catch (e) {
+    await removeAvatarQuietly(sb, path);
+    throw e;
+  }
+  if (previousPath && previousPath !== path) await removeAvatarQuietly(sb, previousPath);
   return path;
 }
 

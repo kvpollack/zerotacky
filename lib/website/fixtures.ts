@@ -704,7 +704,7 @@ export const DEMO_PERSONAS: DemoPersonaProfile[] = [
           registrationStatus: 'confirmed',
           equipmentSetupNotes: [
             {
-              showEventLabel: 'All Out Strongfest 2026 • Ev 2: Keg Over Bar',
+              showEventLabel: 'Riverside Iron Fest 2026 • Ev 2: Keg Over Bar',
               implementContext: 'Rogue 4-Post Yoke Crossbar at Keystone Forge Strength',
               settingValue: '48" Crossbar (Standard Group 4 height)',
             },

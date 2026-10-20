@@ -194,6 +194,9 @@ export default function JoinClient() {
         >
           Back to ZeroTacky Home
         </a>
+        <a href="/website/account" className="block w-full text-center text-xs font-bold text-zt-muted hover:text-zt-text py-1">
+          Account and sign in
+        </a>
       </div>
     </div>
   );

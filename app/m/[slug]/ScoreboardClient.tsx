@@ -225,7 +225,17 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
           />
         );
       })}
-      <div className="text-center text-[10px] text-zt-muted pt-2">ZEROTACKY · refreshes every {POLL_MS / 1000}s</div>
+      <div className="text-center text-[10px] text-zt-muted pt-2">
+        ZEROTACKY · refreshes every {POLL_MS / 1000}s
+        {!tv && (
+          <>
+            {' · '}
+            <a href="/website" className="underline hover:text-zt-text">Home</a>
+            {' · '}
+            <a href="/website/account" className="underline hover:text-zt-text">Account</a>
+          </>
+        )}
+      </div>
     </>
   );
 }
