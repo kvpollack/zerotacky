@@ -1,0 +1,630 @@
+{
+  "verified-summary.json": {
+    "parallelSlugs": [
+      "astra-closeout-parallel-1021-media-pa",
+      "astra-closeout-parallel-1021-media-pa-2"
+    ],
+    "requestStartSkewMs": 0.3269,
+    "geocodeRouteMocks": 6,
+    "browserScenarios": 8,
+    "pageLoads": 16,
+    "pageErrors": 0,
+    "consoleErrors": 16,
+    "failedBackendRequests": 0,
+    "cleanupRemoved": 2,
+    "finalRevision": {
+      "sha": "ac40de524407b22dd319885fec4c20db6de1bd59",
+      "trackedBlobs": 284,
+      "mismatches": []
+    }
+  },
+  "final-revision.json": {
+    "sha": "ac40de524407b22dd319885fec4c20db6de1bd59",
+    "trackedBlobs": 284,
+    "mismatches": []
+  },
+  "revision.json": {
+    "sha": "ac40de524407b22dd319885fec4c20db6de1bd59",
+    "tracked": 284,
+    "mismatches": []
+  },
+  "tests-exit.json": {
+    "exit": 0
+  },
+  "tsc-exit.json": {
+    "exit": 0
+  },
+  "parallel-evidence.json": {
+    "parallel": [
+      {
+        "caller": 1,
+        "start_ns": 98602383456900,
+        "finish_ns": 98602891077300,
+        "response": {
+          "status": 200,
+          "body": {
+            "id": "7dbaddbb-e1ef-4739-a44f-378cddf569c6",
+            "slug": "astra-closeout-parallel-1021-media-pa",
+            "name": "Astra Closeout Parallel 1021",
+            "status": "pending",
+            "owner_id": "745d4f4f-6097-4aa4-b6c1-99b75abb728a",
+            "gym_type": "mixed",
+            "street_address": "",
+            "city": "Media",
+            "state": "PA",
+            "zip": "19063",
+            "lat": null,
+            "lng": null,
+            "website_url": "https://astra-audit.invalid",
+            "phone": "",
+            "instagram": "",
+            "contact": "Disposable Astra closeout",
+            "day_pass_availability": "not_provided",
+            "day_pass_price": "",
+            "day_pass_url": "",
+            "drop_in_policy": "",
+            "drop_in_hours": "",
+            "equipment": [],
+            "equipment_notes": {},
+            "socials": {},
+            "source_url": "owner-submitted",
+            "source_evidence": "Submitted by the owner from My Gym; awaiting review.",
+            "confidence": "medium",
+            "last_verified": "2026-10-20",
+            "created_at": "2026-10-20T15:52:26.928044+00:00",
+            "updated_at": "2026-10-20T15:52:26.928044+00:00"
+          }
+        }
+      },
+      {
+        "caller": 2,
+        "start_ns": 98602383130000,
+        "finish_ns": 98602891168000,
+        "response": {
+          "status": 200,
+          "body": {
+            "id": "da5ff018-a34d-4bde-839b-04829e161170",
+            "slug": "astra-closeout-parallel-1021-media-pa-2",
+            "name": "Astra Closeout Parallel 1021",
+            "status": "pending",
+            "owner_id": "745d4f4f-6097-4aa4-b6c1-99b75abb728a",
+            "gym_type": "mixed",
+            "street_address": "",
+            "city": "Media",
+            "state": "PA",
+            "zip": "19063",
+            "lat": null,
+            "lng": null,
+            "website_url": "https://astra-audit.invalid",
+            "phone": "",
+            "instagram": "",
+            "contact": "Disposable Astra closeout",
+            "day_pass_availability": "not_provided",
+            "day_pass_price": "",
+            "day_pass_url": "",
+            "drop_in_policy": "",
+            "drop_in_hours": "",
+            "equipment": [],
+            "equipment_notes": {},
+            "socials": {},
+            "source_url": "owner-submitted",
+            "source_evidence": "Submitted by the owner from My Gym; awaiting review.",
+            "confidence": "medium",
+            "last_verified": "2026-10-20",
+            "created_at": "2026-10-20T15:52:26.928044+00:00",
+            "updated_at": "2026-10-20T15:52:26.928044+00:00"
+          }
+        }
+      }
+    ],
+    "startSkewMs": 0.3269,
+    "bothRequestsInFlight": true,
+    "twoDistinctIds": true,
+    "expectedSlugs": true,
+    "allOwn": true,
+    "ownerRead": {
+      "status": 200,
+      "body": [
+        {
+          "id": "7dbaddbb-e1ef-4739-a44f-378cddf569c6",
+          "slug": "astra-closeout-parallel-1021-media-pa",
+          "status": "pending"
+        },
+        {
+          "id": "da5ff018-a34d-4bde-839b-04829e161170",
+          "slug": "astra-closeout-parallel-1021-media-pa-2",
+          "status": "pending"
+        }
+      ]
+    },
+    "anonRead": {
+      "status": 200,
+      "body": []
+    },
+    "invalidPinAdd": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "map pin is out of range"
+      }
+    },
+    "halfPinAdd": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "map pin is out of range"
+      }
+    }
+  },
+  "geocode-evidence.json": [
+    {
+      "label": "originalWrongTown",
+      "status": 200,
+      "body": {
+        "lat": 41.87,
+        "lng": -71.39,
+        "source": "zip"
+      },
+      "expectedSource": "zip",
+      "passed": true
+    },
+    {
+      "label": "noComponentsNoTown",
+      "status": 200,
+      "body": {
+        "lat": 41.87,
+        "lng": -71.39,
+        "source": "zip"
+      },
+      "expectedSource": "zip",
+      "passed": true
+    },
+    {
+      "label": "partialStateOnly",
+      "status": 200,
+      "body": {
+        "lat": 41.87,
+        "lng": -71.39,
+        "source": "zip"
+      },
+      "expectedSource": "zip",
+      "passed": true
+    },
+    {
+      "label": "parsedValidAddress",
+      "status": 200,
+      "body": {
+        "lat": 41.85886,
+        "lng": -71.37433,
+        "source": "street"
+      },
+      "expectedSource": "street",
+      "passed": true
+    },
+    {
+      "label": "componentsValid",
+      "status": 200,
+      "body": {
+        "lat": 41.85886,
+        "lng": -71.37433,
+        "source": "street"
+      },
+      "expectedSource": "street",
+      "passed": true
+    },
+    {
+      "label": "componentsWrongTown",
+      "status": 200,
+      "body": {
+        "lat": 41.87,
+        "lng": -71.39,
+        "source": "zip"
+      },
+      "expectedSource": "zip",
+      "passed": true
+    }
+  ],
+  "geocode-http-evidence.json": [
+    {
+      "label": "valid",
+      "status": 200,
+      "body": {
+        "lat": 41.85886,
+        "lng": -71.37433,
+        "source": "street"
+      }
+    },
+    {
+      "label": "wrongTown",
+      "status": 200,
+      "body": {
+        "lat": 41.87,
+        "lng": -71.39,
+        "source": "zip"
+      }
+    }
+  ],
+  "main-geocode-comparison.json": {
+    "mainCommit": "298e7447ff841af7d910008b8141b3b9d8e2688e",
+    "matchingFiles": {
+      "lib/geo/censusMatch.ts": true,
+      "app/api/geocode/route.ts": true,
+      "test/censusMatch.test.mjs": true
+    }
+  },
+  "browser-evidence.json": [
+    {
+      "identity": "user",
+      "width": 430,
+      "path": "/website/account",
+      "loads": [
+        {
+          "phase": "cold",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            "Astra Staging"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 1
+        },
+        {
+          "phase": "reload",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            "Astra Staging"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 1
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "failedBackendRequests": []
+    },
+    {
+      "identity": "user",
+      "width": 430,
+      "path": "/website/account/gym",
+      "loads": [
+        {
+          "phase": "cold",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            "My Gym"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 2
+        },
+        {
+          "phase": "reload",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            "My Gym"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 2
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "failedBackendRequests": []
+    },
+    {
+      "identity": "user",
+      "width": 430,
+      "path": "/website/account/gym/add",
+      "loads": [
+        {
+          "phase": "cold",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            "Add my gym"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 1
+        },
+        {
+          "phase": "reload",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            "Add my gym"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 1
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "failedBackendRequests": []
+    },
+    {
+      "identity": "user",
+      "width": 430,
+      "path": "/website/admin/claims",
+      "loads": [
+        {
+          "phase": "cold",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            " Admin only"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 0
+        },
+        {
+          "phase": "reload",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            " Admin only"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 0
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "failedBackendRequests": []
+    },
+    {
+      "identity": "admin",
+      "width": 1280,
+      "path": "/website/account",
+      "loads": [
+        {
+          "phase": "cold",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            "Slate Staging"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 1
+        },
+        {
+          "phase": "reload",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            "Slate Staging"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 1
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "failedBackendRequests": []
+    },
+    {
+      "identity": "admin",
+      "width": 1280,
+      "path": "/website/account/gym",
+      "loads": [
+        {
+          "phase": "cold",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            "My Gym"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 1
+        },
+        {
+          "phase": "reload",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            "My Gym"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 1
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "failedBackendRequests": []
+    },
+    {
+      "identity": "admin",
+      "width": 1280,
+      "path": "/website/account/gym/add",
+      "loads": [
+        {
+          "phase": "cold",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            "Add my gym"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 1
+        },
+        {
+          "phase": "reload",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            "Add my gym"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 1
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "failedBackendRequests": []
+    },
+    {
+      "identity": "admin",
+      "width": 1280,
+      "path": "/website/admin/claims",
+      "loads": [
+        {
+          "phase": "cold",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            "Gym claims queue"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 0
+        },
+        {
+          "phase": "reload",
+          "http": 200,
+          "serverSkeleton": true,
+          "headings": [
+            "Gym claims queue"
+          ],
+          "sessionSkeletonGone": true,
+          "formCount": 0
+        }
+      ],
+      "pageErrors": [],
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_FAILED",
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "failedBackendRequests": []
+    }
+  ],
+  "cleanup-evidence.json": {
+    "claimsBefore": [
+      {
+        "id": "9e5407f0-a045-43b1-a71f-bcc7b6d3f110",
+        "kind": "claim",
+        "status": "pending",
+        "name": "Astra Staging",
+        "email": "astra.staging@zerotacky.com",
+        "role": "Owner (new listing)",
+        "message": "ASTRA CLOSEOUT TEST ONLY. Remove after checks.",
+        "user_id": "745d4f4f-6097-4aa4-b6c1-99b75abb728a",
+        "created_at": "2026-10-20T15:52:26.928044+00:00",
+        "gym_id": "7dbaddbb-e1ef-4739-a44f-378cddf569c6",
+        "gym_slug": "astra-closeout-parallel-1021-media-pa",
+        "gym_name": "Astra Closeout Parallel 1021",
+        "gym_city": "Media",
+        "gym_state": "PA",
+        "gym_status": "pending",
+        "gym_website": "https://astra-audit.invalid",
+        "gym_source_url": "owner-submitted",
+        "claimant_display_name": "Astra Staging",
+        "account_email": "astra.staging@zerotacky.com",
+        "pending_claims_on_gym": 1
+      },
+      {
+        "id": "6ab34d7a-8570-4f33-acf3-d8d10f59a622",
+        "kind": "claim",
+        "status": "pending",
+        "name": "Astra Staging",
+        "email": "astra.staging@zerotacky.com",
+        "role": "Owner (new listing)",
+        "message": "ASTRA CLOSEOUT TEST ONLY. Remove after checks.",
+        "user_id": "745d4f4f-6097-4aa4-b6c1-99b75abb728a",
+        "created_at": "2026-10-20T15:52:26.928044+00:00",
+        "gym_id": "da5ff018-a34d-4bde-839b-04829e161170",
+        "gym_slug": "astra-closeout-parallel-1021-media-pa-2",
+        "gym_name": "Astra Closeout Parallel 1021",
+        "gym_city": "Media",
+        "gym_state": "PA",
+        "gym_status": "pending",
+        "gym_website": "https://astra-audit.invalid",
+        "gym_source_url": "owner-submitted",
+        "claimant_display_name": "Astra Staging",
+        "account_email": "astra.staging@zerotacky.com",
+        "pending_claims_on_gym": 1
+      }
+    ],
+    "removed": [
+      {
+        "id": "7dbaddbb-e1ef-4739-a44f-378cddf569c6",
+        "result": {
+          "status": 204,
+          "body": ""
+        }
+      },
+      {
+        "id": "da5ff018-a34d-4bde-839b-04829e161170",
+        "result": {
+          "status": 204,
+          "body": ""
+        }
+      }
+    ],
+    "pendingQueue": [],
+    "publicRows": {
+      "status": 200,
+      "body": []
+    },
+    "ownerTableRows": {
+      "status": 200,
+      "body": []
+    },
+    "claimStates": {
+      "status": 200,
+      "body": [
+        {
+          "id": "9e5407f0-a045-43b1-a71f-bcc7b6d3f110",
+          "gym_id": "7dbaddbb-e1ef-4739-a44f-378cddf569c6",
+          "kind": "claim",
+          "status": "rejected"
+        },
+        {
+          "id": "6ab34d7a-8570-4f33-acf3-d8d10f59a622",
+          "gym_id": "da5ff018-a34d-4bde-839b-04829e161170",
+          "kind": "claim",
+          "status": "rejected"
+        }
+      ]
+    },
+    "userOwnedRestored": true,
+    "adminOwnedUnchanged": true
+  },
+  "testLog": {
+    "passed": 305,
+    "failed": 0,
+    "files": 26,
+    "sha256": "14c95ad5ea81eaa9b56d94b1924f940a1ed4a6509c18cfe652ab4b36b62efd39"
+  },
+  "sessionCleanup": {
+    "removedTemporaryCopies": [
+      "user-session.secret.json",
+      "admin-session.secret.json"
+    ],
+    "suppliedCredentialsUntouched": true
+  }
+}
