@@ -33,18 +33,20 @@ function errText(e: unknown): string {
 // Set / change password. Used right after a reset link (recovery) and from the signed-in page. Supabase's
 // updateUser({ password }) needs a live session, which the reset link provides.
 function PasswordPanel({ recovery, busy, onSubmit, onDismiss }: {
-  recovery: boolean; busy: boolean; onSubmit: (pw: string) => Promise<void>; onDismiss?: () => void;
+  recovery: boolean; busy: boolean; onSubmit: (pw: string, current?: string) => Promise<boolean>; onDismiss?: () => void;
 }) {
+  const [pw0, setPw0] = useState('');   // current password; asked only for an ordinary signed-in change (R-L1)
   const [pw1, setPw1] = useState('');
   const [pw2, setPw2] = useState('');
   const [localErr, setLocalErr] = useState<string | null>(null);
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalErr(null);
+    if (!recovery && pw0.length === 0) { setLocalErr('Enter your current password first.'); return; }
     if (pw1.length < 8) { setLocalErr('Password needs at least 8 characters.'); return; }
     if (pw1 !== pw2) { setLocalErr('The two passwords do not match.'); return; }
-    await onSubmit(pw1);
-    setPw1(''); setPw2('');
+    const ok = await onSubmit(pw1, recovery ? undefined : pw0);
+    if (ok) { setPw0(''); setPw1(''); setPw2(''); }
   };
   return (
     <section
@@ -59,10 +61,16 @@ function PasswordPanel({ recovery, busy, onSubmit, onDismiss }: {
         <p className="text-xs text-zt-muted">
           {recovery
             ? 'You arrived from a password reset link. Choose a new password to finish; you are already signed in on this device.'
-            : 'You stay signed in here. Other devices keep their session until they next refresh.'}
+            : 'Enter your current password, then the new one. You stay signed in here; other devices keep their session until they next refresh.'}
         </p>
       </div>
       <form onSubmit={submit} className="space-y-3 max-w-md">
+        {!recovery && (
+          <div>
+            <label htmlFor="pw-current" className={labelCls}>Current password</label>
+            <input id="pw-current" type="password" required value={pw0} onChange={(e) => setPw0(e.target.value)} className={inputCls} autoComplete="current-password" />
+          </div>
+        )}
         <div>
           <label htmlFor="pw-new" className={labelCls}>New password (8+ characters)</label>
           <input id="pw-new" type="password" required minLength={8} value={pw1} onChange={(e) => setPw1(e.target.value)} className={inputCls} autoComplete="new-password" />
@@ -119,14 +127,16 @@ export default function AccountClient() {
     }
   }, []);
 
-  const run = async (fn: () => Promise<string | void>) => {
+  const run = async (fn: () => Promise<string | void>): Promise<boolean> => {
     setBusy(true);
     setNotice(null);
     try {
       const msg = await fn();
       if (msg) setNotice({ text: msg, tone: 'ok' });
+      return true;
     } catch (e) {
       setNotice({ text: errText(e), tone: 'warn' });
+      return false;
     } finally {
       setBusy(false);
     }
@@ -262,8 +272,8 @@ export default function AccountClient() {
     <PasswordPanel
       recovery={auth.recovery}
       busy={busy}
-      onSubmit={(pw) => run(async () => {
-        await auth.updatePassword(pw);
+      onSubmit={(pw, current) => run(async () => {
+        await auth.updatePassword(pw, current);
         setShowPassword(false);
         return 'Password updated. Use it next time you sign in.';
       })}

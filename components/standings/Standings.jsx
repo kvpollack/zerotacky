@@ -71,7 +71,7 @@ export default function Standings({
                             : 'bg-zt-surface-2 text-zt-text-2'
                         }`}
                       >
-                        #{row.overallPlace}
+                        {row.isTiedOverall ? 'T-' : ''}#{row.overallPlace}
                       </span>
                       <span className="font-black text-base text-zt-text">{row.athleteName}</span>
                       {row.status === 'withdrawn' && (

@@ -316,3 +316,27 @@ describe('buildTransitionDeltas', () => {
     assert.equal(buildTransitionDeltas(e, 'd2', e, 'd3')[0].changed, false);
   });
 });
+
+// Astra R-M5 (10/19): reverse-previous-event order on a tie, and shared overall places after both tiebreak criteria.
+describe('run order and standings on ties (R-M5)', () => {
+  const div = { id: 'd', meetId: 'm', name: 'Open', flight: 'A', sortOrder: 1 };
+  const athletes = [
+    { id: 'a1', divisionId: 'd', name: 'A1', lotNumber: 1, status: 'active' },
+    { id: 'a2', divisionId: 'd', name: 'A2', lotNumber: 2, status: 'active' },
+    { id: 'a3', divisionId: 'd', name: 'A3', lotNumber: 3, status: 'active' },
+  ];
+  const ev = (n) => ({ id: `e${n}`, meetId: 'm', eventNumber: n, name: `E${n}`, scoringType: 'reps', timeCapSeconds: 60, lanes: 1, divisionWeights: {} });
+  const events = [ev(1), ev(2), ev(3)];
+  const res = (e, a, reps) => ({ id: `${e}_${a}`, eventId: e, athleteId: a, reps });
+  test('tied in the previous event: lower overall points lifts first, then lot number', () => {
+    // E1: a2 wins (3 pts), a1 second (2), a3 third (1). E2: a1 and a2 tie on 5 reps, a3 behind.
+    const results = [res('e1', 'a1', 4), res('e1', 'a2', 6), res('e1', 'a3', 2), res('e2', 'a1', 5), res('e2', 'a2', 5), res('e2', 'a3', 1)];
+    const order = generateEventRunOrder(events[2], div, athletes, events, results, 'reverse_previous_event');
+    assert.deepEqual(order.map((o) => o.athlete.id), ['a3', 'a1', 'a2']);   // a1 has fewer overall points than a2
+  });
+  test('athletes level after both tiebreak criteria share the place and the next place is skipped', () => {
+    const results = [res('e1', 'a1', 4), res('e1', 'a2', 4), res('e1', 'a3', 1)];
+    const rows = calculateDivisionStandings(div, athletes, [events[0]], results, 'event_wins');
+    assert.deepEqual(rows.map((r) => [r.athleteId, r.overallPlace, r.isTiedOverall]), [['a1', 1, true], ['a2', 1, true], ['a3', 3, false]]);
+  });
+});

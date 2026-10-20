@@ -242,7 +242,9 @@ export function addStation(
   input?: { id?: string; label?: string }
 ): AppState {
   const existing = state.meet.stations ?? DEFAULT_STATIONS;
-  const usedIds = new Set(existing.map((s) => s.id));
+  // Astra R-M4 (10/19): a division still pointing at a removed station keeps that dead id, so a new station must not
+  // reuse it, or the division would silently land on the new station without the promoter choosing it.
+  const usedIds = new Set([...existing.map((s) => s.id), ...state.divisions.map((d) => d.flight)]);
   let nextId = input?.id?.trim() || '';
   if (!nextId || usedIds.has(nextId)) {
     let code = 65; // 'A'

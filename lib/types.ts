@@ -127,6 +127,7 @@ export interface StandingRow {
   finalEventPoints: number;
   eventBreakdown: Record<string, { points: number; place: number; display: string }>;
   overallPlace: number;
+  isTiedOverall?: boolean; // level after both tiebreak criteria: shares overallPlace with the row(s) beside it
 }
 
 export interface RunOrderItem {

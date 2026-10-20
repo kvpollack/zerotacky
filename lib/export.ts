@@ -102,7 +102,7 @@ export function standingsText(state: AppState, divisionsFilter?: Division[]): st
     const standings = calculateDivisionStandings(div, athletes, events, state.results, state.meet.tiebreakerRule);
     for (const st of standings) {
       const scratched = st.status === 'withdrawn' ? ' (scratched)' : '';
-      lines.push(`${st.overallPlace}. ${st.athleteName}${scratched} - ${st.totalPoints} pts`);
+      lines.push(`${st.isTiedOverall ? 'T-' : ''}${st.overallPlace}. ${st.athleteName}${scratched} - ${st.totalPoints} pts`);
     }
   }
   return lines.join('\n');

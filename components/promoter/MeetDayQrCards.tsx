@@ -34,9 +34,10 @@ export default function MeetDayQrCards({ meetName, items }: { meetName: string; 
     return () => { cancelled = true; };
   }, [items]);
 
+  // Astra R-M3 (10/19): window.open with noopener hands back null in Chrome, so the old document.write path printed a
+  // blank page. The sheet is now a same-origin hidden iframe (srcdoc) that prints itself and is removed afterwards:
+  // no opener relationship, no popup blocker, same escaping as before.
   const print = () => {
-    const w = window.open('', '_blank', 'noopener,width=900,height=1200');
-    if (!w) return;
     const cards = items
       .map((it) => `
         <section>
@@ -46,7 +47,7 @@ export default function MeetDayQrCards({ meetName, items }: { meetName: string; 
           <p class="url">${escapeHtml(it.url)}</p>
         </section>`)
       .join('');
-    w.document.write(`<!doctype html><html><head><title>${escapeHtml(meetName)} QR codes</title>
+    const html = `<!doctype html><html><head><title>${escapeHtml(meetName)} QR codes</title>
       <style>
         body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;color:#111}
         h1{font-size:28px;margin:24px 32px 0}
@@ -57,8 +58,21 @@ export default function MeetDayQrCards({ meetName, items }: { meetName: string; 
         .hint{font-size:22px;margin:16px 0 8px}
         .url{font-size:16px;color:#555;word-break:break-all}
       </style></head><body><h1>${escapeHtml(meetName)}</h1>${cards}
-      <script>window.onload=function(){window.print();}</script></body></html>`);
-    w.document.close();
+      </body></html>`;
+    const frame = document.createElement('iframe');
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+    frame.onload = () => {
+      const win = frame.contentWindow;
+      if (!win) { frame.remove(); return; }
+      win.focus();
+      win.print();
+      // Chrome fires afterprint on the frame window; Safari may not, so a long fallback timer also cleans up.
+      win.addEventListener('afterprint', () => frame.remove(), { once: true });
+      setTimeout(() => frame.remove(), 120_000);
+    };
+    frame.srcdoc = html;
+    document.body.appendChild(frame);
   };
 
   return (
