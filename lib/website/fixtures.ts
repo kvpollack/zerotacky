@@ -600,17 +600,17 @@ export const DEMO_SHOW_RECORDS: PublicShowRecord[] = [
 
 export const DEMO_GYM_LISTINGS: StrongmanGymListing[] = [
   {
-    id: 'gym-power-plant-pa',
-    slug: 'the-power-plant-gym-pa',
-    name: 'The Power Plant Gym (Demo Listing)',
-    city: 'Aston',
+    id: 'gym-keystone-forge-pa',
+    slug: 'keystone-forge-strength-pa',
+    name: 'Keystone Forge Strength (Demo Listing)',
+    city: 'Media',
     state: 'PA',
-    streetAddress: '3104 Market St, Aston, PA 19014',
-    websiteUrl: 'https://thepowerplantgym.com',
-    contactInfo: 'info@thepowerplantgym.com',
+    streetAddress: '100 Forge Rd, Media, PA 19063',
+    websiteUrl: undefined,
+    contactInfo: 'Front desk (fictional listing)',
     dayPassAvailability: 'available',
     dayPassPriceDisplay: '$25 day pass',
-    dayPassBookingUrl: 'https://thepowerplantgym.com',
+    dayPassBookingUrl: undefined,
     dropInPolicy: 'Online waiver required prior to drop-in. Strongman Saturdays open to visiting competitors.',
     dropInHours: 'Mon–Fri 6:00 AM – 9:00 PM • Sat–Sun 8:00 AM – 4:00 PM',
     implementTags: ['Log', 'Axle', 'Yoke', "Farmer's handles", 'Atlas stones', 'Sandbags', 'Kegs', 'Circus dumbbell', 'Loading platform', 'Turf or outdoor lane'],
@@ -699,7 +699,7 @@ export const DEMO_PERSONAS: DemoPersonaProfile[] = [
           equipmentSetupNotes: [
             {
               showEventLabel: 'All Out Strongfest 2026 • Ev 2: Keg Over Bar',
-              implementContext: 'Rogue 4-Post Yoke Crossbar at The Power Plant Gym',
+              implementContext: 'Rogue 4-Post Yoke Crossbar at Keystone Forge Strength',
               settingValue: '48" Crossbar (Standard Group 4 height)',
             },
           ],
@@ -810,7 +810,7 @@ export const DEMO_PERSONAS: DemoPersonaProfile[] = [
       ],
     },
     gymOwnerData: {
-      managedGymSlugs: ['the-power-plant-gym-pa'],
+      managedGymSlugs: ['keystone-forge-strength-pa'],
     },
   },
 ];

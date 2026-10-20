@@ -39,7 +39,7 @@ describe('website filters: shows & gyms', () => {
   test('filters gyms by implement tag and day-pass availability', () => {
     const basketGyms = F.filterPublicGyms(gyms, { implementTag: 'Kegs' });
     assert.equal(basketGyms.length, 1);
-    assert.equal(basketGyms[0].slug, 'the-power-plant-gym-pa');
+    assert.equal(basketGyms[0].slug, 'keystone-forge-strength-pa');
 
     const dayPassGyms = F.filterPublicGyms(gyms, { dayPassOnly: true });
     assert.equal(dayPassGyms.length, 2);

@@ -75,7 +75,7 @@ export default function GymsBrowser({
                 type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="e.g. Power Plant, York, log, stones"
+                placeholder="e.g. Keystone Forge, York, log, stones"
                 className="w-full bg-zt-inset border border-zt-border-strong rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm font-bold text-zt-text"
               />
             </div>
