@@ -131,6 +131,8 @@ export interface StrongmanGymListing {
   dropInHours?: string;
   implementTags: string[];
   equipment: GymEquipmentItem[];
+  lat?: number; // WGS84; set at save from the address (Census geocoder), zip centroid as fallback
+  lng?: number;
   hostedShowSlugs: string[];
   lastUpdatedDate: string; // YYYY-MM-DD
   isDemoListing: boolean;
@@ -208,4 +210,7 @@ export interface GymFilterQuery {
   state?: string | 'ALL';
   implementTag?: string | 'ALL';
   dayPassOnly?: boolean;
+  // Zip + radius (Kurt 10/20): when origin is set, gyms without coordinates drop out and results sort by distance.
+  origin?: { lat: number; lng: number } | null;
+  radiusMiles?: number;
 }

@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Calendar, Dumbbell, ExternalLink, MapPin, RotateCcw, Search } from 'lucide-react';
-import { filterPublicGyms } from '@/lib/website/filters';
+import { filterPublicGyms, gymDistanceMiles } from '@/lib/website/filters';
+import { DEFAULT_RADIUS_MILES, RADIUS_OPTIONS_MILES, formatMiles, normalizeZip, type GeoPoint, type RadiusMiles } from '@/lib/geo/geo';
 import type { DayPassAvailability, StrongmanGymListing } from '@/lib/website/types';
 
 interface GymsBrowserProps {
@@ -29,6 +30,31 @@ export default function GymsBrowser({
   const [implementTag, setImplementTag] = useState('ALL');
   const [dayPassOnly, setDayPassOnly] = useState(false);
 
+  // Zip + radius (Kurt 10/20). The zip resolves to a centroid through /api/zip so the table stays on the server.
+  const [zip, setZip] = useState('');
+  const [radius, setRadius] = useState<RadiusMiles>(DEFAULT_RADIUS_MILES);
+  const [origin, setOrigin] = useState<GeoPoint | null>(null);
+  const [zipState, setZipState] = useState<'idle' | 'looking' | 'ok' | 'unknown' | 'error'>('idle');
+  const zip5 = normalizeZip(zip);
+  useEffect(() => {
+    if (!zip5) { setOrigin(null); setZipState('idle'); return undefined; }
+    let alive = true;
+    setZipState('looking');
+    const t = setTimeout(() => {
+      fetch(`/api/zip/${zip5}`)
+        .then(async (r) => {
+          if (!alive) return;
+          if (r.status === 404) { setOrigin(null); setZipState('unknown'); return; }
+          if (!r.ok) throw new Error(String(r.status));
+          const j = (await r.json()) as { lat: number; lng: number };
+          setOrigin({ lat: j.lat, lng: j.lng });
+          setZipState('ok');
+        })
+        .catch(() => { if (alive) { setOrigin(null); setZipState('error'); } });
+    }, 250);
+    return () => { alive = false; clearTimeout(t); };
+  }, [zip5]);
+
   const filteredGyms = useMemo(
     () =>
       filterPublicGyms(initialGyms, {
@@ -36,19 +62,30 @@ export default function GymsBrowser({
         state: stateFilter,
         implementTag,
         dayPassOnly,
+        origin,
+        radiusMiles: radius,
       }),
-    [initialGyms, search, stateFilter, implementTag, dayPassOnly]
+    [initialGyms, search, stateFilter, implementTag, dayPassOnly, origin, radius]
   );
 
   const hasActiveFilters =
-    search.trim() !== '' || stateFilter !== 'ALL' || implementTag !== 'ALL' || dayPassOnly;
+    search.trim() !== '' || stateFilter !== 'ALL' || implementTag !== 'ALL' || dayPassOnly || zip.trim() !== '';
 
   const resetFilters = () => {
     setSearch('');
     setStateFilter('ALL');
     setImplementTag('ALL');
     setDayPassOnly(false);
+    setZip('');
   };
+
+  const zipNote =
+    zipState === 'looking' ? 'Looking up that zip…'
+    : zipState === 'unknown' ? 'We do not know that zip. Check the digits.'
+    : zipState === 'error' ? 'Zip lookup failed. Try again in a moment.'
+    : zip.trim() && !zip5 ? 'Enter a 5-digit zip.'
+    : origin ? `Showing gyms within ${radius} miles of ${zip5}, closest first.`
+    : '';
 
   return (
     <div className="space-y-5">
@@ -57,7 +94,7 @@ export default function GymsBrowser({
         aria-label="Filter gyms"
         className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-3.5"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
           <div>
             <label
               htmlFor="gym-search-input"
@@ -78,6 +115,40 @@ export default function GymsBrowser({
                 placeholder="e.g. Keystone Forge, York, log, stones"
                 className="w-full bg-zt-inset border border-zt-border-strong rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm font-bold text-zt-text"
               />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="gym-zip-input"
+              className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1"
+            >
+              Near zip
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="gym-zip-input"
+                type="text"
+                inputMode="numeric"
+                autoComplete="postal-code"
+                value={zip}
+                onChange={(e) => setZip(e.target.value.replace(/[^\d-]/g, '').slice(0, 10))}
+                placeholder="19063"
+                aria-describedby="gym-zip-note"
+                className="w-28 bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-zt-text"
+              />
+              <select
+                aria-label="Within miles"
+                value={radius}
+                onChange={(e) => setRadius(Number(e.target.value) as RadiusMiles)}
+                className="flex-1 bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
+              >
+                {RADIUS_OPTIONS_MILES.map((r) => (
+                  <option key={r} value={r}>
+                    Within {r} miles
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -126,6 +197,10 @@ export default function GymsBrowser({
           </div>
         </div>
 
+        <div id="gym-zip-note" role="status" className={`text-[11px] font-bold ${zipState === 'unknown' || zipState === 'error' ? 'text-zt-danger-text' : 'text-zt-muted'} ${zipNote ? '' : 'hidden'}`}>
+          {zipNote}
+        </div>
+
         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zt-border text-xs">
           <label className="inline-flex items-center gap-2 font-bold text-zt-text cursor-pointer">
             <input
@@ -153,8 +228,13 @@ export default function GymsBrowser({
       {filteredGyms.length === 0 ? (
         <div className="bg-zt-surface border border-zt-border rounded-2xl p-8 text-center space-y-3">
           <div className="text-base font-black text-zt-text">
-            No gyms match your current filters.
+            {origin ? `No gyms within ${radius} miles of ${zip5}.` : 'No gyms match your current filters.'}
           </div>
+          {origin && radius < 100 && (
+            <button type="button" onClick={() => setRadius(100)} className="px-3 py-1.5 rounded-xl bg-zt-surface-2 border border-zt-border-strong text-zt-text font-extrabold text-xs uppercase">
+              Widen to 100 miles
+            </button>
+          )}
           <button
             type="button"
             onClick={resetFilters}
@@ -205,6 +285,11 @@ export default function GymsBrowser({
                       {gym.city}, {gym.state} •{' '}
                       {gym.streetAddress ? gym.streetAddress : 'Street address: Not provided'}
                     </span>
+                    {origin && gymDistanceMiles(gym, origin) !== null && (
+                      <span className="ml-1 px-1.5 py-0.5 rounded bg-zt-primary/15 text-zt-primary font-black">
+                        {formatMiles(gymDistanceMiles(gym, origin) as number)}
+                      </span>
+                    )}
                   </div>
                 </div>
 

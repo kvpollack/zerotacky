@@ -1,6 +1,7 @@
 // Pure filtering, sorting, and lifecycle badge helpers for shows and gyms.
 // Unit-tested in test/website.test.mjs.
 
+import { haversineMiles } from '../geo/geo';
 import type {
   GymFilterQuery,
   PublicShowSummary,
@@ -84,8 +85,15 @@ export function filterPublicGyms(
   const state = (query.state ?? 'ALL').trim().toUpperCase();
   const implementTag = normalizeChoice(query.implementTag);
   const dayPassOnly = Boolean(query.dayPassOnly);
+  const origin = query.origin ?? null;
+  const radius = origin && query.radiusMiles && query.radiusMiles > 0 ? query.radiusMiles : null;
 
-  return gyms.filter((gym) => {
+  const kept = gyms.filter((gym) => {
+    if (origin) {
+      const d = gymDistanceMiles(gym, origin);
+      if (d === null || (radius !== null && d > radius)) return false;
+    }
+
     if (state !== 'ALL' && gym.state.toUpperCase() !== state) {
       return false;
     }
@@ -122,6 +130,14 @@ export function filterPublicGyms(
 
     return true;
   });
+
+  if (!origin) return kept;
+  return [...kept].sort((a, b) => (gymDistanceMiles(a, origin) ?? Infinity) - (gymDistanceMiles(b, origin) ?? Infinity));
+}
+
+export function gymDistanceMiles(gym: Pick<StrongmanGymListing, 'lat' | 'lng'>, origin: { lat: number; lng: number }): number | null {
+  if (typeof gym.lat !== 'number' || typeof gym.lng !== 'number') return null;
+  return haversineMiles({ lat: gym.lat, lng: gym.lng }, origin);
 }
 
 export function collectDistinctImplementTags(
