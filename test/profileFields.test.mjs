@@ -22,6 +22,10 @@ describe('profile about-you fields', () => {
     assert.equal(PR.cleanWebsite('javascript:alert(1)'), '');
     assert.equal(PR.cleanWebsite('not a url'), '');
     assert.equal(PR.cleanWebsite(''), '');
+    // Astra P-L2: never return a URL cut mid-escape; over-long URLs are dropped whole
+    const long = 'https://example.com/' + 'a'.repeat(180) + encodeURIComponent('\u{1F4AA}');
+    assert.equal(PR.cleanWebsite(long), '');
+    assert.equal(PR.cleanWebsite('https://example.com/' + 'a'.repeat(100)), 'https://example.com/' + 'a'.repeat(100));
   });
   test('socials keep only known keys with non-empty values', () => {
     const s = PR.cleanSocials({ instagram: '@a', youtube: '', bogus: 'x', website: 'b.co', x: 'https://x.com/kp' });
@@ -61,6 +65,8 @@ describe('profile about-you fields', () => {
     assert.equal(PR.favoriteLiftLabel('zzz'), '');
     assert.equal(PR.socialUrl('instagram', 'kurt'), 'https://www.instagram.com/kurt/');
     assert.equal(PR.socialUrl('website', 'https://b.co/'), 'https://b.co/');
+    assert.equal(PR.socialUrl('website', 'javascript:alert(1)'), '');
+    assert.equal(PR.socialUrl('website', 'ftp://x.y'), '');
     assert.equal(PR.FAVORITE_LIFT_OPTIONS.at(-1).id, 'other');
   });
 });
@@ -72,5 +78,81 @@ describe('avatar helpers', () => {
     assert.equal(AV.avatarProblem({ type: 'image/jpeg', size: 1000 }), null);
     assert.equal(AV.avatarObjectPath('u1', 'image/webp', 5), 'u1/avatar-5.webp');
     assert.ok(AV.avatarObjectPath('u1', 'image/png').startsWith('u1/'));
+  });
+});
+
+// Astra P-H1 (10/20): replacement order is upload -> save path -> remove old. A failed save must leave the old
+// photo in place and remove the orphaned new upload; a failed upload must touch nothing.
+describe('avatar replace ordering (P-H1)', () => {
+  function fakeStorage(opts = {}) {
+    const objects = new Set(opts.existing ?? []);
+    const log = [];
+    const sb = {
+      storage: {
+        from(bucket) {
+          assert.equal(bucket, 'avatars');
+          return {
+            async upload(path) {
+              log.push(['upload', path]);
+              if (opts.failUpload) return { error: { message: 'upload boom' } };
+              objects.add(path);
+              return { error: null };
+            },
+            async remove(paths) {
+              log.push(['remove', ...paths]);
+              if (opts.failRemove) return { error: { message: 'remove boom' } };
+              for (const p of paths) objects.delete(p);
+              return { error: null };
+            },
+          };
+        },
+      },
+    };
+    return { sb, objects, log };
+  }
+  const file = { type: 'image/png', size: 100 };
+
+  test('happy path: new object uploaded, path saved, old object removed, in that order', async () => {
+    const { sb, objects, log } = fakeStorage({ existing: ['u1/avatar-1.png'] });
+    const saved = [];
+    const path = await AV.replaceAvatar(sb, 'u1', file, 'u1/avatar-1.png', async (p) => { saved.push(p); });
+    assert.deepEqual(saved, [path]);
+    assert.deepEqual(log.map((l) => l[0]), ['upload', 'remove']);
+    assert.deepEqual(log[1], ['remove', 'u1/avatar-1.png']);
+    assert.deepEqual([...objects], [path]);
+  });
+
+  test('save fails: old object kept, new upload removed, error surfaces', async () => {
+    const { sb, objects, log } = fakeStorage({ existing: ['u1/avatar-1.png'] });
+    await assert.rejects(
+      () => AV.replaceAvatar(sb, 'u1', file, 'u1/avatar-1.png', async () => { throw new Error('db down'); }),
+      /db down/,
+    );
+    assert.ok(objects.has('u1/avatar-1.png'), 'old photo still in storage');
+    assert.equal(objects.size, 1, 'orphaned upload removed');
+    const removed = log.filter((l) => l[0] === 'remove').flatMap((l) => l.slice(1));
+    assert.ok(!removed.includes('u1/avatar-1.png'), 'old object never removed');
+  });
+
+  test('upload fails: nothing saved, nothing removed', async () => {
+    const { sb, objects, log } = fakeStorage({ existing: ['u1/avatar-1.png'], failUpload: true });
+    let saveCalls = 0;
+    await assert.rejects(() => AV.replaceAvatar(sb, 'u1', file, 'u1/avatar-1.png', async () => { saveCalls++; }), /upload boom/);
+    assert.equal(saveCalls, 0);
+    assert.deepEqual(log.map((l) => l[0]), ['upload']);
+    assert.ok(objects.has('u1/avatar-1.png'));
+  });
+
+  test('old-object removal failing is swallowed; the saved path still wins', async () => {
+    const { sb, log } = fakeStorage({ existing: ['u1/avatar-1.png'], failRemove: true });
+    const path = await AV.replaceAvatar(sb, 'u1', file, 'u1/avatar-1.png', async () => {});
+    assert.ok(path.startsWith('u1/avatar-'));
+    assert.equal(log.filter((l) => l[0] === 'remove').length, 1);
+  });
+
+  test('rejects a bad file before touching storage', async () => {
+    const { sb, log } = fakeStorage();
+    await assert.rejects(() => AV.replaceAvatar(sb, 'u1', { type: 'image/gif', size: 5 }, '', async () => {}), /JPG, PNG, or WebP/);
+    assert.equal(log.length, 0);
   });
 });

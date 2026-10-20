@@ -34,7 +34,7 @@ export default function WebsiteThemeControls() {
       <button type="button" onClick={toggleDaylight} aria-pressed={isDaylight} aria-label={isDaylight ? 'Switch to night theme' : 'Switch to daylight theme'} title={isDaylight ? 'Switch to night theme' : 'Switch to daylight theme'} className={btn}>
         {isDaylight ? <Moon className="w-3.5 h-3.5" aria-hidden="true" /> : <Sun className="w-3.5 h-3.5" aria-hidden="true" />}
       </button>
-      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-haspopup="dialog" className={`${btn} ${open ? 'border-zt-primary text-zt-text' : ''}`}>
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-haspopup="dialog" aria-label="Configure theme" title="Configure theme" className={`${btn} ${open ? 'border-zt-primary text-zt-text' : ''}`}>
         <Palette className="w-3.5 h-3.5" aria-hidden="true" />
         <span className="hidden sm:inline">Configure</span>
       </button>

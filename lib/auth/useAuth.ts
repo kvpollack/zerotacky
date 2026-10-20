@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { accountRedirectUrl, getSupabase } from './supabaseBrowser';
 import { fetchProfile, saveProfile, type Profile, type ProfilePatch } from './profile';
-import { avatarPublicUrl, removeAvatar, uploadAvatar } from './avatar';
+import { avatarPublicUrl, removeAvatar, replaceAvatar } from './avatar';
 
 // Session + profile for the current tab. `enabled` is false on builds without Supabase env, in which case
 // everything is null and the actions throw a plain message. Token refreshes flow through onAuthStateChange,
@@ -163,10 +163,14 @@ export function useAuth(): AuthState {
     if (!sb) throw new Error(NOT_CONFIGURED);
     const uid = userIdRef.current;
     if (!uid) throw new Error('Sign in first.');
-    const path = await uploadAvatar(sb, uid, file, profile?.avatar_path ?? '');
-    const p = await saveProfile(sb, uid, { avatar_path: path });
-    setProfile(p);
-    return p;
+    // Astra P-H1: upload, save the path, then remove the old object; a failed save removes the new upload instead.
+    let saved: Profile | null = null;
+    await replaceAvatar(sb, uid, file, profile?.avatar_path ?? '', async (path) => {
+      saved = await saveProfile(sb, uid, { avatar_path: path });
+    });
+    if (!saved) throw new Error('Photo saved to storage but the profile did not update.');
+    setProfile(saved);
+    return saved;
   }, [sb, profile?.avatar_path]);
 
   const clearAvatar = useCallback(async () => {

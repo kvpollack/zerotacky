@@ -412,7 +412,7 @@ export default function AccountClient() {
                     )}
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <input ref={fileRef} id="profile-photo" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => void onPickAvatar(e.target.files?.[0])} />
+                    <input ref={fileRef} id="profile-photo" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={avatarBusy || busy} onChange={(e) => void onPickAvatar(e.target.files?.[0])} />
                     <label htmlFor="profile-photo" className={`${quietBtn} cursor-pointer ${avatarBusy || busy ? 'opacity-40 pointer-events-none' : ''}`}>
                       <Camera className="w-3.5 h-3.5" aria-hidden="true" /> {avatarBusy ? 'Uploading…' : avatarSrc ? 'Change photo' : 'Add photo'}
                     </label>
@@ -500,7 +500,7 @@ export default function AccountClient() {
                         <input type="checkbox" checked={about.trainer_online} onChange={(e) => patchAbout({ trainer_online: e.target.checked })} className="w-4 h-4 accent-[var(--zt-primary)]" />
                         Online clients
                       </label>
-                      <p className="text-[11px] text-zt-muted">A training directory is on the roadmap. For now this only marks you as a trainer.</p>
+                      <p className="text-[11px] text-zt-muted">You can save your coaching details here. Other people cannot find them in a directory yet; that is on the roadmap.</p>
                     </div>
                   )}
                 </div>
@@ -521,7 +521,7 @@ export default function AccountClient() {
             )}
 
             {notice && <Notice {...notice} />}
-            <button type="submit" disabled={busy || !dirty} className={primaryBtn}>
+            <button type="submit" disabled={busy || avatarBusy || !dirty} className={primaryBtn}>
               <Save className="w-3.5 h-3.5" aria-hidden="true" /> Save profile
             </button>
           </form>
