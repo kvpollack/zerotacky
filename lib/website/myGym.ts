@@ -187,6 +187,23 @@ export async function zipLatLng(zip: string, fetchImpl: typeof fetch = fetch): P
   }
 }
 
+// Street-level pin via /api/geocode (Census), zip centroid when the street does not resolve. Null when neither does.
+export async function geocodeAddress(
+  a: { street_address: string; city: string; state: string; zip: string },
+  fetchImpl: (url: string) => Promise<{ ok: boolean; json: () => Promise<unknown> }> = fetch,
+): Promise<{ lat: number; lng: number; source: 'street' | 'zip' } | null> {
+  const q = new URLSearchParams({ street: a.street_address ?? '', city: a.city ?? '', state: a.state ?? '', zip: a.zip ?? '' });
+  if (!q.get('street') && !q.get('zip')) return null;
+  try {
+    const res = await fetchImpl(`/api/geocode?${q}`);
+    if (!res.ok) return null;
+    const j = (await res.json()) as { lat?: number; lng?: number; source?: string };
+    return typeof j.lat === 'number' && typeof j.lng === 'number' ? { lat: j.lat, lng: j.lng, source: j.source === 'street' ? 'street' : 'zip' } : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function saveMyGym(sb: SupabaseClient, id: string, patch: GymPatch, pin: { lat: number; lng: number } | null): Promise<MyGymRow> {
   const body: Record<string, unknown> = { ...patch };
   if (pin) { body.lat = pin.lat; body.lng = pin.lng; }

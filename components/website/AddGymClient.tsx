@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Dumbbell, Send } from 'lucide-react';
 import { useAuth } from '@/lib/auth/useAuth';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
-import { GYM_LIMITS, GYM_TYPES, addMyGym, cleanAddGym, zipLatLng, type AddGymInput, type MyGymRow } from '@/lib/website/myGym';
+import { GYM_LIMITS, GYM_TYPES, addMyGym, cleanAddGym, geocodeAddress, type AddGymInput, type MyGymRow } from '@/lib/website/myGym';
 
 // Add my gym (017, 10/21): a signed-in owner lists a gym that is not in the directory. The row lands as `pending`
 // with the caller as owner plus a claim for the approval queue; it goes public when an admin approves. Equipment,
@@ -86,7 +86,7 @@ export default function AddGymClient() {
     if (!sb) { setProblem('Accounts are not configured on this build.'); return; }
     setBusy(true);
     try {
-      const pin = c.input.zip ? await zipLatLng(c.input.zip) : null;
+      const pin = await geocodeAddress(c.input);
       const row = await addMyGym(sb, c.input, pin);
       setDone(row);
     } catch (err) {
