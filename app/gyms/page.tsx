@@ -5,6 +5,9 @@ import { listPublicGyms } from '@/lib/website/data';
 import { collectDistinctImplementTags, collectDistinctStates } from '@/lib/website/filters';
 import { sortEquipmentTags } from '@/lib/website/gymEquipment';
 
+// Directory rows are loaded by scripts outside deploys; refresh every 5 min.
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: 'Gym Directory — ZeroTacky',
   description:

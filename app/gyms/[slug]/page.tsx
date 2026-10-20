@@ -5,6 +5,9 @@ import { ArrowLeft, Calendar, Dumbbell, ExternalLink, MapPin } from 'lucide-reac
 import WebsiteShell from '@/components/website/WebsiteShell';
 import { getPublicGymBySlug, listPublicShows } from '@/lib/website/data';
 
+// Directory rows are loaded by scripts outside deploys; refresh every 5 min.
+export const revalidate = 300;
+
 interface GymDetailPageProps {
   params: Promise<{ slug: string }>;
 }
