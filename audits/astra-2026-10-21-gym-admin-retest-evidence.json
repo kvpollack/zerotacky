@@ -1,0 +1,755 @@
+{
+  "final-revision.json": {
+    "sha": "87c3241cfec9b9425ba2e1717163445441cde3ac",
+    "tracked_blobs": 277,
+    "mismatches": []
+  },
+  "tests-exit.json": {
+    "exit": 0
+  },
+  "tsc-exit.json": {
+    "exit": 0
+  },
+  "create-evidence.json": {
+    "status": 200,
+    "body": {
+      "id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+      "slug": "astra-fix-retest-1021-media-pa",
+      "name": "Astra Fix Retest 1021",
+      "status": "pending",
+      "owner_id": "745d4f4f-6097-4aa4-b6c1-99b75abb728a",
+      "gym_type": "mixed",
+      "street_address": "1 Fictional Audit Lane",
+      "city": "Media",
+      "state": "PA",
+      "zip": "19063",
+      "lat": null,
+      "lng": null,
+      "website_url": "https://astra-fix.invalid",
+      "phone": "",
+      "instagram": "",
+      "contact": "Disposable staging fix retest",
+      "day_pass_availability": "not_provided",
+      "day_pass_price": "",
+      "day_pass_url": "",
+      "drop_in_policy": "",
+      "drop_in_hours": "",
+      "equipment": [],
+      "equipment_notes": {},
+      "socials": {},
+      "source_url": "owner-submitted",
+      "source_evidence": "Submitted by the owner from My Gym; awaiting review.",
+      "confidence": "medium",
+      "last_verified": "2026-10-20",
+      "created_at": "2026-10-20T13:03:08.160498+00:00",
+      "updated_at": "2026-10-20T13:03:08.160498+00:00"
+    }
+  },
+  "api-evidence.json": {
+    "pendingOwnerEdit": {
+      "status": 200,
+      "body": [
+        {
+          "id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+          "name": "Astra Fix Retest API Saved",
+          "status": "pending",
+          "lat": null,
+          "lng": null,
+          "confidence": "high",
+          "last_verified": "2026-10-20"
+        }
+      ]
+    },
+    "pendingPersist": {
+      "status": 200,
+      "body": [
+        {
+          "id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+          "name": "Astra Fix Retest API Saved",
+          "status": "pending"
+        }
+      ]
+    },
+    "anonPendingRead": {
+      "status": 200,
+      "body": []
+    },
+    "otherPendingRead": {
+      "status": 200,
+      "body": []
+    },
+    "ownerIdRead": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.gyms TO authenticated;",
+        "message": "permission denied for table gyms"
+      }
+    },
+    "otherPendingUpdate": {
+      "status": 200,
+      "body": []
+    },
+    "invalidPatch": {
+      "status": 400,
+      "body": {
+        "code": "23514",
+        "details": null,
+        "hint": null,
+        "message": "new row for relation \"gyms\" violates check constraint \"gyms_latlng_chk\""
+      }
+    },
+    "halfPinPatch": {
+      "status": 400,
+      "body": {
+        "code": "23514",
+        "details": null,
+        "hint": null,
+        "message": "new row for relation \"gyms\" violates check constraint \"gyms_latlng_chk\""
+      }
+    },
+    "nullPinPatch": {
+      "status": 200,
+      "body": [
+        {
+          "id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+          "name": "Astra Fix Retest API Saved",
+          "status": "pending",
+          "lat": null,
+          "lng": null,
+          "confidence": "high",
+          "last_verified": "2026-10-20"
+        }
+      ]
+    },
+    "validPinPatch": {
+      "status": 200,
+      "body": [
+        {
+          "id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+          "name": "Astra Fix Retest API Saved",
+          "status": "pending",
+          "lat": 39.92,
+          "lng": -75.41,
+          "confidence": "high",
+          "last_verified": "2026-10-20"
+        }
+      ]
+    },
+    "typedDomain": {
+      "status": 204,
+      "body": ""
+    },
+    "malformed": {
+      "status": 204,
+      "body": ""
+    },
+    "report": {
+      "status": 204,
+      "body": ""
+    },
+    "queueBefore": [
+      {
+        "id": "b55f424f-661f-499e-8879-615a939f1825",
+        "kind": "claim",
+        "status": "pending",
+        "name": "Astra Staging",
+        "email": "astra.staging@zerotacky.com",
+        "role": "Owner (new listing)",
+        "message": "ASTRA FIX RETEST ONLY. Remove after testing.",
+        "user_id": "745d4f4f-6097-4aa4-b6c1-99b75abb728a",
+        "created_at": "2026-10-20T13:03:08.160498+00:00",
+        "gym_id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+        "gym_slug": "astra-fix-retest-1021-media-pa",
+        "gym_name": "Astra Fix Retest API Saved",
+        "gym_city": "Media",
+        "gym_state": "PA",
+        "gym_status": "pending",
+        "gym_website": "https://astra-fix.invalid",
+        "gym_source_url": "owner-submitted",
+        "claimant_display_name": "Astra Staging",
+        "account_email": "astra.staging@zerotacky.com",
+        "pending_claims_on_gym": 3
+      },
+      {
+        "id": "378572e5-ea82-4020-b1bc-ce1b30782f78",
+        "kind": "claim",
+        "status": "pending",
+        "name": "Astra Retest typedDomain",
+        "email": "owner@astra-fix.invalid",
+        "role": "Owner",
+        "message": "Disposable fix-retest typedDomain",
+        "user_id": "745d4f4f-6097-4aa4-b6c1-99b75abb728a",
+        "created_at": "2026-10-20T13:03:45.378364+00:00",
+        "gym_id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+        "gym_slug": "astra-fix-retest-1021-media-pa",
+        "gym_name": "Astra Fix Retest API Saved",
+        "gym_city": "Media",
+        "gym_state": "PA",
+        "gym_status": "pending",
+        "gym_website": "https://astra-fix.invalid",
+        "gym_source_url": "owner-submitted",
+        "claimant_display_name": "Astra Staging",
+        "account_email": "astra.staging@zerotacky.com",
+        "pending_claims_on_gym": 3
+      },
+      {
+        "id": "21494f23-34be-423a-9cbb-3a31bc6cb807",
+        "kind": "claim",
+        "status": "pending",
+        "name": "Astra Retest malformed",
+        "email": "owner@gym.com@evil.net",
+        "role": "Owner",
+        "message": "Disposable fix-retest malformed",
+        "user_id": "745d4f4f-6097-4aa4-b6c1-99b75abb728a",
+        "created_at": "2026-10-20T13:03:45.568836+00:00",
+        "gym_id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+        "gym_slug": "astra-fix-retest-1021-media-pa",
+        "gym_name": "Astra Fix Retest API Saved",
+        "gym_city": "Media",
+        "gym_state": "PA",
+        "gym_status": "pending",
+        "gym_website": "https://astra-fix.invalid",
+        "gym_source_url": "owner-submitted",
+        "claimant_display_name": "Astra Staging",
+        "account_email": "astra.staging@zerotacky.com",
+        "pending_claims_on_gym": 3
+      },
+      {
+        "id": "7f1ed210-3ecb-41e0-866f-051b23467e1a",
+        "kind": "report",
+        "status": "pending",
+        "name": "Astra Retest report",
+        "email": "astra-retest-report@example.invalid",
+        "role": "Owner",
+        "message": "Disposable fix-retest report",
+        "user_id": "745d4f4f-6097-4aa4-b6c1-99b75abb728a",
+        "created_at": "2026-10-20T13:03:45.773883+00:00",
+        "gym_id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+        "gym_slug": "astra-fix-retest-1021-media-pa",
+        "gym_name": "Astra Fix Retest API Saved",
+        "gym_city": "Media",
+        "gym_state": "PA",
+        "gym_status": "pending",
+        "gym_website": "https://astra-fix.invalid",
+        "gym_source_url": "owner-submitted",
+        "claimant_display_name": "Astra Staging",
+        "account_email": "astra.staging@zerotacky.com",
+        "pending_claims_on_gym": 3
+      }
+    ],
+    "nonadminQueue": {
+      "status": 200,
+      "body": []
+    },
+    "closeHelperAnon": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_close_gym_claims"
+      }
+    },
+    "closeHelperNonadmin": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_close_gym_claims"
+      }
+    },
+    "invalidAdd": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "that is three gyms today; email us if you run more than that"
+      }
+    },
+    "halfPinAdd": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "that is three gyms today; email us if you run more than that"
+      }
+    },
+    "parallelAdd": [
+      {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "that is three gyms today; email us if you run more than that"
+        }
+      },
+      {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "that is three gyms today; email us if you run more than that"
+        }
+      }
+    ],
+    "overCap": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "that is three gyms today; email us if you run more than that"
+      }
+    }
+  },
+  "browser-evidence.json": {
+    "before": {
+      "name": "Astra Fix Retest API Saved"
+    },
+    "pendingSave": {
+      "name": "Astra Fix Retest Browser Saved",
+      "notice": "Saved. Your listing is still waiting for review."
+    },
+    "reload": {
+      "name": "Astra Fix Retest Browser Saved",
+      "row": {
+        "status": 200,
+        "body": [
+          {
+            "id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+            "name": "Astra Fix Retest Browser Saved",
+            "status": "pending",
+            "lat": 39.92,
+            "lng": -75.41
+          }
+        ]
+      }
+    },
+    "unresolvedAddress": {
+      "geocode": {
+        "status": 404,
+        "body": {
+          "error": "No match"
+        }
+      },
+      "notice": "Saved. Your listing is still waiting for review. We could not place the new address on the map, so it will not show in distance searches until the address or zip is corrected.",
+      "row": {
+        "status": 200,
+        "body": [
+          {
+            "id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+            "street_address": "999999 Astra Nonexistent Audit Lane",
+            "zip": "00000",
+            "lat": null,
+            "lng": null,
+            "status": "pending"
+          }
+        ]
+      }
+    },
+    "addressReload": {
+      "street": "999999 Astra Nonexistent Audit Lane",
+      "zip": "00000"
+    },
+    "adminEmailCards": {
+      "typedDomain": "NEW LISTING\nAstra Fix Retest Browser Saved\nMedia, PA\n3 CLAIMS ON THIS GYM\nastra-fix.invalid\nfiled 10/20/2026, 9:03:45 AM\nCLAIMANT\nAstra Retest typedDomain (account: Astra Staging)\nastra.staging@zerotacky.com (account)\nowner@astra-fix.invalid (typed into the form, unverified)\nOwner\nACCOUNT EMAIL IS NOT ON THE SITE DOMAIN\nMESSAGE\n\nDisposable fix-retest typedDomain\n\nAPPROVE AND PUBLISH\nREJECT",
+      "malformed": "NEW LISTING\nAstra Fix Retest Browser Saved\nMedia, PA\n3 CLAIMS ON THIS GYM\nastra-fix.invalid\nfiled 10/20/2026, 9:03:45 AM\nCLAIMANT\nAstra Retest malformed (account: Astra Staging)\nastra.staging@zerotacky.com (account)\nowner@gym.com@evil.net (typed into the form, unverified)\nOwner\nACCOUNT EMAIL IS NOT ON THE SITE DOMAIN\nMESSAGE\n\nDisposable fix-retest malformed\n\nAPPROVE AND PUBLISH\nREJECT"
+    },
+    "anonPendingDetail": {
+      "status": 404
+    },
+    "publicDirectory": {
+      "intro": "Gym Directory\n169 GYMS \u2022 49 STATES + DC\n\nStrongman and powerlifting gyms you can actually train at. Filter by distance from your zip, equipment, and day-pass policy. Missing details are marked Not provided. Each listing was built from the gym\u2019s own website and stays marked Unclaimed until the owner takes it over. Gym owner? Open your gym and tap Claim this gym.\n\nSEARCH GYM, CITY, OR EQUIPMENT\nNEAR ZIP\nWithin 25 miles\nWithin 50 miles\nWithin 100 miles\nSTATE\nAll States\nAK\nAL\nAR\nAZ\nCA\nCO\nCT\nDC\nDE\nFL\nGA\nHI\nIA\nID\nIL\nIN\nKS\nKY\nLA\nMA\nMD\nME\nMI\nMN\nMO\nMS\nMT\nNC\nNE\nNH\nNJ\nNM\nNV\nNY\nOH\nOK\nOR\nPA\nRI\nSC\nSD\nTN\nTX\nUT\nVA\nVT\nWA\nWI\nWV\nWY\nFILTER BY EQUIPMENT\nAny equipment\nLog\nAxle\nYoke\nFarmer's handles\nFrame carry\nAtlas stones\nSandbags\nKegs\nCircus dumbbell\nHusafell stone\nConan's wheel\nViking press\nLoading platform\nCar deadlift frame\nTire\nTurf or outdoor lane\nCompetition bars\nCalibrated plates\nMonolift\nCombo rack\nDeadlift platform\nOnly show gyms with day-pass or appointment drop-in availability\nDAY PASS AVAILABL",
+      "auditCards": 0
+    },
+    "errors": [
+      "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+      "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+      "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+      "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+    ]
+  },
+  "public-evidence.json": {
+    "http": [
+      {
+        "path": "/icon-light-16x16.png",
+        "status": 200,
+        "dimensions": [
+          16,
+          16
+        ],
+        "bytes": 471
+      },
+      {
+        "path": "/icon-dark-16x16.png",
+        "status": 200,
+        "dimensions": [
+          16,
+          16
+        ],
+        "bytes": 490
+      },
+      {
+        "path": "/gyms",
+        "status": 200,
+        "iconLinks": [
+          "<link rel=\"icon\" href=\"/icon-light-16x16.png\" media=\"(prefers-color-scheme: light)\" sizes=\"16x16\"/>",
+          "<link rel=\"icon\" href=\"/icon-dark-16x16.png\" media=\"(prefers-color-scheme: dark)\" sizes=\"16x16\"/>"
+        ],
+        "coverage": [
+          "bg-zt-inset text-zt-text-2 border border-zt-border\">169<!-- --> gyms \u2022 <!-- -->49<!-- --> states<!-- --> + DC</span></div><p class=\"text-xs sm:text-sm text-zt-text-2 max-w-3xl\"",
+          "order-strong text-zt-muted hover:text-zt-primary hover:border-zt-primary\" href=\"/gyms/fit-statesboro-statesboro-ga/claim\">Unclaimed</a></span></div><div><h2 class=\"text-lg font",
+          "-black text-zt-text\"><a class=\"hover:text-zt-primary\" href=\"/gyms/fit-statesboro-statesboro-ga\">Fit Statesboro</a></h2><div class=\"text-xs font-bold text-zt-muted flex"
+        ]
+      }
+    ],
+    "publicCounts": {
+      "status": 200,
+      "gyms": 169,
+      "states": 49,
+      "dc": true
+    }
+  },
+  "source-evidence.json": {
+    "email": [
+      {
+        "email": "owner@gym.com@evil.net",
+        "site": "https://gym.com",
+        "result": "mismatch"
+      },
+      {
+        "email": "a@mail.gym.com",
+        "site": "https://gym.com",
+        "result": "related"
+      },
+      {
+        "email": "a@gym.com.evil.net",
+        "site": "https://gym.com",
+        "result": "mismatch"
+      },
+      {
+        "email": "a@gym.com",
+        "site": "https://gym.com",
+        "result": "match"
+      },
+      {
+        "email": "a@tenant.github.io",
+        "site": "https://github.io",
+        "result": "related"
+      }
+    ],
+    "geocode": [
+      {
+        "label": "sameNumberWrongTownComponents",
+        "status": 200,
+        "body": {
+          "lat": 41.87,
+          "lng": -71.39,
+          "source": "zip"
+        }
+      },
+      {
+        "label": "sameNumberWrongTownOriginalMock",
+        "status": 200,
+        "body": {
+          "lat": 30,
+          "lng": -99,
+          "source": "street"
+        }
+      },
+      {
+        "label": "valid",
+        "status": 200,
+        "body": {
+          "lat": 41.85886,
+          "lng": -71.37433,
+          "source": "street"
+        }
+      }
+    ],
+    "save": [
+      {
+        "label": "clear",
+        "sent": {
+          "name": "Astra fix mock",
+          "lat": null,
+          "lng": null
+        },
+        "row": {
+          "id": "audit",
+          "lat": null,
+          "lng": null
+        }
+      },
+      {
+        "label": "keep",
+        "sent": {
+          "name": "Astra fix mock"
+        },
+        "row": {
+          "id": "audit",
+          "lat": 40,
+          "lng": -75
+        }
+      },
+      {
+        "label": "noRows",
+        "sent": {
+          "name": "Astra fix mock"
+        },
+        "error": "The save did not go through. Reload the page and try again; if it keeps happening, tell us."
+      }
+    ]
+  },
+  "denial-evidence.json": {
+    "anon": {
+      "zt_is_admin": {
+        "status": 401,
+        "body": {
+          "code": "42501",
+          "details": null,
+          "hint": null,
+          "message": "permission denied for function zt_is_admin"
+        }
+      },
+      "zt_require_admin": {
+        "status": 401,
+        "body": {
+          "code": "42501",
+          "details": null,
+          "hint": null,
+          "message": "permission denied for function zt_require_admin"
+        }
+      },
+      "zt_list_gym_claims": {
+        "status": 401,
+        "body": {
+          "code": "42501",
+          "details": null,
+          "hint": null,
+          "message": "permission denied for function zt_list_gym_claims"
+        }
+      },
+      "zt_approve_gym_claim": {
+        "status": 401,
+        "body": {
+          "code": "42501",
+          "details": null,
+          "hint": null,
+          "message": "permission denied for function zt_approve_gym_claim"
+        }
+      },
+      "zt_reject_gym_claim": {
+        "status": 401,
+        "body": {
+          "code": "42501",
+          "details": null,
+          "hint": null,
+          "message": "permission denied for function zt_reject_gym_claim"
+        }
+      },
+      "zt_resolve_gym_report": {
+        "status": 401,
+        "body": {
+          "code": "42501",
+          "details": null,
+          "hint": null,
+          "message": "permission denied for function zt_resolve_gym_report"
+        }
+      },
+      "zt_remove_gym": {
+        "status": 401,
+        "body": {
+          "code": "42501",
+          "details": null,
+          "hint": null,
+          "message": "permission denied for function zt_remove_gym"
+        }
+      },
+      "adminsRead": {
+        "status": 401,
+        "body": {
+          "code": "42501",
+          "details": null,
+          "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.zt_admins TO anon;",
+          "message": "permission denied for table zt_admins"
+        }
+      }
+    },
+    "nonadmin": {
+      "zt_is_admin": {
+        "status": 200,
+        "body": false
+      },
+      "zt_require_admin": {
+        "status": 403,
+        "body": {
+          "code": "42501",
+          "details": null,
+          "hint": null,
+          "message": "permission denied for function zt_require_admin"
+        }
+      },
+      "zt_list_gym_claims": {
+        "status": 200,
+        "body": []
+      },
+      "zt_approve_gym_claim": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "admin only"
+        }
+      },
+      "zt_reject_gym_claim": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "admin only"
+        }
+      },
+      "zt_resolve_gym_report": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "admin only"
+        }
+      },
+      "zt_remove_gym": {
+        "status": 400,
+        "body": {
+          "code": "P0001",
+          "details": null,
+          "hint": null,
+          "message": "admin only"
+        }
+      },
+      "adminsRead": {
+        "status": 403,
+        "body": {
+          "code": "42501",
+          "details": null,
+          "hint": "Grant the required privileges to the current role with: GRANT SELECT ON public.zt_admins TO authenticated;",
+          "message": "permission denied for table zt_admins"
+        }
+      }
+    }
+  },
+  "cleanup-evidence.json": {
+    "before": {
+      "status": 200,
+      "body": [
+        {
+          "id": "b55f424f-661f-499e-8879-615a939f1825",
+          "gym_id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+          "kind": "claim",
+          "status": "pending"
+        },
+        {
+          "id": "378572e5-ea82-4020-b1bc-ce1b30782f78",
+          "gym_id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+          "kind": "claim",
+          "status": "pending"
+        },
+        {
+          "id": "21494f23-34be-423a-9cbb-3a31bc6cb807",
+          "gym_id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+          "kind": "claim",
+          "status": "pending"
+        },
+        {
+          "id": "7f1ed210-3ecb-41e0-866f-051b23467e1a",
+          "gym_id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+          "kind": "report",
+          "status": "pending"
+        }
+      ]
+    },
+    "removed": [
+      {
+        "id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+        "result": {
+          "status": 204,
+          "body": ""
+        }
+      }
+    ],
+    "after": {
+      "status": 200,
+      "body": [
+        {
+          "id": "b55f424f-661f-499e-8879-615a939f1825",
+          "gym_id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+          "kind": "claim",
+          "status": "rejected"
+        },
+        {
+          "id": "378572e5-ea82-4020-b1bc-ce1b30782f78",
+          "gym_id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+          "kind": "claim",
+          "status": "rejected"
+        },
+        {
+          "id": "21494f23-34be-423a-9cbb-3a31bc6cb807",
+          "gym_id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+          "kind": "claim",
+          "status": "rejected"
+        },
+        {
+          "id": "7f1ed210-3ecb-41e0-866f-051b23467e1a",
+          "gym_id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+          "kind": "report",
+          "status": "approved"
+        }
+      ]
+    },
+    "pendingQueue": [],
+    "publicRows": {
+      "status": 200,
+      "body": []
+    },
+    "ownerTableRows": {
+      "status": 200,
+      "body": []
+    },
+    "userOwned": {
+      "status": 200,
+      "body": []
+    },
+    "preexistingAdminGymsUnchanged": true,
+    "userOwnedRestored": true
+  },
+  "created.json": [
+    {
+      "id": "612d4840-5c49-4f13-9afe-3e4dafabba26",
+      "slug": "astra-fix-retest-1021-media-pa",
+      "owner_id": "745d4f4f-6097-4aa4-b6c1-99b75abb728a"
+    }
+  ],
+  "tests": {
+    "passed": 293,
+    "failed": 0,
+    "files": 25,
+    "log_sha256": "b5fb0f6d2b9d0580ae4ee1fd26a0d678f10061e5dfc71a76715c35ccfcd325db"
+  },
+  "local_session_cleanup": {
+    "removed": [
+      "user-session.secret.json",
+      "admin-session.secret.json"
+    ],
+    "supplied_credentials_untouched": true
+  }
+}
