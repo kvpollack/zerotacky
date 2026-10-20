@@ -1,4 +1,5 @@
 import React from 'react';
+import Wordmark from '@/components/brand/Wordmark';
 import Link from 'next/link';
 import WebsiteThemeFrame from './WebsiteThemeFrame';
 import WebsiteThemeControls from './WebsiteThemeControls';
@@ -35,8 +36,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
               href="/website"
               className="text-base sm:text-lg font-black tracking-wider uppercase text-zt-text flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-zt-primary rounded-lg"
             >
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-zt-primary" aria-hidden="true" />
-              <span>ZEROTACKY</span>
+              <Wordmark />
             </Link>
             <span className="hidden sm:inline-block text-xs font-bold text-zt-muted">
               Your one stop for strongman: shows, registration, live scoring, and a gym directory.
@@ -84,7 +84,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
       <footer className="border-t border-zt-border bg-zt-surface mt-12 py-6 px-4 text-xs text-zt-muted">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="font-black uppercase tracking-wider text-zt-text">ZEROTACKY</div>
+            <div className="font-black uppercase tracking-wider text-zt-text"><Wordmark /></div>
             <p className="text-zt-muted">
               Your one stop for strongman: shows, registration, live scoring, and a gym directory.
             </p>
