@@ -133,6 +133,13 @@ export function isRegistrationOpen(status: MeetListing['registrationStatus']): b
   return status === 'open' || status === 'waitlist';
 }
 
+// "currently closed (closed)" read as a stutter on the live registration page (prod sweep 10/21); only statuses
+// that add information (day of only, not applicable, not provided) keep the parenthetical.
+function closedMessage(name: string, status: MeetListing['registrationStatus']): string {
+  const words = status.replace(/_/g, ' ');
+  return status === 'closed' ? `Registration for ${name} is currently closed.` : `Registration for ${name} is currently closed (${words}).`;
+}
+
 // Emergency contact needs a name (letters) and a phone number (at least 7 digits).
 export function validateEmergencyContact(value: string): string | null {
   const trimmed = (value ?? '').trim();
@@ -225,7 +232,7 @@ export function validateRegistrationInput(
   meet: PublicRegistrationMeet
 ): string | null {
   if (!isRegistrationOpen(meet.listing.registrationStatus)) {
-    return `Registration for ${meet.name} is currently closed (${meet.listing.registrationStatus.replace(/_/g, ' ')}).`;
+    return closedMessage(meet.name, meet.listing.registrationStatus);
   }
 
   const trimmedName = (input.athleteName ?? '').trim();
@@ -270,7 +277,7 @@ export function decideRegistrationOutcome(
   if (!isRegistrationOpen(registrationStatus)) {
     return {
       status: null,
-      error: `Registration for ${meet.name} is currently closed (${registrationStatus.replace(/_/g, ' ')}).`,
+      error: closedMessage(meet.name, registrationStatus),
     };
   }
   if (registrationStatus === 'waitlist') {

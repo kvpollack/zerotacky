@@ -234,7 +234,7 @@ export default async function WebsiteLandingPage() {
         </div>
       </section>
 
-      {/* Secondary Entry Point: Gym Directory & Account Preview */}
+      {/* Secondary Entry Point: Gym Directory & Account */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-zt-surface border border-zt-border rounded-2xl p-5 flex flex-col justify-between space-y-4">
           <div className="space-y-1.5">
@@ -265,14 +265,14 @@ export default async function WebsiteLandingPage() {
           <div className="space-y-1.5">
             <div className="text-xs font-black uppercase tracking-wider text-zt-primary flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4" aria-hidden="true" />
-              <span>Unified Account Preview</span>
+              <span>One Account</span>
             </div>
             <h2 className="text-lg font-black text-zt-text">
-              Athlete, Promoter &amp; Gym Owner Capabilities
+              Athlete, Promoter &amp; Gym Owner in One Sign-In
             </h2>
             <p className="text-xs text-zt-text-2 leading-relaxed">
-              One person can compete, promote shows, and manage a gym listing. Preview the dashboard
-              concepts with a Demo Persona switcher without touching meet-day device state.
+              One person can compete, promote shows, and manage a gym listing. Sign in once to run your
+              meets, claim your gym, pick a username and show up in the Athletes list.
             </p>
           </div>
           <div>
@@ -280,7 +280,7 @@ export default async function WebsiteLandingPage() {
               href="/website/account"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zt-inset border border-zt-border-strong text-zt-text font-black text-xs uppercase tracking-wider hover:border-zt-primary"
             >
-              Open Account Preview →
+              Open your account →
             </Link>
           </div>
         </div>
