@@ -295,7 +295,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
           <div className="bg-zt-inset border border-zt-border rounded-xl p-2.5">
             <div className="text-[10px] font-extrabold uppercase text-zt-muted">Registration Deadline</div>
             <div className="font-black text-zt-text mt-0.5">
-              {meet.listing.registrationDeadline || 'Open until filled'}
+              {meet.listing.registrationDeadline || (regOpen ? 'Open until filled' : 'Closed')}
             </div>
           </div>
           <div className="bg-zt-inset border border-zt-border rounded-xl p-2.5">
@@ -336,7 +336,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
             <Lock className="w-6 h-6" aria-hidden="true" />
           </div>
           <h2 className="text-xl font-black text-zt-text">
-            {regOpen ? 'Registration is not taking entries' : `Registration is Closed (${life.registrationLabel})`}
+            {regOpen ? 'Registration is not taking entries' : life.registrationLabel}
           </h2>
           <p className="text-xs sm:text-sm text-zt-text-2 max-w-md mx-auto">{gate.error}</p>
           <p className="text-xs text-zt-text-2 max-w-md mx-auto">

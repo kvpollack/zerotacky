@@ -451,7 +451,7 @@ export default function AccountClient() {
                 <legend className="sr-only">About you</legend>
                 <div>
                   <h3 className="text-sm font-black uppercase text-zt-text">About you</h3>
-                  <p className="text-[11px] text-zt-muted">All optional. For now this shows only on your account page; athlete pages and a training directory are on the roadmap.</p>
+                  <p className="text-[11px] text-zt-muted">All optional. Shows here, and on your public athlete page if you turn that on below.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
