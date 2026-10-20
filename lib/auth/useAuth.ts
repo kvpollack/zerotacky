@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { accountRedirectUrl, getSupabase } from './supabaseBrowser';
 import { readSyncEnv } from '@/lib/sync/client';
-import { fetchProfile, saveProfile, type Profile, type ProfilePatch } from './profile';
+import { fetchProfile, saveProfile, setUsername as rpcSetUsername, usernameAvailable as rpcUsernameAvailable, type Profile, type ProfilePatch } from './profile';
 import { avatarPublicUrl, removeAvatar, replaceAvatar } from './avatar';
 
 // Session + profile for the current tab. `enabled` is false on builds without Supabase env, in which case
@@ -29,6 +29,9 @@ export interface AuthState {
   signOut: () => Promise<void>;
   updateProfile: (patch: ProfilePatch) => Promise<Profile>;
   refreshProfile: () => Promise<void>;
+  // Username (020): set / change / clear through zt_set_username, which owns uniqueness and the 30-day hold.
+  setUsername: (username: string | null) => Promise<Profile | null>;
+  usernameAvailable: (username: string) => Promise<boolean>;
   // Profile photo (013): upload replaces the previous file and writes avatar_path; remove clears both.
   setAvatar: (file: File) => Promise<Profile>;
   clearAvatar: () => Promise<Profile>;
@@ -164,6 +167,21 @@ export function useAuth(): AuthState {
 
   const refreshProfile = useCallback(() => loadProfile(userIdRef.current), [loadProfile]);
 
+  const setUsername = useCallback(async (username: string | null) => {
+    if (!sb) throw new Error(NOT_CONFIGURED);
+    const uid = userIdRef.current;
+    if (!uid) throw new Error('Sign in first.');
+    await rpcSetUsername(sb, username);
+    const p = await fetchProfile(sb, uid);
+    setProfile(p);
+    return p;
+  }, [sb]);
+
+  const usernameAvailable = useCallback(async (username: string) => {
+    if (!sb) throw new Error(NOT_CONFIGURED);
+    return rpcUsernameAvailable(sb, username);
+  }, [sb]);
+
   const setAvatar = useCallback(async (file: File) => {
     if (!sb) throw new Error(NOT_CONFIGURED);
     const uid = userIdRef.current;
@@ -208,6 +226,8 @@ export function useAuth(): AuthState {
     signOut,
     updateProfile,
     refreshProfile,
+    setUsername,
+    usernameAvailable,
     setAvatar,
     clearAvatar,
     avatarUrl,

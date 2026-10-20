@@ -28,15 +28,17 @@ export interface Profile {
   trainer_online: boolean;
   socials: ProfileSocials;      // handles without @, website as a URL
   avatar_path: string;          // storage path in the avatars bucket, '<uid>/avatar-<ts>.<ext>' or ''
+  username: string | null;      // 020: URL handle for /athletes/<username>; set only through zt_set_username
+  is_public: boolean;           // 020: opt-in to the directory and the public profile page
   created_at: string;
   updated_at: string;
 }
 
-export type ProfilePatch = Partial<Omit<Profile, 'id' | 'email' | 'created_at' | 'updated_at'>>;
+export type ProfilePatch = Partial<Omit<Profile, 'id' | 'email' | 'username' | 'created_at' | 'updated_at'>>;
 
 export const PROFILE_COLUMNS =
   'id,email,display_name,is_athlete,is_promoter,is_gym_owner,favorite_lift,favorite_lift_note,location,home_gym_name,prs,' +
-  'is_trainer,trainer_in_person,trainer_online,socials,avatar_path,created_at,updated_at';
+  'is_trainer,trainer_in_person,trainer_online,socials,avatar_path,username,is_public,created_at,updated_at';
 
 export const FAVORITE_LIFT_OPTIONS: ReadonlyArray<{ id: string; label: string }> = [
   { id: 'log', label: 'Log press' },
@@ -128,7 +130,7 @@ export function cleanPRs(raw: unknown): ProfilePR[] {
 export function cleanProfilePatch(patch: ProfilePatch): ProfilePatch {
   const c: ProfilePatch = {};
   if ('display_name' in patch) c.display_name = str(patch.display_name, LIMITS.display_name);
-  for (const k of ['is_athlete', 'is_promoter', 'is_gym_owner', 'is_trainer', 'trainer_in_person', 'trainer_online'] as const) {
+  for (const k of ['is_athlete', 'is_promoter', 'is_gym_owner', 'is_trainer', 'trainer_in_person', 'trainer_online', 'is_public'] as const) {
     if (k in patch) c[k] = !!patch[k];
   }
   if ('favorite_lift' in patch) {
@@ -165,6 +167,8 @@ export function normalizeProfile(row: Partial<Profile> & Pick<Profile, 'id'>): P
     trainer_online: !!row.trainer_online,
     socials: cleanSocials(row.socials),
     avatar_path: row.avatar_path ?? '',
+    username: typeof row.username === 'string' && row.username ? row.username : null,
+    is_public: !!row.is_public,
     created_at: row.created_at ?? '',
     updated_at: row.updated_at ?? '',
   };
@@ -216,4 +220,52 @@ export function socialUrl(key: SocialKey, value: string): string {
     case 'facebook': return `https://www.facebook.com/${v}`;
     case 'website': return /^https?:\/\/[^\s]+$/i.test(value) ? value : ''; // stored values may come from REST clients (P-L2)
   }
+}
+
+// ---------- username (020) ----------
+// Mirrors zt_username_reserved / zt_set_username in supabase/020_athlete_directory.sql so the account page can say
+// what is wrong before the round trip. The database is the authority; this only shapes the message.
+export const USERNAME_MIN = 3;
+export const USERNAME_MAX = 30;
+export const RESERVED_USERNAMES: ReadonlySet<string> = new Set([
+  'admin', 'administrator', 'root', 'system', 'support', 'help', 'staff', 'team', 'official', 'moderator', 'mod',
+  'zerotacky', 'zt', 'slate', 'api', 'www', 'app', 'athletes', 'athlete', 'shows', 'show', 'gyms', 'gym', 'trainers',
+  'trainer', 'promoter', 'promoters', 'account', 'settings', 'login', 'signin', 'signup', 'register', 'join', 'scorer',
+  'demo', 'legal', 'terms', 'privacy', 'about', 'contact', 'me', 'you', 'null', 'undefined', 'anonymous', 'unknown',
+]);
+
+// What the database will store for this input: lowercased, trimmed, leading @ dropped. '' means "clear".
+export function normalizeUsername(raw: unknown): string {
+  return typeof raw === 'string' ? raw.trim().replace(/^@+/, '').toLowerCase() : '';
+}
+
+// '' when the value is acceptable (or empty, which clears), otherwise a sentence for the form.
+export function usernameProblem(raw: unknown): string {
+  const u = normalizeUsername(raw);
+  if (!u) return '';
+  if (u.length < USERNAME_MIN || u.length > USERNAME_MAX) return `Usernames are ${USERNAME_MIN} to ${USERNAME_MAX} characters.`;
+  if (!/^[a-z0-9_]+$/.test(u)) return 'Lowercase letters, numbers and underscores only.';
+  if (RESERVED_USERNAMES.has(u)) return 'That username is reserved.';
+  return '';
+}
+
+export async function setUsername(sb: SupabaseClient, username: string | null): Promise<string | null> {
+  const u = normalizeUsername(username);
+  const problem = usernameProblem(u);
+  if (problem) throw new Error(problem);
+  const { data, error } = await sb.rpc('zt_set_username', { p_username: u || null });
+  if (error) throw new Error(error.message);
+  return typeof data === 'string' && data ? data : null;
+}
+
+export async function usernameAvailable(sb: SupabaseClient, username: string): Promise<boolean> {
+  const u = normalizeUsername(username);
+  if (usernameProblem(u) || !u) return false;
+  const { data, error } = await sb.rpc('zt_username_available', { p_username: u });
+  if (error) throw new Error(error.message);
+  return data === true;
+}
+
+export function athleteProfilePath(username: string): string {
+  return `/athletes/${encodeURIComponent(username)}`;
 }
