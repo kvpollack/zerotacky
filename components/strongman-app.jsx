@@ -395,8 +395,14 @@ export default function App() {
     }
   };
 
+  // Pit Crew's next setup stays on the current division's station (Astra EO-M1, 10/21). Under "All" the filtered list
+  // spans the whole meet, which handed the loader another station's next division and weight; scoping by `flight`
+  // keeps changeovers on one floor. Divisions pointing at a removed station share their dead id, so they still pair up.
+  const stationDivisions = currentDivision
+    ? filteredDivisions.filter((d) => d.flight === currentDivision.flight)
+    : [];
   const divisionIndex = currentDivision
-    ? filteredDivisions.findIndex((d) => d.id === currentDivision.id)
+    ? stationDivisions.findIndex((d) => d.id === currentDivision.id)
     : -1;
   // Next event follows the station's own order (10/21): the filtered station when one is picked, otherwise the current
   // division's station. With no custom order this is the next eventNumber, as before.
@@ -408,10 +414,10 @@ export default function App() {
       )
     : undefined;
   const nextSetup =
-    currentEvent && divisionIndex >= 0 && divisionIndex < filteredDivisions.length - 1
-      ? { event: currentEvent, division: filteredDivisions[divisionIndex + 1] }
-      : nextEventInMeet && filteredDivisions[0]
-      ? { event: nextEventInMeet, division: filteredDivisions[0] }
+    currentEvent && divisionIndex >= 0 && divisionIndex < stationDivisions.length - 1
+      ? { event: currentEvent, division: stationDivisions[divisionIndex + 1] }
+      : nextEventInMeet && stationDivisions[0]
+      ? { event: nextEventInMeet, division: stationDivisions[0] }
       : null;
   const transitionRows =
     currentEvent && currentDivision && nextSetup

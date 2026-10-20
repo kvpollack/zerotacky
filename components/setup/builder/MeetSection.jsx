@@ -193,12 +193,13 @@ export default function MeetSection({
         </div>
       </div>
 
-      {/* Run Order Methodology Toggle. Each option explained on screen (Kurt 10/19); text mirrors lib/engine/runOrder.ts. */}
+      {/* Athlete run order. Each option explained on screen (Kurt 10/19); text mirrors lib/engine/runOrder.ts. Astra EO-L1 (10/21):
+          with per-station event order, "Ev 1" is not always first, so the copy talks about earlier events on the station. */}
       <div>
         <label className="text-xs font-extrabold uppercase text-zt-muted">
-          Run Order Methodology (Events 2+)
+          Athlete run order
         </label>
-        <p className="text-[11px] font-semibold text-zt-muted mt-0.5">Event 1 always runs by lot number. This decides the order for every event after it.</p>
+        <p className="text-[11px] font-semibold text-zt-muted mt-0.5">The first event on a station runs by lot number. The reverse methods take over once an earlier event on that station has results.</p>
         <div className="grid grid-cols-3 gap-2 mt-1.5">
           {RUN_ORDER_OPTIONS.map(({ value, label }) => (
             <button
