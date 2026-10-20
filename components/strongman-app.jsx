@@ -241,6 +241,25 @@ export default function App() {
 
   verifyPinRef.current = (pin) => (sync.link ? sync.checkAdminPin(pin) : Promise.resolve(null));
 
+  // 011 (Astra R-H1): on a joined phone the stored role is a UX lock only; the server refuses score writes without a
+  // grant from a correct PIN. A joined phone showing admin or judge with no grant (edited storage, a join from the
+  // Sync panel, or a link made before 011) drops to spectator so what it shows matches what it can do.
+  const linkRole = sync.link?.role ?? null;
+  const linkGrant = sync.link?.grant ?? null;
+  useEffect(() => {
+    if (linkRole !== 'device' || linkGrant) return;
+    if (roleLock === 'admin' || roleLock === 'judge') lockDeviceToRole('spectator');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkRole, linkGrant, roleLock]);
+  const syncForPanel = {
+    ...sync,
+    joinByCode: async (code) => {
+      const remote = await sync.joinByCode(code);
+      lockDeviceToRole('spectator');
+      return remote;
+    },
+  };
+
   const requestMeetPreset = (presetId) => {
     if (meet.isDemo && presetId === (meet.presetId ?? DEFAULT_PRESET_ID)) return;
     if (results.length > 0 || !meet.isDemo) {
@@ -571,7 +590,7 @@ export default function App() {
             clearResults={clearResults}
             resetConfirmOpen={resetConfirmOpen}
             setResetConfirmOpen={setResetConfirmOpen}
-            sync={sync}
+            sync={syncForPanel}
           />
         )}
       </main>

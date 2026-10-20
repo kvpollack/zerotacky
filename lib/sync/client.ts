@@ -6,6 +6,7 @@ export interface SyncConfig {
   url: string;          // https://xxxx.supabase.co
   anonKey: string;
   joinCode?: string;
+  grantToken?: string;  // 011: judge grant issued by zt_check_admin_pin; results/live_state writes need it (x-zt-grant)
   accessToken?: string; // signed-in promoter's Supabase JWT (v2); falls back to anon key
   fetchImpl?: typeof fetch;
 }
@@ -25,7 +26,7 @@ export interface SyncClient {
   update<T extends Record<string, unknown>>(table: string, query: string, patch: Partial<T>): Promise<void>;
   del(table: string, query: string): Promise<void>;
   rpc<T = unknown>(fn: string, args: Record<string, unknown>): Promise<T>;
-  withJoinCode(code: string): SyncClient;
+  withJoinCode(code: string, grantToken?: string | null): SyncClient;
   withAccessToken(token: string | null | undefined): SyncClient; // v2: signed-in promoter; null = back to anon
 }
 
@@ -50,6 +51,7 @@ export function createSyncClient(cfg: SyncConfig): SyncClient {
       ...extra,
     };
     if (cfg.joinCode) h['x-zt-join'] = cfg.joinCode;
+    if (cfg.grantToken) h['x-zt-grant'] = cfg.grantToken;
     return h;
   };
 
@@ -84,7 +86,7 @@ export function createSyncClient(cfg: SyncConfig): SyncClient {
       call(`/rest/v1/${table}?${query}`, { method: 'PATCH', headers: headers({ Prefer: 'return=minimal' }), body: JSON.stringify(patch) }),
     del: (table, query) => call(`/rest/v1/${table}?${query}`, { method: 'DELETE', headers: headers({ Prefer: 'return=minimal' }) }),
     rpc: (fn, args) => call(`/rest/v1/rpc/${fn}`, { method: 'POST', headers: headers(), body: JSON.stringify(args) }),
-    withJoinCode: (code) => createSyncClient({ ...cfg, joinCode: code }),
+    withJoinCode: (code, grantToken) => createSyncClient({ ...cfg, joinCode: code, grantToken: grantToken ?? undefined }),
     withAccessToken: (token) => createSyncClient({ ...cfg, accessToken: token || undefined }),
   };
   return client;

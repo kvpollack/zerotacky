@@ -3,7 +3,7 @@
 // Used by test/controller.test.mjs and, via `bun test/fake_supabase.mjs`, as a local HTTP server for browser
 // smoke tests (set NEXT_PUBLIC_SUPABASE_URL=http://localhost:3078 and any anon key).
 export function fakeServer() {
-  const db = { meets: [], divisions: [], events: [], athletes: [], results: [], live_state: [] };
+  const db = { meets: [], divisions: [], events: [], athletes: [], results: [], live_state: [], grants: [] };   // grants: 011 meet_grants
   const KEYS = { meets: ['id'], divisions: ['meet_id', 'id'], events: ['meet_id', 'id'], athletes: ['meet_id', 'id'], results: ['meet_id', 'id'], live_state: ['meet_id', 'station'] };
   const log = [];
   let offline = false;
@@ -50,6 +50,19 @@ export function fakeServer() {
         const m = db.meets.find((x) => x.join_code === String(body.p_code || '').trim().toUpperCase());
         return reply(200, m ? { ...m } : { id: null });
       }
+      // 011: a correct PIN mints a grant tied to the join code in force; the phone sends it as x-zt-grant.
+      if (parts[3] === 'zt_check_admin_pin') {
+        const code = String(body.p_code || '').trim().toUpperCase();
+        const m = db.meets.find((x) => x.join_code === code);
+        if (!m || body.p_pin == null || String(m.admin_pin ?? '1050') !== String(body.p_pin).trim()) return reply(200, null);
+        const token = `grant-${db.grants.length + 1}-${code}`;
+        db.grants.push({ token, meet_id: m.id, device_id: body.p_device_id ?? null, join_code: code, revoked_at: null });
+        return reply(200, token);
+      }
+      if (parts[3] === 'zt_revoke_grant') {
+        for (const g of db.grants) if (g.token === body.p_token && !g.revoked_at) g.revoked_at = serverNow();
+        return reply(204, undefined);
+      }
       if (parts[3] !== 'zt_publish_meet') return reply(404, { message: 'no fn' });
       if (body.p_key !== 'GOODKEY') return reply(403, { message: 'invalid publish key' });
       const existing = db.meets.find((x) => x.slug === body.p_meet.slug) ?? db.meets.find((x) => x.id === body.p_meet.id);
@@ -80,9 +93,14 @@ export function fakeServer() {
       return reply(200, table === 'meets' ? rows.map(publicMeet) : rows);
     }
     if (init.method === 'POST') {
-      // RLS stand-in: writes to results/athletes/live_state need the join code of that meet
+      // RLS stand-in: athletes writes need the join code of that meet; results/live_state writes need a live grant
+      // for that meet whose join code is still the one in force (011).
       const code = init.headers['x-zt-join'];
-      const ok = body.every((r) => db.meets.some((m) => m.id === r.meet_id && m.join_code === code));
+      const grant = init.headers['x-zt-grant'];
+      const hasGrant = (r) => db.grants.some((g) => g.token === grant && g.meet_id === r.meet_id && !g.revoked_at && db.meets.some((m) => m.id === r.meet_id && m.join_code === g.join_code));
+      const ok = body.every((r) => (table === 'results' || table === 'live_state')
+        ? hasGrant(r)
+        : db.meets.some((m) => m.id === r.meet_id && m.join_code === code));
       if (!ok) return reply(401, { message: 'new row violates row-level security policy' });
       upsert(table, body);
       return reply(201, undefined);
@@ -104,7 +122,7 @@ if (import.meta.main) {
   }
   const CORS = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'apikey, authorization, content-type, prefer, x-zt-join',
+    'Access-Control-Allow-Headers': 'apikey, authorization, content-type, prefer, x-zt-join, x-zt-grant',
     'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
   };
   Bun.serve({
