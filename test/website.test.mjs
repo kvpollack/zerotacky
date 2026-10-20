@@ -120,3 +120,46 @@ describe('gym directory equipment (Kurt 10/20)', () => {
     assert.deepEqual(GE.sortEquipmentTags(['Zebra rack', 'Yoke', 'Log']), ['Log', 'Yoke', 'Zebra rack']);
   });
 });
+
+describe('gym directory zip + radius (Kurt 10/20)', () => {
+  test('haversine, zip normalising, and miles formatting', async () => {
+    const G = await import('../lib/geo/geo.ts');
+    const media = { lat: 39.9168, lng: -75.3877 };
+    const york = { lat: 39.9626, lng: -76.7277 };
+    const d = G.haversineMiles(media, york);
+    assert.ok(d > 68 && d < 74, `Media to York ~71 mi, got ${d}`);
+    assert.equal(G.haversineMiles(media, media), 0);
+    assert.equal(G.normalizeZip(' 19063 '), '19063');
+    assert.equal(G.normalizeZip('19063-1234'), '19063');
+    assert.equal(G.normalizeZip('1906'), null);
+    assert.equal(G.normalizeZip('abcde'), null);
+    assert.equal(G.formatMiles(3.26), '3.3 mi');
+    assert.equal(G.formatMiles(42.6), '43 mi');
+    assert.deepEqual([...G.RADIUS_OPTIONS_MILES], [25, 50, 100]);
+  });
+  test('origin + radius keeps only gyms in range, sorted closest first; gyms without coordinates drop out', async () => {
+    const F = await import('../lib/website/filters.ts');
+    const FX = await import('../lib/website/fixtures.ts');
+    const gyms = FX.DEMO_GYM_LISTINGS;
+    for (const g of gyms) assert.ok(typeof g.lat === 'number' && typeof g.lng === 'number', `${g.slug} has coordinates`);
+    const lancaster = { lat: 40.04, lng: -76.31 };
+    const near15 = F.filterPublicGyms(gyms, { origin: lancaster, radiusMiles: 15 });
+    assert.deepEqual(near15.map((g) => g.slug), ['iron-valley-barbell-club-pa']);
+    const near25 = F.filterPublicGyms(gyms, { origin: lancaster, radiusMiles: 25 });
+    assert.deepEqual(near25.map((g) => g.slug), ['iron-valley-barbell-club-pa', 'susquehanna-strength-barn-pa']);
+    const near50 = F.filterPublicGyms(gyms, { origin: lancaster, radiusMiles: 50 });
+    assert.deepEqual(near50.map((g) => g.slug), ['iron-valley-barbell-club-pa', 'susquehanna-strength-barn-pa', 'keystone-forge-strength-pa']);
+    const noCoords = F.filterPublicGyms([{ ...gyms[0], lat: undefined, lng: undefined }], { origin: lancaster, radiusMiles: 100 });
+    assert.equal(noCoords.length, 0);
+    assert.equal(F.filterPublicGyms(gyms, { origin: null, radiusMiles: 25 }).length, 3);
+    assert.equal(Math.round(F.gymDistanceMiles(gyms[2], lancaster)), 0);
+  });
+  test('zip table resolves real zips and rejects junk', async () => {
+    const Z = await import('../lib/geo/zcta.ts');
+    assert.ok(Z.ZCTA_COUNT > 33000);
+    const c = Z.zipCentroid('37203');
+    assert.ok(c && Math.abs(c.lat - 36.15) < 0.05 && Math.abs(c.lng + 86.79) < 0.05);
+    assert.equal(Z.zipCentroid('00000'), null);
+    assert.equal(Z.zipCentroid('nope'), null);
+  });
+});
