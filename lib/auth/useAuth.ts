@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { accountRedirectUrl, getSupabase } from './supabaseBrowser';
+import { readSyncEnv } from '@/lib/sync/client';
 import { fetchProfile, saveProfile, type Profile, type ProfilePatch } from './profile';
 import { avatarPublicUrl, removeAvatar, replaceAvatar } from './avatar';
 
@@ -42,10 +43,14 @@ function message(e: unknown): string {
 }
 
 export function useAuth(): AuthState {
+  // `configured` comes from NEXT_PUBLIC_ env, inlined at build time, so the server and the first client render agree.
+  // `sb` is browser-only. Seeding `loading` from `sb` made the server render the signed-out card while the client's first
+  // paint showed the session check, which React reports as hydration error #418 (Astra 10/20 + 10/21, G-L5).
+  const configured = !!readSyncEnv();
   const sb = useMemo(() => (typeof window === 'undefined' ? null : getSupabase()), []);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState<boolean>(!!sb);
+  const [loading, setLoading] = useState<boolean>(configured);
   const [error, setError] = useState<string | null>(null);
   const [recovery, setRecovery] = useState<boolean>(false);
   const userIdRef = useRef<string | null>(null);
@@ -61,7 +66,7 @@ export function useAuth(): AuthState {
   }, [sb]);
 
   useEffect(() => {
-    if (!sb) return undefined;
+    if (!sb) { setLoading(false); return undefined; }
     let alive = true;
     // Implicit-flow recovery links carry type=recovery AND the session token in the hash; supabase-js strips both once
     // it has the session, so read it here as well as listening for the PASSWORD_RECOVERY event. Astra R-L1 (10/19):
@@ -187,7 +192,7 @@ export function useAuth(): AuthState {
   const avatarUrl = useCallback((path: string) => (sb ? avatarPublicUrl(sb, path) : ''), [sb]);
 
   return {
-    enabled: !!sb,
+    enabled: configured,
     loading,
     session,
     user: session?.user ?? null,
