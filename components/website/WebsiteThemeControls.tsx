@@ -31,9 +31,8 @@ export default function WebsiteThemeControls() {
   const btn = 'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-extrabold uppercase tracking-wide bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong hover:text-zt-text';
   return (
     <div ref={wrap} className="relative flex items-center gap-1.5">
-      <button type="button" onClick={toggleDaylight} aria-pressed={isDaylight} title={isDaylight ? 'Switch to night theme' : 'Switch to daylight theme'} className={btn}>
+      <button type="button" onClick={toggleDaylight} aria-pressed={isDaylight} aria-label={isDaylight ? 'Switch to night theme' : 'Switch to daylight theme'} title={isDaylight ? 'Switch to night theme' : 'Switch to daylight theme'} className={btn}>
         {isDaylight ? <Moon className="w-3.5 h-3.5" aria-hidden="true" /> : <Sun className="w-3.5 h-3.5" aria-hidden="true" />}
-        <span className="hidden sm:inline">{isDaylight ? 'Night' : 'Day'}</span>
       </button>
       <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-haspopup="dialog" className={`${btn} ${open ? 'border-zt-primary text-zt-text' : ''}`}>
         <Palette className="w-3.5 h-3.5" aria-hidden="true" />

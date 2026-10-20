@@ -274,7 +274,7 @@ export default function ListingSection({
               type="text"
               value={draft.facilityName}
               onChange={(e) => set('facilityName', e.target.value)}
-              placeholder="e.g. The Power Plant Gym"
+              placeholder="e.g. Keystone Forge Strength"
               className={INPUT}
             />
           </div>

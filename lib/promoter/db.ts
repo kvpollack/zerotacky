@@ -3,7 +3,7 @@
 // this module only translates method calls into supabase-js queries/RPCs.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { PROFILE_COLUMNS, type Profile, type ProfilePatch } from '../auth/profile';
+import { PROFILE_COLUMNS, cleanProfilePatch, normalizeProfile, type Profile, type ProfilePatch } from '../auth/profile';
 import type {
   AthleteRow,
   DivisionRow,
@@ -125,12 +125,12 @@ export function createSupabaseDb(client: SupabaseClient): PromoterDb {
     async updateProfile(userId: string, patch: ProfilePatch): Promise<Profile> {
       const { data, error } = await client
         .from('profiles')
-        .update(patch)
+        .update(cleanProfilePatch(patch))
         .eq('id', userId)
         .select(PROFILE_COLUMNS)
         .single();
       if (error) throw new Error(error.message);
-      return data as Profile;
+      return normalizeProfile(data as unknown as Partial<Profile> & Pick<Profile, 'id'>);
     },
 
     async selectMyMeets(): Promise<PromoterMeetRow[]> {

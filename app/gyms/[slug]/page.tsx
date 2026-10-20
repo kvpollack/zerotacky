@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: GymDetailPageProps): Promise<
   }
   return {
     title: `${res.data.name} (${res.data.city}, ${res.data.state}) — ZeroTacky`,
-    description: `Strongman equipment inventory, day-pass policy, and drop-in details for ${res.data.name}.`,
+    description: `Equipment, day-pass policy, and drop-in details for ${res.data.name}.`,
   };
 }
 
@@ -41,7 +41,7 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
             className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase text-zt-muted hover:text-zt-text"
           >
             <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
-            Back to Strongman Gym Directory
+            Back to Gym Directory
           </Link>
         </div>
 
@@ -53,7 +53,7 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
             </span>
             {gym.isDemoListing && (
               <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
-                Demo Listing (Unverified Sample)
+                Demo Listing (fictional)
               </span>
             )}
           </div>
@@ -110,7 +110,7 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-[11px] font-black text-zt-primary hover:underline mt-1"
                 >
-                  External Day-Pass / Waiver Link
+                  Day pass / waiver link
                   <ExternalLink className="w-3 h-3" aria-hidden="true" />
                 </a>
               ) : (
@@ -136,7 +136,7 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
             className="text-base font-black uppercase tracking-wider text-zt-primary flex items-center gap-2"
           >
             <Dumbbell className="w-4 h-4" aria-hidden="true" />
-            <span>Strongman Implements &amp; Specifications ({gym.equipment.length})</span>
+            <span>Equipment &amp; Specifications ({gym.equipment.length})</span>
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { accountRedirectUrl, getSupabase } from './supabaseBrowser';
 import { fetchProfile, saveProfile, type Profile, type ProfilePatch } from './profile';
+import { avatarPublicUrl, removeAvatar, uploadAvatar } from './avatar';
 
 // Session + profile for the current tab. `enabled` is false on builds without Supabase env, in which case
 // everything is null and the actions throw a plain message. Token refreshes flow through onAuthStateChange,
@@ -27,6 +28,10 @@ export interface AuthState {
   signOut: () => Promise<void>;
   updateProfile: (patch: ProfilePatch) => Promise<Profile>;
   refreshProfile: () => Promise<void>;
+  // Profile photo (013): upload replaces the previous file and writes avatar_path; remove clears both.
+  setAvatar: (file: File) => Promise<Profile>;
+  clearAvatar: () => Promise<Profile>;
+  avatarUrl: (path: string) => string;
 }
 
 const NOT_CONFIGURED = 'Accounts are not configured on this build.';
@@ -154,6 +159,29 @@ export function useAuth(): AuthState {
 
   const refreshProfile = useCallback(() => loadProfile(userIdRef.current), [loadProfile]);
 
+  const setAvatar = useCallback(async (file: File) => {
+    if (!sb) throw new Error(NOT_CONFIGURED);
+    const uid = userIdRef.current;
+    if (!uid) throw new Error('Sign in first.');
+    const path = await uploadAvatar(sb, uid, file, profile?.avatar_path ?? '');
+    const p = await saveProfile(sb, uid, { avatar_path: path });
+    setProfile(p);
+    return p;
+  }, [sb, profile?.avatar_path]);
+
+  const clearAvatar = useCallback(async () => {
+    if (!sb) throw new Error(NOT_CONFIGURED);
+    const uid = userIdRef.current;
+    if (!uid) throw new Error('Sign in first.');
+    const old = profile?.avatar_path ?? '';
+    const p = await saveProfile(sb, uid, { avatar_path: '' });
+    setProfile(p);
+    await removeAvatar(sb, old).catch(() => undefined);
+    return p;
+  }, [sb, profile?.avatar_path]);
+
+  const avatarUrl = useCallback((path: string) => (sb ? avatarPublicUrl(sb, path) : ''), [sb]);
+
   return {
     enabled: !!sb,
     loading,
@@ -171,5 +199,8 @@ export function useAuth(): AuthState {
     signOut,
     updateProfile,
     refreshProfile,
+    setAvatar,
+    clearAvatar,
+    avatarUrl,
   };
 }

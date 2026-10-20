@@ -8,7 +8,7 @@ import { describeShowLifecycle } from '@/lib/website/filters';
 export const metadata: Metadata = {
   title: 'ZeroTacky — Your one stop for strongman: shows, registration, live scoring, and a gym directory',
   description:
-    'Find strongman competitions, run offline-first meets with multi-phone sync, and locate gyms with strongman implements.',
+    'Find strongman competitions, run offline-first meets with multi-phone sync, and find gyms with strongman equipment.',
 };
 
 export default async function WebsiteLandingPage() {
@@ -116,12 +116,12 @@ export default async function WebsiteLandingPage() {
               <span>Strongman Equipment Finder</span>
             </div>
             <h3 className="text-base font-black text-zt-text">
-              Know What Implements a Gym Actually Has
+              Know What Equipment a Gym Actually Has
             </h3>
             <p className="text-xs text-zt-text-2 leading-relaxed">
-              Browse gyms by strongman implement tags (logs, axles, yokes, stones, circus dumbbells,
-              kegs), day-pass price, and drop-in policy so traveling athletes know where they can
-              train for upcoming events.
+              Browse gyms by equipment (logs, axles, yokes, stones, circus dumbbells, kegs), day-pass
+              price, and drop-in policy so traveling athletes know where they can train for upcoming
+              events.
             </p>
           </div>
         </div>
@@ -213,7 +213,7 @@ export default async function WebsiteLandingPage() {
         </div>
       </section>
 
-      {/* Secondary Entry Point: Strongman Gyms & Account Preview */}
+      {/* Secondary Entry Point: Gym Directory & Account Preview */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-zt-surface border border-zt-border rounded-2xl p-5 flex flex-col justify-between space-y-4">
           <div className="space-y-1.5">
@@ -234,7 +234,7 @@ export default async function WebsiteLandingPage() {
               href="/gyms"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zt-secondary text-zt-on-secondary font-black text-xs uppercase tracking-wider"
             >
-              Browse Strongman Gyms →
+              Browse the Gym Directory →
             </Link>
           </div>
         </div>

@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Dumbbell, KeyRound, LogOut, Mail, Play, Save, ShieldCheck, Trophy, UserCheck } from 'lucide-react';
+import { Camera, Dumbbell, KeyRound, LogOut, Mail, Play, Save, ShieldCheck, Trash2, Trophy, UserCheck } from 'lucide-react';
 import { useAuth } from '@/lib/auth/useAuth';
-import { profileLabel, roleBadges } from '@/lib/auth/profile';
+import { FAVORITE_LIFT_OPTIONS, MAX_PRS, SOCIAL_KEYS, cleanProfilePatch, profileLabel, roleBadges, type Profile, type ProfilePR, type ProfileSocials } from '@/lib/auth/profile';
+import { AVATAR_MAX_BYTES, avatarProblem } from '@/lib/auth/avatar';
 
 // Real account page (v2): sign in / create account / magic link, then a profile editor. The three role flags
 // are self-declared and only shape what the site shows; meet access is decided by meets.owner_id / meet_members.
@@ -14,6 +15,42 @@ const inputCls = 'w-full bg-zt-inset border border-zt-border-strong rounded-lg p
 const labelCls = 'block text-[10px] font-extrabold uppercase text-zt-muted mb-1';
 const primaryBtn = 'px-4 py-2 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase tracking-wider inline-flex items-center gap-1.5 disabled:opacity-40';
 const quietBtn = 'px-3 py-2 rounded-xl bg-zt-surface border border-zt-border-strong text-zt-text font-extrabold text-xs uppercase inline-flex items-center gap-1.5 disabled:opacity-40';
+
+// The optional "about you" block (Kurt 10/20) edits as one object so the dirty check and the save stay in step.
+interface AboutDraft {
+  favorite_lift: string;
+  favorite_lift_note: string;
+  location: string;
+  home_gym_name: string;
+  prs: ProfilePR[];
+  is_trainer: boolean;
+  trainer_in_person: boolean;
+  trainer_online: boolean;
+  socials: ProfileSocials;
+}
+const EMPTY_PR: ProfilePR = { lift: '', value: '' };
+function padPRs(prs: ProfilePR[]): ProfilePR[] {
+  const out = prs.slice(0, MAX_PRS);
+  while (out.length < MAX_PRS) out.push({ ...EMPTY_PR });
+  return out;
+}
+function aboutFromProfile(p: Profile): AboutDraft {
+  return {
+    favorite_lift: p.favorite_lift,
+    favorite_lift_note: p.favorite_lift_note,
+    location: p.location,
+    home_gym_name: p.home_gym_name,
+    prs: padPRs(p.prs),
+    is_trainer: p.is_trainer,
+    trainer_in_person: p.trainer_in_person,
+    trainer_online: p.trainer_online,
+    socials: { ...p.socials },
+  };
+}
+// Compare what the database would hold after a save, so trailing spaces or an empty PR row do not count as changes.
+function aboutKey(a: AboutDraft): string {
+  return JSON.stringify(cleanProfilePatch({ ...a }));
+}
 
 function Notice({ text, tone }: { text: string; tone: 'ok' | 'warn' }) {
   return (
@@ -108,13 +145,41 @@ export default function AccountClient() {
   const [athlete, setAthlete] = useState(false);
   const [promoter, setPromoter] = useState(false);
   const [gymOwner, setGymOwner] = useState(false);
+  const [about, setAbout] = useState<AboutDraft | null>(null);
+  const [avatarBusy, setAvatarBusy] = useState(false);
+  const fileRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
     if (!auth.profile) return;
     setDraftName(auth.profile.display_name);
     setAthlete(auth.profile.is_athlete);
     setPromoter(auth.profile.is_promoter);
     setGymOwner(auth.profile.is_gym_owner);
+    setAbout(aboutFromProfile(auth.profile));
   }, [auth.profile]);
+  const patchAbout = (patch: Partial<AboutDraft>) => setAbout((a) => (a ? { ...a, ...patch } : a));
+  const patchPR = (i: number, patch: Partial<ProfilePR>) => setAbout((a) => {
+    if (!a) return a;
+    const prs = a.prs.map((pr, j) => (j === i ? { ...pr, ...patch } : pr));
+    return { ...a, prs };
+  });
+  const patchSocial = (key: keyof ProfileSocials, value: string) => setAbout((a) => (a ? { ...a, socials: { ...a.socials, [key]: value } } : a));
+
+  const onPickAvatar = async (file: File | undefined) => {
+    if (!file) return;
+    const problem = avatarProblem(file);
+    if (problem) { setNotice({ text: problem, tone: 'warn' }); return; }
+    setAvatarBusy(true);
+    setNotice(null);
+    try {
+      await auth.setAvatar(file);
+      setNotice({ text: 'Photo updated', tone: 'ok' });
+    } catch (e) {
+      setNotice({ text: errText(e), tone: 'warn' });
+    } finally {
+      setAvatarBusy(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
 
   // Supabase puts auth errors (expired link, etc.) in the URL hash.
   useEffect(() => {
@@ -261,7 +326,9 @@ export default function AccountClient() {
 
   const p = auth.profile;
   const badges = roleBadges(p);
-  const dirty = p ? draftName !== p.display_name || athlete !== p.is_athlete || promoter !== p.is_promoter || gymOwner !== p.is_gym_owner : false;
+  const aboutDirty = p && about ? aboutKey(about) !== aboutKey(aboutFromProfile(p)) : false;
+  const dirty = p ? draftName !== p.display_name || athlete !== p.is_athlete || promoter !== p.is_promoter || gymOwner !== p.is_gym_owner || aboutDirty : false;
+  const avatarSrc = p?.avatar_path ? auth.avatarUrl(p.avatar_path) : '';
   const roleRows: Array<{ id: string; label: string; hint: string; value: boolean; set: (v: boolean) => void; icon: React.ReactNode }> = [
     { id: 'athlete', label: 'Athlete', hint: 'Register for shows and keep your competition history in one place.', value: athlete, set: setAthlete, icon: <UserCheck className="w-4 h-4 text-zt-primary" aria-hidden="true" /> },
     { id: 'promoter', label: 'Promoter', hint: 'Publish and run meets from the scorer and the My Meets page. A meet you publish belongs to this account, so only you can change it and it is still there if you switch phones.', value: promoter, set: setPromoter, icon: <Trophy className="w-4 h-4 text-zt-primary" aria-hidden="true" /> },
@@ -326,15 +393,42 @@ export default function AccountClient() {
             onSubmit={(e) => {
               e.preventDefault();
               void run(async () => {
-                await auth.updateProfile({ display_name: draftName, is_athlete: athlete, is_promoter: promoter, is_gym_owner: gymOwner });
+                await auth.updateProfile({ display_name: draftName, is_athlete: athlete, is_promoter: promoter, is_gym_owner: gymOwner, ...(about ?? {}) });
                 return 'Profile saved';
               });
             }}
             className="space-y-4"
           >
-            <div className="max-w-md">
-              <label htmlFor="profile-name" className={labelCls}>Display name</label>
-              <input id="profile-name" value={draftName} onChange={(e) => setDraftName(e.target.value)} className={inputCls} maxLength={80} />
+            <div className="flex flex-wrap items-start gap-4">
+              <div className="space-y-1.5">
+                <div className={labelCls}>Photo</div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-16 h-16 rounded-full overflow-hidden bg-zt-inset border border-zt-border-strong flex items-center justify-center" aria-hidden={!avatarSrc}>
+                    {avatarSrc ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={avatarSrc} alt="Your profile photo" className="w-full h-full object-cover" />
+                    ) : (
+                      <Camera className="w-5 h-5 text-zt-muted" aria-hidden="true" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <input ref={fileRef} id="profile-photo" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => void onPickAvatar(e.target.files?.[0])} />
+                    <label htmlFor="profile-photo" className={`${quietBtn} cursor-pointer ${avatarBusy || busy ? 'opacity-40 pointer-events-none' : ''}`}>
+                      <Camera className="w-3.5 h-3.5" aria-hidden="true" /> {avatarBusy ? 'Uploading…' : avatarSrc ? 'Change photo' : 'Add photo'}
+                    </label>
+                    {avatarSrc && (
+                      <button type="button" disabled={avatarBusy || busy} className="text-[11px] font-bold text-zt-muted hover:text-zt-danger-text inline-flex items-center gap-1 text-left" onClick={() => run(async () => { await auth.clearAvatar(); return 'Photo removed'; })}>
+                        <Trash2 className="w-3 h-3" aria-hidden="true" /> Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="text-[10px] text-zt-muted">JPG, PNG, or WebP under {Math.round(AVATAR_MAX_BYTES / 1024 / 1024)} MB. Saves right away.</div>
+              </div>
+              <div className="flex-1 min-w-[14rem] max-w-md">
+                <label htmlFor="profile-name" className={labelCls}>Display name</label>
+                <input id="profile-name" value={draftName} onChange={(e) => setDraftName(e.target.value)} className={inputCls} maxLength={80} />
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
               {roleRows.map((r) => (
@@ -350,6 +444,82 @@ export default function AccountClient() {
                 </label>
               ))}
             </div>
+
+            {about && (
+              <fieldset className="space-y-4 border-t border-zt-border pt-4">
+                <legend className="sr-only">About you</legend>
+                <div>
+                  <h3 className="text-sm font-black uppercase text-zt-text">About you</h3>
+                  <p className="text-[11px] text-zt-muted">All optional. For now this shows only on your account page; athlete pages and a training directory are on the roadmap.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="about-lift" className={labelCls}>Favorite lift</label>
+                    <select id="about-lift" value={about.favorite_lift} onChange={(e) => patchAbout({ favorite_lift: e.target.value })} className={inputCls}>
+                      <option value="">Pick one</option>
+                      {FAVORITE_LIFT_OPTIONS.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="about-lift-note" className={labelCls}>More about it</label>
+                    <input id="about-lift-note" value={about.favorite_lift_note} onChange={(e) => patchAbout({ favorite_lift_note: e.target.value })} className={inputCls} maxLength={120} placeholder="Variation, your best, or why you love it" />
+                  </div>
+                  <div>
+                    <label htmlFor="about-location" className={labelCls}>Location</label>
+                    <input id="about-location" value={about.location} onChange={(e) => patchAbout({ location: e.target.value })} className={inputCls} maxLength={80} placeholder="City, State" />
+                  </div>
+                  <div>
+                    <label htmlFor="about-gym" className={labelCls}>Home gym</label>
+                    <input id="about-gym" value={about.home_gym_name} onChange={(e) => patchAbout({ home_gym_name: e.target.value })} className={inputCls} maxLength={80} placeholder="Where you train" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className={labelCls}>Personal records (up to {MAX_PRS})</div>
+                  {about.prs.map((pr, i) => (
+                    <div key={i} className="grid grid-cols-[1fr_1fr] gap-2 max-w-md">
+                      <input aria-label={`PR ${i + 1} lift`} value={pr.lift} onChange={(e) => patchPR(i, { lift: e.target.value })} className={inputCls} maxLength={40} placeholder={i === 0 ? 'Lift (Log press)' : 'Lift'} />
+                      <input aria-label={`PR ${i + 1} result`} value={pr.value} onChange={(e) => patchPR(i, { value: e.target.value })} className={inputCls} maxLength={40} placeholder={i === 0 ? 'Result (275 lb)' : 'Result'} />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-2">
+                  <label className={`flex items-center gap-2 text-xs font-black text-zt-text cursor-pointer`}>
+                    <input type="checkbox" checked={about.is_trainer} onChange={(e) => patchAbout({ is_trainer: e.target.checked, ...(e.target.checked ? {} : { trainer_in_person: false, trainer_online: false }) })} className="w-4 h-4 accent-[var(--zt-primary)]" />
+                    I coach or train other people
+                  </label>
+                  {about.is_trainer && (
+                    <div className="pl-6 space-y-1.5">
+                      <label className="flex items-center gap-2 text-xs font-bold text-zt-text-2 cursor-pointer">
+                        <input type="checkbox" checked={about.trainer_in_person} onChange={(e) => patchAbout({ trainer_in_person: e.target.checked })} className="w-4 h-4 accent-[var(--zt-primary)]" />
+                        In-person clients
+                      </label>
+                      <label className="flex items-center gap-2 text-xs font-bold text-zt-text-2 cursor-pointer">
+                        <input type="checkbox" checked={about.trainer_online} onChange={(e) => patchAbout({ trainer_online: e.target.checked })} className="w-4 h-4 accent-[var(--zt-primary)]" />
+                        Online clients
+                      </label>
+                      <p className="text-[11px] text-zt-muted">A training directory is on the roadmap. For now this only marks you as a trainer.</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className={labelCls}>Social handles you want to show</div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {SOCIAL_KEYS.map((sk) => (
+                      <div key={sk.key} className="flex items-center gap-2">
+                        <span className="w-20 shrink-0 text-[11px] font-black uppercase text-zt-muted">{sk.label}</span>
+                        <input aria-label={sk.label} value={about.socials[sk.key] ?? ''} onChange={(e) => patchSocial(sk.key, e.target.value)} className={inputCls} maxLength={200} placeholder={sk.placeholder} inputMode={sk.key === 'website' ? 'url' : 'text'} />
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-zt-muted">Paste a handle or a profile link; either works.</p>
+                </div>
+              </fieldset>
+            )}
+
             {notice && <Notice {...notice} />}
             <button type="submit" disabled={busy || !dirty} className={primaryBtn}>
               <Save className="w-3.5 h-3.5" aria-hidden="true" /> Save profile

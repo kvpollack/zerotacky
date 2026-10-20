@@ -54,7 +54,7 @@ export default function GymsBrowser({
     <div className="space-y-5">
       {/* Filter Bar */}
       <section
-        aria-label="Filter strongman gyms"
+        aria-label="Filter gyms"
         className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-3.5"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -75,7 +75,7 @@ export default function GymsBrowser({
                 type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="e.g. Power Plant, York, 12&quot; Log, Atlas Stones..."
+                placeholder="e.g. Keystone Forge, York, log, stones"
                 className="w-full bg-zt-inset border border-zt-border-strong rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm font-bold text-zt-text"
               />
             </div>
@@ -108,7 +108,7 @@ export default function GymsBrowser({
               htmlFor="gym-implement-select"
               className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1"
             >
-              Required Strongman Implement
+              Filter by equipment
             </label>
             <select
               id="gym-implement-select"
@@ -116,7 +116,7 @@ export default function GymsBrowser({
               onChange={(e) => setImplementTag(e.target.value)}
               className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
             >
-              <option value="ALL">Any Implement</option>
+              <option value="ALL">Any equipment</option>
               {availableImplements.map((imp) => (
                 <option key={imp} value={imp}>
                   {imp}
@@ -153,7 +153,7 @@ export default function GymsBrowser({
       {filteredGyms.length === 0 ? (
         <div className="bg-zt-surface border border-zt-border rounded-2xl p-8 text-center space-y-3">
           <div className="text-base font-black text-zt-text">
-            No strongman gyms match your current filters.
+            No gyms match your current filters.
           </div>
           <button
             type="button"
@@ -222,7 +222,7 @@ export default function GymsBrowser({
                 <div>
                   <div className="text-[10px] font-extrabold uppercase text-zt-muted mb-1 flex items-center gap-1">
                     <Dumbbell className="w-3 h-3 text-zt-secondary" aria-hidden="true" />
-                    <span>Strongman Implements ({gym.implementTags.length})</span>
+                    <span>Equipment ({gym.implementTags.length})</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {gym.implementTags.map((tag) => (
