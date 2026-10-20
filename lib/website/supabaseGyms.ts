@@ -13,7 +13,7 @@ export interface GymRow {
   id: string;
   slug: string;
   name: string;
-  status: 'unclaimed' | 'claimed' | 'removed';
+  status: 'pending' | 'unclaimed' | 'claimed' | 'removed';
   gym_type: 'strongman' | 'powerlifting' | 'mixed';
   street_address: string;
   city: string;

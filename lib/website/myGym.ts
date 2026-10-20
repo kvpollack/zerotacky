@@ -197,3 +197,93 @@ export async function saveMyGym(sb: SupabaseClient, id: string, patch: GymPatch,
   if (!row) throw new Error('Saved, but the listing did not come back. Reload the page.');
   return row;
 }
+
+// ---------- 017: add my gym + admin approval ----------
+export interface AddGymInput {
+  name: string; gym_type: GymPatch['gym_type']; street_address: string; city: string; state: string; zip: string;
+  website_url: string; phone: string; instagram: string; contact: string; role: string; message: string;
+}
+
+export function cleanAddGym(i: AddGymInput): { input: AddGymInput; problem: null } | { input: null; problem: string } {
+  const name = clip(i.name, GYM_LIMITS.name);
+  if (name.length < 2) return { input: null, problem: 'Give the gym a name.' };
+  const state = String(i.state ?? '').trim().toUpperCase();
+  const city = clip(i.city, GYM_LIMITS.city);
+  if (!city || !/^[A-Z]{2}$/.test(state)) return { input: null, problem: 'City and the two-letter state are needed.' };
+  const zip = String(i.zip ?? '').trim();
+  if (zip && !/^\d{5}(-\d{4})?$/.test(zip)) return { input: null, problem: 'Zip is 5 digits (12345 or 12345-6789).' };
+  const website_url = cleanUrl(clip(i.website_url, GYM_LIMITS.website_url));
+  const instagram = clip(i.instagram, GYM_LIMITS.instagram).replace(/^@/, '');
+  if (!website_url && !instagram) return { input: null, problem: 'A website or an Instagram handle is needed so we can confirm the gym exists.' };
+  return {
+    problem: null,
+    input: {
+      name, city, state, zip, website_url, instagram,
+      gym_type: TYPES.has(i.gym_type) ? i.gym_type : 'mixed',
+      street_address: clip(i.street_address, GYM_LIMITS.street_address),
+      phone: clip(i.phone, GYM_LIMITS.phone),
+      contact: clip(i.contact, GYM_LIMITS.contact),
+      role: clip(i.role, 40),
+      message: clip(i.message, 1000),
+    },
+  };
+}
+
+export async function addMyGym(sb: SupabaseClient, i: AddGymInput, pin: { lat: number; lng: number } | null): Promise<MyGymRow> {
+  const { data, error } = await sb.rpc('zt_add_gym', {
+    p_name: i.name, p_gym_type: i.gym_type, p_street: i.street_address, p_city: i.city, p_state: i.state, p_zip: i.zip,
+    p_website: i.website_url, p_phone: i.phone, p_instagram: i.instagram, p_contact: i.contact, p_role: i.role, p_message: i.message,
+    p_lat: pin?.lat ?? null, p_lng: pin?.lng ?? null,
+  });
+  if (error) throw error;
+  return data as MyGymRow;
+}
+
+export interface AdminClaimRow {
+  id: string; kind: 'claim' | 'report'; status: string; name: string; email: string; role: string; message: string;
+  user_id: string | null; created_at: string; gym_id: string; gym_slug: string; gym_name: string; gym_city: string; gym_state: string;
+  gym_status: 'pending' | 'unclaimed' | 'claimed' | 'removed'; gym_website: string; gym_source_url: string;
+  claimant_display_name: string | null; pending_claims_on_gym: number;
+}
+
+export async function fetchIsAdmin(sb: SupabaseClient): Promise<boolean> {
+  const { data, error } = await sb.rpc('zt_is_admin');
+  if (error) return false;
+  return data === true;
+}
+
+export async function fetchAdminClaims(sb: SupabaseClient): Promise<AdminClaimRow[]> {
+  const { data, error } = await sb.rpc('zt_list_gym_claims');
+  if (error) throw error;
+  return (data ?? []) as AdminClaimRow[];
+}
+
+export async function adminApproveClaim(sb: SupabaseClient, id: string): Promise<void> {
+  const { error } = await sb.rpc('zt_approve_gym_claim', { p_claim: id });
+  if (error) throw error;
+}
+export async function adminRejectClaim(sb: SupabaseClient, id: string): Promise<void> {
+  const { error } = await sb.rpc('zt_reject_gym_claim', { p_claim: id });
+  if (error) throw error;
+}
+export async function adminResolveReport(sb: SupabaseClient, id: string, handled: boolean): Promise<void> {
+  const { error } = await sb.rpc('zt_resolve_gym_report', { p_claim: id, p_handled: handled });
+  if (error) throw error;
+}
+export async function adminRemoveGym(sb: SupabaseClient, gymId: string): Promise<void> {
+  const { error } = await sb.rpc('zt_remove_gym', { p_gym: gymId });
+  if (error) throw error;
+}
+
+// Host of the claimant's email vs the gym's website host: the quickest honest signal an approver has.
+export function emailMatchesSite(email: string, website: string): 'match' | 'mismatch' | 'generic' | 'unknown' {
+  const dom = email.split('@')[1]?.toLowerCase().trim();
+  if (!dom) return 'unknown';
+  const generic = new Set(['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'aol.com', 'me.com', 'live.com', 'proton.me', 'protonmail.com']);
+  if (generic.has(dom)) return 'generic';
+  if (!website.trim()) return 'unknown';
+  let host = '';
+  try { host = new URL(/^https?:\/\//i.test(website) ? website : `https://${website}`).hostname.toLowerCase(); } catch { return 'unknown'; }
+  host = host.replace(/^www\./, '');
+  return host === dom || host.endsWith('.' + dom) || dom.endsWith('.' + host) ? 'match' : 'mismatch';
+}

@@ -6,6 +6,8 @@ import { Camera, Dumbbell, KeyRound, LogOut, Mail, Play, Save, ShieldCheck, Tras
 import { useAuth } from '@/lib/auth/useAuth';
 import { FAVORITE_LIFT_OPTIONS, MAX_PRS, SOCIAL_KEYS, cleanProfilePatch, profileLabel, roleBadges, type Profile, type ProfilePR, type ProfileSocials } from '@/lib/auth/profile';
 import { AVATAR_MAX_BYTES, avatarProblem } from '@/lib/auth/avatar';
+import { fetchIsAdmin } from '@/lib/website/myGym';
+import { getSupabase } from '@/lib/auth/supabaseBrowser';
 
 // Real account page (v2): sign in / create account / magic link, then a profile editor. The three role flags
 // are self-declared and only shape what the site shows; meet access is decided by meets.owner_id / meet_members.
@@ -127,6 +129,24 @@ function PasswordPanel({ recovery, busy, onSubmit, onDismiss }: {
         </div>
       </form>
     </section>
+  );
+}
+
+// Shows the claims-queue link only to zt_admins rows; the page itself refuses everyone else, this is just tidiness.
+function AdminLink() {
+  const [admin, setAdmin] = useState(false);
+  useEffect(() => {
+    const sb = getSupabase();
+    if (!sb) return;
+    let alive = true;
+    void fetchIsAdmin(sb).then((v) => { if (alive) setAdmin(v); });
+    return () => { alive = false; };
+  }, []);
+  if (!admin) return null;
+  return (
+    <Link href="/website/admin/claims" className={quietBtn}>
+      <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" /> Gym claims queue
+    </Link>
   );
 }
 
@@ -542,6 +562,7 @@ export default function AccountClient() {
           </Link>
           <Link href="/shows" className={quietBtn}>Find a show</Link>
           <Link href="/gyms" className={quietBtn}>Find a gym</Link>
+          <AdminLink />
         </div>
         <p className="text-[11px] text-zt-muted">
           Publishing from the scorer uses this sign-in. The old promoter key still works for phones that are not signed in.
