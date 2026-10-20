@@ -67,7 +67,7 @@ describe('listPublicGyms source selection', () => {
     const res = await D.listPublicGyms({ client });
     assert.equal(res.source, 'live_supabase');
     assert.equal(calls[0][0], 'gyms');
-    assert.match(calls[0][1], /status=neq\.removed/);
+    assert.match(calls[0][1], /status=in\.\(unclaimed,claimed\)/);
     assert.equal(res.data.length, 1);
     assert.equal(res.data[0].isDemoListing, false);
     const one = await D.getPublicGymBySlug('Hercules-Gym-Syracuse-NY', { client });

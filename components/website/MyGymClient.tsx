@@ -8,7 +8,7 @@ import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import { GYM_EQUIPMENT } from '@/lib/website/gymEquipment';
 import {
   DAY_PASS_OPTIONS, GYM_LIMITS, GYM_SOCIAL_KEYS, GYM_TYPES, cleanGymPatch, fetchMyClaims, fetchMyGyms, patchFromRow, patchKey,
-  geocodeAddress, saveMyGym, type GymPatch, type MyClaimRow, type MyGymRow,
+  geocodeAddress, saveMyGym, addressChanged, type GymPatch, type PinChange, type MyClaimRow, type MyGymRow,
 } from '@/lib/website/myGym';
 
 // My Gym (016, 10/20): the owner of a claimed listing edits it here. One card per gym (most owners have one), pending
@@ -57,12 +57,21 @@ function GymEditor({ row, onSaved }: { row: MyGymRow; onSaved: (r: MyGymRow) => 
     setBusy(true);
     try {
       // Re-pin when any address part changed or the listing never had a pin: street-level via the Census geocoder,
-      // zip centroid as the fallback (geocodeAddress does both).
-      const needPin = c.patch.zip !== row.zip || c.patch.street_address !== row.street_address || c.patch.city !== row.city || c.patch.state !== row.state || row.lat == null;
-      const pin = needPin ? await geocodeAddress(c.patch) : null;
+      // zip centroid as the fallback (geocodeAddress does both). A changed address that resolves to nothing clears
+      // the old pin rather than leaving the gym on its previous city's map spot (Astra G-M5).
+      const moved = addressChanged(c.patch, row);
+      let pin: PinChange = null;
+      let pinNote = '';
+      if (moved || row.lat == null) {
+        const found = await geocodeAddress(c.patch);
+        if (found) pin = found;
+        else if (moved) { pin = 'clear'; pinNote = ' We could not place the new address on the map, so it will not show in distance searches until the address or zip is corrected.'; }
+        else pinNote = ' We could not place the address on the map; check the street and zip.';
+      }
       const saved = await saveMyGym(sb, row.id, c.patch, pin);
       onSaved(saved);
-      setNotice({ text: 'Saved. The public listing updates within about five minutes.', tone: 'ok' });
+      const base = row.status === 'pending' ? 'Saved. Your listing is still waiting for review.' : 'Saved. The public listing updates within about five minutes.';
+      setNotice({ text: base + pinNote, tone: pinNote ? 'warn' : 'ok' });
     } catch (err) {
       setNotice({ text: errText(err), tone: 'warn' });
     } finally {
@@ -163,7 +172,7 @@ function GymEditor({ row, onSaved }: { row: MyGymRow; onSaved: (r: MyGymRow) => 
             <input id={`zip-${row.id}`} value={draft.zip} onChange={(e) => patch({ zip: e.target.value })} className={inputCls} maxLength={10} inputMode="numeric" autoComplete="postal-code" />
           </div>
         </div>
-        <p className="text-[11px] text-zt-muted">The map pin comes from the zip when you change it. Distance search uses the pin.</p>
+        <p className="text-[11px] text-zt-muted">We use your address for the map pin and fall back to the zip area when needed. Distance search uses the pin.</p>
       </fieldset>
 
       <fieldset className="space-y-3">
@@ -291,8 +300,9 @@ export default function MyGymClient() {
     );
   }
 
-  const pending = claims.filter((c) => c.status === 'pending');
+  // A new listing's own claim is not "waiting" from the owner's view: its editor card is already below.
   const ownedIds = new Set((gyms ?? []).map((g) => g.id));
+  const pending = claims.filter((c) => c.status === 'pending' && !ownedIds.has(c.gym_id));
   const rejected = claims.filter((c) => c.status === 'rejected' && !ownedIds.has(c.gym_id));
 
   return (
@@ -318,7 +328,7 @@ export default function MyGymClient() {
               </li>
             ))}
           </ul>
-          <p className="text-[11px] text-zt-muted">We check each claim by hand and email you when the listing is yours. Nothing else to do here until then.</p>
+          <p className="text-[11px] text-zt-muted">We check each claim by hand. Check back here for the result; the listing shows up below once it is yours.</p>
         </section>
       )}
 

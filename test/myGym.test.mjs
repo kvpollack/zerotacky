@@ -108,23 +108,49 @@ describe('cleanAddGym', () => {
   });
 });
 
-describe('emailMatchesSite', () => {
-  test('same host, www and subdomains match', () => {
+describe('emailMatchesSite (account email vs site, Astra G-M2)', () => {
+  test('same host and www are a match; site on a subdomain of the mail domain is a match', () => {
     assert.equal(M.emailMatchesSite('kurt@ironyard.com', 'https://www.ironyard.com/about'), 'match');
-    assert.equal(M.emailMatchesSite('kurt@mail.ironyard.com', 'ironyard.com'), 'match');
     assert.equal(M.emailMatchesSite('kurt@ironyard.com', 'shop.ironyard.com'), 'match');
+    assert.equal(M.emailMatchesSite('Kurt@IronYard.com ', 'https://ironyard.com'), 'match');
   });
-  test('different host is a mismatch', () => {
+  test('mailbox on a subdomain of the site is only related, not a match', () => {
+    assert.equal(M.emailMatchesSite('kurt@mail.ironyard.com', 'ironyard.com'), 'related');
+  });
+  test('different host and look-alikes are a mismatch', () => {
     assert.equal(M.emailMatchesSite('kurt@otherplace.com', 'https://ironyard.com'), 'mismatch');
+    assert.equal(M.emailMatchesSite('kurt@ironyard.com.evil.net', 'https://ironyard.com'), 'mismatch');
+    assert.equal(M.emailMatchesSite('kurt@evil-ironyard.com', 'https://ironyard.com'), 'mismatch');
+  });
+  test('malformed emails never match', () => {
+    assert.equal(M.emailMatchesSite('owner@gym.com@evil.net', 'https://gym.com'), 'mismatch');
+    assert.equal(M.emailMatchesSite('gym.com', 'https://gym.com'), 'mismatch');
+    assert.equal(M.emailMatchesSite('a@b', 'https://b'), 'mismatch');
   });
   test('personal mail providers are generic regardless of site', () => {
     assert.equal(M.emailMatchesSite('kurt@gmail.com', 'https://ironyard.com'), 'generic');
     assert.equal(M.emailMatchesSite('kurt@gmail.com', ''), 'generic');
   });
-  test('no email domain or no site is unknown', () => {
+  test('shared platforms say nothing about ownership', () => {
+    assert.equal(M.emailMatchesSite('kurt@wixsite.com', 'https://ironyard.wixsite.com/home'), 'unknown');
+    assert.equal(M.emailMatchesSite('kurt@ironyard.com', 'https://www.instagram.com/ironyard'), 'unknown');
+  });
+  test('no email, no site, or an unparseable site is unknown', () => {
     assert.equal(M.emailMatchesSite('', 'https://ironyard.com'), 'unknown');
+    assert.equal(M.emailMatchesSite(null, 'https://ironyard.com'), 'unknown');
     assert.equal(M.emailMatchesSite('kurt@ironyard.com', ''), 'unknown');
     assert.equal(M.emailMatchesSite('kurt@ironyard.com', 'http://[bad'), 'unknown');
+  });
+});
+
+describe('addressChanged (Astra G-M5)', () => {
+  const row = { street_address: '1 Main St', city: 'Media', state: 'PA', zip: '19063' };
+  test('any address part counts, other fields do not', () => {
+    assert.equal(M.addressChanged({ ...row, name: 'x' }, row), false);
+    assert.equal(M.addressChanged({ ...row, zip: '19064' }, row), true);
+    assert.equal(M.addressChanged({ ...row, street_address: '2 Main St' }, row), true);
+    assert.equal(M.addressChanged({ ...row, city: 'Aston' }, row), true);
+    assert.equal(M.addressChanged({ ...row, state: 'NJ' }, row), true);
   });
 });
 

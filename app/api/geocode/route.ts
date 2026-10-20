@@ -21,9 +21,16 @@ export async function GET(req: Request) {
       const q = new URLSearchParams({ address: `${street}, ${city}, ${state} ${zip}`.trim(), benchmark: 'Public_AR_Current', format: 'json' });
       const res = await fetch(`${CENSUS}?${q}`, { signal: AbortSignal.timeout(8000), next: { revalidate: 604800 } });
       if (res.ok) {
-        const j = (await res.json()) as { result?: { addressMatches?: { matchedAddress: string; coordinates: { x: number; y: number } }[] } };
+        const j = (await res.json()) as { result?: { addressMatches?: { matchedAddress: string; coordinates: { x: number; y: number }; addressComponents?: { city?: string; state?: string; zip?: string } }[] } };
         const m = j.result?.addressMatches?.[0];
-        if (m && m.matchedAddress.split(' ')[0] === street.split(' ')[0]) {
+        // Accept the match only when the number, state, and whichever of zip/city we were given agree with it; the
+        // Census "nearest" answer can be the right number on a different street or town (Astra G-L2).
+        const ac = m?.addressComponents ?? {};
+        const sameNumber = !!m && m.matchedAddress.split(' ')[0] === street.split(' ')[0];
+        const sameState = !ac.state || ac.state.toUpperCase() === state;
+        const sameZip = !zip || !ac.zip || ac.zip === zip.slice(0, 5);
+        const sameCity = !city || !ac.city || ac.city.toUpperCase() === city.toUpperCase();
+        if (m && sameNumber && sameState && sameZip && sameCity) {
           return NextResponse.json({ lat: Math.round(m.coordinates.y * 1e5) / 1e5, lng: Math.round(m.coordinates.x * 1e5) / 1e5, source: 'street' }, { headers });
         }
       }

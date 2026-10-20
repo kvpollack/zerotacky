@@ -21,16 +21,23 @@ function errText(e: unknown): string {
   return e && typeof e === 'object' && 'message' in e ? String((e as { message: unknown }).message) : String(e);
 }
 
-function EmailChip({ email, website }: { email: string; website: string }) {
-  const v = emailMatchesSite(email, website);
+// The signal uses the account's confirmed sign-in email, never the address typed into the claim form (Astra G-M2).
+function EmailChip({ accountEmail, website }: { accountEmail: string | null; website: string }) {
+  const v = emailMatchesSite(accountEmail, website);
   const cls = v === 'match'
     ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-    : v === 'generic'
+    : v === 'generic' || v === 'related'
       ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
       : v === 'mismatch'
         ? 'bg-zt-danger/15 text-zt-danger-text border-zt-danger/50'
         : 'bg-zt-inset text-zt-muted border-zt-border';
-  const label = v === 'match' ? 'Email matches site' : v === 'generic' ? 'Personal email' : v === 'mismatch' ? 'Email does not match site' : 'No site to compare';
+  const label = !accountEmail
+    ? 'No confirmed account email'
+    : v === 'match' ? 'Account email is on the site domain'
+      : v === 'related' ? 'Account email on a subdomain, check by hand'
+        : v === 'generic' ? 'Personal email, verify another way'
+          : v === 'mismatch' ? 'Account email is not on the site domain'
+            : 'Site on a shared platform, domain says nothing';
   return <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded border ${cls}`}>{label}</span>;
 }
 
@@ -72,10 +79,15 @@ function Row({ r, busy, onAction }: { r: AdminClaimRow; busy: boolean; onAction:
         <div className="space-y-1">
           <div className="text-[10px] font-extrabold uppercase text-zt-muted">{isReport ? 'Reported by' : 'Claimant'}</div>
           <div className="font-bold text-zt-text">{r.name}{r.claimant_display_name && r.claimant_display_name !== r.name ? <span className="text-zt-muted font-normal"> (account: {r.claimant_display_name})</span> : null}</div>
-          <div className="text-zt-text-2 break-all">{r.email || <span className="text-zt-muted">no email</span>}</div>
+          <div className="text-zt-text-2 break-all">
+            {r.account_email ? <>{r.account_email} <span className="text-zt-muted">(account)</span></> : <span className="text-zt-muted">no confirmed account email</span>}
+          </div>
+          {r.email && r.email.toLowerCase() !== (r.account_email ?? '').toLowerCase() && (
+            <div className="text-zt-muted break-all">{r.email} <span>(typed into the form, unverified)</span></div>
+          )}
           {r.role && <div className="text-zt-text-2">{r.role}</div>}
           <div className="flex flex-wrap gap-1 pt-0.5">
-            {!isReport && <EmailChip email={r.email} website={site} />}
+            {!isReport && <EmailChip accountEmail={r.account_email} website={site} />}
             {!r.user_id && <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-zt-inset text-zt-muted border border-zt-border">Not signed in</span>}
           </div>
         </div>
@@ -110,7 +122,7 @@ function Row({ r, busy, onAction }: { r: AdminClaimRow; busy: boolean; onAction:
             type="button"
             disabled={busy}
             className={`${dangerBtn} ml-auto`}
-            onClick={() => { if (window.confirm(`Remove ${r.gym_name} from the directory? Open claims and reports on it are closed.`)) onAction('Listing removed', () => adminRemoveGym(getSupabase()!, r.gym_id)); }}
+            onClick={() => { if (window.confirm(`Remove ${r.gym_name} from the directory? Its open claims are rejected and its reports marked handled.`)) onAction('Listing removed', () => adminRemoveGym(getSupabase()!, r.gym_id)); }}
           >
             <Trash2 className="w-3.5 h-3.5" aria-hidden="true" /> Remove listing
           </button>
@@ -191,7 +203,7 @@ export default function AdminClaimsClient() {
         <div className="space-y-1">
           <h1 className="text-xl sm:text-2xl font-black text-zt-text">Gym claims queue</h1>
           <p className="text-xs sm:text-sm text-zt-text-2 max-w-2xl">
-            Approve hands the listing to the claimant and publishes new listings. Reject closes the claim; for a new listing it also drops the gym. Check the email against the gym&rsquo;s site before approving.
+            Approve a claim to give that account control of the listing; approving a new listing also publishes it. Reject closes the claim, and for a new listing drops the gym too. The email chip compares the account&rsquo;s confirmed sign-in address with the gym&rsquo;s site; treat it as a hint and verify ownership another way when it is not a clear match.
           </p>
         </div>
         <button type="button" disabled={busy} className={quietBtn} onClick={() => void load()}>

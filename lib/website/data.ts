@@ -237,7 +237,7 @@ export async function listPublicGyms(opts: ShowDataOptions = {}): Promise<DataRe
   try {
     const rows = await client.select<GymRow>(
       'gyms',
-      `select=${PUBLIC_GYM_COLS}&status=neq.removed&order=state.asc,city.asc,name.asc&limit=2000`
+      `select=${PUBLIC_GYM_COLS}&status=in.(unclaimed,claimed)&order=state.asc,city.asc,name.asc&limit=2000`
     );
     return { source: 'live_supabase', data: sortListingsForDisplay(rows.map(mapGymRowToListing)), error: null };
   } catch (err) {
@@ -258,7 +258,7 @@ export async function getPublicGymBySlug(
   try {
     const rows = await client.select<GymRow>(
       'gyms',
-      `select=${PUBLIC_GYM_COLS}&slug=eq.${encodeURIComponent(slugKey)}&status=neq.removed&limit=1`
+      `select=${PUBLIC_GYM_COLS}&slug=eq.${encodeURIComponent(slugKey)}&status=in.(unclaimed,claimed)&limit=1`
     );
     return { source: 'live_supabase', data: rows.length ? mapGymRowToListing(rows[0]) : null, error: null };
   } catch (err) {

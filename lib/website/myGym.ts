@@ -204,15 +204,25 @@ export async function geocodeAddress(
   }
 }
 
-export async function saveMyGym(sb: SupabaseClient, id: string, patch: GymPatch, pin: { lat: number; lng: number } | null): Promise<MyGymRow> {
+// `pin`: a new pin to store; `null` keeps the stored pin (address unchanged); `'clear'` drops it (address changed but
+// nothing resolved, so the old city's pin must not survive). The update must come back with exactly one row: a
+// filtered update that matches nothing (RLS) is a failed save, not a silent success (Astra G-M1).
+export type PinChange = { lat: number; lng: number } | null | 'clear';
+
+export async function saveMyGym(sb: SupabaseClient, id: string, patch: GymPatch, pin: PinChange): Promise<MyGymRow> {
   const body: Record<string, unknown> = { ...patch };
-  if (pin) { body.lat = pin.lat; body.lng = pin.lng; }
-  const { error } = await sb.from('gyms').update(body).eq('id', id);
+  if (pin === 'clear') { body.lat = null; body.lng = null; } else if (pin) { body.lat = pin.lat; body.lng = pin.lng; }
+  const { data, error } = await sb.from('gyms').update(body).eq('id', id).select('id');
   if (error) throw error;
+  if (!data || data.length !== 1) throw new Error('The save did not go through. Reload the page and try again; if it keeps happening, tell us.');
   const rows = await fetchMyGyms(sb);
   const row = rows.find((r) => r.id === id);
   if (!row) throw new Error('Saved, but the listing did not come back. Reload the page.');
   return row;
+}
+
+export function addressChanged(a: GymPatch, row: Pick<MyGymRow, 'street_address' | 'city' | 'state' | 'zip'>): boolean {
+  return a.street_address !== row.street_address || a.city !== row.city || a.state !== row.state || a.zip !== row.zip;
 }
 
 // ---------- 017: add my gym + admin approval ----------
@@ -260,7 +270,7 @@ export interface AdminClaimRow {
   id: string; kind: 'claim' | 'report'; status: string; name: string; email: string; role: string; message: string;
   user_id: string | null; created_at: string; gym_id: string; gym_slug: string; gym_name: string; gym_city: string; gym_state: string;
   gym_status: 'pending' | 'unclaimed' | 'claimed' | 'removed'; gym_website: string; gym_source_url: string;
-  claimant_display_name: string | null; pending_claims_on_gym: number;
+  claimant_display_name: string | null; account_email: string | null; pending_claims_on_gym: number;
 }
 
 export async function fetchIsAdmin(sb: SupabaseClient): Promise<boolean> {
@@ -292,15 +302,27 @@ export async function adminRemoveGym(sb: SupabaseClient, gymId: string): Promise
   if (error) throw error;
 }
 
-// Host of the claimant's email vs the gym's website host: the quickest honest signal an approver has.
-export function emailMatchesSite(email: string, website: string): 'match' | 'mismatch' | 'generic' | 'unknown' {
-  const dom = email.split('@')[1]?.toLowerCase().trim();
-  if (!dom) return 'unknown';
-  const generic = new Set(['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'aol.com', 'me.com', 'live.com', 'proton.me', 'protonmail.com']);
-  if (generic.has(dom)) return 'generic';
+// Host of the account's confirmed email vs the gym's website host: a hint for the approver, never proof.
+//   match    the mailbox domain is the site's domain (or the site is on a subdomain of it)
+//   related  the mailbox is on a subdomain of the site's domain (mail.gym.com vs gym.com): check by hand
+//   generic  a personal mail provider
+//   mismatch different domains, or the email is malformed
+//   unknown  no email, no site, or the site lives on a shared platform where a domain says nothing about ownership
+export type EmailSignal = 'match' | 'related' | 'mismatch' | 'generic' | 'unknown';
+const GENERIC_MAIL = new Set(['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'aol.com', 'me.com', 'live.com', 'proton.me', 'protonmail.com', 'msn.com', 'comcast.net', 'att.net', 'verizon.net', 'ymail.com', 'mail.com']);
+const SHARED_HOSTS = ['wixsite.com', 'wix.com', 'squarespace.com', 'wordpress.com', 'godaddysites.com', 'weebly.com', 'webflow.io', 'carrd.co', 'instagram.com', 'facebook.com', 'linktr.ee', 'sites.google.com', 'business.site', 'mindbodyonline.com', 'wellnessliving.com', 'gymdesk.com', 'pushpress.com'];
+export function emailMatchesSite(email: string | null | undefined, website: string): EmailSignal {
+  const e = (email ?? '').trim().toLowerCase();
+  if (!e) return 'unknown';
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e) || e.split('@').length !== 2) return 'mismatch';
+  const dom = e.split('@')[1];
+  if (GENERIC_MAIL.has(dom)) return 'generic';
   if (!website.trim()) return 'unknown';
   let host = '';
   try { host = new URL(/^https?:\/\//i.test(website) ? website : `https://${website}`).hostname.toLowerCase(); } catch { return 'unknown'; }
   host = host.replace(/^www\./, '');
-  return host === dom || host.endsWith('.' + dom) || dom.endsWith('.' + host) ? 'match' : 'mismatch';
+  if (SHARED_HOSTS.some((s) => host === s || host.endsWith('.' + s))) return 'unknown';
+  if (host === dom || host.endsWith('.' + dom)) return 'match';
+  if (dom.endsWith('.' + host)) return 'related';
+  return 'mismatch';
 }
