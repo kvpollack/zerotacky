@@ -266,7 +266,7 @@ export class SyncController {
       ? { ...base, results: pulled.results ?? base.results, athletes: pulled.athletes ?? base.athletes }
       : base;
     const meetId = this.link?.localMeetId === state.meet.id ? this.link.meetId : newMeetUuid();
-    if (publishKey === null && this.accessToken === null) throw new Error('Sign in to your ZeroTacky account (or enter a publish key) first.');
+    if (publishKey === null && this.accessToken === null) throw new Error('Sign in to your ZeroTacky account to publish this meet.');
     if (publishKey === null && this.otherAccount) throw new Error('This meet was published from a different ZeroTacky account. Sign in as that account, or unlink this phone and publish again.');
     const gen = this.session;
     this.setStatus({ state: 'syncing', error: null });

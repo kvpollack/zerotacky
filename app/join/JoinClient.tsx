@@ -119,7 +119,7 @@ export default function JoinClient() {
             </button>
             {error && <div className="text-sm font-bold text-zt-danger-text text-center">{error}</div>}
             <p className="text-xs text-zt-muted text-center">
-              The promoter has the 6-character code on their Meet Setup tab.
+              The promoter has the 6-character code on the Meet Day tab of their meet.
             </p>
           </form>
         ) : (
@@ -149,7 +149,7 @@ export default function JoinClient() {
                 </button>
                 {pinError && <div className="text-sm font-bold text-zt-danger-text text-center">{pinError}</div>}
                 <p className="text-xs text-zt-muted text-center">
-                  The promoter sets the PIN on the Meet Setup tab. It is checked on the server and remembered on this phone for this meet.
+                  The promoter sets the PIN on the Meet tab of their meet. It is checked on the server and remembered on this phone for this meet.
                 </p>
                 <button type="button" onClick={() => setPinRole(null)} className="w-full text-xs font-bold text-zt-muted py-2">Pick a different role</button>
               </form>
