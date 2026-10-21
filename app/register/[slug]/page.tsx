@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation';
 import { waiverVersionOf } from '@/lib/promoter/waiverVersion';
 import { createSyncClient, readSyncEnv } from '@/lib/sync/client';
 import { cleanSlug } from '@/lib/website/data';
+import { canonical } from '@/lib/website/seo';
 
 // The meet itself is still resolved in the browser (RegisterClient calls getPublicMeetBySlug(slug)), because the
 // fixture API on a no-backend build is an in-memory singleton per JavaScript realm. What the server does here (10/21,
@@ -51,6 +52,7 @@ export async function generateMetadata({ params }: RegisterPageProps): Promise<M
   return {
     title: 'Athlete Registration — ZeroTacky',
     description: `Athlete registration and waiver for /register/${slug}.`,
+    ...canonical(`/register/${slug}`),
   };
 }
 

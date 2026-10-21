@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import WebsiteShell from '@/components/website/WebsiteShell';
 import PromoterMeetDetailClient from '@/components/promoter/PromoterMeetDetailClient';
+import { NOINDEX } from '@/lib/website/seo';
 
 interface PromoterMeetPageProps {
   params: Promise<{ serverId: string }>;
@@ -12,7 +13,7 @@ interface PromoterMeetPageProps {
 export async function generateMetadata({ params }: PromoterMeetPageProps): Promise<Metadata> {
   const { serverId } = await params;
   void serverId; // resolved in the browser; the client sets document.title to the meet name once it loads
-  return { title: 'Manage Meet — ZeroTacky Promoter' };
+  return { title: 'Manage Meet — ZeroTacky Promoter', ...NOINDEX };
 }
 
 export default async function PromoterMeetDetailPage({ params }: PromoterMeetPageProps) {

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import WebsiteShell from '@/components/website/WebsiteShell';
 import { LEGAL_DOCS, isLegalDocId, parseMarkdown } from '@/lib/legal/markdown';
 import MarkdownBlocks from '@/components/legal/MarkdownBlocks';
+import { canonical } from '@/lib/website/seo';
 
 // /legal/terms, /legal/privacy, /legal/waiver render the Markdown in legal/*.md. The waiver page shows the template
 // with its {{placeholders}} intact; the filled copy an athlete accepts is on /register/<slug>, and the version id
@@ -21,7 +22,7 @@ type Params = { params: Promise<{ doc: string }> };
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { doc } = await params;
   if (!isLegalDocId(doc)) return { title: 'Not found — ZeroTacky' };
-  return { title: `${LEGAL_DOCS[doc].title} — ZeroTacky`, description: `ZeroTacky ${LEGAL_DOCS[doc].title}.` };
+  return { title: `${LEGAL_DOCS[doc].title} — ZeroTacky`, description: `ZeroTacky ${LEGAL_DOCS[doc].title}.`, ...canonical(`/legal/${doc}`) };
 }
 
 export default async function LegalPage({ params }: Params) {

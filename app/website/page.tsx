@@ -4,11 +4,14 @@ import { Calendar, Dumbbell, Play, Radio, ShieldCheck, Trophy } from 'lucide-rea
 import WebsiteShell from '@/components/website/WebsiteShell';
 import { listPublicGyms, listPublicShows } from '@/lib/website/data';
 import { describeShowLifecycle } from '@/lib/website/filters';
+import { canonical, organizationJsonLd, websiteJsonLd } from '@/lib/website/seo';
+import JsonLd from '@/components/website/JsonLd';
 
 export const metadata: Metadata = {
   title: 'ZeroTacky — Your one stop for strongman: shows, registration, live scoring, and a gym directory',
   description:
     'Find strongman competitions, run offline-first meets with multi-phone sync, and find gyms with strongman equipment.',
+  ...canonical('/website'),
 };
 
 export default async function WebsiteLandingPage() {
@@ -18,6 +21,7 @@ export default async function WebsiteLandingPage() {
 
   return (
     <WebsiteShell activeNav="home">
+      <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
       {/* Hero Section */}
       <section className="bg-zt-surface border border-zt-border rounded-2xl p-6 sm:p-8 space-y-6">
         <div className="space-y-3 max-w-3xl">

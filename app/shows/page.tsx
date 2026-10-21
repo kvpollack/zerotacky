@@ -3,11 +3,13 @@ import WebsiteShell from '@/components/website/WebsiteShell';
 import ShowsBrowser from '@/components/website/ShowsBrowser';
 import { listPublicShows } from '@/lib/website/data';
 import { collectDistinctImplementTags, collectDistinctStates } from '@/lib/website/filters';
+import { canonical } from '@/lib/website/seo';
 
 export const metadata: Metadata = {
   title: 'Find a Strongman Show — ZeroTacky',
   description:
     'Search upcoming, live, and completed strongman competitions by state, status, implements, and division format.',
+  ...canonical('/shows'),
 };
 
 // Listed meets come from Supabase when configured (lib/website/data.ts). Re-rendered at most once a minute so a

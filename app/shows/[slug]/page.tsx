@@ -8,6 +8,8 @@ import { getPublicShowBySlug } from '@/lib/website/data';
 // Same freshness rule as /shows: at most a minute behind a promoter's listing save.
 export const revalidate = 60;
 import { buildAllDivisionResultsViews } from '@/lib/website/standingsAdapter';
+import { canonical, showEventJsonLd } from '@/lib/website/seo';
+import JsonLd from '@/components/website/JsonLd';
 
 interface ShowDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -30,6 +32,9 @@ export async function generateMetadata({ params }: ShowDetailPageProps): Promise
     description,
     openGraph: { title, description, type: 'website', siteName: 'ZeroTacky', url: `/shows/${show.slug}` , images: ['/og.png'] },
     twitter: { card: 'summary_large_image', title, description },
+    ...canonical(`/shows/${show.slug}`),
+    // Demo fixtures stay reachable for people we send there, but they are made-up shows: keep them out of the index.
+    ...(show.isDemoFixture ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
@@ -64,6 +69,7 @@ export default async function ShowDetailPage({ params }: ShowDetailPageProps) {
 
   return (
     <WebsiteShell activeNav="shows">
+      {!show.isDemoFixture && <JsonLd data={showEventJsonLd(show)} />}
       <ShowDetailClient show={show} divisionResults={divisionResults} />
     </WebsiteShell>
   );

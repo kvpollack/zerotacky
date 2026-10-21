@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Calendar, Dumbbell, ExternalLink, MapPin } from 'lucide-react';
 import WebsiteShell from '@/components/website/WebsiteShell';
 import { getPublicGymBySlug, listPublicShows } from '@/lib/website/data';
+import { canonical, gymJsonLd } from '@/lib/website/seo';
+import JsonLd from '@/components/website/JsonLd';
 
 // Directory rows are loaded by scripts outside deploys; refresh every 5 min.
 export const revalidate = 300;
@@ -21,6 +23,9 @@ export async function generateMetadata({ params }: GymDetailPageProps): Promise<
   return {
     title: `${res.data.name} (${res.data.city}, ${res.data.state}) — ZeroTacky`,
     description: `Equipment, day-pass policy, and drop-in details for ${res.data.name}.`,
+    openGraph: { url: `/gyms/${res.data.slug}` },
+    ...canonical(`/gyms/${res.data.slug}`),
+    ...(res.data.isDemoListing ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
@@ -37,6 +42,7 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
 
   return (
     <WebsiteShell activeNav="gyms">
+      {!gym.isDemoListing && <JsonLd data={gymJsonLd(gym)} />}
       <div className="space-y-6">
         <div>
           <Link
