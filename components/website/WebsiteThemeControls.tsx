@@ -13,7 +13,8 @@ interface ThemeCtx {
 }
 const Ctx = createContext<ThemeCtx | null>(null);
 
-// Header buttons for the public site: day/night toggle and a Configure popover with every theme.
+// Header buttons for the public site: bright/dark toggle and a Color scheme popover with every theme.
+// Kurt 10/21: renamed from Day/Night + Configure (only one light theme exists, and the popover picks colors).
 // Kurt 10/16: "on the website landing page there should be a button at the top to configure as well as the day/night toggle".
 export default function WebsiteThemeControls() {
   const ctx = useContext(Ctx);
@@ -31,17 +32,17 @@ export default function WebsiteThemeControls() {
   const btn = 'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-extrabold uppercase tracking-wide bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong hover:text-zt-text';
   return (
     <div ref={wrap} className="relative flex items-center gap-1.5">
-      <button type="button" onClick={toggleDaylight} aria-pressed={isDaylight} aria-label={isDaylight ? 'Switch to night theme' : 'Switch to daylight theme'} title={isDaylight ? 'Switch to night theme' : 'Switch to daylight theme'} className={btn}>
+      <button type="button" onClick={toggleDaylight} aria-pressed={isDaylight} aria-label={isDaylight ? 'Switch to dark mode' : 'Switch to bright mode'} title={isDaylight ? 'Switch to dark mode' : 'Switch to bright mode'} className={btn}>
         {isDaylight ? <Moon className="w-3.5 h-3.5" aria-hidden="true" /> : <Sun className="w-3.5 h-3.5" aria-hidden="true" />}
       </button>
-      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-haspopup="dialog" aria-label="Configure theme" title="Configure theme" className={`${btn} ${open ? 'border-zt-primary text-zt-text' : ''}`}>
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-haspopup="dialog" aria-label="Color scheme" title="Color scheme" className={`${btn} ${open ? 'border-zt-primary text-zt-text' : ''}`}>
         <Palette className="w-3.5 h-3.5" aria-hidden="true" />
-        <span className="hidden sm:inline">Configure</span>
+        <span className="hidden sm:inline">Color scheme</span>
       </button>
       {open && (
-        <div role="dialog" aria-label="Theme" className="absolute right-0 top-full mt-2 w-72 bg-zt-surface border border-zt-border rounded-2xl p-3 shadow-2xl z-30 space-y-2">
+        <div role="dialog" aria-label="Color scheme" className="absolute right-0 top-full mt-2 w-72 bg-zt-surface border border-zt-border rounded-2xl p-3 shadow-2xl z-30 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-widest text-zt-muted">Theme</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-zt-muted">Color scheme</span>
             <span className="text-[10px] font-bold text-zt-subtle">{THEMES.find((t) => t.id === themeId)?.name}</span>
           </div>
           <div role="radiogroup" aria-label="Theme" className="grid grid-cols-1 gap-1.5">

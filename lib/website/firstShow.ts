@@ -21,7 +21,8 @@ export const GUIDE_IMAGE_SIZES: Record<string, { width: number; height: number }
   '/guide/11-meet-day.png': { width: 2304, height: 2813 },
   '/guide/12-show-card.png': { width: 2322, height: 556 },
   '/guide/13-show-page.png': { width: 2376, height: 3150 },
-  '/guide/14-register.png': { width: 2376, height: 3150 },
+  '/guide/14-register.png': { width: 2376, height: 2165 },
+  '/guide/14b-register-form.png': { width: 2376, height: 3150 },
   '/guide/15-scoreboard.png': { width: 2160, height: 1350 },
   '/guide/16-join.png': { width: 1080, height: 864 },
 };
@@ -156,7 +157,8 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
     publicSide:
       'The athlete sees Pending, then Registered or Declined, on their My Meets page. An entry only takes a spot on the capacity line once you accept it and it joins the roster; pending entries do not count.',
     images: [
-      { src: '/guide/14-register.png', alt: 'The public registration form showing divisions with target weights and the athlete fields', caption: 'What the athlete fills in, once signed in. The account step comes first and is not pictured.' },
+      { src: '/guide/14-register.png', alt: 'The registration page signed out: step 1 asks the athlete to sign in or create a free account', caption: 'What the athlete sees first: the account step.' },
+      { src: '/guide/14b-register-form.png', alt: 'The registration form once signed in, showing divisions with target weights and the athlete fields', caption: 'Then the entry form, with name and email filled from the account.' },
       { src: '/guide/10-registrations.png', alt: 'The Registrations tab with two pending entries and Accept and Decline buttons', caption: 'What you see.' },
     ],
   },
