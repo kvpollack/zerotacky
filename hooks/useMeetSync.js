@@ -51,7 +51,9 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
   const accessToken = auth.session?.access_token ?? null;
   const userId = auth.session?.user?.id ?? auth.user?.id ?? null;
   const signedIn = !!accessToken;
-  const canPublish = signedIn || !!publishKey;
+  // 10/21 (Kurt): the publish key is retired from the UI. Publishing needs a signed-in account; a key already saved on
+  // this phone still rides along (keyToSend) so a meet published with it before accounts existed is claimed, not refused.
+  const canPublish = signedIn;
   const tokenRef = useRef(accessToken);
   tokenRef.current = accessToken;
   const userIdRef = useRef(userId);
@@ -193,7 +195,7 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
     const ctl = ctlRef.current;
     if (!ctl) throw new Error('Sync is not configured on this build.');
     const key = opts.publishKey ?? publishKey;
-    if (!key && !signedIn) throw new Error('Sign in to your ZeroTacky account (or enter a publish key) first.');
+    if (!signedIn) throw new Error('Sign in to your ZeroTacky account to publish this meet.');
     const meet = stateRef.current.meet;
     // Signed in: the server records this account as owner / member. A saved key goes along too, so a meet that was
     // published with the key before accounts existed is claimed by this account (006) instead of being refused.

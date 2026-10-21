@@ -15,10 +15,25 @@ export interface HowTrack {
   steps: HowStep[];
 }
 
+export type HowFaqGroup = 'everyone' | 'athletes' | 'promoters' | 'gyms';
+
 export interface HowFaq {
+  group: HowFaqGroup;
   q: string;
   a: string;
   link?: { label: string; href: string };
+}
+
+export const HOW_FAQ_GROUPS: Array<{ id: HowFaqGroup; title: string }> = [
+  { id: 'everyone', title: 'Everyone' },
+  { id: 'athletes', title: 'Athletes and spectators' },
+  { id: 'promoters', title: 'Promoters' },
+  { id: 'gyms', title: 'Gym owners' },
+];
+
+export interface HowRoadmapItem {
+  title: string;
+  body: string;
 }
 
 export const HOW_IT_WORKS_TRACKS: HowTrack[] = [
@@ -36,12 +51,12 @@ export const HOW_IT_WORKS_TRACKS: HowTrack[] = [
       },
       {
         title: 'Build the meet',
-        body: 'Meet Setup takes you through the pieces in order. Meet details and rules first, where you set the admin PIN, how the run order works, the tiebreaker and which plates the gym has. Then divisions, then stations and floor plan, then events, then athletes. The last step checks that nothing is missing before meet day. On a laptop, My Meets has a New Meet button that opens the same steps as tabs.',
-        link: { label: 'Open the scorer', href: '/scorer' },
+        body: 'On My Meets, New Meet asks for a name and a date and opens the meet as eight tabs: details and rules (admin PIN, run order, tiebreaker, gym plates), divisions, stations, events, athletes, listing, registrations and meet day. The phone scorer has the same steps under Meet Setup if you would rather build it there. The first-show guide walks through every tab with pictures.',
+        link: { label: 'Set up your first show', href: '/how-it-works/first-show' },
       },
       {
-        title: 'Publish and list it',
-        body: 'Publishing from the phone puts the meet online and it shows up under My Meets. Until you say otherwise it stays private. On the Listing tab you decide whether it appears in Find a Show, and whether athletes can register right now, join a waitlist, or only enter on the day.',
+        title: 'List it and open entries',
+        body: 'A new meet starts unlisted: it has a web page, but only people with the link can see it. On the Listing tab you tick Listed to put it in Find a Show, fill in the venue and entry fee, and decide whether athletes can register right now, join a waitlist, or only enter on the day. Building on the phone instead? Publish from the scorer while signed in and the meet lands under My Meets the same way.',
         link: { label: 'My Meets', href: '/promoter' },
       },
       {
@@ -125,40 +140,105 @@ export const HOW_IT_WORKS_TRACKS: HowTrack[] = [
   },
 ];
 
+// FAQ rewritten 10/21 (Kurt): the questions a stranger lands with, grouped by who is asking. Promoter internals
+// (stations, run order) moved to the first-show guide, which sits next to the screens that use them.
 export const HOW_IT_WORKS_FAQ: HowFaq[] = [
   {
+    group: 'everyone',
+    q: 'Does it cost anything?',
+    a: 'No. Finding shows, registering, running a meet, the live scoreboard and the gym directory are all free right now. If that changes for any part of it, the price will be on the page before you use it, and what is already free for athletes stays free.',
+  },
+  {
+    group: 'everyone',
     q: 'Does it work without Wi-Fi?',
     a: 'Yes. Scoring happens on the phone and is held there until it can be sent. A judge can score a whole event with no signal, and the public scoreboard catches up when the phone reconnects.',
   },
   {
-    q: 'What is the admin PIN?',
-    a: 'A 4 to 6 digit code the promoter sets in Meet Setup step 1. Judges and anyone changing the setup type it once per phone. People who are only watching never need it. The PIN is checked against the meet each time and is not saved on the phone, so a lost phone does not give away the PIN.',
+    group: 'everyone',
+    q: 'Do I need to install an app?',
+    a: 'No. Everything runs in the browser on any phone, tablet or laptop. Promoters and judges can add the scorer to the home screen so it opens like an app, but nothing is downloaded from a store.',
+    link: { label: 'Open the scorer', href: '/scorer' },
   },
   {
-    q: 'What is a station?',
-    a: 'A set of implements with its own running order. Divisions on the same station lift one after the other; two stations run at the same time in different parts of the gym. Promoters assign divisions to stations in step 3, usually after sign-ups close and they know the numbers.',
-  },
-  {
-    q: 'How is the run order decided?',
-    a: 'Event 1 goes by lot number. For later events the promoter chooses one of two ways. Reverse overall points means the athlete with the fewest points so far goes first and the leader goes last. Reverse previous event means the order comes from the last event alone, with its winner going last. The screen where this is set explains both.',
-  },
-  {
-    q: 'What are the DEMO shows?',
-    a: 'Made-up meets with invented athletes, there so you can see what a listing and a live or finished scoreboard look like before your first real show. They carry a DEMO badge and you cannot register for them.',
-    link: { label: 'Open a demo board', href: '/m/iron-valley-summer-slam-2026' },
-  },
-  {
+    group: 'everyone',
     q: 'I forgot my password.',
     a: 'On the sign-in form, enter your email and tap Forgot password. The email you get has a link that brings you back to the Account page to choose a new one. If you are already signed in, use Change password on the same page.',
     link: { label: 'Account', href: '/website/account' },
   },
   {
-    q: 'Can a promoter delete a meet?',
-    a: 'Yes, from the Meet Day tab, as long as the meet is not running or finished. If the meet already has divisions, athletes, registrations, or results, you type its name to confirm. Finished meets are kept so results stay available.',
-  },
-  {
+    group: 'everyone',
     q: 'What happens to my data?',
-    a: 'What you enter when you register goes to the promoter of that meet, and ZeroTacky keeps what it needs to run the service. The Privacy Policy lists what is kept and for how long.',
+    a: 'What you enter when you register goes to the promoter of that meet, and ZeroTacky keeps what it needs to run the service. Your email is never shown publicly. The Privacy Policy lists what is kept and for how long.',
     link: { label: 'Privacy Policy', href: '/legal/privacy' },
   },
+  {
+    group: 'athletes',
+    q: 'Do I need an account to register for a show?',
+    a: 'No. The registration form works without one. If you sign in first, the entry lands on your My Meets page so you can see when the promoter accepts it, and after the meet it stays there as part of your record. You need to be 12 or older on the day of the meet; under 18, a parent or guardian completes their part of the waiver.',
+    link: { label: 'Find a Show', href: '/shows' },
+  },
+  {
+    group: 'athletes',
+    q: 'How do I watch a show live?',
+    a: 'Open the show page and tap the live scoreboard link. It shows standings, each event and who is up next, and updates as judges score. No account, no code. If you are at the venue, the promoter can also give you the join code, which adds the Next Up list with each athlete\'s weights.',
+  },
+  {
+    group: 'athletes',
+    q: 'What shows up publicly about me?',
+    a: 'Once the promoter accepts you, your name and division appear on the meet roster and the live scoreboard, the same as a printed start list. Your email, date of birth and emergency contact go to the promoter only. Nothing else is public unless you turn on your own athlete page.',
+  },
+  {
+    group: 'athletes',
+    q: 'How do I get my own athlete page?',
+    a: 'On your Account page, pick a username and turn on Show my profile publicly. Your name, photo, roles, location, home gym, favorite lift, PRs and the social handles you added show at zerotacky.com/athletes/yourname and in the Athletes list. Turn it off any time and the page is gone.',
+    link: { label: 'Athletes', href: '/athletes' },
+  },
+  {
+    group: 'promoters',
+    q: 'What do I need to run a show on ZeroTacky?',
+    a: 'An account with Promoter ticked, your phone or a laptop to set the meet up, and one phone per judge on the day. Nothing is installed and the gym does not need Wi-Fi. The first-show guide walks through the whole thing with pictures.',
+    link: { label: 'Set up your first show', href: '/how-it-works/first-show' },
+  },
+  {
+    group: 'promoters',
+    q: 'Join code or admin PIN: who gets which?',
+    a: 'Two codes, two jobs. The six-character join code gets a phone into your meet; give it to everyone helping, and to athletes or spectators who want the Next Up list. The admin PIN lets a joined phone score and change the setup; give it to judges and your co-promoters only. Both are on the Meet Day tab.',
+  },
+  {
+    group: 'promoters',
+    q: 'Can other people help me run it?',
+    a: 'Yes. Anyone with the join code and the admin PIN can judge or edit from their phone; several phones can score different stations at the same time and everything merges. The meet itself belongs to your account, so only you can list, unlist or delete it.',
+  },
+  {
+    group: 'promoters',
+    q: 'How do athletes get on the roster?',
+    a: 'Two ways, and you can mix them. Open registration on the Listing tab and athletes register from the show page; each entry appears on your Registrations tab and you accept, decline or waitlist it. Or type athletes straight into the roster in Meet Setup, which is what most people do for a small show or for day-of entries.',
+  },
+  {
+    group: 'promoters',
+    q: 'Can I unlist or delete a meet?',
+    a: 'Unlist any time from the Listing tab; the meet stays yours, it just leaves Find a Show. Delete from the Meet Day tab as long as the meet is not running or finished; if it already has athletes or results you type its name to confirm. Finished meets are kept so results stay available.',
+    link: { label: 'My Meets', href: '/promoter' },
+  },
+  {
+    group: 'gyms',
+    q: 'My gym is in the directory. How do I claim it?',
+    a: 'Open the gym\'s page and tap Claim this gym, then give your name, email and role at the gym. Sign in first and the approved listing attaches to your account straight away; otherwise we confirm by email. We check each claim against the gym\'s own site or contact address. Once approved, the listing is yours to edit from My Gym: equipment, day passes, drop-in hours, website and contact.',
+    link: { label: 'Gym Directory', href: '/gyms' },
+  },
+  {
+    group: 'gyms',
+    q: 'My gym is not listed. How do I add it?',
+    a: 'Sign in, tick Gym owner on your Account page, and use Add my gym. It goes into a short review queue so the directory stays real gyms with real equipment, then appears under your account.',
+    link: { label: 'Add my gym', href: '/website/account/gym/add' },
+  },
+];
+
+// What is coming (Kurt 10/21): the honest list of what is on the roadmap, so people know what is not here yet.
+export const HOW_IT_WORKS_ROADMAP: HowRoadmapItem[] = [
+  { title: 'Paid show registration', body: 'Promoters set an entry fee and athletes pay when they register, instead of settling up separately.' },
+  { title: 'Day passes from the gym directory', body: 'Buy a drop-in pass for a listed gym from its page, so travelling athletes can train on the way to a show.' },
+  { title: 'Trainer directory', body: 'Coaches who train in person or online get their own searchable list, built from the trainer flag on athlete profiles.' },
+  { title: 'Show history on athlete pages', body: 'Meets you competed in, with placings, listed on your public page once the promoter marks the show complete.' },
+  { title: 'Gyms and shows linked both ways', body: 'A show page points at its host gym, and a gym page lists the shows it has hosted.' },
 ];

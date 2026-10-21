@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Trophy, Users, ClipboardCheck, HelpCircle } from 'lucide-react';
+import { Trophy, Users, ClipboardCheck, HelpCircle, Map, ArrowRight } from 'lucide-react';
 import WebsiteShell from '@/components/website/WebsiteShell';
-import { HOW_IT_WORKS_TRACKS, HOW_IT_WORKS_FAQ } from '@/lib/website/howItWorks';
+import { HOW_IT_WORKS_TRACKS, HOW_IT_WORKS_FAQ, HOW_FAQ_GROUPS, HOW_IT_WORKS_ROADMAP } from '@/lib/website/howItWorks';
 import { canonical } from '@/lib/website/seo';
 
 export const metadata: Metadata = {
@@ -39,6 +39,9 @@ export default function HowItWorksPage() {
           <a href="#faq" className="px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase tracking-wide border bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong inline-flex items-center gap-1.5">
             <HelpCircle className="w-4 h-4" aria-hidden="true" /> FAQ
           </a>
+          <a href="#roadmap" className="px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase tracking-wide border bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong inline-flex items-center gap-1.5">
+            <Map className="w-4 h-4" aria-hidden="true" /> What&apos;s coming
+          </a>
         </nav>
       </div>
 
@@ -67,6 +70,21 @@ export default function HowItWorksPage() {
               </li>
             ))}
           </ol>
+          {track.id === 'promoters' && (
+            <Link
+              href="/how-it-works/first-show"
+              className="flex items-center justify-between gap-3 bg-zt-primary/10 border border-zt-primary/40 rounded-xl p-4 hover:border-zt-primary"
+            >
+              <div className="space-y-0.5 min-w-0">
+                <div className="text-sm font-black text-zt-text">Setting up your first show, step by step</div>
+                <p className="text-xs text-zt-text-2 leading-relaxed">
+                  One meet from a blank screen to posted results, with a picture of every screen and what each change does on
+                  the public side.
+                </p>
+              </div>
+              <ArrowRight className="w-5 h-5 text-zt-primary flex-shrink-0" aria-hidden="true" />
+            </Link>
+          )}
         </section>
       ))}
 
@@ -77,22 +95,51 @@ export default function HowItWorksPage() {
           </span>
           <h2 id="faq-heading" className="text-xl font-black text-zt-text">FAQ</h2>
         </div>
-        <dl className="grid gap-3 sm:grid-cols-2">
-          {HOW_IT_WORKS_FAQ.map((item) => (
-            <div key={item.q} className="bg-zt-inset border border-zt-border rounded-xl p-3 space-y-1">
-              <dt className="text-sm font-black text-zt-text">{item.q}</dt>
-              <dd className="text-xs text-zt-text-2 leading-relaxed">
-                {item.a}
-                {item.link && (
-                  <>
-                    {' '}
-                    <Link href={item.link.href} className="font-extrabold text-zt-primary underline underline-offset-2">{item.link.label}</Link>
-                  </>
-                )}
-              </dd>
+        {HOW_FAQ_GROUPS.map((group) => {
+          const items = HOW_IT_WORKS_FAQ.filter((f) => f.group === group.id);
+          if (!items.length) return null;
+          return (
+            <div key={group.id} className="space-y-2">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-zt-muted">{group.title}</h3>
+              <dl className="grid gap-3 sm:grid-cols-2">
+                {items.map((item) => (
+                  <div key={item.q} className="bg-zt-inset border border-zt-border rounded-xl p-3 space-y-1">
+                    <dt className="text-sm font-black text-zt-text">{item.q}</dt>
+                    <dd className="text-xs text-zt-text-2 leading-relaxed">
+                      {item.a}
+                      {item.link && (
+                        <>
+                          {' '}
+                          <Link href={item.link.href} className="font-extrabold text-zt-primary underline underline-offset-2">{item.link.label}</Link>
+                        </>
+                      )}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
+          );
+        })}
+      </section>
+
+      <section id="roadmap" aria-labelledby="roadmap-heading" className="bg-zt-surface border border-zt-border rounded-2xl p-5 sm:p-6 space-y-4 scroll-mt-24">
+        <div className="space-y-1">
+          <span className="text-[10px] font-black uppercase tracking-widest text-zt-primary inline-flex items-center gap-1.5">
+            <Map className="w-4 h-4" aria-hidden="true" /> Not here yet
+          </span>
+          <h2 id="roadmap-heading" className="text-xl font-black text-zt-text">What&apos;s coming</h2>
+          <p className="text-xs sm:text-sm text-zt-text-2 leading-relaxed max-w-3xl">
+            Everything above is live today and free. These are the next pieces, in roughly the order we plan to build them.
+          </p>
+        </div>
+        <ul className="grid gap-3 sm:grid-cols-2">
+          {HOW_IT_WORKS_ROADMAP.map((item) => (
+            <li key={item.title} className="bg-zt-inset border border-zt-border rounded-xl p-3 space-y-1">
+              <div className="text-sm font-black text-zt-text">{item.title}</div>
+              <p className="text-xs text-zt-text-2 leading-relaxed">{item.body}</p>
+            </li>
           ))}
-        </dl>
+        </ul>
       </section>
     </WebsiteShell>
   );

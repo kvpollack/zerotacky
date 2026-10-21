@@ -622,7 +622,7 @@ export default function AccountClient() {
           <AdminLink />
         </div>
         <p className="text-[11px] text-zt-muted">
-          Publishing from the scorer uses this sign-in. The old promoter key still works for phones that are not signed in.
+          Publishing from the scorer uses this sign-in. Judges and pit crew do not sign in; they join with the meet code.
         </p>
       </section>
     </div>

@@ -65,7 +65,7 @@ export default function RegistrationsSection({
         <div>
           <h2 className="text-sm font-black uppercase tracking-wider text-zt-primary flex items-center gap-2">
             <Users className="w-4 h-4" aria-hidden="true" />
-            <span>6. Athlete Registrations ({registrations.length})</span>
+            <span>7. Athlete Registrations ({registrations.length})</span>
           </h2>
           <p className="text-xs text-zt-muted mt-0.5">
             {pendingCount} pending, {acceptedCount} accepted. Accepting adds the athlete to that division&apos;s roster

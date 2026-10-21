@@ -40,3 +40,31 @@ describe('how-it-works copy', () => {
     assert.ok(!/All Out Strongfest|Power Plant/.test(text));
   });
 });
+
+// First-show guide (10/21): every screenshot it references must exist in public/guide, every link must land on a real
+// route, and the copy carries no em-dashes and no real meet or venue names (the walkthrough uses a made-up show).
+const FS = await import(`${ROOT}/lib/website/firstShow.ts`);
+describe('first-show guide', () => {
+  test('ten steps, each with a kicker, body, public-side note and at least one image', () => {
+    assert.equal(FS.FIRST_SHOW_STEPS.length, 10);
+    for (const s of FS.FIRST_SHOW_STEPS) {
+      assert.ok(s.where && s.title && s.publicSide, `${s.id} incomplete`);
+      assert.ok(s.body.length >= 1 && s.images.length >= 1, `${s.id} needs body and image`);
+    }
+    assert.equal(new Set(FS.FIRST_SHOW_STEPS.map((s) => s.id)).size, 10, 'step ids unique');
+  });
+  test('every screenshot exists under public/guide', () => {
+    for (const img of FS.FIRST_SHOW_STEPS.flatMap((s) => s.images)) {
+      assert.ok(img.src.startsWith('/guide/') && img.alt, `bad image entry ${img.src}`);
+      assert.ok(existsSync(fileURLToPath(new URL(`${ROOT}/public${img.src}`, import.meta.url))), `missing ${img.src}`);
+    }
+  });
+  test('every link points at a route that exists', () => {
+    for (const href of FS.FIRST_SHOW_STEPS.map((s) => s.link?.href).filter(Boolean)) assert.ok(routeExists(href), `missing route for ${href}`);
+  });
+  test('copy carries no em-dashes and no real-meet names', () => {
+    const text = JSON.stringify(FS.FIRST_SHOW_STEPS) + JSON.stringify(FS.FIRST_SHOW_INTRO) + JSON.stringify(FS.FIRST_SHOW_OUTRO);
+    assert.ok(!text.includes('\u2014'), 'em-dash found');
+    assert.ok(!/All Out Strongfest|Power Plant|Pollack/.test(text));
+  });
+});

@@ -148,7 +148,7 @@ export default function ListingSection({
         <div>
           <h2 className="text-sm font-black uppercase tracking-wider text-zt-primary flex items-center gap-2">
             <Globe className="w-4 h-4" aria-hidden="true" />
-            <span>5. Show Listing &amp; Lifecycle</span>
+            <span>6. Show Listing &amp; Lifecycle</span>
           </h2>
           <p className="text-xs text-zt-muted mt-0.5">
             {isLiveBackend() ? (
