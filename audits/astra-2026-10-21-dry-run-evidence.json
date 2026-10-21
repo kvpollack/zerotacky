@@ -1,0 +1,2469 @@
+{
+  "method": "Separate isolated browser contexts, staging-only UI writes; synthetic results on named dry-run fixture, not official results.",
+  "source": {
+    "sha": "d6d80efc8ff9b0ff64756e66ea650c40a44b9531",
+    "tracked": 344,
+    "mismatches": []
+  },
+  "baseline": {
+    "meets": [
+      {
+        "id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "date": "2026-10-24",
+        "name": "All Out Strongfest 2026 (DRY RUN)",
+        "slug": "all-out-strongfest-2026-dryrun",
+        "venue": null,
+        "is_demo": false,
+        "owner_id": "36970762-b3e1-43c2-87f0-d1093816f94e",
+        "stations": [
+          {
+            "id": "A",
+            "label": "Station 1"
+          },
+          {
+            "id": "B",
+            "label": "Station 2",
+            "eventOrder": [
+              "sf-ev-2",
+              "sf-ev-1",
+              "sf-ev-3"
+            ]
+          }
+        ],
+        "created_at": "2026-10-21T16:33:02.448795+00:00",
+        "federation": null,
+        "updated_at": "2026-10-21T16:33:02.448795+00:00",
+        "athlete_cap": null,
+        "athlete_count": 13,
+        "pending_count": 0,
+        "division_count": 5,
+        "results_status": "not_started",
+        "tiebreaker_rule": "event_wins",
+        "available_plates": [
+          100,
+          55,
+          45,
+          35,
+          25,
+          15,
+          10,
+          5,
+          2.5
+        ],
+        "is_public_listed": false,
+        "promoter_contact": null,
+        "run_order_method": "lot_order",
+        "entry_fee_display": null,
+        "competition_status": "upcoming",
+        "registration_count": 0,
+        "registration_status": "closed",
+        "registration_deadline": null,
+        "collar_weight_per_pair": 0
+      }
+    ],
+    "divisions": [
+      {
+        "id": "sf-g1",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "name": "Group 1",
+        "flight": "A",
+        "sort_order": 1
+      },
+      {
+        "id": "sf-g2",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "name": "Group 2",
+        "flight": "A",
+        "sort_order": 2
+      },
+      {
+        "id": "sf-g3",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "name": "Group 3",
+        "flight": "B",
+        "sort_order": 3
+      },
+      {
+        "id": "sf-g4",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "name": "Group 4",
+        "flight": "B",
+        "sort_order": 4
+      },
+      {
+        "id": "sf-g5",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "name": "Group 5",
+        "flight": "B",
+        "sort_order": 5
+      }
+    ],
+    "events": [
+      {
+        "id": "sf-ev-1",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "event_number": 1,
+        "name": "Basket Deadlift (For Reps)",
+        "scoring_type": "reps",
+        "time_cap_seconds": 60,
+        "lanes": 1,
+        "loading_points": 2,
+        "weight_entry_mode": "total",
+        "implement_empty_weight": 0,
+        "config": {
+          "heightLabel": "Basket Keg Count & Load",
+          "hasTrumpWeight": false,
+          "pitCrewCallout": {
+            "title": "Keg / Load Callout",
+            "byDivision": {
+              "sf-g1": {
+                "headline": "8 Empty Kegs (No Added Plates)"
+              },
+              "sf-g2": {
+                "headline": "10 Empty Kegs (~265 lbs Total)"
+              },
+              "sf-g3": {
+                "headline": "11 Kegs + 50 lbs Plates (~355 lbs Total)"
+              },
+              "sf-g4": {
+                "headline": "11 Kegs + 200 lbs Plates (~420 lbs Total)"
+              },
+              "sf-g5": {
+                "headline": "11 Kegs + 300 lbs Plates"
+              }
+            }
+          },
+          "divisionWeights": {
+            "sf-g1": 0,
+            "sf-g2": 0,
+            "sf-g3": 50,
+            "sf-g4": 200,
+            "sf-g5": 300
+          },
+          "hasHeightCallout": true,
+          "groundTouchWarning": true,
+          "divisionDefaultHeights": {
+            "sf-g1": "8 Empty Kegs (0 Plates)",
+            "sf-g2": "10 Empty Kegs (~265 lbs)",
+            "sf-g3": "11 Kegs + 50 lb Plates (~355 lbs)",
+            "sf-g4": "11 Kegs + 200 lb Plates (~420 lbs)",
+            "sf-g5": "11 Kegs + 300 lb Plates"
+          },
+          "weightIsAddedPlatesOnly": true
+        }
+      },
+      {
+        "id": "sf-ev-2",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "event_number": 2,
+        "name": "Keg Over Bar (For Reps)",
+        "scoring_type": "reps",
+        "time_cap_seconds": 60,
+        "lanes": 1,
+        "loading_points": 0,
+        "weight_entry_mode": "total",
+        "implement_empty_weight": 0,
+        "config": {
+          "heightLabel": "Yoke Crossbar Height",
+          "hasTrumpWeight": false,
+          "pitCrewCallout": {
+            "title": "Yoke Crossbar Height + Keg Weight",
+            "byDivision": {
+              "sf-g1": {
+                "stats": [
+                  {
+                    "label": "Yoke Crossbar",
+                    "value": "44\""
+                  },
+                  {
+                    "label": "Keg Weight",
+                    "value": "100 lb"
+                  }
+                ],
+                "headline": "44\" Yoke Bar \u2022 100 lb Keg"
+              },
+              "sf-g2": {
+                "stats": [
+                  {
+                    "label": "Yoke Crossbar",
+                    "value": "44\""
+                  },
+                  {
+                    "label": "Keg Weight",
+                    "value": "125 lb"
+                  }
+                ],
+                "headline": "44\" Yoke Bar \u2022 125 lb Keg"
+              },
+              "sf-g3": {
+                "stats": [
+                  {
+                    "label": "Yoke Crossbar",
+                    "value": "46\""
+                  },
+                  {
+                    "label": "Keg Weight",
+                    "value": "175 lb"
+                  }
+                ],
+                "headline": "46\" Yoke Bar \u2022 175 lb Keg"
+              },
+              "sf-g4": {
+                "stats": [
+                  {
+                    "label": "Yoke Crossbar",
+                    "value": "48\""
+                  },
+                  {
+                    "label": "Keg Weight",
+                    "value": "200 lb"
+                  }
+                ],
+                "headline": "48\" Yoke Bar \u2022 200 lb Keg"
+              },
+              "sf-g5": {
+                "stats": [
+                  {
+                    "label": "Yoke Crossbar",
+                    "value": "48\""
+                  },
+                  {
+                    "label": "Keg Weight",
+                    "value": "250 lb"
+                  }
+                ],
+                "headline": "48\" Yoke Bar \u2022 250 lb Keg"
+              }
+            }
+          },
+          "divisionWeights": {
+            "sf-g1": 100,
+            "sf-g2": 125,
+            "sf-g3": 175,
+            "sf-g4": 200,
+            "sf-g5": 250
+          },
+          "hasHeightCallout": true,
+          "divisionDefaultHeights": {
+            "sf-g1": "44\" Yoke Bar (100 lb Keg)",
+            "sf-g2": "44\" Yoke Bar (125 lb Keg)",
+            "sf-g3": "46\" Yoke Bar (175 lb Keg)",
+            "sf-g4": "48\" Yoke Bar (200 lb Keg)",
+            "sf-g5": "48\" Yoke Bar (250 lb Keg)"
+          }
+        }
+      },
+      {
+        "id": "sf-ev-3",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "event_number": 3,
+        "name": "50ft Harness Truck Pull",
+        "scoring_type": "time_or_distance",
+        "time_cap_seconds": 60,
+        "lanes": 1,
+        "loading_points": 0,
+        "weight_entry_mode": "total",
+        "implement_empty_weight": 0,
+        "config": {
+          "hasTrumpWeight": false,
+          "pitCrewCallout": {
+            "title": "Vehicle Setup",
+            "byDivision": {
+              "sf-g1": {
+                "stats": [
+                  {
+                    "label": "Course",
+                    "value": "50 ft"
+                  },
+                  {
+                    "label": "Scoring",
+                    "value": "Fastest Time / Ft if Capped"
+                  }
+                ],
+                "headline": "Group 1 Vehicle \u2022 Pickup Truck"
+              },
+              "sf-g2": {
+                "stats": [
+                  {
+                    "label": "Course",
+                    "value": "50 ft"
+                  },
+                  {
+                    "label": "Scoring",
+                    "value": "Fastest Time / Ft if Capped"
+                  }
+                ],
+                "headline": "Group 2 Vehicle \u2022 Box Truck"
+              },
+              "sf-g3": {
+                "stats": [
+                  {
+                    "label": "Course",
+                    "value": "50 ft"
+                  },
+                  {
+                    "label": "Scoring",
+                    "value": "Fastest Time / Ft if Capped"
+                  }
+                ],
+                "headline": "Group 3 Vehicle \u2022 Box Truck"
+              },
+              "sf-g4": {
+                "stats": [
+                  {
+                    "label": "Course",
+                    "value": "50 ft"
+                  },
+                  {
+                    "label": "Scoring",
+                    "value": "Fastest Time / Ft if Capped"
+                  }
+                ],
+                "headline": "Group 4 Vehicle \u2022 Box Truck"
+              },
+              "sf-g5": {
+                "stats": [
+                  {
+                    "label": "Course",
+                    "value": "50 ft"
+                  },
+                  {
+                    "label": "Scoring",
+                    "value": "Fastest Time / Ft if Capped"
+                  }
+                ],
+                "headline": "Group 5 Vehicle \u2022 Box Truck"
+              }
+            }
+          },
+          "divisionWeights": {}
+        }
+      }
+    ],
+    "athletes": [
+      {
+        "id": "sf-ath-1",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "division_id": "sf-g1",
+        "name": "Jessica Rucci",
+        "bodyweight": null,
+        "lot_number": 1,
+        "status": "active",
+        "rack_heights": {}
+      },
+      {
+        "id": "sf-ath-10",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "division_id": "sf-g2",
+        "name": "Edward Anderson",
+        "bodyweight": null,
+        "lot_number": 5,
+        "status": "active",
+        "rack_heights": {}
+      },
+      {
+        "id": "sf-ath-11",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "division_id": "sf-g3",
+        "name": "Yen Chun Huang",
+        "bodyweight": null,
+        "lot_number": 1,
+        "status": "active",
+        "rack_heights": {}
+      },
+      {
+        "id": "sf-ath-12",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "division_id": "sf-g4",
+        "name": "Hyden Zhang",
+        "bodyweight": null,
+        "lot_number": 1,
+        "status": "active",
+        "rack_heights": {}
+      },
+      {
+        "id": "sf-ath-13",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "division_id": "sf-g4",
+        "name": "Kurt Pollack",
+        "bodyweight": null,
+        "lot_number": 2,
+        "status": "active",
+        "rack_heights": {
+          "sf-ev-2": "48\" Bar (Std)"
+        }
+      },
+      {
+        "id": "sf-ath-14",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "division_id": "sf-g5",
+        "name": "Marcus Potter",
+        "bodyweight": null,
+        "lot_number": 1,
+        "status": "active",
+        "rack_heights": {}
+      },
+      {
+        "id": "sf-ath-2",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "division_id": "sf-g1",
+        "name": "Emily Shaff",
+        "bodyweight": null,
+        "lot_number": 2,
+        "status": "active",
+        "rack_heights": {}
+      },
+      {
+        "id": "sf-ath-3",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "division_id": "sf-g1",
+        "name": "Amber Simcox",
+        "bodyweight": null,
+        "lot_number": 3,
+        "status": "active",
+        "rack_heights": {}
+      },
+      {
+        "id": "sf-ath-4",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "division_id": "sf-g1",
+        "name": "Grace Gullo",
+        "bodyweight": null,
+        "lot_number": 4,
+        "status": "active",
+        "rack_heights": {}
+      },
+      {
+        "id": "sf-ath-5",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "division_id": "sf-g2",
+        "name": "Josh Palange",
+        "bodyweight": null,
+        "lot_number": 1,
+        "status": "active",
+        "rack_heights": {}
+      },
+      {
+        "id": "sf-ath-6",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "division_id": "sf-g2",
+        "name": "Jennifer Slagus",
+        "bodyweight": null,
+        "lot_number": 2,
+        "status": "active",
+        "rack_heights": {}
+      },
+      {
+        "id": "sf-ath-7",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "division_id": "sf-g2",
+        "name": "Hannah Litchfield",
+        "bodyweight": null,
+        "lot_number": 3,
+        "status": "active",
+        "rack_heights": {}
+      },
+      {
+        "id": "sf-ath-8",
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "division_id": "sf-g2",
+        "name": "Nadia Hall",
+        "bodyweight": null,
+        "lot_number": 4,
+        "status": "active",
+        "rack_heights": {}
+      }
+    ],
+    "results": [],
+    "live_state": [],
+    "meet_members": [
+      {
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "user_id": "36970762-b3e1-43c2-87f0-d1093816f94e",
+        "role": "owner"
+      },
+      {
+        "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+        "user_id": "745d4f4f-6097-4aa4-b6c1-99b75abb728a",
+        "role": "owner"
+      }
+    ],
+    "astraIsOwner": false
+  },
+  "run": {
+    "checks": {
+      "promoterTabs": {
+        "1. MEET": "1. MEET DETAILS & RULES\nMEET NAME\nMEET DATE\nURL SLUG (CLOUD SYNC)\nADMIN PIN (4\u20136 DIGITS)\nCOLLAR WEIGHT / PAIR (LBS)\nATHLETE RUN ORDER\n\nThe first event on a station runs by lot number. The reverse methods take over once an earlier event on that station has results.\n\nReverse Overall Pts\nReverse Prev Event\nRoster Order\n\nReverse Overall Pts: Lowest overall points lifts first and the current leader goes last. Athletes level on points go by lot number. Most promoters pick this so the podium race builds to the final attempt.\n\nReverse Prev Event: Only the last event counts. Whoever placed last in it goes first and its winner goes last, whatever the overall standings. Athletes tied in that event go lower overall points first, then by lot number.\n\nRoster Order: Athletes go in lot order for every event, never reshuffled. Pick this when the order was published ahead of time.\n\nOVERALL PODIUM TIEBREAKER\n\nUsed only when two athletes finish on the same total points.\n\nMost Event Wins\nFinal Event Score\n\nMost Event Wins: The athlete with more event wins places higher. If that is level too, more points in the final event wins. Still level after both: the athletes share the place.\n\nFinal Event Score: The athlete with more points in the final event places higher. If that is level too, more event wins. Still level after both: the athletes share the place.\n\nAVAILABLE GYM PLATES (TAP TO ENABLE/DISABLE)\n100 lb\n55 lb\n45 lb\n35 lb\n25 lb\n15 lb\n10 lb\n5 lb\n2.5 lb",
+        "2. DIVISIONS\n5": "2. DIVISIONS (5)\nStations are assigned in step 3\nStation 1\n4 ath\nStation 1\n5 ath\nStation 2\n1 ath\nStation 2\n2 ath\nStation 2\n1 ath\nADD",
+        "3. STATIONS\n2": "3. STATIONS & FLOOR PLAN (2)\nMin 1 station\n\nA station is one set of implements running its own order. Divisions on the same station run back to back; two stations run at the same time in different parts of the gym. Most promoters decide this after sign-ups close, and a small meet is fine on one station.\n\nA\n2 divs \u00b7 9 ath\nGroup 1\nGroup 2\nEVENT ORDER ON THIS STATION (MEET ORDER)\n1.\nEv 1 Basket Deadlift (For Reps)\n2.\nEv 2 Keg Over Bar (For Reps)\n3.\nEv 3 50ft Harness Truck Pull\nB\n3 divs \u00b7 4 ath\nGroup 3\nGroup 4\nGroup 5\nEVENT ORDER ON THIS STATION\nRESET TO MEET ORDER\n1.\nEv 2 Keg Over Bar (For Reps)\n2.\nEv 1 Basket Deadlift (For Reps)\n3.\nEv 3 50ft Harness Truck Pull\n\nDivisions here run events in this order. The leaderboard still shows Ev 1, 2, 3 by meet number.\n\nADD STATION\nASSIGN DIVISIONS TO STATIONS\nGroup 1\n4 ath\nStation 1\nStation 2\nGroup 2\n5 ath\nStation 1\nStation 2\nGroup 3\n1 ath\nStation 1\nStation 2\nGroup 4\n2 ath\nStation 1\nStation 2\nGroup 5\n1 ath\nStation 1\nStation 2",
+        "4. EVENTS\n3": "4. EVENTS (3)\nADD EVENT\nEV 1\nREPS\n60s \u2022 1 Lane \u2022 2pt\nBasket Deadlift (For Reps)\nEV 2\nREPS\n60s \u2022 1 Lane \u2022 0pt\nKeg Over Bar (For Reps)\nEV 3\nTIME / DIST\n60s \u2022 1 Lane \u2022 0pt\n50ft Harness Truck Pull",
+        "5. ATHLETES\n13": "5. ATHLETES (13)\nBULK ADD\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nADD\nGroup 1(4 athletes)\nDRAW LOTS\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nGroup 2(5 athletes)\nDRAW LOTS\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nGroup 3(1 athlete)\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nGroup 4(2 athletes)\nDRAW LOTS\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nGroup 5(1 athlete)\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5",
+        "6. LISTING": "6. SHOW LISTING & LIFECYCLE\n\nControls what the public sees on Find a Show and the meet's registration page. Unlisted meets have no show page and are not in Find a Show; their registration page and live scoreboard still open by direct link, roster names included.\n\nMeet Date: 2026-10-24\nUnlisted\n\nUnlisted meets stay out of the public directory. Keep test meets and drafts unlisted until athletes should find them.\n\nCOMPETITION STATUS\nUpcoming\nLive Now\nCompleted\nPostponed\nCancelled\nREGISTRATION STATUS\nOpen\nWaitlist Only\nClosed\nDay-Of Entry Only\nNot Applicable\nNot Provided\nRESULTS STATUS\nNot Started\nIn Progress (Live Provisional)\nProvisional (Pending Audit)\nFinal (Certifies Official Podiums)\nVENUE & LOCATION\nFACILITY / GYM NAME\nSTREET ADDRESS\nCITY\nSTATE\nPOSTAL CODE\nCOUNTRY\nSANCTIONING, ENTRY FEE, CAPS & CONTACT\nFEDERATION / FORMAT\nENTRY FEE DISPLAY\nREGISTRATION DEADLINE\nATHLETE CAP\nPROMOTER CONTACT (SHOWN TO ATHLETES)\n\nAppears on the registration page and in the waiver. Leave blank to show \"contact not provided\".\n\nRESET\nSAVE LISTING SETTINGS",
+        "7. REGISTRATIONS\n0": "7. ATHLETE REGISTRATIONS (0)\n\n0 pending, 0 accepted. Accepting adds the athlete to that division's roster (tab 5, Athletes) with the next lot number; declining removes the roster row unless it already has results. Emergency contacts are visible to you only.\n\nNo athlete registrations submitted for this meet yet.",
+        "8. MEET DAY": "8. MEET DAY CODES & SCREEN LINKS\n\nMeet-day codes and screen links for this meet. The join code is checked on every write from a volunteer phone.\n\nVOLUNTEER PHONE JOIN CODE (OWNER ONLY)\n[REDACTED]\n\nRotate replaces the code. Every phone that joined with the old code, including an admin phone that published with it, is locked out on its next write until it rejoins with the new one. A phone signed in to this account is unaffected.\n\nCOPY CODE\nROTATE CODE\nQR CODES FOR THE GYM WALL\nPRINT BOTH\nJudges & pit crew: join this meet\nScan, then pick your role. Code [REDACTED].\nLive scoreboard\nScan to follow the standings on your phone.\n\nPrint both on one sheet each and tape them up by the sign-in table and the platform. The join QR carries the current code; print again after you rotate it.\n\nPROMOTER / ADMIN PHONE: OPEN THIS MEET\nOPEN\n\nOpen on the admin phone, pick Promoter and enter the admin PIN from the Meet tab. The phone attaches to this meet; check the meet name before scoring. Opening /scorer on its own shows whatever meet that phone had last.\n\nCOPY\nVOLUNTEER JUDGE & PIT CREW JOIN URL\nOPEN\n\nShare with judges and pit crew. Their phones attach to this meet with the current join code.\n\nCOPY\nGYM TV / PROJECTOR LIVE LEADERBOARD URL\nOPEN\n\nFull-width multi-division standings table for a laptop HDMI feed or gym TV.\n\nCOPY\nDELETE THIS MEET\n\nRemoves the meet, its divisions, events, roster, scores, registrations, and the public page for good. Only the promoter who owns the meet can do this. A live or completed meet cannot be deleted; set it to cancelled on the Listing tab or keep it as a record.\n\nDELETE MEET"
+      },
+      "adminLinksJoin": [
+        true,
+        true,
+        false
+      ],
+      "judge1Joined": {
+        "name": "All Out Strongfest 2026 (DRY RUN)",
+        "role": "judge",
+        "linked": true
+      },
+      "judge2Joined": {
+        "name": "All Out Strongfest 2026 (DRY RUN)",
+        "role": "judge",
+        "linked": true
+      },
+      "pitJoined": {
+        "name": "All Out Strongfest 2026 (DRY RUN)",
+        "role": "pitcrew",
+        "linked": true
+      },
+      "spectatorJoined": {
+        "name": "All Out Strongfest 2026 (DRY RUN)",
+        "role": "spectator",
+        "linked": true
+      },
+      "ownerJoined": {
+        "name": "All Out Strongfest 2026 (DRY RUN)",
+        "role": "admin",
+        "linked": true
+      },
+      "spectatorReadOnly": {
+        "judgeTab": 0,
+        "setupTab": 0,
+        "text": "ZEROTACKY\nSPECTATOR LOCKED \u2022 UNLOCK\nAll Out Strongfest 2026 (DRY RUN)\nStation 1\nStation 2\nAll\n[Station 1] Group 1\n[Station 1] Group 2\nEv 1: Basket Deadlift (For Reps)\nEv 2: Keg Over Bar (For Reps)\nEv 3: 50ft Harness Truck Pull\nOVERALL STANDINGS \u2022 GROUP 1\nTiebreaker: Event Wins\nTV\nT-#1\nJessica Rucci\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nEmily Shaff\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nAmber Simcox\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nGrace Gullo\nEvent Wins: 0\n0\nTOTAL PTS\nEVENT 1 BREAKDOWN \u2022 BASKET DEADLIFT (FOR REPS)\n#4\nJessica Rucci\n\u2014\n0 pts\n#4\nEmily Shaff\n\u2014\n0 pts\n#4\nAmber Simcox\n\u2014\n0 pts\n#4\nGrace Gullo\n\u2014\n0 pts\nNEXT UP\nSTANDINGS"
+      },
+      "initialBoard": "LIVE SCOREBOARD\nAll Out Strongfest 2026 (DRY RUN)\nTV\nupdated 12:44:07 PM\nSTATION 1 \u00b7 UP NOW\nJessica Rucci\nEv 1 Basket Deadlift (For Reps) \u00b7 Group 1\nSTATION 2 \u00b7 UP NOW\nidle\nAll\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nOVERALL STANDINGS \u2022 GROUP 1\nTiebreaker: Event Wins\nT-#1\nJessica Rucci\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nEmily Shaff\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nAmber Simcox\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nGrace Gullo\nEvent Wins: 0\n0\nTOTAL PTS\nEVENT 1 BREAKDOWN \u2022 BASKET DEADLIFT (FOR REPS)\n#4\nJessica Rucci\n\u2014\n0 pts\n#4\nEmily Shaff\n\u2014\n0 pts\n#4\nAmber Simcox\n\u2014\n0 pts\n#4\nGrace Gullo\n\u2014\n0 pts\nOVERALL STANDINGS \u2022 GROUP 2\nTiebreaker: Event Wins\nT-#1\nJosh Palange\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nJennifer Slagus\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nHannah Litchfield\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nNadia Hall\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nEdward Anderson\nEvent Wins: 0\n0\nTOTAL PTS\nEVENT 1 BREAKDOWN \u2022 BASKET DEADLIFT (FOR REPS)\n#5\nJosh Palange\n\u2014\n0 pts\n#5\nJennifer Slagus\n\u2014\n0 pts\n#5\nHannah Litchfield\n\u2014\n0 pts\n#5\nNadia Hall\n\u2014\n0 pts\n#5\nEdward Anderson\n\u2014\n0 pts\nOVERALL STANDINGS \u2022 GROUP 3\nTiebreaker: Event Wins\n#1\nYen Chun Huang\nEvent Wins: 0\n0\nTOTAL PTS\nEVENT 1 BREAKDOWN \u2022 BASKET DEADLIFT (FOR REPS)\n#1\nYen Chun Huang\n\u2014\n0 pts\nOVERALL STANDINGS \u2022 GROUP 4\nTiebreaker: Event Wins\nT-#1\nHyden Zhang\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nKurt Pollack\nEvent Wins: 0\n0\nTOTAL PTS\nEVENT 1 BREAKDOWN \u2022 BASKET DEADLIFT (FOR REPS)\n#2\nHyden Zhang\n\u2014\n0 pts\n#2\nKurt Pollack\n\u2014\n0 pts\nOVERALL STANDINGS \u2022 GROUP 5\nTiebreaker: Event Wins\n#1\nMarcus Potter\nEvent Wins: 0\n0\nTOTAL PTS\nEVENT 1 BREAKDOWN \u2022 BASKET DEADLIFT (FOR REPS)\n#1\nMarcus Potter\n\u2014\n0 pts\nZEROTACKY \u00b7 refreshes every 4s \u00b7 Home \u00b7 Account",
+      "wrongPin": {
+        "error": "Wrong PIN. Ask the promoter for the meet PIN.",
+        "field": {
+          "font": "24px",
+          "inputMode": "numeric"
+        },
+        "announced": 1
+      },
+      "pinSaveStatus": 200,
+      "oldPinSessionAfterChange": {
+        "rows": [
+          {
+            "id": "sf-ev-1_sf-ath-1",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-1",
+            "athlete_id": "sf-ath-1",
+            "payload": {
+              "reps": 1,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:10.615+00:00",
+            "updated_by": "dev-075502d7",
+            "server_at": "2026-10-21T16:44:10.756933+00:00"
+          }
+        ],
+        "ui": "Sync: Syncing"
+      },
+      "oldPinRejectedForNewLogin": true,
+      "order-sf-g1-sf-ev-1": {
+        "buttons": [
+          "Order #1Jessica Rucci0 pts \u2022 8 Empty Kegs (0 Plates)",
+          "Order #2Emily Shaff0 pts \u2022 8 Empty Kegs (0 Plates)",
+          "Order #3Amber Simcox0 pts \u2022 8 Empty Kegs (0 Plates)",
+          "Order #4Grace Gullo0 pts \u2022 8 Empty Kegs (0 Plates)"
+        ],
+        "expected": [
+          "Jessica Rucci",
+          "Emily Shaff",
+          "Amber Simcox",
+          "Grace Gullo"
+        ],
+        "eventOptions": [
+          "Ev 1: Basket Deadlift (For Reps)",
+          "Ev 2: Keg Over Bar (For Reps)",
+          "Ev 3: 50ft Harness Truck Pull"
+        ]
+      },
+      "after-sf-g1-sf-ev-1": {
+        "serverResultCount": 4,
+        "lastExpected": 3
+      },
+      "order-sf-g2-sf-ev-1": {
+        "buttons": [
+          "Order #1Josh Palange0 pts \u2022 10 Empty Kegs (~265 lbs)",
+          "Order #2Jennifer Slagus0 pts \u2022 10 Empty Kegs (~265 lbs)",
+          "Order #3Hannah Litchfield0 pts \u2022 10 Empty Kegs (~265 lbs)",
+          "Order #4Nadia Hall0 pts \u2022 10 Empty Kegs (~265 lbs)",
+          "Order #5Edward Anderson0 pts \u2022 10 Empty Kegs (~265 lbs)"
+        ],
+        "expected": [
+          "Josh Palange",
+          "Jennifer Slagus",
+          "Hannah Litchfield",
+          "Nadia Hall",
+          "Edward Anderson"
+        ],
+        "eventOptions": [
+          "Ev 1: Basket Deadlift (For Reps)",
+          "Ev 2: Keg Over Bar (For Reps)",
+          "Ev 3: 50ft Harness Truck Pull"
+        ]
+      },
+      "after-sf-g2-sf-ev-1": {
+        "serverResultCount": 9,
+        "lastExpected": 1
+      },
+      "order-sf-g1-sf-ev-2": {
+        "buttons": [
+          "Order #1Jessica Rucci0 pts \u2022 44\" Yoke Bar (100 lb Keg)",
+          "Order #2Emily Shaff2.5 pts \u2022 44\" Yoke Bar (100 lb Keg)",
+          "Order #3Amber Simcox2.5 pts \u2022 44\" Yoke Bar (100 lb Keg)",
+          "Order #4Grace Gullo4 pts \u2022 44\" Yoke Bar (100 lb Keg)"
+        ],
+        "expected": [
+          "Jessica Rucci",
+          "Emily Shaff",
+          "Amber Simcox",
+          "Grace Gullo"
+        ],
+        "eventOptions": [
+          "Ev 1: Basket Deadlift (For Reps)",
+          "Ev 2: Keg Over Bar (For Reps)",
+          "Ev 3: 50ft Harness Truck Pull"
+        ]
+      },
+      "after-sf-g1-sf-ev-2": {
+        "serverResultCount": 4,
+        "lastExpected": 2
+      },
+      "order-sf-g2-sf-ev-2": {
+        "buttons": [
+          "Order #1Josh Palange0 pts \u2022 44\" Yoke Bar (125 lb Keg)",
+          "Order #2Jennifer Slagus3.5 pts \u2022 44\" Yoke Bar (125 lb Keg)",
+          "Order #3Hannah Litchfield3.5 pts \u2022 44\" Yoke Bar (125 lb Keg)",
+          "Order #4Nadia Hall5 pts \u2022 44\" Yoke Bar (125 lb Keg)",
+          "Order #5Edward Anderson2 pts \u2022 44\" Yoke Bar (125 lb Keg)"
+        ],
+        "expected": [
+          "Josh Palange",
+          "Jennifer Slagus",
+          "Hannah Litchfield",
+          "Nadia Hall",
+          "Edward Anderson"
+        ],
+        "eventOptions": [
+          "Ev 1: Basket Deadlift (For Reps)",
+          "Ev 2: Keg Over Bar (For Reps)",
+          "Ev 3: 50ft Harness Truck Pull"
+        ]
+      },
+      "after-sf-g2-sf-ev-2": {
+        "serverResultCount": 9,
+        "lastExpected": 0
+      },
+      "order-sf-g1-sf-ev-3": {
+        "buttons": [
+          "Order #1Jessica Rucci4 pts",
+          "Order #2Emily Shaff4 pts",
+          "Order #3Amber Simcox4 pts",
+          "Order #4Grace Gullo7 pts"
+        ],
+        "expected": [
+          "Jessica Rucci",
+          "Emily Shaff",
+          "Amber Simcox",
+          "Grace Gullo"
+        ],
+        "eventOptions": [
+          "Ev 1: Basket Deadlift (For Reps)",
+          "Ev 2: Keg Over Bar (For Reps)",
+          "Ev 3: 50ft Harness Truck Pull"
+        ]
+      },
+      "after-sf-g1-sf-ev-3": {
+        "serverResultCount": 4,
+        "lastExpected": 31
+      },
+      "order-sf-g2-sf-ev-3": {
+        "buttons": [
+          "Order #1Josh Palange5 pts",
+          "Order #2Jennifer Slagus6 pts",
+          "Order #3Hannah Litchfield6 pts",
+          "Order #4Nadia Hall9 pts",
+          "Order #5Edward Anderson2 pts"
+        ],
+        "expected": [
+          "Josh Palange",
+          "Jennifer Slagus",
+          "Hannah Litchfield",
+          "Nadia Hall",
+          "Edward Anderson"
+        ],
+        "eventOptions": [
+          "Ev 1: Basket Deadlift (For Reps)",
+          "Ev 2: Keg Over Bar (For Reps)",
+          "Ev 3: 50ft Harness Truck Pull"
+        ]
+      },
+      "after-sf-g2-sf-ev-3": {
+        "serverResultCount": 9,
+        "lastExpected": 33
+      },
+      "order-sf-g3-sf-ev-2": {
+        "buttons": [
+          "Order #1Yen Chun Huang0 pts \u2022 46\" Yoke Bar (175 lb Keg)"
+        ],
+        "expected": [
+          "Yen Chun Huang"
+        ],
+        "eventOptions": [
+          "1. Ev 2: Keg Over Bar (For Reps)",
+          "2. Ev 1: Basket Deadlift (For Reps)",
+          "3. Ev 3: 50ft Harness Truck Pull"
+        ]
+      },
+      "after-sf-g3-sf-ev-2": {
+        "serverResultCount": 10,
+        "lastExpected": 3
+      },
+      "order-sf-g4-sf-ev-2": {
+        "buttons": [
+          "Order #1Hyden Zhang0 pts \u2022 48\" Yoke Bar (200 lb Keg)",
+          "Order #2Kurt Pollack0 pts \u2022 48\" Bar (Std)"
+        ],
+        "expected": [
+          "Hyden Zhang",
+          "Kurt Pollack"
+        ],
+        "eventOptions": [
+          "1. Ev 2: Keg Over Bar (For Reps)",
+          "2. Ev 1: Basket Deadlift (For Reps)",
+          "3. Ev 3: 50ft Harness Truck Pull"
+        ]
+      },
+      "after-sf-g4-sf-ev-2": {
+        "serverResultCount": 11,
+        "lastExpected": 1
+      },
+      "order-sf-g5-sf-ev-2": {
+        "buttons": [
+          "Order #1Marcus Potter0 pts \u2022 48\" Yoke Bar (250 lb Keg)"
+        ],
+        "expected": [
+          "Marcus Potter"
+        ],
+        "eventOptions": [
+          "1. Ev 2: Keg Over Bar (For Reps)",
+          "2. Ev 1: Basket Deadlift (For Reps)",
+          "3. Ev 3: 50ft Harness Truck Pull"
+        ]
+      },
+      "after-sf-g5-sf-ev-2": {
+        "serverResultCount": 13,
+        "lastExpected": 3
+      },
+      "order-sf-g3-sf-ev-1": {
+        "buttons": [
+          "Order #1Yen Chun Huang1 pts \u2022 11 Kegs + 50 lb Plates (~355 lbs)"
+        ],
+        "expected": [
+          "Yen Chun Huang"
+        ],
+        "eventOptions": [
+          "1. Ev 2: Keg Over Bar (For Reps)",
+          "2. Ev 1: Basket Deadlift (For Reps)",
+          "3. Ev 3: 50ft Harness Truck Pull"
+        ]
+      },
+      "after-sf-g3-sf-ev-1": {
+        "serverResultCount": 10,
+        "lastExpected": 0
+      },
+      "order-sf-g4-sf-ev-1": {
+        "buttons": [
+          "Order #1Hyden Zhang2 pts \u2022 11 Kegs + 200 lb Plates (~420 lbs)",
+          "Order #2Kurt Pollack1 pts \u2022 11 Kegs + 200 lb Plates (~420 lbs)"
+        ],
+        "expected": [
+          "Hyden Zhang",
+          "Kurt Pollack"
+        ],
+        "eventOptions": [
+          "1. Ev 2: Keg Over Bar (For Reps)",
+          "2. Ev 1: Basket Deadlift (For Reps)",
+          "3. Ev 3: 50ft Harness Truck Pull"
+        ]
+      },
+      "after-sf-g4-sf-ev-1": {
+        "serverResultCount": 12,
+        "lastExpected": 2
+      },
+      "order-sf-g5-sf-ev-1": {
+        "buttons": [
+          "Order #1Marcus Potter1 pts \u2022 11 Kegs + 300 lb Plates"
+        ],
+        "expected": [
+          "Marcus Potter"
+        ],
+        "eventOptions": [
+          "1. Ev 2: Keg Over Bar (For Reps)",
+          "2. Ev 1: Basket Deadlift (For Reps)",
+          "3. Ev 3: 50ft Harness Truck Pull"
+        ]
+      },
+      "after-sf-g5-sf-ev-1": {
+        "serverResultCount": 13,
+        "lastExpected": 0
+      },
+      "order-sf-g3-sf-ev-3": {
+        "buttons": [
+          "Order #1Yen Chun Huang1 pts"
+        ],
+        "expected": [
+          "Yen Chun Huang"
+        ],
+        "eventOptions": [
+          "1. Ev 2: Keg Over Bar (For Reps)",
+          "2. Ev 1: Basket Deadlift (For Reps)",
+          "3. Ev 3: 50ft Harness Truck Pull"
+        ]
+      },
+      "after-sf-g3-sf-ev-3": {
+        "serverResultCount": 10,
+        "lastExpected": 25.5
+      },
+      "order-sf-g4-sf-ev-3": {
+        "buttons": [
+          "Order #1Hyden Zhang2 pts",
+          "Order #2Kurt Pollack3 pts"
+        ],
+        "expected": [
+          "Hyden Zhang",
+          "Kurt Pollack"
+        ],
+        "eventOptions": [
+          "1. Ev 2: Keg Over Bar (For Reps)",
+          "2. Ev 1: Basket Deadlift (For Reps)",
+          "3. Ev 3: 50ft Harness Truck Pull"
+        ]
+      },
+      "after-sf-g4-sf-ev-3": {
+        "serverResultCount": 12,
+        "lastExpected": 28
+      },
+      "order-sf-g5-sf-ev-3": {
+        "buttons": [
+          "Order #1Marcus Potter1 pts"
+        ],
+        "expected": [
+          "Marcus Potter"
+        ],
+        "eventOptions": [
+          "1. Ev 2: Keg Over Bar (For Reps)",
+          "2. Ev 1: Basket Deadlift (For Reps)",
+          "3. Ev 3: 50ft Harness Truck Pull"
+        ]
+      },
+      "after-sf-g5-sf-ev-3": {
+        "serverResultCount": 13,
+        "lastExpected": 25.5
+      },
+      "allScored": [
+        {
+          "id": "sf-ev-1_sf-ath-1",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-1",
+          "payload": {
+            "reps": 0,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:11.614+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:12.078979+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-2",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-2",
+          "payload": {
+            "reps": 2,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:11.849+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:12.079811+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-3",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-3",
+          "payload": {
+            "reps": 2,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:12.182+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:12.676451+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-4",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-4",
+          "payload": {
+            "reps": 3,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:12.548+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:12.677039+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-5",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-5",
+          "payload": {
+            "tier": "heavy"
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:13.016+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:13.162993+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-6",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-6",
+          "payload": {
+            "reps": 2,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:13.281+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:14.239259+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-7",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-7",
+          "payload": {
+            "reps": 2,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:13.564+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:14.239934+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-8",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-8",
+          "payload": {
+            "reps": 3,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:13.864+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:14.240029+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-10",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-10",
+          "payload": {
+            "reps": 1,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:14.098+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:14.2401+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-1",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-1",
+          "payload": {
+            "reps": 3,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:14.848+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:15.026395+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-2",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-2",
+          "payload": {
+            "reps": 1,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:15.132+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:15.931946+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-3",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-3",
+          "payload": {
+            "reps": 1,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:15.514+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:15.932759+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-4",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-4",
+          "payload": {
+            "reps": 2,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:15.798+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:15.932867+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-5",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-5",
+          "payload": {
+            "reps": 3,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:16.532+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:17.645052+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-6",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-6",
+          "payload": {
+            "reps": 1,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:16.816+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:17.645595+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-7",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-7",
+          "payload": {
+            "reps": 1,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:17.081+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:17.645702+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-8",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-8",
+          "payload": {
+            "reps": 2,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:17.348+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:17.645771+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-10",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-10",
+          "payload": {
+            "tier": "heavy"
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:17.465+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:17.645835+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-1",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-1",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 25.5
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:18.099+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:18.229195+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-2",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-2",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 28
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:18.334+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:18.968106+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-3",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-3",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 28
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:18.548+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:18.969038+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-4",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-4",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 31
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:18.766+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:18.96928+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-5",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-5",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 25.5
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:20.483+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:21.048618+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-6",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-6",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 28
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:20.733+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:21.049362+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-7",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-7",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 28
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:20.948+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:21.049463+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-8",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-8",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 31
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:21.165+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:21.549677+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-10",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-10",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 33
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:21.382+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:21.550375+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-11",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-11",
+          "payload": {
+            "reps": 3,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:22.23+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:22.342498+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-12",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-12",
+          "payload": {
+            "reps": 3,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:22.947+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:23.211219+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-13",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-13",
+          "payload": {
+            "reps": 1,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:23.198+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:23.754297+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-14",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-14",
+          "payload": {
+            "reps": 3,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:25.028+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:25.235765+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-11",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-11",
+          "payload": {
+            "tier": "heavy"
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:25.732+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:25.940325+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-12",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-12",
+          "payload": {
+            "tier": "heavy"
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:26.367+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:26.530142+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-13",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-13",
+          "payload": {
+            "reps": 2,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:26.699+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:26.851828+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-14",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-14",
+          "payload": {
+            "tier": "heavy"
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:27.234+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:27.403847+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-11",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-11",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 25.5
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:27.883+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:28.052392+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-12",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-12",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 25.5
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:28.499+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:29.019615+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-13",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-13",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 28
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:28.733+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:29.020527+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-14",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-14",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 25.5
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:29.399+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:29.578603+00:00"
+        }
+      ],
+      "pit-sf-g1-sf-ev-1": "BASKET KEG COUNT & LOAD\nGroup 1\nUP NOW \u2022 JESSICA RUCCI\n8 Empty Kegs (0 Plates)\nON DECK \u2022 EMILY SHAFF\n8 Empty Kegs (0 Plates)\nUPDATE JESSICA RUCCI'S PERSONAL PIN / HEIGHT OVERRIDE\nPER SLEEVE (2 SIDES)\nBasket Deadlift (For Reps)\nEMPTY TARE\n0 lbs\nTV\nKEG / LOAD CALLOUT\nGROUP 1 \u2022 FLIGHT A\n8 Empty Kegs (No Added Plates)\nADDED PLATE WEIGHT\n0 lbs\nLOAD PER SLEEVE (2 SIDES)\n0 lbs\nTotal System: 0 lbs\nPLATES ON EACH LOADING POINT (2 POINTS TOTAL):\nEmpty Implement Only (No Plates Needed)\nCUSTOM TARGET WEIGHT OVERRIDE (TEST RISING BAR / ODD YOKE JUMPS)\nNEXT GROUP / LIFTER TRANSITION\nGROUP 2\nNext lifter: Emily Shaff \u2014 same Group 1 weight setup, no change.\nADDED PLATES\nNo plate change\n0 lb\n0 lb\nKEG / LOAD CALLOUT\nSwap setup\n8 Empty Kegs (No Added Plates)\n10 Empty Kegs (~265 lbs Total)",
+      "pit-sf-g1-sf-ev-3": "FIXED IMPLEMENT (NO PLATE LOADING)\n50ft Harness Truck Pull\nEMPTY TARE\n0 lbs\nTV\nVEHICLE SETUP\nGROUP 1 \u2022 FLIGHT A\nGroup 1 Vehicle \u2022 Pickup Truck\nCOURSE\n50 ft\nSCORING\nFastest Time / Ft if Capped\nNEXT GROUP / LIFTER TRANSITION\nGROUP 2\nNext lifter: Emily Shaff \u2014 same Group 1 weight setup, no change.\nCOURSE\nNo change\n50 ft\n50 ft",
+      "pit-sf-g2-sf-ev-1": "BASKET KEG COUNT & LOAD\nGroup 2\nUP NOW \u2022 EDWARD ANDERSON\n10 Empty Kegs (~265 lbs)\nON DECK \u2022 END OF DIVISION\n\u2014\nUPDATE EDWARD ANDERSON'S PERSONAL PIN / HEIGHT OVERRIDE\nPER SLEEVE (2 SIDES)\nBasket Deadlift (For Reps)\nEMPTY TARE\n0 lbs\nTV\nKEG / LOAD CALLOUT\nGROUP 2 \u2022 FLIGHT A\n10 Empty Kegs (~265 lbs Total)\nADDED PLATE WEIGHT\n0 lbs\nLOAD PER SLEEVE (2 SIDES)\n0 lbs\nTotal System: 0 lbs\nPLATES ON EACH LOADING POINT (2 POINTS TOTAL):\nEmpty Implement Only (No Plates Needed)\nCUSTOM TARGET WEIGHT OVERRIDE (TEST RISING BAR / ODD YOKE JUMPS)\nNEXT GROUP / LIFTER TRANSITION\nEV 2 \u2022 GROUP 1\nEVENT CHANGEOVER\nStrike Ev 1 \u2192 Build Ev 2\n10 Empty Kegs (~265 lbs Total)\n44\" Yoke Bar \u2022 100 lb Keg",
+      "pit-sf-g2-sf-ev-3": "FIXED IMPLEMENT (NO PLATE LOADING)\n50ft Harness Truck Pull\nEMPTY TARE\n0 lbs\nTV\nVEHICLE SETUP\nGROUP 2 \u2022 FLIGHT A\nGroup 2 Vehicle \u2022 Box Truck\nCOURSE\n50 ft\nSCORING\nFastest Time / Ft if Capped\nNEXT GROUP / LIFTER TRANSITION\n\nFinal group of the final event on this station \u2014 no further changeover.",
+      "pit-sf-g3-sf-ev-1": "BASKET KEG COUNT & LOAD\nGroup 3\nUP NOW \u2022 YEN CHUN HUANG\n11 Kegs + 50 lb Plates (~355 lbs)\nON DECK \u2022 END OF DIVISION\n\u2014\nUPDATE YEN CHUN HUANG'S PERSONAL PIN / HEIGHT OVERRIDE\nPER SLEEVE (2 SIDES)\nBasket Deadlift (For Reps)\nEMPTY TARE\n0 lbs\nTV\nKEG / LOAD CALLOUT\nGROUP 3 \u2022 FLIGHT B\n11 Kegs + 50 lbs Plates (~355 lbs Total)\nADDED PLATE WEIGHT\n50 lbs\nLOAD PER SLEEVE (2 SIDES)\n25 lbs\nTotal System: 50 lbs\nPLATES ON EACH LOADING POINT (2 POINTS TOTAL):\n1\u00d7\n25 lb\nCUSTOM TARGET WEIGHT OVERRIDE (TEST RISING BAR / ODD YOKE JUMPS)\nNEXT GROUP / LIFTER TRANSITION\nGROUP 4\nADDED PLATES\nADD 75 lb per side (150 lb total)\n50 lb\n200 lb\nKEG / LOAD CALLOUT\nSwap setup\n11 Kegs + 50 lbs Plates (~355 lbs Total)\n11 Kegs + 200 lbs Plates (~420 lbs Total)",
+      "pit-sf-g3-sf-ev-3": "FIXED IMPLEMENT (NO PLATE LOADING)\n50ft Harness Truck Pull\nEMPTY TARE\n0 lbs\nTV\nVEHICLE SETUP\nGROUP 3 \u2022 FLIGHT B\nGroup 3 Vehicle \u2022 Box Truck\nCOURSE\n50 ft\nSCORING\nFastest Time / Ft if Capped\nNEXT GROUP / LIFTER TRANSITION\nGROUP 4\nCOURSE\nNo change\n50 ft\n50 ft",
+      "pit-sf-g4-sf-ev-1": "BASKET KEG COUNT & LOAD\nGroup 4\nUP NOW \u2022 HYDEN ZHANG\n11 Kegs + 200 lb Plates (~420 lbs)\nON DECK \u2022 KURT POLLACK\n11 Kegs + 200 lb Plates (~420 lbs)\nUPDATE HYDEN ZHANG'S PERSONAL PIN / HEIGHT OVERRIDE\nPER SLEEVE (2 SIDES)\nBasket Deadlift (For Reps)\nEMPTY TARE\n0 lbs\nTV\nKEG / LOAD CALLOUT\nGROUP 4 \u2022 FLIGHT B\n11 Kegs + 200 lbs Plates (~420 lbs Total)\nADDED PLATE WEIGHT\n200 lbs\nLOAD PER SLEEVE (2 SIDES)\n100 lbs\nTotal System: 200 lbs\nPLATES ON EACH LOADING POINT (2 POINTS TOTAL):\n1\u00d7\n100 lb\nCUSTOM TARGET WEIGHT OVERRIDE (TEST RISING BAR / ODD YOKE JUMPS)\nNEXT GROUP / LIFTER TRANSITION\nGROUP 5\nNext lifter: Kurt Pollack \u2014 same Group 4 weight setup, no change.\nADDED PLATES\nADD 50 lb per side (100 lb total)\n200 lb\n300 lb\nKEG / LOAD CALLOUT\nSwap setup\n11 Kegs + 200 lbs Plates (~420 lbs Total)\n11 Kegs + 300 lbs Plates",
+      "pit-sf-g4-sf-ev-3": "FIXED IMPLEMENT (NO PLATE LOADING)\n50ft Harness Truck Pull\nEMPTY TARE\n0 lbs\nTV\nVEHICLE SETUP\nGROUP 4 \u2022 FLIGHT B\nGroup 4 Vehicle \u2022 Box Truck\nCOURSE\n50 ft\nSCORING\nFastest Time / Ft if Capped\nNEXT GROUP / LIFTER TRANSITION\nGROUP 5\nNext lifter: Kurt Pollack \u2014 same Group 4 weight setup, no change.\nCOURSE\nNo change\n50 ft\n50 ft",
+      "pit-sf-g5-sf-ev-1": "BASKET KEG COUNT & LOAD\nGroup 5\nUP NOW \u2022 MARCUS POTTER\n11 Kegs + 300 lb Plates\nON DECK \u2022 END OF DIVISION\n\u2014\nUPDATE MARCUS POTTER'S PERSONAL PIN / HEIGHT OVERRIDE\nPER SLEEVE (2 SIDES)\nBasket Deadlift (For Reps)\nEMPTY TARE\n0 lbs\nTV\nKEG / LOAD CALLOUT\nGROUP 5 \u2022 FLIGHT B\n11 Kegs + 300 lbs Plates\nADDED PLATE WEIGHT\n300 lbs\nLOAD PER SLEEVE (2 SIDES)\n150 lbs\nTotal System: 300 lbs\nPLATES ON EACH LOADING POINT (2 POINTS TOTAL):\n1\u00d7\n100 lb\n1\u00d7\n45 lb\n1\u00d7\n5 lb\nCUSTOM TARGET WEIGHT OVERRIDE (TEST RISING BAR / ODD YOKE JUMPS)\nNEXT GROUP / LIFTER TRANSITION\nEV 3 \u2022 GROUP 3\nEVENT CHANGEOVER\nStrike Ev 1 \u2192 Build Ev 3\n11 Kegs + 300 lbs Plates\nGroup 3 Vehicle \u2022 Box Truck",
+      "pit-sf-g5-sf-ev-3": "FIXED IMPLEMENT (NO PLATE LOADING)\n50ft Harness Truck Pull\nEMPTY TARE\n0 lbs\nTV\nVEHICLE SETUP\nGROUP 5 \u2022 FLIGHT B\nGroup 5 Vehicle \u2022 Box Truck\nCOURSE\n50 ft\nSCORING\nFastest Time / Ft if Capped\nNEXT GROUP / LIFTER TRANSITION\n\nFinal group of the final event on this station \u2014 no further changeover.",
+      "pitInputs": [
+        {
+          "placeholder": "e.g., Pin 14 (6'4\") or 48\" Bar...",
+          "type": "text",
+          "value": ""
+        },
+        {
+          "placeholder": "Enter any target weight in lbs...",
+          "type": "number",
+          "value": ""
+        }
+      ],
+      "offlineQueued": {
+        "ZEROTACKY_SYNC_QUEUE_V1": "[{\"table\":\"results\",\"id\":\"sf-ev-2_sf-ath-1\",\"row\":{\"id\":\"sf-ev-2_sf-ath-1\",\"meet_id\":\"da868c90-7d0d-4413-ae1d-d933a8f47ebc\",\"event_id\":\"sf-ev-2\",\"athlete_id\":\"sf-ath-1\",\"payload\":{\"tier\":\"heavy\",\"reps\":5,\"didNotStart\":false},\"locked\":true,\"updated_at\":\"2026-10-21T16:44:33.449Z\",\"updated_by\":\"dev-075502d7\"},\"enqueuedAt\":1792601073451},{\"table\":\"results\",\"id\":\"sf-ev-2_sf-ath-2\",\"row\":{\"id\":\"sf-ev-2_sf-ath-2\",\"meet_id\":\"da868c90-7d0d-4413-ae1d-d933a8f47ebc\",\"event_id\":\"sf-ev-2\",\"athlete_id\":\"sf-ath-2\",\"payload\":{\"tier\":\"heavy\",\"reps\":6,\"didNotStart\":false},\"locked\":true,\"updated_at\":\"2026-10-21T16:44:33.815Z\",\"updated_by\":\"dev-075502d7\"},\"enqueuedAt\":1792601073818}]"
+      },
+      "offlineRecovery": {
+        "rows": [
+          {
+            "id": "sf-ev-2_sf-ath-3",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-2",
+            "athlete_id": "sf-ath-3",
+            "payload": {
+              "reps": 1,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:15.514+00:00",
+            "updated_by": "dev-075502d7",
+            "server_at": "2026-10-21T16:44:15.932759+00:00"
+          },
+          {
+            "id": "sf-ev-2_sf-ath-4",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-2",
+            "athlete_id": "sf-ath-4",
+            "payload": {
+              "reps": 2,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:15.798+00:00",
+            "updated_by": "dev-075502d7",
+            "server_at": "2026-10-21T16:44:15.932867+00:00"
+          },
+          {
+            "id": "sf-ev-2_sf-ath-5",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-2",
+            "athlete_id": "sf-ath-5",
+            "payload": {
+              "reps": 3,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:16.532+00:00",
+            "updated_by": "dev-075502d7",
+            "server_at": "2026-10-21T16:44:17.645052+00:00"
+          },
+          {
+            "id": "sf-ev-2_sf-ath-6",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-2",
+            "athlete_id": "sf-ath-6",
+            "payload": {
+              "reps": 1,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:16.816+00:00",
+            "updated_by": "dev-075502d7",
+            "server_at": "2026-10-21T16:44:17.645595+00:00"
+          },
+          {
+            "id": "sf-ev-2_sf-ath-7",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-2",
+            "athlete_id": "sf-ath-7",
+            "payload": {
+              "reps": 1,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:17.081+00:00",
+            "updated_by": "dev-075502d7",
+            "server_at": "2026-10-21T16:44:17.645702+00:00"
+          },
+          {
+            "id": "sf-ev-2_sf-ath-8",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-2",
+            "athlete_id": "sf-ath-8",
+            "payload": {
+              "reps": 2,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:17.348+00:00",
+            "updated_by": "dev-075502d7",
+            "server_at": "2026-10-21T16:44:17.645771+00:00"
+          },
+          {
+            "id": "sf-ev-2_sf-ath-10",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-2",
+            "athlete_id": "sf-ath-10",
+            "payload": {
+              "tier": "heavy"
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:17.465+00:00",
+            "updated_by": "dev-075502d7",
+            "server_at": "2026-10-21T16:44:17.645835+00:00"
+          },
+          {
+            "id": "sf-ev-2_sf-ath-11",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-2",
+            "athlete_id": "sf-ath-11",
+            "payload": {
+              "reps": 3,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:22.23+00:00",
+            "updated_by": "dev-401e0cda",
+            "server_at": "2026-10-21T16:44:22.342498+00:00"
+          },
+          {
+            "id": "sf-ev-2_sf-ath-12",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-2",
+            "athlete_id": "sf-ath-12",
+            "payload": {
+              "reps": 3,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:22.947+00:00",
+            "updated_by": "dev-401e0cda",
+            "server_at": "2026-10-21T16:44:23.211219+00:00"
+          },
+          {
+            "id": "sf-ev-2_sf-ath-13",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-2",
+            "athlete_id": "sf-ath-13",
+            "payload": {
+              "reps": 1,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:23.198+00:00",
+            "updated_by": "dev-401e0cda",
+            "server_at": "2026-10-21T16:44:23.754297+00:00"
+          },
+          {
+            "id": "sf-ev-2_sf-ath-14",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-2",
+            "athlete_id": "sf-ath-14",
+            "payload": {
+              "reps": 3,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:25.028+00:00",
+            "updated_by": "dev-401e0cda",
+            "server_at": "2026-10-21T16:44:25.235765+00:00"
+          },
+          {
+            "id": "sf-ev-2_sf-ath-1",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-2",
+            "athlete_id": "sf-ath-1",
+            "payload": {
+              "reps": 5,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:33.449+00:00",
+            "updated_by": "dev-075502d7",
+            "server_at": "2026-10-21T16:44:33.911328+00:00"
+          },
+          {
+            "id": "sf-ev-2_sf-ath-2",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-2",
+            "athlete_id": "sf-ath-2",
+            "payload": {
+              "reps": 6,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:33.815+00:00",
+            "updated_by": "dev-075502d7",
+            "server_at": "2026-10-21T16:44:33.91202+00:00"
+          }
+        ],
+        "uniqueAthletes": true
+      },
+      "reloadJudge": {
+        "role": "judge",
+        "grantRetained": true,
+        "queue": {
+          "ZEROTACKY_SYNC_QUEUE_V1": "[]"
+        }
+      },
+      "collision": [
+        {
+          "id": "sf-ev-2_sf-ath-13",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-13",
+          "payload": {
+            "reps": 1,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:23.198+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:23.754297+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-13",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-13",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 28
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:28.733+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:29.020527+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-13",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-13",
+          "payload": {
+            "reps": 7,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:38.682+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:38.92984+00:00"
+        }
+      ],
+      "rotateStatus": 200,
+      "postRotateError": "ERROR\n2\nSYNC ERROR\nclose\nMeet /all-out-strongfest-2026-dryrun as device\nLast sync just now, 2 waiting\n401: new row violates row-level security policy for table \"results\"\nRE-JOIN WITH A CODE\nSYNC NOW\nZEROTACKY\nJUDGE LOCKED \u2022 UNLOCK\nAll Out Strongfest 2026 (DRY RUN)\nStation 1\nStation 2\nAll\n[Station 1] Group 1\n[Station 1] Group 2\nEv 1: Basket Deadlift (For Reps)\nEv 2: Keg Over Bar (For Reps)\nEv 3: 50ft Harness Truck Pull",
+      "newCodeRejoin": {
+        "name": "All Out Strongfest 2026 (DRY RUN)",
+        "role": "judge",
+        "linked": true
+      },
+      "ownerAfterRotate": [
+        {
+          "id": "sf-ev-2_sf-ath-13",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-13",
+          "payload": {
+            "reps": 4,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:44.766+00:00",
+          "updated_by": "dev-bc475fa0",
+          "server_at": "2026-10-21T16:44:44.939582+00:00"
+        }
+      ],
+      "final-judge1": {
+        "text": "ZEROTACKY\nJUDGE LOCKED \u2022 UNLOCK\nAll Out Strongfest 2026 (DRY RUN)\nStation 1\nStation 2\nAll\n[Station 1] Group 1\n[Station 1] Group 2\nEv 1: Basket Deadlift (For Reps)\nEv 2: Keg Over Bar (For Reps)\nEv 3: 50ft Harness Truck Pull\nRUN ORDER (ROSTER)\nSingle Platform\nORDER #1\nJessica Rucci\n0 pts \u2022 8 Empty Kegs (0 Plates)\nORDER #2\nEmily Shaff\n0 pts \u2022 8 Empty Kegs (0 Plates)\nORDER #3\nAmber Simcox\n0 pts \u2022 8 Empty Kegs (0 Plates)\nORDER #4\nGrace Gullo\n0 pts \u2022 8 Empty Kegs (0 Plates)\nMASTER CLOCK (60S CAP)\n0.00s\nSTART\nRESET\nON PLATFORM\nSCORE LOCKED\nEmily Shaff\nBasket Keg Count & Load: 8 Empty Kegs (0 Plates)\nStatus\nScore entry\n-1\n2\nLOCKED REPS\n+1 REP\nGROUND-TOUCH WARNING\nUnlock to Edit\nGo to Amber Simcox\nJUDGE PAD\nPIT CREW\nSTANDINGS",
+        "width": 375
+      },
+      "final-judge2": {
+        "text": "ZEROTACKY\nJUDGE LOCKED \u2022 UNLOCK\nAll Out Strongfest 2026 (DRY RUN)\nStation 1\nStation 2\nAll\n[Station 2] Group 3\n[Station 2] Group 4\n[Station 2] Group 5\n1. Ev 2: Keg Over Bar (For Reps)\n2. Ev 1: Basket Deadlift (For Reps)\n3. Ev 3: 50ft Harness Truck Pull\nEv 1 runs 2nd of 3 on Station 2\nRUN ORDER (ROSTER)\nSingle Platform\nORDER #1\nHyden Zhang\n2 pts \u2022 11 Kegs + 200 lb Plates (~420 lbs)\nORDER #2\nKurt Pollack\n1 pts \u2022 11 Kegs + 200 lb Plates (~420 lbs)\nMASTER CLOCK (60S CAP)\n0.00s\nSTART\nRESET\nON PLATFORM\nSCORE LOCKED\nKurt Pollack\nBasket Keg Count & Load: 11 Kegs + 200 lb Plates (~420 lbs)\nStatus\nScore entry\n-1\n7\nLOCKED REPS\n+1 REP\nGROUND-TOUCH WARNING\nUnlock to Edit\nJUDGE PAD\nPIT CREW\nSTANDINGS",
+        "width": 375
+      },
+      "final-pit": {
+        "text": "ZEROTACKY\nPITCREW LOCKED \u2022 UNLOCK\nAll Out Strongfest 2026 (DRY RUN)\nStation 1\nStation 2\nAll\n[Station 2] Group 3\n[Station 2] Group 4\n[Station 2] Group 5\n1. Ev 2: Keg Over Bar (For Reps)\n2. Ev 1: Basket Deadlift (For Reps)\n3. Ev 3: 50ft Harness Truck Pull\nEv 1 runs 2nd of 3 on Station 2\nBASKET KEG COUNT & LOAD\nGroup 3\nUP NOW \u2022 YEN CHUN HUANG\n11 Kegs + 50 lb Plates (~355 lbs)\nON DECK \u2022 END OF DIVISION\n\u2014\nUPDATE YEN CHUN HUANG'S PERSONAL PIN / HEIGHT OVERRIDE\nPER SLEEVE (2 SIDES)\nBasket Deadlift (For Reps)\nEMPTY TARE\n0 lbs\nTV\nKEG / LOAD CALLOUT\nGROUP 3 \u2022 FLIGHT B\n11 Kegs + 50 lbs Plates (~355 lbs Total)\nADDED PLATE WEIGHT\n50 lbs\nLOAD PER SLEEVE (2 SIDES)\n25 lbs\nTotal System: 50 lbs\nPLATES ON EACH LOADING POINT (2 POINTS TOTAL):\n1\u00d7\n25 lb\nCUSTOM TARGET WEIGHT OVERRIDE (TEST RISING BAR / ODD YOKE JUMPS)\nNEXT GROUP / LIFTER TRANSITION\nGROUP 4\nADDED PLATES\nADD 75 lb per side (150 lb total)\n50 lb\n200 lb\nKEG / LOAD CALLOUT\nSwap setup\n11 Kegs + 50 lbs Plates (~355 lbs Total)\n11 Kegs + 200 lbs Plates (~420 lbs Total)\nPIT CREW\nSTANDINGS",
+        "width": 375
+      },
+      "final-board": {
+        "text": "LIVE SCOREBOARD\nAll Out Strongfest 2026 (DRY RUN)\nTV\nupdated 12:44:43 PM\nSTATION 1 \u00b7 UP NOW\nAmber Simcox\nEv 2 Keg Over Bar (For Reps) \u00b7 Group 1\nSTATION 2 \u00b7 UP NOW\nKurt Pollack\nEv 1 Basket Deadlift (For Reps) \u00b7 Group 4\nAll\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nOVERALL STANDINGS \u2022 GROUP 1\nTiebreaker: Event Wins\n#1\nJessica Rucci\nEvent Wins: 2\n11\nTOTAL PTS\n#2\nEmily Shaff\nEvent Wins: 1\n8\nTOTAL PTS\n#3\nGrace Gullo\nEvent Wins: 0\n6\nTOTAL PTS\n#4\nAmber Simcox\nEvent Wins: 0\n5\nTOTAL PTS\nEVENT 2 BREAKDOWN \u2022 KEG OVER BAR (FOR REPS)\n#1\nEmily Shaff\n6 reps\n4 pts\n#2\nJessica Rucci\n5 reps\n3 pts\n#3\nGrace Gullo\n2 reps\n2 pts\n#4\nAmber Simcox\n1 rep\n1 pts\nOVERALL STANDINGS \u2022 GROUP 2\nTiebreaker: Event Wins\n#1\nNadia Hall\nEvent Wins: 1\n11\nTOTAL PTS\n#2\nJosh Palange\nEvent Wins: 2\n10\nTOTAL PTS\nT-#3\nJennifer Slagus\nEvent Wins: 0\n9.5\nTOTAL PTS\nT-#3\nHannah Litchfield\nEvent Wins: 0\n9.5\nTOTAL PTS\n#5\nEdward Anderson\nEvent Wins: 0\n3\nTOTAL PTS\nEVENT 3 BREAKDOWN \u2022 50FT HARNESS TRUCK PULL\n#1\nJosh Palange\n25.50s\n5 pts\n#2\nJennifer Slagus\nTIE SPLIT\n28.00s\n3.5 pts\n#2\nHannah Litchfield\nTIE SPLIT\n28.00s\n3.5 pts\n#4\nNadia Hall\n31.00s\n2 pts\n#5\nEdward Anderson\n33.00s\n1 pts\nOVERALL STANDINGS \u2022 GROUP 3\nTiebreaker: Event Wins\n#1\nYen Chun Huang\nEvent Wins: 2\n2\nTOTAL PTS\nEVENT 3 BREAKDOWN \u2022 50FT HARNESS TRUCK PULL\n#1\nYen Chun Huang\n25.50s\n1 pts\nOVERALL STANDINGS \u2022 GROUP 4\nTiebreaker: Event Wins\n#1\nHyden Zhang\nEvent Wins: 2\n4\nTOTAL PTS\n#2\nKurt Pollack\nEvent Wins: 1\n4\nTOTAL PTS\nEVENT 1 BREAKDOWN \u2022 BASKET DEADLIFT (FOR REPS)\n#1\nKurt Pollack\n7 reps\n2 pts\n#2\nHyden Zhang\n0 reps\n0 pts\nOVERALL STANDINGS \u2022 GROUP 5\nTiebreaker: Event Wins\n#1\nMarcus Potter\nEvent Wins: 2\n2\nTOTAL PTS\nEVENT 3 BREAKDOWN \u2022 50FT HARNESS TRUCK PULL\n#1\nMarcus Potter\n25.50s\n1 pts\nZEROTACKY \u00b7 refreshes every 4s \u00b7 Home \u00b7 Account",
+        "width": 375
+      },
+      "final-tv": {
+        "text": "LIVE SCOREBOARD\nAll Out Strongfest 2026 (DRY RUN)\nPHONE\nupdated 12:44:44 PM\nSTATION 1 \u00b7 UP NOW\nEmily Shaff\nEv 1 Basket Deadlift (For Reps) \u00b7 Group 1\nSTATION 2 \u00b7 UP NOW\nKurt Pollack\nEv 1 Basket Deadlift (For Reps) \u00b7 Group 4\nAll\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nGROUP 1\n4 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tTOTAL\n1\t\nJessica Rucci\n\t4\n4 reps\n\t3\n5 reps\n\t4\n25.50s\n\t11\n2\t\nEmily Shaff\n\t1.5\n2 reps\n\t4\n6 reps\n\t2.5\n28.00s\n\t8\n3\t\nGrace Gullo\n\t3\n3 reps\n\t2\n2 reps\n\t1\n31.00s\n\t6\n4\t\nAmber Simcox\n\t1.5\n2 reps\n\t1\n1 rep\n\t2.5\n28.00s\n\t5\nGROUP 2\n5 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tTOTAL\n1\t\nNadia Hall\n\t5\n3 reps\n\t4\n2 reps\n\t2\n31.00s\n\t11\n2\t\nJosh Palange\n\t0\n0 reps\n\t5\n3 reps\n\t5\n25.50s\n\t10\nT-3\t\nJennifer Slagus\n\t3.5\n2 reps\n\t2.5\n1 rep\n\t3.5\n28.00s\n\t9.5\nT-3\t\nHannah Litchfield\n\t3.5\n2 reps\n\t2.5\n1 rep\n\t3.5\n28.00s\n\t9.5\n5\t\nEdward Anderson\n\t2\n1 rep\n\t0\n0 reps\n\t1\n33.00s\n\t3\nGROUP 3\n1 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tTOTAL\n1\t\nYen Chun Huang\n\t0\n0 reps\n\t1\n3 reps\n\t1\n25.50s\n\t2\nGROUP 4\n2 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tTOTAL\n1\t\nHyden Zhang\n\t0\n0 reps\n\t2\n3 reps\n\t2\n25.50s\n\t4\n2\t\nKurt Pollack\n\t2\n7 reps\n\t1\n1 rep\n\t1\n28.00s\n\t4\nGROUP 5\n1 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tTOTAL\n1\t\nMarcus Potter\n\t0\n0 reps\n\t1\n3 reps\n\t1\n25.50s\n\t2\nZEROTACKY \u00b7 refreshes every 4s",
+        "width": 1280
+      }
+    },
+    "failures": {},
+    "latencies": [
+      {
+        "operation": "correction score click through explicit Sync now to TV",
+        "seconds": 2.2734497000055853
+      }
+    ],
+    "requests": []
+  },
+  "supplement": {
+    "checks": {
+      "myMeetsShowsFixture": true,
+      "demoToDryrun": {
+        "oldName": "Riverside Iron Fest 2026 (Demo Upcoming)",
+        "oldResults": 0,
+        "newName": "All Out Strongfest 2026 (DRY RUN)",
+        "snapshotContainsOldName": false
+      },
+      "judgeRejoin": {
+        "name": "All Out Strongfest 2026 (DRY RUN)",
+        "role": "judge",
+        "linked": true
+      },
+      "pitRejoin": {
+        "name": "All Out Strongfest 2026 (DRY RUN)",
+        "role": "pitcrew",
+        "linked": true
+      },
+      "unmakeable51": "BASKET KEG COUNT & LOAD\nGroup 3\nUP NOW \u2022 YEN CHUN HUANG\n11 Kegs + 50 lb Plates (~355 lbs)\nON DECK \u2022 END OF DIVISION\n\u2014\nUPDATE YEN CHUN HUANG'S PERSONAL PIN / HEIGHT OVERRIDE\nPER SLEEVE (2 SIDES)\nBasket Deadlift (For Reps)\nEMPTY TARE\n0 lbs\nTV\nKEG / LOAD CALLOUT\nGROUP 3 \u2022 FLIGHT B\n11 Kegs + 50 lbs Plates (~355 lbs Total)\nADDED PLATE WEIGHT\n51 lbs\nLOAD PER SLEEVE (2 SIDES)\n25.5 lbs\nTotal System: 51 lbs\nPLATES ON EACH LOADING POINT (2 POINTS TOTAL):\n1\u00d7\n25 lb\nCUSTOM TARGET WEIGHT OVERRIDE (TEST RISING BAR / ODD YOKE JUMPS)\nClear\nUnloaded remainder: 1 lbs total (0.5 lbs per point) cannot be made with selected plate inventory.\nNEXT GROUP / LIFTER TRANSITION\nGROUP 4\nADDED PLATES\nADD 75 lb per side (150 lb total)\n50 lb\n200 lb\nKEG / LOAD CALLOUT\nSwap setup\n11 Kegs + 50 lbs Plates (~355 lbs Total)\n11 Kegs + 200 lbs Plates (~420 lbs Total)",
+      "g5Basket": "BASKET KEG COUNT & LOAD\nGroup 5\nUP NOW \u2022 MARCUS POTTER\n11 Kegs + 300 lb Plates\nON DECK \u2022 END OF DIVISION\n\u2014\nUPDATE MARCUS POTTER'S PERSONAL PIN / HEIGHT OVERRIDE\nPER SLEEVE (2 SIDES)\nBasket Deadlift (For Reps)\nEMPTY TARE\n0 lbs\nTV\nKEG / LOAD CALLOUT\nGROUP 5 \u2022 FLIGHT B\n11 Kegs + 300 lbs Plates\nADDED PLATE WEIGHT\n300 lbs\nLOAD PER SLEEVE (2 SIDES)\n150 lbs\nTotal System: 300 lbs\nPLATES ON EACH LOADING POINT (2 POINTS TOTAL):\n1\u00d7\n100 lb\n1\u00d7\n45 lb\n1\u00d7\n5 lb\nCUSTOM TARGET WEIGHT OVERRIDE (TEST RISING BAR / ODD YOKE JUMPS)\nNEXT GROUP / LIFTER TRANSITION\nEV 3 \u2022 GROUP 3\nEVENT CHANGEOVER\nStrike Ev 1 \u2192 Build Ev 3\n11 Kegs + 300 lbs Plates\nGroup 3 Vehicle \u2022 Box Truck",
+      "kegSetup": "YOKE CROSSBAR HEIGHT\nGroup 2\nUP NOW \u2022 EDWARD ANDERSON\n44\" Yoke Bar (125 lb Keg)\nON DECK \u2022 END OF DIVISION\n\u2014\nUPDATE EDWARD ANDERSON'S PERSONAL PIN / HEIGHT OVERRIDE\nFIXED IMPLEMENT (NO PLATE LOADING)\nKeg Over Bar (For Reps)\nEMPTY TARE\n0 lbs\nTV\nYOKE CROSSBAR HEIGHT + KEG WEIGHT\nGROUP 2 \u2022 FLIGHT A\n44\" Yoke Bar \u2022 125 lb Keg\nYOKE CROSSBAR\n44\"\nKEG WEIGHT\n125 lb\nNEXT GROUP / LIFTER TRANSITION\nEV 3 \u2022 GROUP 1\nEVENT CHANGEOVER\nStrike Ev 2 \u2192 Build Ev 3\n44\" Yoke Bar \u2022 125 lb Keg\nGroup 1 Vehicle \u2022 Pickup Truck",
+      "cappedDistanceAutoSync": {
+        "seconds": 3.4299310999922454,
+        "server": [
+          {
+            "id": "sf-ev-3_sf-ath-7",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-3",
+            "athlete_id": "sf-ath-7",
+            "payload": {
+              "tier": "heavy",
+              "didNotStart": false,
+              "timeSeconds": 0,
+              "distanceFeet": 42.5
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:48:32.068+00:00",
+            "updated_by": "dev-84044034",
+            "server_at": "2026-10-21T16:48:32.54286+00:00"
+          },
+          {
+            "id": "sf-ev-1_sf-ath-7",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-1",
+            "athlete_id": "sf-ath-7",
+            "payload": {
+              "reps": 2,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:13.564+00:00",
+            "updated_by": "dev-075502d7",
+            "server_at": "2026-10-21T16:44:14.239934+00:00"
+          },
+          {
+            "id": "sf-ev-2_sf-ath-7",
+            "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+            "event_id": "sf-ev-2",
+            "athlete_id": "sf-ath-7",
+            "payload": {
+              "reps": 1,
+              "tier": "heavy",
+              "didNotStart": false
+            },
+            "locked": true,
+            "updated_at": "2026-10-21T16:44:17.081+00:00",
+            "updated_by": "dev-075502d7",
+            "server_at": "2026-10-21T16:44:17.645702+00:00"
+          }
+        ]
+      },
+      "queueAfterHannah": "RUN ORDER (ROSTER)\nSingle Platform\nORDER #1\nJosh Palange\n5 pts\nORDER #2\nJennifer Slagus\n6 pts\nORDER #3\nHannah Litchfield\n6 pts\nORDER #4\nNadia Hall\n9 pts\nORDER #5\nEdward Anderson\n2 pts\nMASTER CLOCK (60S CAP)\n0.00s\nSTART\nRESET\nON PLATFORM\nSCORE LOCKED\nNadia Hall\nStatus\nScore entry\nFINISH TIME (SEC)\nSTAMP\nIF DNF: DISTANCE (FT)\nUnlock to Edit\nGo to Edward Anderson",
+      "blankZeroDisplayBefore": "2\t\nJosh Palange\n\t0\n0 reps\n\t5\n3 reps\n\t5\n25.50s\n\t10",
+      "explicitZeroDisplay": "2\t\nJosh Palange\n\t0\n0 reps\n\t5\n3 reps\n\t5\n25.50s\n\t10",
+      "divisionChip": "LIVE SCOREBOARD\nAll Out Strongfest 2026 (DRY RUN)\nTV\nupdated 12:48:34 PM\nSTATION 1 \u00b7 UP NOW\nNadia Hall\nEv 3 50ft Harness Truck Pull \u00b7 Group 2\nSTATION 2 \u00b7 UP NOW\nKurt Pollack\nEv 2 Keg Over Bar (For Reps) \u00b7 Group 4\nAll\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nOVERALL STANDINGS \u2022 GROUP 5\nTiebreaker: Event Wins\n#1\nMarcus Potter\nEvent Wins: 2\n2\nTOTAL PTS\nEVENT 3 BREAKDOWN \u2022 50FT HARNESS TRUCK PULL\n#1\nMarcus Potter\n25.50s\n1 pts\nZEROTACKY \u00b7 refreshes every 4s \u00b7 Home \u00b7 Account",
+      "toggleToTv": true,
+      "closeoutStatus": 200,
+      "finishedFlags": {
+        "competition_status": "completed",
+        "results_status": "final",
+        "is_public_listed": false
+      },
+      "deleteWithoutNameDisabled": true,
+      "deleteWrongNameDisabled": true,
+      "finalBoard": "LIVE SCOREBOARD\nAll Out Strongfest 2026 (DRY RUN)\nPHONE\nupdated 12:48:38 PM\nSTATION 1 \u00b7 UP NOW\nJennifer Slagus\nEv 1 Basket Deadlift (For Reps) \u00b7 Group 2\nSTATION 2 \u00b7 UP NOW\nKurt Pollack\nEv 2 Keg Over Bar (For Reps) \u00b7 Group 4\nAll\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nGROUP 1\n4 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tTOTAL\n1\t\nJessica Rucci\n\t4\n4 reps\n\t3\n5 reps\n\t4\n25.50s\n\t11\n2\t\nEmily Shaff\n\t1.5\n2 reps\n\t4\n6 reps\n\t2.5\n28.00s\n\t8\n3\t\nGrace Gullo\n\t3\n3 reps\n\t2\n2 reps\n\t1\n31.00s\n\t6\n4\t\nAmber Simcox\n\t1.5\n2 reps\n\t1\n1 rep\n\t2.5\n28.00s\n\t5\nGROUP 2\n5 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tTOTAL\n1\t\nNadia Hall\n\t5\n3 reps\n\t4\n2 reps\n\t3\n31.00s\n\t12\n2\t\nJosh Palange\n\t0\n0 reps\n\t5\n3 reps\n\t5\n25.50s\n\t10\n3\t\nJennifer Slagus\n\t3.5\n2 reps\n\t2.5\n1 rep\n\t4\n28.00s\n\t10\n4\t\nHannah Litchfield\n\t3.5\n2 reps\n\t2.5\n1 rep\n\t1\n42.5 ft (DNF)\n\t7\n5\t\nEdward Anderson\n\t2\n1 rep\n\t0\n0 reps\n\t2\n33.00s\n\t4\nGROUP 3\n1 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tTOTAL\n1\t\nYen Chun Huang\n\t0\n0 reps\n\t1\n3 reps\n\t1\n25.50s\n\t2\nGROUP 4\n2 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tTOTAL\n1\t\nKurt Pollack\n\t2\n7 reps\n\t2\n4 reps\n\t1\n28.00s\n\t5\n2\t\nHyden Zhang\n\t0\n0 reps\n\t1\n3 reps\n\t2\n25.50s\n\t3\nGROUP 5\n1 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tTOTAL\n1\t\nMarcus Potter\n\t0\n0 reps\n\t1\n3 reps\n\t1\n25.50s\n\t2\nZEROTACKY \u00b7 refreshes every 4s",
+      "finalRows": [
+        {
+          "id": "sf-ev-3_sf-ath-7",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-7",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 0,
+            "distanceFeet": 42.5
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:48:32.068+00:00",
+          "updated_by": "dev-84044034",
+          "server_at": "2026-10-21T16:48:32.54286+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-5",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-5",
+          "payload": {
+            "reps": 0,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:48:35.981+00:00",
+          "updated_by": "dev-84044034",
+          "server_at": "2026-10-21T16:48:36.474428+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-2",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-2",
+          "payload": {
+            "reps": 2,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:11.849+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:12.079811+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-3",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-3",
+          "payload": {
+            "reps": 2,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:12.182+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:12.676451+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-4",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-4",
+          "payload": {
+            "reps": 3,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:12.548+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:12.677039+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-6",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-6",
+          "payload": {
+            "reps": 2,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:13.281+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:14.239259+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-7",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-7",
+          "payload": {
+            "reps": 2,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:13.564+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:14.239934+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-8",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-8",
+          "payload": {
+            "reps": 3,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:13.864+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:14.240029+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-10",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-10",
+          "payload": {
+            "reps": 1,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:14.098+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:14.2401+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-3",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-3",
+          "payload": {
+            "reps": 1,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:15.514+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:15.932759+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-4",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-4",
+          "payload": {
+            "reps": 2,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:15.798+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:15.932867+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-5",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-5",
+          "payload": {
+            "reps": 3,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:16.532+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:17.645052+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-6",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-6",
+          "payload": {
+            "reps": 1,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:16.816+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:17.645595+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-7",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-7",
+          "payload": {
+            "reps": 1,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:17.081+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:17.645702+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-8",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-8",
+          "payload": {
+            "reps": 2,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:17.348+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:17.645771+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-10",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-10",
+          "payload": {
+            "tier": "heavy"
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:17.465+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:17.645835+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-1",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-1",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 25.5
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:18.099+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:18.229195+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-2",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-2",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 28
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:18.334+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:18.968106+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-3",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-3",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 28
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:18.548+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:18.969038+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-4",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-4",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 31
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:18.766+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:18.96928+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-5",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-5",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 25.5
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:20.483+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:21.048618+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-6",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-6",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 28
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:20.733+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:21.049362+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-8",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-8",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 31
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:21.165+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:21.549677+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-10",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-10",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 33
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:21.382+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:21.550375+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-11",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-11",
+          "payload": {
+            "reps": 3,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:22.23+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:22.342498+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-12",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-12",
+          "payload": {
+            "reps": 3,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:22.947+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:23.211219+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-14",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-14",
+          "payload": {
+            "reps": 3,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:25.028+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:25.235765+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-11",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-11",
+          "payload": {
+            "tier": "heavy"
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:25.732+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:25.940325+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-12",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-12",
+          "payload": {
+            "tier": "heavy"
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:26.367+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:26.530142+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-14",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-14",
+          "payload": {
+            "tier": "heavy"
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:27.234+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:27.403847+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-11",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-11",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 25.5
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:27.883+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:28.052392+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-13",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-13",
+          "payload": {
+            "reps": 7,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:38.682+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:38.92984+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-13",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-13",
+          "payload": {
+            "reps": 4,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:44.766+00:00",
+          "updated_by": "dev-bc475fa0",
+          "server_at": "2026-10-21T16:44:44.939582+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-12",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-12",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 25.5
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:28.499+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:29.019615+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-13",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-13",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 28
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:28.733+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:29.020527+00:00"
+        },
+        {
+          "id": "sf-ev-3_sf-ath-14",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-3",
+          "athlete_id": "sf-ath-14",
+          "payload": {
+            "tier": "heavy",
+            "didNotStart": false,
+            "timeSeconds": 25.5
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:29.399+00:00",
+          "updated_by": "dev-401e0cda",
+          "server_at": "2026-10-21T16:44:29.578603+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-1",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-1",
+          "payload": {
+            "reps": 5,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:33.449+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:33.911328+00:00"
+        },
+        {
+          "id": "sf-ev-2_sf-ath-2",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-2",
+          "athlete_id": "sf-ath-2",
+          "payload": {
+            "reps": 6,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:33.815+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:33.91202+00:00"
+        },
+        {
+          "id": "sf-ev-1_sf-ath-1",
+          "meet_id": "da868c90-7d0d-4413-ae1d-d933a8f47ebc",
+          "event_id": "sf-ev-1",
+          "athlete_id": "sf-ath-1",
+          "payload": {
+            "reps": 4,
+            "tier": "heavy",
+            "didNotStart": false
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T16:44:44.133+00:00",
+          "updated_by": "dev-075502d7",
+          "server_at": "2026-10-21T16:44:44.317029+00:00"
+        }
+      ]
+    },
+    "failures": {
+      "mymeets": {
+        "error": "Locator.get_attribute: Timeout 14000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"link\", name=\"Promoter / Admin Phone: Open This Meet\")\n",
+        "trace": "Traceback (most recent call last):\n  File \"C:\\Users\\kpollack\\.aki\\tmp\\astra-freeze\\dryrun-supplement.py\", line 10, in run\n    try:f()\n        ~^^\n  File \"C:\\Users\\kpollack\\.aki\\tmp\\astra-freeze\\dryrun-supplement.py\", line 55, in mymeets\n    admin.goto(B+'/promoter/'+MID,wait_until='load');admin.get_by_role('tab',name='8. Meet Day',exact=False).click();href=admin.get_by_role('link',name='Promoter / Admin Phone: Open This Meet',exact=False).get_attribute('href');rec('adminPhoneLink',href.startswith('/join?code='))\n                                                                                                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\sync_api\\_generated.py\", line 11798, in get_attribute\n    self._sync(\n    ~~~~~~~~~~^\n        self._impl_obj.get_attribute(\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n            name=name, timeout=to_milliseconds(timeout)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        )\n        ^\n    )\n    ^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_sync_base.py\", line 111, in _sync\n    return task.result()\n           ~~~~~~~~~~~^^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_locator.py\", line 481, in get_attribute\n    return await self._frame.get_attribute(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<3 lines>...\n    )\n    ^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_frame.py\", line 762, in get_attribute\n    return await self._channel.send(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n        \"getAttribute\", self._timeout, locals_to_params(locals())\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_connection.py\", line 78, in send\n    return await self._connection.wrap_api_call(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<3 lines>...\n    )\n    ^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_connection.py\", line 636, in wrap_api_call\n    raise rewrite_error(error, f\"{parsed_st['apiName']}: {error}\") from None\nplaywright._impl._errors.TimeoutError: Locator.get_attribute: Timeout 14000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"link\", name=\"Promoter / Admin Phone: Open This Meet\")\n\n"
+      }
+    },
+    "latencies": [],
+    "requests": []
+  },
+  "finalProbes": {
+    "adminLinkCorrect": true,
+    "adminPhoneName": "All Out Strongfest 2026 (DRY RUN)",
+    "scoredDemoRecovery": {
+      "name": "Keystone Fall Brawl 2026 (Demo Live Show)",
+      "oldResults": 5,
+      "exactSnapshot": true,
+      "newName": "All Out Strongfest 2026 (DRY RUN)"
+    }
+  }
+}

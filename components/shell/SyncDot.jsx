@@ -24,6 +24,11 @@ function ago(ms) {
 export default function SyncDot({ sync, placement = 'nav' }) {
   const [open, setOpen] = useState(false);
   const inHeader = placement === 'header';
+  // A 401/RLS refusal means this phone's grant is gone (code rotated or PIN changed). Say that in words a volunteer
+  // can act on instead of the raw Postgres policy text (Astra DR-04).
+  const friendly = (err) => /row-level security|\b401\b|\b403\b|permission denied|JWT/i.test(String(err || ''))
+    ? 'This phone no longer has access to the meet (the join code or PIN changed). Write down any scores still waiting, then re-join with the current code and PIN.'
+    : String(err || '');
   if (!sync?.enabled) {
     return inHeader ? <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> : null;
   }
@@ -38,8 +43,8 @@ export default function SyncDot({ sync, placement = 'nav' }) {
         className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-zt-inset/80 border border-zt-border"
       >
         <span className={`inline-block w-2 h-2 rounded-full ${tone.dot}`} />
-        {tone.short && <span className="text-[9px] font-black text-zt-text-2">{tone.short}</span>}
-        {status.pending > 0 && <span className="text-[9px] font-black text-zt-text-2">{status.pending}</span>}
+        {tone.short && <span className="text-[11px] font-black text-zt-text-2">{tone.short}</span>}
+        {status.pending > 0 && <span className="text-[11px] font-black text-zt-text-2">{status.pending}</span>}
       </button>
       {open && (
         <div className={`absolute ${inHeader ? 'left-0 top-6' : 'right-0 bottom-7'} w-60 bg-zt-surface border border-zt-border rounded-xl p-3 shadow-xl text-xs space-y-2`}>
@@ -53,7 +58,7 @@ export default function SyncDot({ sync, placement = 'nav' }) {
             <div className="text-zt-text-2 space-y-0.5">
               <div>Meet <strong className="text-zt-text">/{link.slug}</strong> as {link.role}</div>
               <div>Last sync {ago(status.lastSyncAt)}{status.pending ? `, ${status.pending} waiting` : ''}</div>
-              {status.error && <div className="text-zt-danger-text break-words">{status.error}</div>}
+              {status.error && <div className="text-zt-danger-text break-words">{friendly(status.error)}</div>}
               {status.state === 'error' && (
                 <a href="/join" className="block w-full py-1.5 rounded-lg bg-zt-primary text-zt-on-primary text-center font-extrabold uppercase">
                   Re-join with a code

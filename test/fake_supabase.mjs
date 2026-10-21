@@ -20,7 +20,7 @@ export function fakeServer() {
       else db[table][i] = { ...db[table][i], ...r, ...stamp };
     }
   }
-  const PUBLIC_MEET_COLS = ['id', 'slug', 'name', 'date', 'run_order_method', 'tiebreaker_rule', 'available_plates', 'collar_weight_per_pair', 'stations', 'is_demo', 'created_at', 'updated_at'];
+  const PUBLIC_MEET_COLS = ['id', 'slug', 'name', 'date', 'run_order_method', 'tiebreaker_rule', 'available_plates', 'collar_weight_per_pair', 'stations', 'is_demo', 'created_at', 'updated_at', 'competition_status', 'results_status'];
   const publicMeet = (m) => Object.fromEntries(Object.entries(m).filter(([k]) => PUBLIC_MEET_COLS.includes(k)));
   function select(table, params) {
     let rows = db[table];

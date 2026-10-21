@@ -29,7 +29,9 @@ export default function WebsiteThemeControls() {
   }, [open]);
   if (!ctx) return null;
   const { themeId, isDaylight, selectTheme, toggleDaylight } = ctx;
-  const btn = 'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-extrabold uppercase tracking-wide bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong hover:text-zt-text';
+  // 44 px minimum hit area on touch (Astra MS-05); the popover is fixed to the viewport on phones and scrolls, so no
+  // palette can sit off the left edge or below the fold inside the sticky header (MS-01).
+  const btn = 'inline-flex items-center justify-center gap-1.5 px-3 min-h-[44px] min-w-[44px] rounded-xl border text-xs font-extrabold uppercase tracking-wide bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong hover:text-zt-text';
   return (
     <div ref={wrap} className="relative flex items-center gap-1.5">
       <button type="button" onClick={toggleDaylight} aria-pressed={isDaylight} aria-label={isDaylight ? 'Switch to dark mode' : 'Switch to bright mode'} title={isDaylight ? 'Switch to dark mode' : 'Switch to bright mode'} className={btn}>
@@ -40,7 +42,7 @@ export default function WebsiteThemeControls() {
         <span className="hidden sm:inline">Color scheme</span>
       </button>
       {open && (
-        <div role="dialog" aria-label="Color scheme" className="absolute right-0 top-full mt-2 w-72 bg-zt-surface border border-zt-border rounded-2xl p-3 shadow-2xl z-30 space-y-2">
+        <div role="dialog" aria-label="Color scheme" className="fixed inset-x-3 top-16 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72 max-h-[70vh] overflow-y-auto bg-zt-surface border border-zt-border rounded-2xl p-3 shadow-2xl z-50 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-widest text-zt-muted">Color scheme</span>
             <span className="text-[10px] font-bold text-zt-subtle">{THEMES.find((t) => t.id === themeId)?.name}</span>

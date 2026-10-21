@@ -22,6 +22,8 @@ export interface RemoteMeet {
                            // readable through the public select, nor is admin_pin
   stations: MeetRow['stations'];
   isDemo: boolean;
+  competitionStatus: string | null;   // meets.competition_status; the board shows Final and drops Up Now once completed (Astra DR-02)
+  resultsStatus: string | null;
   latestServerAt: string | null;   // max results.server_at seen; starting pull watermark
   updatedAt: string | null;        // meets.updated_at; config watermark (see pullChanges / fetchMeetConfig)
 }
@@ -30,7 +32,7 @@ export interface RemoteMeet {
 export interface MeetConfig { meet: AppState['meet']; divisions: AppState['divisions']; events: AppState['events']; updatedAt: string | null }
 
 // Public columns only (join_code and admin_pin are revoked from anon in the schema).
-const MEET_COLS = 'id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,updated_at';
+const MEET_COLS = 'id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,competition_status,results_status,updated_at';
 
 export function latestServerAt(rows: { server_at?: string }[]): string | null {
   let m: string | null = null;
@@ -56,6 +58,9 @@ function toRemoteMeet(meet: MeetRow, kids: Awaited<ReturnType<typeof fetchChildr
     joinCode: meet.join_code,
     stations: meet.stations,
     isDemo: meet.is_demo,
+    // lifecycle columns ride along in MEET_COLS; typed loosely here because lib/promoter/db.ts narrows them (DR-02)
+    competitionStatus: (meet as { competition_status?: string | null }).competition_status ?? null,
+    resultsStatus: (meet as { results_status?: string | null }).results_status ?? null,
     latestServerAt: latestServerAt(kids.results),
     updatedAt: meet.updated_at ?? null,
   };
@@ -124,11 +129,14 @@ export async function pullChanges(client: SyncClient, meetId: string, sinceIso: 
   const [resultRows, athleteRows, meetRows] = await Promise.all([
     client.select<ResultRow>('results', `${q}&order=server_at.asc`),
     client.select<AthleteRow>('athletes', `meet_id=eq.${meetId}`),
-    client.select<{ updated_at: string }>('meets', `id=eq.${meetId}&select=updated_at&limit=1`),
+    client.select<{ updated_at: string; competition_status?: string | null; results_status?: string | null }>('meets', `id=eq.${meetId}&select=updated_at,competition_status,results_status&limit=1`),
   ]);
   const results = resultRows.map(rowToResult);
   const latestIso = latestServerAt(resultRows) ?? sinceIso;
-  return { results, athletes: athleteRows.map(rowToAthlete), latestIso, meetUpdatedAt: meetRows[0]?.updated_at ?? null };
+  return {
+    results, athletes: athleteRows.map(rowToAthlete), latestIso, meetUpdatedAt: meetRows[0]?.updated_at ?? null,
+    competitionStatus: meetRows[0]?.competition_status ?? null, resultsStatus: meetRows[0]?.results_status ?? null,
+  };
 }
 
 // Full config re-read after pullChanges reports a newer meets.updated_at (admin republished weights, events,

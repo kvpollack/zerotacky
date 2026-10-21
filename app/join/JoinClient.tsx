@@ -105,7 +105,9 @@ export default function JoinClient() {
         )}
         {!remote ? (
           <form onSubmit={(e) => { e.preventDefault(); if (code.trim().length >= 6) lookup(code.trim()); }} className="space-y-3">
+            <label htmlFor="join-code" className="block text-xs font-extrabold uppercase text-zt-muted text-center">Meet join code</label>
             <input
+              id="join-code"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
               placeholder="ABC123"
@@ -117,7 +119,7 @@ export default function JoinClient() {
             <button type="submit" disabled={busy || !env || code.length < 6} className={`${btn} bg-zt-primary text-zt-on-primary disabled:opacity-40`}>
               {busy ? 'Looking up…' : 'Find meet'}
             </button>
-            {error && <div className="text-sm font-bold text-zt-danger-text text-center">{error}</div>}
+            {error && <div role="alert" className="text-sm font-bold text-zt-danger-text text-center">{error}</div>}
             <p className="text-xs text-zt-muted text-center">
               The promoter has the 6-character code on the Meet Day tab of their meet.
             </p>
@@ -132,10 +134,11 @@ export default function JoinClient() {
             </div>
             {pinRole ? (
               <form onSubmit={(e) => { e.preventDefault(); if (pin.trim().length >= 4) submitPin(); }} className="space-y-3">
-                <div className="text-xs font-extrabold uppercase text-zt-muted text-center">
+                <label htmlFor="join-pin" className="block text-xs font-extrabold uppercase text-zt-muted text-center">
                   {pinRole === 'admin' ? 'Promoter' : 'Judge'} access needs the meet PIN
-                </div>
+                </label>
                 <input
+                  id="join-pin"
                   value={pin}
                   onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, '').slice(0, 8))}
                   placeholder="PIN"
@@ -147,7 +150,7 @@ export default function JoinClient() {
                 <button type="submit" disabled={busy || pin.trim().length < 4} className={`${btn} bg-zt-primary text-zt-on-primary disabled:opacity-40`}>
                   {busy ? 'Checking…' : `Unlock ${pinRole === 'admin' ? 'promoter' : 'judge'} access`}
                 </button>
-                {pinError && <div className="text-sm font-bold text-zt-danger-text text-center">{pinError}</div>}
+                {pinError && <div role="alert" className="text-sm font-bold text-zt-danger-text text-center">{pinError}</div>}
                 <p className="text-xs text-zt-muted text-center">
                   The promoter sets the PIN on the Meet tab of their meet. It is checked on the server and remembered on this phone for this meet.
                 </p>

@@ -268,11 +268,11 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
       {/* Show Header Banner */}
       <section className="bg-zt-surface border border-zt-border rounded-2xl p-5 sm:p-6 space-y-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded bg-zt-primary/20 text-zt-primary-2 border border-zt-primary/40">
+          <span className="text-xs font-black uppercase px-2.5 py-0.5 rounded bg-zt-primary/20 text-zt-primary-2 border border-zt-primary/40">
             {life.competitionLabel}
           </span>
           <span
-            className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded border ${
+            className={`text-xs font-black uppercase px-2.5 py-0.5 rounded border ${
               regOpen
                 ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                 : 'bg-zt-danger/15 text-zt-danger-text border-zt-danger/40'
@@ -281,7 +281,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
             {life.registrationLabel}
           </span>
           {meet.listing.federation && (
-            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-text-2">
+            <span className="text-xs font-bold uppercase px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-text-2">
               {meet.listing.federation}
             </span>
           )}
@@ -302,23 +302,23 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
 
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 pt-2 border-t border-zt-border text-xs">
           <div className="bg-zt-inset border border-zt-border rounded-xl p-2.5">
-            <div className="text-[10px] font-extrabold uppercase text-zt-muted">Entry Fee</div>
+            <div className="text-xs font-extrabold uppercase text-zt-muted">Entry Fee</div>
             <div className="font-black text-zt-text mt-0.5">
               {meet.listing.entryFeeDisplay || 'Collected by promoter'}
             </div>
           </div>
           <div className="bg-zt-inset border border-zt-border rounded-xl p-2.5">
-            <div className="text-[10px] font-extrabold uppercase text-zt-muted">Registration Deadline</div>
+            <div className="text-xs font-extrabold uppercase text-zt-muted">Registration Deadline</div>
             <div className="font-black text-zt-text mt-0.5">
               {meet.listing.registrationDeadline || (regOpen ? 'Open until filled' : 'Closed')}
             </div>
           </div>
           <div className="bg-zt-inset border border-zt-border rounded-xl p-2.5">
-            <div className="text-[10px] font-extrabold uppercase text-zt-muted">Capacity</div>
+            <div className="text-xs font-extrabold uppercase text-zt-muted">Capacity</div>
             <div className="font-black text-zt-text mt-0.5">{capacityDisplay}</div>
           </div>
           <div className="bg-zt-inset border border-zt-border rounded-xl p-2.5">
-            <div className="text-[10px] font-extrabold uppercase text-zt-muted">Promoter</div>
+            <div className="text-xs font-extrabold uppercase text-zt-muted">Promoter</div>
             <div className="font-black text-zt-text mt-0.5">
               {meet.promoterDisplayName}
               <span className="block font-bold text-zt-text-2">{promoterContactDisplay}</span>
@@ -328,7 +328,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
       </section>
 
       {!isLiveBackend() && (
-        <p className="text-[11px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-2">
+        <p className="text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-2">
           {PREVIEW_NOTICE}
         </p>
       )}
@@ -376,7 +376,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
           )}
 
           {/* Step Indicator */}
-          <ol className="grid grid-cols-4 gap-2 text-xs">
+          <ol className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             {[
               { s: 1, label: '1. Division & Info' },
               { s: 2, label: '2. Waiver' },
@@ -389,7 +389,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                 <li
                   key={item.s}
                   aria-current={active ? 'step' : undefined}
-                  className={`rounded-xl px-3 py-2 font-black uppercase text-[11px] text-center border ${
+                  className={`rounded-xl px-2 py-2 font-black uppercase text-xs leading-tight text-center border min-h-[44px] flex items-center justify-center ${
                     active
                       ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
                       : done
@@ -477,7 +477,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                       >
                         <span className="block text-sm font-black text-zt-text">{div.name}</span>
                         {weightSummary && (
-                          <span className="block text-[11px] font-semibold text-zt-muted mt-1">
+                          <span className="block text-xs font-semibold text-zt-muted mt-1">
                             Target Weights: {weightSummary}
                           </span>
                         )}
@@ -491,7 +491,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                 <div>
                   <label
                     htmlFor="reg-athlete-name"
-                    className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1"
+                    className="block text-xs font-extrabold uppercase text-zt-muted mb-1"
                   >
                     Athlete Full Name *
                   </label>
@@ -509,7 +509,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                 <div>
                   <label
                     htmlFor="reg-athlete-email"
-                    className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1"
+                    className="block text-xs font-extrabold uppercase text-zt-muted mb-1"
                   >
                     Email Address *
                   </label>
@@ -528,7 +528,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
               <div>
                 <label
                   htmlFor="reg-emergency-contact"
-                  className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1"
+                  className="block text-xs font-extrabold uppercase text-zt-muted mb-1"
                 >
                   Emergency Contact (Name, Relationship &amp; Phone) *
                 </label>
@@ -542,13 +542,13 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                   aria-describedby="reg-emergency-help"
                   className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2.5 text-sm font-bold text-zt-text"
                 />
-                <p id="reg-emergency-help" className="text-[11px] text-zt-muted mt-1">
+                <p id="reg-emergency-help" className="text-xs text-zt-muted mt-1">
                   A name and a phone number with at least 7 digits. Only the promoter sees this.
                 </p>
               </div>
 
               <fieldset className="bg-zt-inset border border-zt-border rounded-xl p-3.5">
-                <legend className="text-[11px] font-extrabold uppercase text-zt-muted px-1">Athlete date of birth *</legend>
+                <legend className="text-xs font-extrabold uppercase text-zt-muted px-1">Athlete date of birth *</legend>
                 <input
                   id="reg-date-of-birth"
                   type="date"
@@ -556,10 +556,11 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                   value={dateOfBirth}
                   max={todayIsoDate()}
                   onChange={(e) => setDateOfBirth(e.target.value)}
+                  aria-label="Athlete date of birth"
                   aria-describedby="reg-dob-help"
                   className="w-full sm:w-64 bg-zt-panel border border-zt-border-strong rounded-xl px-3 py-2.5 text-sm font-bold text-zt-text"
                 />
-                <p id="reg-dob-help" className="text-[11px] text-zt-muted mt-1">
+                <p id="reg-dob-help" className="text-xs text-zt-muted mt-1">
                   {ageOnMeetDay === null && 'Only the promoter sees this. Athletes under 18 on competition day are registered by a parent or legal guardian.'}
                   {ageOnMeetDay !== null && ageOnMeetDay < MIN_ATHLETE_AGE && (
                     <span className="text-amber-300 font-bold">
@@ -576,7 +577,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                 {isMinor && (
                   <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label htmlFor="reg-guardian-name" className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1">
+                      <label htmlFor="reg-guardian-name" className="block text-xs font-extrabold uppercase text-zt-muted mb-1">
                         Parent / guardian full name *
                       </label>
                       <input
@@ -589,7 +590,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                       />
                     </div>
                     <div>
-                      <label htmlFor="reg-guardian-contact" className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1">
+                      <label htmlFor="reg-guardian-contact" className="block text-xs font-extrabold uppercase text-zt-muted mb-1">
                         Parent / guardian phone or email *
                       </label>
                       <input
@@ -601,7 +602,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                         className="w-full bg-zt-panel border border-zt-border-strong rounded-xl px-3 py-2.5 text-sm font-bold text-zt-text"
                       />
                     </div>
-                    <p className="sm:col-span-2 text-[11px] text-zt-muted">
+                    <p className="sm:col-span-2 text-xs text-zt-muted">
                       By continuing you confirm you are the athlete&apos;s parent or legal guardian. You will accept the waiver on the
                       athlete&apos;s behalf in the next step and sign it on paper at check-in. The promoter sets the minimum age for
                       this competition. Only the promoter sees these details.
@@ -639,7 +640,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                   <FileText className="w-4 h-4" aria-hidden="true" />
                   <span>Step 2: Assumption of Risk &amp; Liability Waiver</span>
                 </h2>
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-muted">
+                <span className="text-xs font-bold uppercase px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-muted">
                   Organizer: {meet.promoterDisplayName}
                 </span>
               </div>
@@ -765,7 +766,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
               <div className="flex items-center gap-2.5 text-emerald-400">
                 <CheckCircle2 className="w-6 h-6 flex-shrink-0" aria-hidden="true" />
                 <div>
-                  <div className="text-[10px] font-black uppercase tracking-widest">Registration Submitted</div>
+                  <div className="text-xs font-black uppercase tracking-widest">Registration Submitted</div>
                   <h2 className="text-xl font-black text-zt-text">
                     Status: {submitted.status === 'waitlist' ? 'WAITLISTED' : 'PENDING'}
                   </h2>

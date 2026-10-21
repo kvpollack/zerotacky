@@ -37,6 +37,10 @@ export default async function WebsiteLandingPage() {
             splits on their phones; pit crew gets exact plate stacks and rack pin callouts; spectators
             watch a live public scoreboard.
           </p>
+          <p className="text-sm font-bold text-zt-text">
+            Everything an athlete does here is free, always: finding shows, registering, following your meets, your
+            profile and the live scoreboard. No premium tier for athletes, now or later.
+          </p>
         </div>
 
         {/* Primary Actions: Find a show + Run a meet */}
@@ -68,8 +72,9 @@ export default async function WebsiteLandingPage() {
 
         <p className="text-xs font-semibold text-zt-muted">
           <strong>Check Out a Demo Show</strong> opens the meet-day scorer on this device loaded with a made-up show,
-          so you can score and edit without touching anything real. To run your own meet, open the scorer and tap
-          New Blank Meet in Meet Setup.
+          so you can score and edit without touching anything real. To run your own meet, sign in and tap New Meet on{' '}
+          <Link href="/promoter" className="text-zt-primary-2 font-bold underline">My Meets</Link>; the{' '}
+          <Link href="/how-it-works/first-show" className="text-zt-primary-2 font-bold underline">first-show guide</Link> walks every tab.
         </p>
       </section>
 
@@ -160,7 +165,7 @@ export default async function WebsiteLandingPage() {
               id="sample-shows-heading"
               className="text-sm font-black uppercase tracking-wider text-zt-primary"
             >
-              Sample Shows in the Directory (Demo Fixtures)
+              Shows in the Directory
             </h2>
             <p className="text-xs text-zt-muted">
               Includes upcoming inclusive groups, a live show, a completed finalized show with a tied

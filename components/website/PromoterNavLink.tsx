@@ -17,7 +17,7 @@ export default function PromoterNavLink({ active = false }: { active?: boolean }
     <Link
       href="/promoter"
       aria-current={active ? 'page' : undefined}
-      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase tracking-wide transition border ${
+      className={`px-3 min-h-[44px] inline-flex items-center rounded-xl text-xs font-extrabold uppercase tracking-wide transition border ${
         active
           ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
           : 'bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong'
