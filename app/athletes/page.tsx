@@ -4,6 +4,7 @@ import WebsiteShell from '@/components/website/WebsiteShell';
 import AthletesBrowser from '@/components/website/AthletesBrowser';
 import { listPublicAthletes } from '@/lib/website/data';
 import { cleanRoleParam, cleanSearchParam, cleanStateParam, collectAthleteStates } from '@/lib/website/athletes';
+import { canonical } from '@/lib/website/seo';
 
 // Profiles change when people edit them; a 60 s window keeps the list close to live without a query per visit.
 export const revalidate = 60;
@@ -11,6 +12,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: 'Athletes — ZeroTacky',
   description: 'Strongman athletes, promoters, gym owners and trainers who chose to be listed on ZeroTacky.',
+  ...canonical('/athletes'),   // filters are query strings; one indexable page
 };
 
 type SearchParams = Record<string, string | string[] | undefined>;

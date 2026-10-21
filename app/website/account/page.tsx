@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import WebsiteShell from '@/components/website/WebsiteShell';
 import AccountClient from '@/components/website/AccountClient';
+import { NOINDEX } from '@/lib/website/seo';
 
 export const metadata: Metadata = {
   title: 'Account — ZeroTacky',
   description: 'Sign in to ZeroTacky: compete, run shows and list your gym from one account.',
+  ...NOINDEX,
 };
 
 export default function WebsiteAccountPage() {

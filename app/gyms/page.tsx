@@ -4,6 +4,8 @@ import GymsBrowser from '@/components/website/GymsBrowser';
 import { listPublicGyms } from '@/lib/website/data';
 import { collectDistinctImplementTags, collectDistinctStates } from '@/lib/website/filters';
 import { sortEquipmentTags } from '@/lib/website/gymEquipment';
+import { canonical } from '@/lib/website/seo';
+import { cleanSearchParam, cleanStateParam } from '@/lib/website/athletes';
 
 // Directory rows are loaded by scripts outside deploys; refresh every 5 min.
 export const revalidate = 300;
@@ -12,9 +14,13 @@ export const metadata: Metadata = {
   title: 'Gym Directory — ZeroTacky',
   description:
     'Find strongman and powerlifting gyms: logs, axles, yokes, Atlas stones, monolifts, calibrated plates, with day-pass and drop-in details.',
+  ...canonical('/gyms'),
 };
 
-export default async function GymsDirectoryPage() {
+type SearchParams = Record<string, string | string[] | undefined>;
+
+export default async function GymsDirectoryPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const sp = await searchParams;
   const res = await listPublicGyms();
   const gyms = res.data ?? [];
   const states = collectDistinctStates(gyms);
@@ -54,6 +60,8 @@ export default async function GymsDirectoryPage() {
         initialGyms={gyms}
         availableStates={states}
         availableImplements={implementTags}
+        initialSearch={cleanSearchParam(sp.q)}
+        initialState={cleanStateParam(sp.state)}
       />
     </WebsiteShell>
   );

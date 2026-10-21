@@ -11,6 +11,9 @@ interface GymsBrowserProps {
   initialGyms: StrongmanGymListing[];
   availableStates: string[];
   availableImplements: string[];
+  // From /gyms?q=&state= (10/21): the sitewide SearchAction in JSON-LD points here.
+  initialSearch?: string;
+  initialState?: string;
 }
 
 const DAY_PASS_LABELS: Record<DayPassAvailability, string> = {
@@ -24,9 +27,11 @@ export default function GymsBrowser({
   initialGyms,
   availableStates,
   availableImplements,
+  initialSearch = '',
+  initialState = 'ALL',
 }: GymsBrowserProps) {
-  const [search, setSearch] = useState('');
-  const [stateFilter, setStateFilter] = useState('ALL');
+  const [search, setSearch] = useState(initialSearch);
+  const [stateFilter, setStateFilter] = useState(initialState);
   const [implementTag, setImplementTag] = useState('ALL');
   const [dayPassOnly, setDayPassOnly] = useState(false);
 

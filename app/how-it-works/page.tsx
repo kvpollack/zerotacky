@@ -3,11 +3,13 @@ import Link from 'next/link';
 import { Trophy, Users, ClipboardCheck, HelpCircle } from 'lucide-react';
 import WebsiteShell from '@/components/website/WebsiteShell';
 import { HOW_IT_WORKS_TRACKS, HOW_IT_WORKS_FAQ } from '@/lib/website/howItWorks';
+import { canonical } from '@/lib/website/seo';
 
 export const metadata: Metadata = {
   title: 'How ZeroTacky Works — ZeroTacky',
   description:
     'How promoters build and run a meet, how athletes find, follow and register for shows, and how volunteers and judges join on meet day.',
+  ...canonical('/how-it-works'),
 };
 
 const ICONS = {

@@ -5,6 +5,8 @@ import { ArrowLeft, Dumbbell, ExternalLink, MapPin, User } from 'lucide-react';
 import WebsiteShell from '@/components/website/WebsiteShell';
 import { getPublicAthleteByUsername } from '@/lib/website/data';
 import { SOCIAL_KEYS, socialUrl } from '@/lib/auth/profile';
+import { athleteJsonLd, canonical } from '@/lib/website/seo';
+import JsonLd from '@/components/website/JsonLd';
 
 // Profiles change when people edit them; 60 s keeps the page close to live without a query per visit.
 export const revalidate = 60;
@@ -22,6 +24,7 @@ export async function generateMetadata({ params }: AthletePageProps): Promise<Me
     title: `${a.displayName} (@${a.username}) — ZeroTacky`,
     description: [a.badges.join(', '), a.location, a.favoriteLift ? `Favorite lift: ${a.favoriteLift}` : ''].filter(Boolean).join(' • ') || `${a.displayName} on ZeroTacky.`,
     ...(a.avatarUrl ? { openGraph: { images: [{ url: a.avatarUrl }] } } : {}),
+    ...canonical(`/athletes/${a.username}`),
   };
 }
 
@@ -35,6 +38,7 @@ export default async function AthleteProfilePage({ params }: AthletePageProps) {
 
   return (
     <WebsiteShell activeNav="athletes">
+      <JsonLd data={athleteJsonLd(a)} />
       <div className="space-y-6">
         <div>
           <Link href="/athletes" className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase text-zt-muted hover:text-zt-text">
