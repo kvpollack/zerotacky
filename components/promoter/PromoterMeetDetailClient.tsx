@@ -133,7 +133,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   }, [loadAll]);
 
   useEffect(() => {
-    if (detail?.summary.name) document.title = `${detail.summary.name} — Manage Meet — ZeroTacky`;
+    if (detail?.summary.name) document.title = `${detail.summary.name} — Manage Meet | ZeroTacky`;
   }, [detail?.summary.name]);
 
   const isDirty = useMemo(() => {

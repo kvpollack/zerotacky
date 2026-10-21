@@ -18,10 +18,10 @@ interface AthletePageProps {
 export async function generateMetadata({ params }: AthletePageProps): Promise<Metadata> {
   const { username } = await params;
   const res = await getPublicAthleteByUsername(username);
-  if (!res.data) return { title: 'Athlete Not Found — ZeroTacky' };
+  if (!res.data) return { title: 'Athlete Not Found | ZeroTacky' };
   const a = res.data;
   return {
-    title: `${a.displayName} (@${a.username}) — ZeroTacky`,
+    title: `${a.displayName} (@${a.username}) | ZeroTacky`,
     description: [a.badges.join(', '), a.location, a.favoriteLift ? `Favorite lift: ${a.favoriteLift}` : ''].filter(Boolean).join(' • ') || `${a.displayName} on ZeroTacky.`,
     ...(a.avatarUrl ? { openGraph: { images: [{ url: a.avatarUrl }] } } : {}),
     ...canonical(`/athletes/${a.username}`),

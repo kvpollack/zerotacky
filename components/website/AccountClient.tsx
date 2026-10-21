@@ -120,11 +120,13 @@ export default function AccountClient() {
   const router = useRouter();
   // Back to where the sign-in started (the registration page, 10/21): SignInForm remembers it before any email round
   // trip, so a confirmation or magic link that lands here carries on to the show instead of stranding the athlete.
+  // Recovery first (Astra HI-M1): a reset link lands here with auth.recovery true, and Set a new password must win;
+  // the return target is consumed once recovery clears (password saved or dismissed).
   useEffect(() => {
-    if (!auth.user) return;
+    if (!auth.user || auth.recovery) return;
     const back = takeReturnTo();
     if (back && back !== '/website/account') router.replace(back);
-  }, [auth.user, router]);
+  }, [auth.user, auth.recovery, router]);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ text: string; tone: 'ok' | 'warn' } | null>(null);
   const [showPassword, setShowPassword] = useState(false);

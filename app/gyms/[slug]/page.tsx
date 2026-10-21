@@ -18,10 +18,10 @@ export async function generateMetadata({ params }: GymDetailPageProps): Promise<
   const { slug } = await params;
   const res = await getPublicGymBySlug(slug);
   if (!res.data) {
-    return { title: 'Gym Not Found — ZeroTacky' };
+    return { title: 'Gym Not Found | ZeroTacky' };
   }
   return {
-    title: `${res.data.name} (${res.data.city}, ${res.data.state}) — ZeroTacky`,
+    title: `${res.data.name} (${res.data.city}, ${res.data.state}) | ZeroTacky`,
     description: `Equipment, day-pass policy, and drop-in details for ${res.data.name}.`,
     openGraph: { url: `/gyms/${res.data.slug}` },
     ...canonical(`/gyms/${res.data.slug}`),

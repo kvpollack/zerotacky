@@ -6,7 +6,7 @@ import { collectDistinctImplementTags, collectDistinctStates } from '@/lib/websi
 import { canonical } from '@/lib/website/seo';
 
 export const metadata: Metadata = {
-  title: 'Find a Strongman Show — ZeroTacky',
+  title: 'Find a Strongman Show | ZeroTacky',
   description:
     'Search upcoming, live, and completed strongman competitions by state, status, implements, and division format.',
   ...canonical('/shows'),

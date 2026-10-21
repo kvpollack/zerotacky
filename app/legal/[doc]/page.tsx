@@ -21,8 +21,8 @@ type Params = { params: Promise<{ doc: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { doc } = await params;
-  if (!isLegalDocId(doc)) return { title: 'Not found — ZeroTacky' };
-  return { title: `${LEGAL_DOCS[doc].title} — ZeroTacky`, description: `ZeroTacky ${LEGAL_DOCS[doc].title}.`, ...canonical(`/legal/${doc}`) };
+  if (!isLegalDocId(doc)) return { title: 'Not found | ZeroTacky' };
+  return { title: `${LEGAL_DOCS[doc].title} | ZeroTacky`, description: `ZeroTacky ${LEGAL_DOCS[doc].title}.`, ...canonical(`/legal/${doc}`) };
 }
 
 export default async function LegalPage({ params }: Params) {

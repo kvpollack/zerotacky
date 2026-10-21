@@ -37,7 +37,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   const tv = layout === 'tv';
 
   useEffect(() => {
-    if (meet?.state.meet.name) document.title = `${meet.state.meet.name} — Live Scoreboard — ZeroTacky`;
+    if (meet?.state.meet.name) document.title = `${meet.state.meet.name} — Live Scoreboard | ZeroTacky`;
   }, [meet?.state.meet.name]);
 
   useEffect(() => {

@@ -154,7 +154,7 @@ export default function ListingSection({
             {isLiveBackend() ? (
               <>
                 Controls what the public sees on <Link href="/shows" className="text-zt-primary font-bold underline">Find a Show</Link> and the
-                meet's registration page. Unlisted meets still open by direct link.
+                meet's registration page. Unlisted meets have no show page and are not in Find a Show; their registration page and live scoreboard still open by direct link, roster names included.
               </>
             ) : (
               <>

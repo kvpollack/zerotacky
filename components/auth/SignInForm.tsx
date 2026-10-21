@@ -6,20 +6,45 @@ import { Mail, ShieldCheck } from 'lucide-react';
 import type { AuthState } from '@/lib/auth/useAuth';
 
 // Sign in / create account / magic link, lifted out of AccountClient (10/21) so the registration page can ask for an
-// account without sending the athlete away. `returnTo` is remembered in sessionStorage before any email round trip
-// (confirmation, magic link, reset) so the Account page can bring them back; AccountClient reads and clears it.
+// account without sending the athlete away. `returnTo` is remembered only before an email round trip (confirmation,
+// magic link, reset): an inline password sign-in needs no return, it stays where it is (Astra HI-M1). The email link
+// usually opens in a new tab or the phone's browser, so the value lives in localStorage for an hour, not
+// sessionStorage (HI-M2). AccountClient reads and clears it once the session exists and no password recovery is
+// pending.
 export type SignInMode = 'signin' | 'signup' | 'magic';
 export const RETURN_TO_KEY = 'zt_return_to';
+const RETURN_TO_TTL_MS = 60 * 60 * 1000;
 
+// Same-origin path or nothing: no scheme, no `//`, no backslashes or control characters, and the browser's own URL
+// parser must resolve it to this origin (Astra HI-L1). Returns the normalized path + search + hash.
+export function cleanReturnPath(v: string | null | undefined): string | null {
+  if (!v || typeof v !== 'string' || !v.startsWith('/') || v.startsWith('//')) return null;
+  if (/[\\\u0000-\u001f\u007f]/.test(v)) return null;
+  if (typeof window === 'undefined') return v;
+  try {
+    const u = new URL(v, window.location.origin);
+    if (u.origin !== window.location.origin) return null;
+    const out = `${u.pathname}${u.search}${u.hash}`;
+    if (!out.startsWith('/') || out.startsWith('//')) return null;
+    return out;
+  } catch { return null; }
+}
 export function rememberReturnTo(path: string | undefined) {
-  if (!path || !path.startsWith('/')) return;
-  try { sessionStorage.setItem(RETURN_TO_KEY, path); } catch { /* private mode */ }
+  const clean = cleanReturnPath(path);
+  if (!clean) return;
+  try { localStorage.setItem(RETURN_TO_KEY, JSON.stringify({ p: clean, t: Date.now() })); } catch { /* private mode */ }
+}
+export function clearReturnTo() {
+  try { localStorage.removeItem(RETURN_TO_KEY); } catch { /* ignore */ }
 }
 export function takeReturnTo(): string | null {
   try {
-    const v = sessionStorage.getItem(RETURN_TO_KEY);
-    if (v) sessionStorage.removeItem(RETURN_TO_KEY);
-    return v && v.startsWith('/') && !v.startsWith('//') ? v : null;
+    const raw = localStorage.getItem(RETURN_TO_KEY);
+    if (!raw) return null;
+    localStorage.removeItem(RETURN_TO_KEY);
+    const j = JSON.parse(raw) as { p?: unknown; t?: unknown };
+    if (typeof j.t !== 'number' || Date.now() - j.t > RETURN_TO_TTL_MS) return null;
+    return cleanReturnPath(typeof j.p === 'string' ? j.p : null);
   } catch { return null; }
 }
 
@@ -67,16 +92,17 @@ export default function SignInForm({ auth, defaultMode = 'signin', returnTo, idP
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    rememberReturnTo(returnTo);
-    if (mode === 'signin') return run(async () => { await auth.signInWithPassword(email, password); });
+    if (mode === 'signin') return run(async () => { clearReturnTo(); await auth.signInWithPassword(email, password); });
     if (mode === 'signup') {
       return run(async () => {
         if (password.length < 8) throw new Error('Password needs at least 8 characters.');
+        rememberReturnTo(returnTo);
         const r = await auth.signUp(email, password, name || email.split('@')[0]);
-        return r === 'check_email' ? `Check ${email.trim()} for a confirmation link, then come back here.` : undefined;
+        if (r === 'signed_in') clearReturnTo();
+        return r === 'check_email' ? `Check ${email.trim()} for a confirmation link. Opening it signs you in and brings you back here.` : undefined;
       });
     }
-    return run(async () => { await auth.sendMagicLink(email); return `Magic link sent to ${email.trim()}. Open it on this device.`; });
+    return run(async () => { rememberReturnTo(returnTo); await auth.sendMagicLink(email); return `Magic link sent to ${email.trim()}. Opening it signs you in and brings you back here.`; });
   };
   const tabs: Array<[SignInMode, string]> = [['signin', 'Sign in'], ['signup', 'Create account'], ['magic', 'Email me a link']];
 
@@ -129,7 +155,7 @@ export default function SignInForm({ auth, defaultMode = 'signin', returnTo, idP
                   if (!email.trim()) throw new Error('Enter your email above first, then tap Forgot password.');
                   rememberReturnTo(returnTo);
                   await auth.sendPasswordReset(email);
-                  return `Reset link sent to ${email.trim()}. Open it on this device; it brings you back to set a new password.`;
+                  return `Reset link sent to ${email.trim()}. It opens the Account page to set a new password${returnTo ? ', then brings you back here' : ''}.`;
                 })}
                 className="mt-1.5 text-[11px] font-bold text-zt-primary underline underline-offset-2"
               >

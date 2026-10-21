@@ -69,7 +69,7 @@ export default function RegistrationsSection({
           </h2>
           <p className="text-xs text-zt-muted mt-0.5">
             {pendingCount} pending, {acceptedCount} accepted. Accepting adds the athlete to that division&apos;s roster
-            (Section 4) with the next lot number; declining removes the roster row unless it already has results.
+            (tab 5, Athletes) with the next lot number; declining removes the roster row unless it already has results.
             Emergency contacts are visible to you only.
           </p>
         </div>

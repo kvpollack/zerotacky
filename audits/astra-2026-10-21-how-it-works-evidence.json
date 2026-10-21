@@ -1,0 +1,1720 @@
+{
+  "revision": {
+    "sha": "83aba59da3f6d1d89f506c81bfc2b3613b1fd672",
+    "tracked": 338,
+    "mismatches": []
+  },
+  "engine-evidence": {
+    "faqCount": 16,
+    "steps": 10,
+    "referencedImages": 15,
+    "imageBytes": 3110621,
+    "links": [
+      "/promoter",
+      "/shows",
+      "/join",
+      "/m/keystone-fall-brawl-2026",
+      "/scorer",
+      "/website/account",
+      "/legal/privacy",
+      "/shows",
+      "/athletes",
+      "/how-it-works/first-show",
+      "/promoter",
+      "/gyms",
+      "/website/account/gym/add"
+    ],
+    "fixture": {
+      "id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+      "slug": "astra-how-75d44283"
+    }
+  },
+  "staging-evidence": {
+    "fixture": {
+      "id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+      "slug": "astra-how-75d44283",
+      "publish": 200
+    },
+    "anonWrapper": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_submit_registration"
+      }
+    },
+    "anonBody": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_submit_registration_body"
+      }
+    },
+    "authBody": {
+      "status": 403,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "permission denied for function zt_submit_registration_body"
+      }
+    },
+    "authInvalid": {
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "Please enter the athlete full name."
+      }
+    },
+    "settings": {
+      "status": 200,
+      "body": {
+        "external": {
+          "anonymous_users": false,
+          "apple": false,
+          "azure": false,
+          "bitbucket": false,
+          "discord": false,
+          "facebook": false,
+          "snapchat": false,
+          "figma": false,
+          "fly": false,
+          "github": false,
+          "gitlab": false,
+          "google": false,
+          "keycloak": false,
+          "kakao": false,
+          "linkedin": false,
+          "linkedin_oidc": false,
+          "notion": false,
+          "spotify": false,
+          "slack": false,
+          "slack_oidc": false,
+          "workos": false,
+          "twitch": false,
+          "twitter": false,
+          "email": true,
+          "phone": false,
+          "zoom": false
+        },
+        "disable_signup": false,
+        "mailer_autoconfirm": false,
+        "phone_autoconfirm": false,
+        "sms_provider": "twilio",
+        "saml_enabled": false,
+        "saml_private_key_next_configured": true,
+        "passkeys_enabled": false
+      }
+    },
+    "guidePublicKeys": {
+      "meet": [
+        "id",
+        "date",
+        "name",
+        "slug",
+        "venue",
+        "is_demo",
+        "stations",
+        "federation",
+        "updated_at",
+        "athlete_cap",
+        "results_status",
+        "tiebreaker_rule",
+        "available_plates",
+        "is_public_listed",
+        "promoter_contact",
+        "run_order_method",
+        "entry_fee_display",
+        "competition_status",
+        "registration_status",
+        "registration_deadline",
+        "collar_weight_per_pair"
+      ],
+      "events": 5,
+      "divisions": 5,
+      "accepted_count": 14,
+      "promoter_display_name": "Slate Staging"
+    }
+  },
+  "api-evidence": {
+    "publicBefore": {
+      "status": 200,
+      "body": {
+        "meet": {
+          "id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+          "date": "2026-12-05",
+          "name": "Astra Disposable Guide Audit",
+          "slug": "astra-how-75d44283",
+          "venue": null,
+          "is_demo": false,
+          "stations": [
+            {
+              "id": "A",
+              "label": "Station 1"
+            },
+            {
+              "id": "B",
+              "label": "Station 2"
+            }
+          ],
+          "federation": null,
+          "updated_at": "2026-10-21T13:55:16.91424+00:00",
+          "athlete_cap": 30,
+          "results_status": "not_started",
+          "tiebreaker_rule": "event_wins",
+          "available_plates": [
+            100,
+            55,
+            45,
+            35,
+            25,
+            15,
+            10,
+            5,
+            2.5
+          ],
+          "is_public_listed": false,
+          "promoter_contact": null,
+          "run_order_method": "reverse_overall",
+          "entry_fee_display": null,
+          "competition_status": "upcoming",
+          "registration_status": "open",
+          "registration_deadline": null,
+          "collar_weight_per_pair": 0
+        },
+        "events": [
+          {
+            "id": "audit-e1",
+            "name": "Audit Log Press",
+            "lanes": 1,
+            "config": {
+              "hasTrumpWeight": false,
+              "divisionWeights": {
+                "audit-d1": 135
+              }
+            },
+            "meet_id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+            "event_number": 1,
+            "scoring_type": "reps",
+            "loading_points": 2,
+            "time_cap_seconds": 60,
+            "weight_entry_mode": "total",
+            "implement_empty_weight": 45
+          }
+        ],
+        "divisions": [
+          {
+            "id": "audit-d1",
+            "name": "Audit Division",
+            "flight": "A",
+            "meet_id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+            "sort_order": 1
+          }
+        ],
+        "accepted_count": 1,
+        "promoter_display_name": "Astra Staging"
+      }
+    },
+    "minorSubmit": {
+      "status": 200,
+      "body": {
+        "id": "6ad187a0-3443-4049-9c20-6c268e3cd318",
+        "status": "pending"
+      }
+    },
+    "minorMyMeets": [
+      {
+        "date": "2026-12-05",
+        "kind": "registration",
+        "name": "Astra Disposable Guide Audit",
+        "slug": "astra-how-75d44283",
+        "meet_id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+        "following": false,
+        "created_at": "2026-10-21T13:57:32.600204+00:00",
+        "waitlisted": false,
+        "division_name": "Audit Division",
+        "results_status": "not_started",
+        "registration_id": "6ad187a0-3443-4049-9c20-6c268e3cd318",
+        "is_public_listed": false,
+        "competition_status": "upcoming",
+        "registration_status": "pending"
+      }
+    ],
+    "guardianAttribution": {
+      "userIdMatchesGuardianAccount": true,
+      "guardian": "Audit Guardian",
+      "dateOfBirth": "2012-12-05"
+    },
+    "accept": {
+      "status": 200,
+      "body": {
+        "id": "6ad187a0-3443-4049-9c20-6c268e3cd318",
+        "name": "Audit Guardian Minor Fixture",
+        "paid": false,
+        "email": "astra-minor-api@example.invalid",
+        "status": "accepted",
+        "meet_id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+        "user_id": "36970762-b3e1-43c2-87f0-d1093816f94e",
+        "athlete_id": "reg-ath-6ad187a0",
+        "bodyweight": null,
+        "created_at": "2026-10-21T13:57:32.600204+00:00",
+        "updated_at": "2026-10-21T13:57:33.634657+00:00",
+        "waitlisted": false,
+        "division_id": "audit-d1",
+        "date_of_birth": "2012-12-05",
+        "guardian_name": "Audit Guardian",
+        "waiver_version": "3d524437e38f",
+        "guardian_contact": "2025550100",
+        "emergency_contact": "Audit Guardian 2025550100",
+        "waiver_accepted_at": "2026-10-21T13:57:32.600204+00:00"
+      }
+    },
+    "rosterAfterAccept": {
+      "status": 200,
+      "body": [
+        {
+          "id": "audit-a1",
+          "name": "Audit Walkon Fixture",
+          "lot_number": 7
+        },
+        {
+          "id": "reg-ath-6ad187a0",
+          "name": "Audit Guardian Minor Fixture",
+          "lot_number": 8
+        }
+      ]
+    },
+    "publicAfterAccept": {
+      "status": 200,
+      "body": {
+        "meet": {
+          "id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+          "date": "2026-12-05",
+          "name": "Astra Disposable Guide Audit",
+          "slug": "astra-how-75d44283",
+          "venue": null,
+          "is_demo": false,
+          "stations": [
+            {
+              "id": "A",
+              "label": "Station 1"
+            },
+            {
+              "id": "B",
+              "label": "Station 2"
+            }
+          ],
+          "federation": null,
+          "updated_at": "2026-10-21T13:57:33.634657+00:00",
+          "athlete_cap": 30,
+          "results_status": "not_started",
+          "tiebreaker_rule": "event_wins",
+          "available_plates": [
+            100,
+            55,
+            45,
+            35,
+            25,
+            15,
+            10,
+            5,
+            2.5
+          ],
+          "is_public_listed": false,
+          "promoter_contact": null,
+          "run_order_method": "reverse_overall",
+          "entry_fee_display": null,
+          "competition_status": "upcoming",
+          "registration_status": "open",
+          "registration_deadline": null,
+          "collar_weight_per_pair": 0
+        },
+        "events": [
+          {
+            "id": "audit-e1",
+            "name": "Audit Log Press",
+            "lanes": 1,
+            "config": {
+              "hasTrumpWeight": false,
+              "divisionWeights": {
+                "audit-d1": 135
+              }
+            },
+            "meet_id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+            "event_number": 1,
+            "scoring_type": "reps",
+            "loading_points": 2,
+            "time_cap_seconds": 60,
+            "weight_entry_mode": "total",
+            "implement_empty_weight": 45
+          }
+        ],
+        "divisions": [
+          {
+            "id": "audit-d1",
+            "name": "Audit Division",
+            "flight": "A",
+            "meet_id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+            "sort_order": 1
+          }
+        ],
+        "accepted_count": 2,
+        "promoter_display_name": "Astra Staging"
+      }
+    },
+    "decline": {
+      "status": 200,
+      "body": {
+        "id": "6ad187a0-3443-4049-9c20-6c268e3cd318",
+        "name": "Audit Guardian Minor Fixture",
+        "paid": false,
+        "email": "astra-minor-api@example.invalid",
+        "status": "declined",
+        "meet_id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+        "user_id": "36970762-b3e1-43c2-87f0-d1093816f94e",
+        "athlete_id": null,
+        "bodyweight": null,
+        "created_at": "2026-10-21T13:57:32.600204+00:00",
+        "updated_at": "2026-10-21T13:57:34.354069+00:00",
+        "waitlisted": false,
+        "division_id": "audit-d1",
+        "date_of_birth": "2012-12-05",
+        "guardian_name": "Audit Guardian",
+        "waiver_version": "3d524437e38f",
+        "guardian_contact": "2025550100",
+        "emergency_contact": "Audit Guardian 2025550100",
+        "waiver_accepted_at": "2026-10-21T13:57:32.600204+00:00"
+      }
+    },
+    "publicAfterDecline": {
+      "status": 200,
+      "body": {
+        "meet": {
+          "id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+          "date": "2026-12-05",
+          "name": "Astra Disposable Guide Audit",
+          "slug": "astra-how-75d44283",
+          "venue": null,
+          "is_demo": false,
+          "stations": [
+            {
+              "id": "A",
+              "label": "Station 1"
+            },
+            {
+              "id": "B",
+              "label": "Station 2"
+            }
+          ],
+          "federation": null,
+          "updated_at": "2026-10-21T13:57:34.354069+00:00",
+          "athlete_cap": 30,
+          "results_status": "not_started",
+          "tiebreaker_rule": "event_wins",
+          "available_plates": [
+            100,
+            55,
+            45,
+            35,
+            25,
+            15,
+            10,
+            5,
+            2.5
+          ],
+          "is_public_listed": false,
+          "promoter_contact": null,
+          "run_order_method": "reverse_overall",
+          "entry_fee_display": null,
+          "competition_status": "upcoming",
+          "registration_status": "open",
+          "registration_deadline": null,
+          "collar_weight_per_pair": 0
+        },
+        "events": [
+          {
+            "id": "audit-e1",
+            "name": "Audit Log Press",
+            "lanes": 1,
+            "config": {
+              "hasTrumpWeight": false,
+              "divisionWeights": {
+                "audit-d1": 135
+              }
+            },
+            "meet_id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+            "event_number": 1,
+            "scoring_type": "reps",
+            "loading_points": 2,
+            "time_cap_seconds": 60,
+            "weight_entry_mode": "total",
+            "implement_empty_weight": 45
+          }
+        ],
+        "divisions": [
+          {
+            "id": "audit-d1",
+            "name": "Audit Division",
+            "flight": "A",
+            "meet_id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+            "sort_order": 1
+          }
+        ],
+        "accepted_count": 1,
+        "promoter_display_name": "Astra Staging"
+      }
+    },
+    "noPinScoreDenied": {
+      "status": 401,
+      "body": {
+        "code": "42501",
+        "details": null,
+        "hint": null,
+        "message": "new row violates row-level security policy for table \"results\""
+      }
+    },
+    "judgeScoreWrite": {
+      "status": 201,
+      "body": ""
+    },
+    "pitCrewWrite": {
+      "status": 200,
+      "body": [
+        {
+          "id": "audit-a1",
+          "meet_id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+          "division_id": "audit-d1",
+          "name": "Audit Walkon Fixture",
+          "bodyweight": null,
+          "lot_number": 7,
+          "status": "active",
+          "rack_heights": {
+            "audit-e1": 42
+          }
+        }
+      ]
+    },
+    "rotate": {
+      "status": 200
+    },
+    "oldGrantWrite": {
+      "status": 200,
+      "body": []
+    },
+    "ownerAfterRotate": {
+      "status": 200,
+      "body": [
+        {
+          "id": "audit-score",
+          "meet_id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+          "event_id": "audit-e1",
+          "athlete_id": "audit-a1",
+          "payload": {
+            "reps": 3
+          },
+          "locked": true,
+          "updated_at": "2026-10-21T13:57:35.570258+00:00",
+          "updated_by": null,
+          "server_at": "2026-10-21T13:57:36.499206+00:00"
+        }
+      ]
+    },
+    "grantRevoke": 204
+  },
+  "browser-evidence": {
+    "checks": {
+      "stagingGuide": {
+        "title": "Set up your first show \u2014 ZeroTacky",
+        "canonical": "https://zerotacky-c7f7x5lyw-kvpollack-6654.vercel.app/how-it-works/first-show",
+        "robots": null,
+        "width": 375,
+        "scrollWidth": 375,
+        "images": [
+          {
+            "src": "/guide/01-new-meet.png",
+            "alt": "The New Meet form with a meet name, date and web address filled in",
+            "loading": "lazy",
+            "width": 301,
+            "loaded": true
+          },
+          {
+            "src": "/guide/03-meet.png",
+            "alt": "The Meet tab: name, date, slug, admin PIN, collar weight, run order, tiebreaker and gym plates",
+            "loading": "lazy",
+            "width": 301,
+            "loaded": true
+          },
+          {
+            "src": "/guide/04-divisions.png",
+            "alt": "The Divisions tab with five divisions listed",
+            "loading": "lazy",
+            "width": 301,
+            "loaded": false
+          },
+          {
+            "src": "/guide/05-stations.png",
+            "alt": "The Stations tab with women and novice divisions on Station 1 and open men on Station 2",
+            "loading": "lazy",
+            "width": 301,
+            "loaded": false
+          },
+          {
+            "src": "/guide/06-events.png",
+            "alt": "The Events tab listing five events with scoring type, time cap and load points",
+            "loading": "lazy",
+            "width": 301,
+            "loaded": false
+          },
+          {
+            "src": "/guide/07-event-form.png",
+            "alt": "The event form for a log clean and press with per-division target weights",
+            "loading": "lazy",
+            "width": 301,
+            "loaded": false
+          },
+          {
+            "src": "/guide/08-athletes.png",
+            "alt": "The Athletes tab with rosters under each division",
+            "loading": "lazy",
+            "width": 301,
+            "loaded": false
+          },
+          {
+            "src": "/guide/09-listing.png",
+            "alt": "The Listing tab with the meet listed, registration open and venue details filled in",
+            "loading": "lazy",
+            "width": 301,
+            "loaded": false
+          },
+          {
+            "src": "/guide/12-show-card.png",
+            "alt": "The resulting card in Find a Show with divisions and implements",
+            "loading": "lazy",
+            "width": 301,
+            "loaded": false
+          },
+          {
+            "src": "/guide/13-show-page.png",
+            "alt": "The public show page built from the listing",
+            "loading": "lazy",
+            "width": 301,
+            "loaded": false
+          },
+          {
+            "src": "/guide/14-register.png",
+            "alt": "The public registration form showing divisions with target weights and the athlete fields",
+            "loading": "lazy",
+            "width": 301,
+            "loaded": false
+          },
+          {
+            "src": "/guide/10-registrations.png",
+            "alt": "The Registrations tab with two pending entries and Accept and Decline buttons",
+            "loading": "lazy",
+            "width": 301,
+            "loaded": false
+          },
+          {
+            "src": "/guide/11-meet-day.png",
+            "alt": "The Meet Day tab with the join code, QR codes and the scorer, join and TV links",
+            "loading": "lazy",
+            "width": 301,
+            "loaded": false
+          },
+          {
+            "src": "/guide/16-join.png",
+            "alt": "The Join a Meet page with a code entered",
+            "loading": "lazy",
+            "width": 301,
+            "loaded": false
+          },
+          {
+            "src": "/guide/15-scoreboard.png",
+            "alt": "The live scoreboard with station strips, division filter chips and a per-event standings table",
+            "loading": "lazy",
+            "width": 301,
+            "loaded": false
+          }
+        ],
+        "anchors": [
+          {
+            "href": "#create",
+            "target": true
+          },
+          {
+            "href": "#rules",
+            "target": true
+          },
+          {
+            "href": "#divisions",
+            "target": true
+          },
+          {
+            "href": "#stations",
+            "target": true
+          },
+          {
+            "href": "#events",
+            "target": true
+          },
+          {
+            "href": "#athletes",
+            "target": true
+          },
+          {
+            "href": "#listing",
+            "target": true
+          },
+          {
+            "href": "#registrations",
+            "target": true
+          },
+          {
+            "href": "#meetday",
+            "target": true
+          },
+          {
+            "href": "#scoreboard",
+            "target": true
+          }
+        ],
+        "nav": [
+          {
+            "loadMs": 1299.1000000238419,
+            "domMs": 1108.800000011921,
+            "bytes": 15009
+          }
+        ],
+        "imagesAfterAnchors": [
+          {
+            "src": "/guide/01-new-meet.png",
+            "loaded": true
+          },
+          {
+            "src": "/guide/03-meet.png",
+            "loaded": true
+          },
+          {
+            "src": "/guide/04-divisions.png",
+            "loaded": true
+          },
+          {
+            "src": "/guide/05-stations.png",
+            "loaded": true
+          },
+          {
+            "src": "/guide/06-events.png",
+            "loaded": true
+          },
+          {
+            "src": "/guide/07-event-form.png",
+            "loaded": true
+          },
+          {
+            "src": "/guide/08-athletes.png",
+            "loaded": true
+          },
+          {
+            "src": "/guide/09-listing.png",
+            "loaded": true
+          },
+          {
+            "src": "/guide/12-show-card.png",
+            "loaded": true
+          },
+          {
+            "src": "/guide/13-show-page.png",
+            "loaded": true
+          },
+          {
+            "src": "/guide/14-register.png",
+            "loaded": true
+          },
+          {
+            "src": "/guide/10-registrations.png",
+            "loaded": true
+          },
+          {
+            "src": "/guide/11-meet-day.png",
+            "loaded": true
+          },
+          {
+            "src": "/guide/16-join.png",
+            "loaded": true
+          },
+          {
+            "src": "/guide/15-scoreboard.png",
+            "loaded": true
+          }
+        ],
+        "textHasForbiddenName": false,
+        "bodyEmDash": false
+      },
+      "staging/how-it-works": {
+        "keyMentions": [],
+        "faqAnchor": 1,
+        "roadmapAnchor": 1,
+        "width": 375,
+        "text": "How ZeroTacky Works\n\nOne site for the whole meet: the promoter builds it on a phone or laptop, athletes find and enter it here, volunteers join with a six-character code on the day, and everyone watches the same live scoreboard. Pick the track that fits you.\n\nPROMOTERS\nATHLETES & SPECTATORS\nVOLUNTEERS & JUDGES\nFAQ\nWHAT'S COMING\nRUNNING A SHOW\nPromoters\n\nYou set the meet up once, on your phone or a laptop. When you publish it, every judge, pit crew phone, and the public scoreboard see the same divisions, events, and scores, so nobody is working from a different copy.\n\n1\nCreate an account and tick Promoter\n\nYour account is what proves a meet is yours. Only you can change or delete it, and if you lose your phone you sign in on another one and everything is still there. There is nothing to write down or pass around between promoters.\n\nAccount\n2\nBuild the meet\n\nOn My Meets, New Meet asks for a name and a date and opens the meet as eight tabs: details and rules (admin PIN, run order, tiebreaker, gym plates), divisions, stations, events, athletes, listing, registrations and meet day. The phone scorer has the same steps under Meet Setup if you would rather build it there. The first-show guide walks through every tab with pictures.\n\nSet up your first show\n3\nList it and open entries\n\nA new meet starts unlisted: it has a web page, but only people with the link can see it. On the Listing tab you tick Listed to put it in Find a Show, fill in the venue and entry fee, and decide whether athletes can register right now, join a waitlist, or only enter on the day. Building on the phone instead? Publish from the scorer while signed in and the meet lands under My Meets the same way.\n\nMy Meets\n4\nApprove registrations\n\nWhen an athlete registers, their entry appears on your Registrations tab with the division they picked and their signed waiver. Accepting them adds them to the roster for that division. You can also decline, or leave them pending while you sort out numbers.\n\n5\nHand out the join code on meet day\n\nThe Meet Day tab shows a six-character code. Anyone helping you enters it on Join a Meet and their phone is connected to your meet. Judges and anyone who needs to change the setup also type in the admin PIN from step 1. If the code gets out to people who should not have it, tap rotate and the old one stops working.\n\nJoin a Meet\n6\nShare the live scoreboard\n\nEvery published meet gets a web page with the standings, each event's results and who is up next. The link is on the Meet Day tab. Put it on a TV in the gym with the TV layout and send it to spectators, who can open it on any phone without signing in.\n\nSee a demo board\nSetting up your first show, step by step\n\nOne meet from a blank screen to posted results, with a picture of every screen and what each change does on the public side.\n\nCOMPETING AND WATCHING\nAthletes & Spectators\n\nFind a show, keep an eye on it, register when entries open, then follow the scoring live on the day. Shows marked DEMO are made up so you can see what a listing and a scoreboard look like; they do not take entries.\n\n1\nFind a show\n\nSearch by name, division, status, state, implement, or federation. Each show page has the venue, the divisions and events, and whether registration is open.\n\nFind a Show\n2\nFollow it\n\nIf you are signed in you can tap Follow on a show you are thinking about. It then appears under Following on your My Meets page so you can find it again without searching. Following does not enter you in anything and the promoter is not told.\n\nAccount\n3\nRegister\n\nOnce entries are open, pick your division, give an emergency contact and your date of birth, and sign the waiver. You need to be 12 or older on the day of the meet. If you are under 18, a parent or guardian fills in their part of the form.\n\n4\nTrack it on My Meets\n\nYour entry starts as Pending approval until the promoter looks at it, then becomes Registered, Waitlisted, or Declined. After the meet it moves to Completed, so over time My Meets becomes a record of where you have competed.\n\nMy Meets\n5\nWatch live\n\nThe scoreboard page updates as judges enter scores. If you are at the venue you can also enter the join code on Join a Meet and see the Next Up list, including the weights and heights for each athlete, without being able to change anything.\n\nJoin a Meet\nMEET-DAY CREW\nVolunteers & Judges\n\nYou do not need an account. The promoter gives you a six-character code, you pick what you are doing that day, and the app opens already set up for your job.\n\n1\nEnter the join code\n\nOpen Join a Meet and type the code. The meet name comes back so you can check it is the right one.\n\nJoin a Meet\n2\nPick your role\n\nAthlete or Spectator shows the standings and who is up next, with nothing to tap by accident. Volunteer is for pit crew and shows the plate loading calculator. Judge and Promoter need the admin PIN from the promoter; you type it once and the phone remembers which role you chose.\n\n3\nJudges: score from the pad\n\nPick the event and the athletes come up in the right order. Enter reps, time, distance, the bar height reached or stone splits, depending on the event. Scores go to the scoreboard the moment the phone has signal.\n\n4\nPit crew: load from Next Up\n\nNext Up shows who is lifting, the weight they need, the plates to put on each side and any rack or pin height, so nobody is doing plate maths at the bar. The promoter decides whether you can change the bar weight or enter a custom load.\n\n5\nLose signal? Keep going\n\nThe app keeps working with no signal. Anything you enter is held on the phone and sent as soon as it reconnects, so a dead spot in the gym does not cost you any scores.\n\nCOMMON QUESTIONS\nFAQ\nEVERYONE\nDoes it cost anything?\nNo. Finding shows, registering, running a meet, the live scoreboard and the gym directory are all free right now. If that changes for any part of it, the price will be on the page before you use it, and what is already free for athletes stays free.\nDoes it work without Wi-Fi?\nYes. Scoring happens on the phone and is held there until it can be sent. A judge can score a whole event with no signal, and the public scoreboard catches up when the phone reconnects.\nDo I need to install an app?\nNo. Everything runs in the browser on any phone, tablet or laptop. Promoters and judges can add the scorer to the home screen so it opens like an app, but nothing is downloaded from a store. Open the scorer\nI forgot my password.\nOn the sign-in form, enter your email and tap Forgot password. The email you get has a link that brings you back to the Account page to choose a new one. If you are already signed in, use Change password on the same page. Account\nWhat happens to my data?\nWhat you enter when you register goes to the promoter of that meet, and ZeroTacky keeps what it needs to run the service. Your email is never shown publicly. The Privacy Policy lists what is kept and for how long. Privacy Policy\nATHLETES AND SPECTATORS\nDo I need an account to register for a show?\nNo. The registration form works without one. If you sign in first, the entry lands on your My Meets page so you can see when the promoter accepts it, and after the meet it stays there as part of your record. You need to be 12 or older on the day of the meet; under 18, a parent or guardian completes their part of the waiver. Find a Show\nHow do I watch a show live?\nOpen the show page and tap the live scoreboard link. It shows standings, each event and who is up next, and updates as judges score. No account, no code. If you are at the venue, the promoter can also give you the join code, which adds the Next Up list with each athlete's weights.\nWhat shows up publicly about me?\nOnce the promoter accepts you, your name and division appear on the meet roster and the live scoreboard, the same as a printed start list. Your email, date of birth and emergency contact go to the promoter only. Nothing else is public unless you turn on your own athlete page.\nHow do I get my own athlete page?\nOn your Account page, pick a username and turn on Show my profile publicly. Your name, photo, roles, location, home gym, favorite lift, PRs and the social handles you added show at zerotacky.com/athletes/yourname and in the Athletes list. Turn it off any time and the page is gone. Athletes\nPROMOTERS\nWhat do I need to run a show on ZeroTacky?\nAn account with Promoter ticked, your phone or a laptop to set the meet up, and one phone per judge on the day. Nothing is installed and the gym does not need Wi-Fi. The first-show guide walks through the whole thing with pictures. Set up your first show\nJoin code or admin PIN: who gets which?\nTwo codes, two jobs. The six-character join code gets a phone into your meet; give it to everyone helping, and to athletes or spectators who want the Next Up list. The admin PIN lets a joined phone score and change the setup; give it to judges and your co-promoters only. Both are on the Meet Day tab.\nCan other people help me run it?\nYes. Anyone with the join code and the admin PIN can judge or edit from their phone; several phones can score different stations at the same time and everything merges. The meet itself belongs to your account, so only you can list, unlist or delete it.\nHow do athletes get on the roster?\nTwo ways, and you can mix them. Open registration on the Listing tab and athletes register from the show page; each entry appears on your Registrations tab and you accept, decline or waitlist it. Or type athletes straight into the roster in Meet Setup, which is what most people do for a small show or for day-of entries.\nCan I unlist or delete a meet?\nUnlist any time from the Listing tab; the meet stays yours, it just leaves Find a Show. Delete from the Meet Day tab as long as the meet is not running or finished; if it already has athletes or results you type its name to confirm. Finished meets are kept so results stay available. My Meets\nGYM OWNERS\nMy gym is in the directory. How do I claim it?\nOpen the gym's page and tap Claim this gym, then give your name, email and role at the gym. Sign in first and the approved listing attaches to your account straight away; otherwise we confirm by email. We check each claim against the gym's own site or contact address. Once approved, the listing is yours to edit from My Gym: equipment, day passes, drop-in hours, website and contact. Gym Directory\nMy gym is not listed. How do I add it?\nSign in, tick Gym owner on your Account page, and use Add my gym. It goes into a short review queue so the directory stays real gyms with real equipment, then appears under your account. Add my gym\nNOT HERE YET\nWhat's coming\n\nEverything above is live today and free. These are the next pieces, in roughly the order we plan to build them.\n\nPaid show registration\n\nPromoters set an entry fee and athletes pay when they register, instead of settling up separately.\n\nDay passes from the gym directory\n\nBuy a drop-in pass for a listed gym from its page, so travelling athletes can train on the way to a show.\n\nTrainer directory\n\nCoaches who train in person or online get their own searchable list, built from the trainer flag on athlete profiles.\n\nShow history on athlete pages\n\nMeets you competed in, with placings, listed on your public page once the promoter marks the show complete.\n\nGyms and shows linked both ways\n\nA show page points at its host gym, and a gym page lists the shows it has hosted."
+      },
+      "staging/website/account": {
+        "keyMentions": [],
+        "faqAnchor": 0,
+        "roadmapAnchor": 0,
+        "width": 375,
+        "text": null
+      },
+      "scorerSignedOut": {
+        "text": "1. MEET DETAILS & RULES\nTHIS IS A REAL MEET\n\nListed publicly when the Listing allows it, registration can open, no DEMO label.\n\nMARK AS DEMO\nMEET NAME\nMEET DATE\nURL SLUG (CLOUD SYNC)\nADMIN PIN (4\u20136 DIGITS)\nCOLLAR WEIGHT / PAIR (LBS)\nATHLETE RUN ORDER\n\nThe first event on a station runs by lot number. The reverse methods take over once an earlier event on that station has results.\n\nReverse Overall Pts\nReverse Prev Event\nRoster Order\n\nReverse Overall Pts: Lowest overall points lifts first and the current leader goes last. Athletes level on points go by lot number. Most promoters pick this so the podium race builds to the final attempt.\n\nReverse Prev Event: Only the last event counts. Whoever placed last in it goes first and its winner goes last, whatever the overall standings. Athletes tied in that event go lower overall points first, then by lot number.\n\nRoster Order: Athletes go in lot order for every event, never reshuffled. Pick this when the order was published ahead of time.\n\nOVERALL PODIUM TIEBREAKER\n\nUsed only when two athletes finish on the same total points.\n\nMost Event Wins\nFinal Event Score\n\nMost Event Wins: The athlete with more event wins places higher. If that is level too, more points in the final event wins. Still level after both: the athletes share the place.\n\nFinal Event Score: The athlete with more points in the final event places higher. If that is level too, more event wins. Still level after both: the athletes share the place.\n\nAVAILABLE GYM PLATES (TAP TO ENABLE/DISABLE)\n100 lb\n55 lb\n45 lb\n35 lb\n25 lb\n15 lb\n10 lb\n5 lb\n2.5 lb\n2. DIVISIONS (1)\nStations are assigned in step 3\nStation 1\n1 ath\nADD\n3. STATIONS & FLOOR PLAN (2)\nMin 1 station\n\nA station is one set of implements running its own order. Divisions on the same station run back to back; two stations run at the same time in different parts of the gym. Most promoters decide this after sign-ups close, and a small meet is fine on one station.\n\nA\n1 div \u00b7 1 ath\nAudit Division\nB\n0 divs \u00b7 0 ath\nADD STATION\nASSIGN DIVISIONS TO STATIONS\nAudit Division\n1 ath\nStation 1\nStation 2\n4. EVENTS (1)\nADD EVENT\nEV 1\nREPS\n60s \u2022 1 Lane \u2022 2pt\nAudit Log Press\n5. ATHLETES (1)\nBULK ADD\nAudit Division\nADD\nAudit Division(1 athlete)\n6. MEETS, DEMO PRESETS & READINESS CHECK\nNEW BLANK MEET\nLOAD PRE-BUILT DEMO MEET\nAll Out Strongfest 2026\nDEMO\nThe Power Plant Gym\nYork Iron Classic 2026\nDEMO\nYork, PA\nRiverside Iron Fest 2026 (Demo Upcoming)\nDEMO\nLancaster, PA\nKeystone Fall Brawl 2026 (Demo Live Show)\nDEMO\nYork, PA\nIron Valley Summer Slam 2026 (Demo Completed Final)\nDEMO\nLancaster, PA\nChesapeake Harbor Strongman 2026 (Demo Completed Provisional)\nDEMO\nBaltimore, MD\nVALIDATE MEET READINESS\nRESULTS\n0 scores on this device\nResults CSV\nADVANCED SETTINGS\nHide\nVOLUNTEER PHONE ROLE LOCK\nUnlock PIN: [REDACTED]\nLock Judge\nLock Pit Crew\nLock Spectator\nBACKUP & EXPORT\n0 scores on this device\nBackup (JSON)\nCopy Standings\nRestore from File\nAUTO-SNAPSHOTS (0)\nLIVE SYNC\nnot linked\nScores stay on this phone until you publish the meet (promoter) or join one by code (any phone).\nSign in to publish this meet. Judges and pit crew do not sign in; they join with the code.\nSIGN IN\nScoreboard address will be /m/astra-how-75d44283 (change it in Meet Details above; fixed after publishing).\nPUBLISH AS /ASTRA-HOW-75D44283\nJOIN\nCLEAR ALL SCORES\nPROMOTER THEME\nCalibrated Steel\nCalibrated Steel\nGraphite \u2022 Comp Red \u2022 Calibrated Blue\nPower Plant Volt\nMidnight \u2022 Cyan \u2022 Neon Volt\nIron & Brass\nCharcoal \u2022 Brass \u2022 Rust Crimson\nFederation Navy\nOxford Navy \u2022 Sky \u2022 Gold Medal\nHighland Timber\nPine Slate \u2022 Copper \u2022 Sage\nTitanium & Cobalt\nTitanium \u2022 Cobalt \u2022 Teal\nSpotlight Venom\nObsidian \u2022 Violet \u2022 Laser Rose\nOutdoor Daylight\nChalk \u2022 White \u2022 Royal Cobalt\nAnvil Gunmetal\nBlue-Grey Slate \u2022 Safety Amber \u2022 Forged Cyan\nArena Scoreboard 40ft\nPitch Black \u2022 Optic Yellow \u2022 Signal Cyan\nFoundry Oxide\nWarm Iron \u2022 Molten Orange \u2022 Patina Green\nGym Chalk & Concrete\nConcrete Charcoal \u2022 Chalk Mint \u2022 Comp Coral\nWarm Pavement\nWarm Stone \u2022 Crimson Iron \u2022 Deep Navy",
+        "buttons": [
+          "",
+          "",
+          "Station 1",
+          "Station 2",
+          "All",
+          "Mark as Demo",
+          "Reverse Overall Pts",
+          "Reverse Prev Event",
+          "Roster Order",
+          "Most Event Wins",
+          "Final Event Score",
+          "100 lb",
+          "55 lb",
+          "45 lb",
+          "35 lb",
+          "25 lb",
+          "15 lb",
+          "10 lb",
+          "5 lb",
+          "2.5 lb",
+          "",
+          "",
+          "",
+          " Add",
+          "",
+          "",
+          " Add Station",
+          "Station 1",
+          "Station 2",
+          " Add Event",
+          "",
+          "",
+          "Ev 1Reps60s \u2022 1 Lane \u2022 2ptAudit Log Press",
+          "",
+          "",
+          "Bulk Add",
+          " Add",
+          "",
+          "",
+          " New Blank Meet",
+          "Validate Meet Readiness",
+          " Results CSV",
+          "Advanced SettingsHide",
+          "Lock Judge",
+          "Lock Pit Crew",
+          "Lock Spectator",
+          " Backup (JSON)",
+          " Copy Standings",
+          " Restore from File",
+          "Auto-snapshots (0)",
+          " Publish as /astra-how-75d44283",
+          " Join",
+          "Clear all scores",
+          "Judge Pad",
+          "Pit Crew",
+          "Standings",
+          "Meet Setup"
+        ],
+        "inputs": [
+          {
+            "placeholder": "e.g. Keystone State Strongman 2026",
+            "type": "text"
+          },
+          {
+            "placeholder": "",
+            "type": "date"
+          },
+          {
+            "placeholder": "meet-slug",
+            "type": "text"
+          },
+          {
+            "placeholder": "Set on the publishing phone",
+            "type": "text"
+          },
+          {
+            "placeholder": "",
+            "type": "number"
+          },
+          {
+            "placeholder": "",
+            "type": "text"
+          },
+          {
+            "placeholder": "New division name (e.g. Men's Open 105kg)...",
+            "type": "text"
+          },
+          {
+            "placeholder": "",
+            "type": "text"
+          },
+          {
+            "placeholder": "",
+            "type": "text"
+          },
+          {
+            "placeholder": "New station label (e.g. Station 3)...",
+            "type": "text"
+          },
+          {
+            "placeholder": "Athlete full name...",
+            "type": "text"
+          },
+          {
+            "placeholder": "",
+            "type": "number"
+          },
+          {
+            "placeholder": "",
+            "type": "text"
+          },
+          {
+            "placeholder": "",
+            "type": "file"
+          },
+          {
+            "placeholder": "JOIN CODE",
+            "type": "text"
+          }
+        ]
+      },
+      "scorerSignInHref": "/website/account",
+      "scorerSignInReturn": {
+        "path": "/website/account",
+        "returnTo": null
+      },
+      "legacySignedIn": {
+        "forget": true,
+        "text": "1. MEET DETAILS & RULES\nTHIS IS A REAL MEET\n\nListed publicly when the Listing allows it, registration can open, no DEMO label.\n\nMARK AS DEMO\nMEET NAME\nMEET DATE\nURL SLUG (CLOUD SYNC)\nADMIN PIN (4\u20136 DIGITS)\nCOLLAR WEIGHT / PAIR (LBS)\nATHLETE RUN ORDER\n\nThe first event on a station runs by lot number. The reverse methods take over once an earlier event on that station has results.\n\nReverse Overall Pts\nReverse Prev Event\nRoster Order\n\nReverse Overall Pts: Lowest overall points lifts first and the current leader goes last. Athletes level on points go by lot number. Most promoters pick this so the podium race builds to the final attempt.\n\nReverse Prev Event: Only the last event counts. Whoever placed last in it goes first and its winner goes last, whatever the overall standings. Athletes tied in that event go lower overall points first, then by lot number.\n\nRoster Order: Athletes go in lot order for every event, never reshuffled. Pick this when the order was published ahead of time.\n\nOVERALL PODIUM TIEBREAKER\n\nUsed only when two athletes finish on the same total points.\n\nMost Event Wins\nFinal Event Score\n\nMost Event Wins: The athlete with more event wins places higher. If that is level too, more points in the final event wins. Still level after both: the athletes share the place.\n\nFinal Event Score: The athlete with more points in the final event places higher. If that is level too, more event wins. Still level after both: the athletes share the place.\n\nAVAILABLE GYM PLATES (TAP TO ENABLE/DISABLE)\n100 lb\n55 lb\n45 lb\n35 lb\n25 lb\n15 lb\n10 lb\n5 lb\n2.5 lb\n2. DIVISIONS (1)\nStations are assigned in step 3\nStation 1\n1 ath\nADD\n3. STATIONS & FLOOR PLAN (2)\nMin 1 station\n\nA station is one set of implements running its own order. Divisions on the same station run back to back; two stations run at the same time in different parts of the gym. Most promoters decide this after sign-ups close, and a small meet is fine on one station.\n\nA\n1 div \u00b7 1 ath\nAudit Division\nB\n0 divs \u00b7 0 ath\nADD STATION\nASSIGN DIVISIONS TO STATIONS\nAudit Division\n1 ath\nStation 1\nStation 2\n4. EVENTS (1)\nADD EVENT\nEV 1\nREPS\n60s \u2022 1 Lane \u2022 2pt\nAudit Log Press\n5. ATHLETES (1)\nBULK ADD\nAudit Division\nADD\nAudit Division(1 athlete)\n6. MEETS, DEMO PRESETS & READINESS CHECK\nNEW BLANK MEET\nLOAD PRE-BUILT DEMO MEET\nAll Out Strongfest 2026\nDEMO\nThe Power Plant Gym\nYork Iron Classic 2026\nDEMO\nYork, PA\nRiverside Iron Fest 2026 (Demo Upcoming)\nDEMO\nLancaster, PA\nKeystone Fall Brawl 2026 (Demo Live Show)\nDEMO\nYork, PA\nIron Valley Summer Slam 2026 (Demo Completed Final)\nDEMO\nLancaster, PA\nChesapeake Harbor Strongman 2026 (Demo Completed Provisional)\nDEMO\nBaltimore, MD\nVALIDATE MEET READINESS\nRESULTS\n0 scores on this device\nResults CSV\nADVANCED SETTINGS\nHide\nVOLUNTEER PHONE ROLE LOCK\nUnlock PIN: [REDACTED]\nLock Judge\nLock Pit Crew\nLock Spectator\nBACKUP & EXPORT\n0 scores on this device\nBackup (JSON)\nCopy Standings\nRestore from File\nAUTO-SNAPSHOTS (0)\nLIVE SYNC\nnot linked\nScores stay on this phone until you publish the meet (promoter) or join one by code (any phone).\nPUBLISHING AS\nastra.staging\nACCOUNT\nAn old publish key is saved on this phone. It still goes along with your account so meets published with it become yours.\nFORGET\nScoreboard address will be /m/astra-how-75d44283 (change it in Meet Details above; fixed after publishing).\nPUBLISH AS /ASTRA-HOW-75D44283\nJOIN\nCLEAR ALL SCORES\nPROMOTER THEME\nCalibrated Steel\nCalibrated Steel\nGraphite \u2022 Comp Red \u2022 Calibrated Blue\nPower Plant Volt\nMidnight \u2022 Cyan \u2022 Neon Volt\nIron & Brass\nCharcoal \u2022 Brass \u2022 Rust Crimson\nFederation Navy\nOxford Navy \u2022 Sky \u2022 Gold Medal\nHighland Timber\nPine Slate \u2022 Copper \u2022 Sage\nTitanium & Cobalt\nTitanium \u2022 Cobalt \u2022 Teal\nSpotlight Venom\nObsidian \u2022 Violet \u2022 Laser Rose\nOutdoor Daylight\nChalk \u2022 White \u2022 Royal Cobalt\nAnvil Gunmetal\nBlue-Grey Slate \u2022 Safety Amber \u2022 Forged Cyan\nArena Scoreboard 40ft\nPitch Black \u2022 Optic Yellow \u2022 Signal Cyan\nFoundry Oxide\nWarm Iron \u2022 Molten Orange \u2022 Patina Green\nGym Chalk & Concrete\nConcrete Charcoal \u2022 Chalk Mint \u2022 Comp Coral\nWarm Pavement\nWarm Stone \u2022 Crimson Iron \u2022 Deep Navy"
+      },
+      "forgetCleared": null,
+      "publishButtons": [
+        "",
+        "",
+        "Station 1",
+        "Station 2",
+        "All",
+        "Mark as Demo",
+        "Reverse Overall Pts",
+        "Reverse Prev Event",
+        "Roster Order",
+        "Most Event Wins",
+        "Final Event Score",
+        "100 lb",
+        "55 lb",
+        "45 lb",
+        "35 lb",
+        "25 lb",
+        "15 lb",
+        "10 lb",
+        "5 lb",
+        "2.5 lb",
+        "",
+        "",
+        "",
+        " Add",
+        "",
+        "",
+        " Add Station",
+        "Station 1",
+        "Station 2",
+        " Add Event",
+        "",
+        "",
+        "Ev 1Reps60s \u2022 1 Lane \u2022 2ptAudit Log Press",
+        "",
+        "",
+        "Bulk Add",
+        " Add",
+        "",
+        "",
+        " New Blank Meet",
+        "Validate Meet Readiness",
+        " Results CSV",
+        "Advanced SettingsHide",
+        "Lock Judge",
+        "Lock Pit Crew",
+        "Lock Spectator",
+        " Backup (JSON)",
+        " Copy Standings",
+        " Restore from File",
+        "Auto-snapshots (0)",
+        " Publish as /astra-how-75d44283",
+        " Join",
+        "Clear all scores",
+        "Judge Pad",
+        "Pit Crew",
+        "Standings",
+        "Meet Setup"
+      ],
+      "returnToGuard": [
+        {
+          "input": "/register/astra-how-75d44283",
+          "url": "https://zerotacky-git-v2-kvpollack-6654.vercel.app/website/account",
+          "remaining": "/register/astra-how-75d44283"
+        },
+        {
+          "input": "//example.invalid/escape",
+          "url": "https://zerotacky-git-v2-kvpollack-6654.vercel.app/website/account",
+          "remaining": "//example.invalid/escape"
+        },
+        {
+          "input": "/\\example.invalid/escape",
+          "url": "https://zerotacky-git-v2-kvpollack-6654.vercel.app/website/account",
+          "remaining": "/\\example.invalid/escape"
+        },
+        {
+          "input": "https://example.invalid/escape",
+          "url": "https://zerotacky-git-v2-kvpollack-6654.vercel.app/website/account",
+          "remaining": "https://example.invalid/escape"
+        },
+        {
+          "input": "/\t/example.invalid/escape",
+          "url": "https://zerotacky-git-v2-kvpollack-6654.vercel.app/website/account",
+          "remaining": "/\t/example.invalid/escape"
+        }
+      ],
+      "emailNewTabModel": {
+        "originalReturnTo": "/register/astra-how-75d44283",
+        "newTabReturnTo": null,
+        "newTabPath": "/website/account",
+        "modelOnly": true
+      }
+    },
+    "failures": {
+      "public": {
+        "error": "Locator.wait_for: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator(\"main\") to be visible\n",
+        "trace": "Traceback (most recent call last):\n  File \"C:\\Users\\kpollack\\.aki\\tmp\\astra-how\\browser.py\", line 9, in run\n    try:fn()\n        ~~^^\n  File \"C:\\Users\\kpollack\\.aki\\tmp\\astra-how\\browser.py\", line 46, in public\n    p=page(c,path,base);p.locator('main').wait_for();text=p.locator('main').inner_text();rec(label+path,{'keyMentions':[x for x in text.splitlines() if 'publish key' in x.lower() or 'promoter key' in x.lower()],'faqAnchor':p.locator('#faq').count(),'roadmapAnchor':p.locator('#roadmap').count(),'width':p.evaluate('document.documentElement.scrollWidth'),'text':text if path=='/how-it-works' else None});p.close()\n                        ~~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\sync_api\\_generated.py\", line 13635, in wait_for\n    self._sync(\n    ~~~~~~~~~~^\n        self._impl_obj.wait_for(state=state, timeout=to_milliseconds(timeout))\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_sync_base.py\", line 111, in _sync\n    return task.result()\n           ~~~~~~~~~~~^^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_locator.py\", line 767, in wait_for\n    await self._frame.wait_for_selector(\n        self._selector, strict=True, timeout=timeout, state=state\n    )\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_frame.py\", line 395, in wait_for_selector\n    await self._channel.send(\n        \"waitForSelector\", self._timeout, locals_to_params(locals())\n    )\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_connection.py\", line 78, in send\n    return await self._connection.wrap_api_call(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<3 lines>...\n    )\n    ^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_connection.py\", line 636, in wrap_api_call\n    raise rewrite_error(error, f\"{parsed_st['apiName']}: {error}\") from None\nplaywright._impl._errors.TimeoutError: Locator.wait_for: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator(\"main\") to be visible\n\n"
+      },
+      "publish": {
+        "error": "Locator.click: Timeout 15000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"button\", name=\"Publish Meet\", exact=True)\n",
+        "trace": "Traceback (most recent call last):\n  File \"C:\\Users\\kpollack\\.aki\\tmp\\astra-how\\browser.py\", line 9, in run\n    try:fn()\n        ~~^^\n  File \"C:\\Users\\kpollack\\.aki\\tmp\\astra-how\\browser.py\", line 64, in publish\n    with p.expect_response(lambda r:'/rpc/zt_publish_meet' in r.url) as rr:pb.click()\n                                                                           ~~~~~~~~^^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\sync_api\\_generated.py\", line 11021, in click\n    self._sync(\n    ~~~~~~~~~~^\n        self._impl_obj.click(\n        ^^^^^^^^^^^^^^^^^^^^^\n    ...<11 lines>...\n        )\n        ^\n    )\n    ^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_sync_base.py\", line 111, in _sync\n    return task.result()\n           ~~~~~~~~~~~^^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_locator.py\", line 174, in click\n    return await self._frame._click(self._selector, strict=True, **params)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_frame.py\", line 598, in _click\n    await self._channel.send(\"click\", self._timeout, locals_to_params(locals()))\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_connection.py\", line 78, in send\n    return await self._connection.wrap_api_call(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<3 lines>...\n    )\n    ^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_connection.py\", line 636, in wrap_api_call\n    raise rewrite_error(error, f\"{parsed_st['apiName']}: {error}\") from None\nplaywright._impl._errors.TimeoutError: Locator.click: Timeout 15000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"button\", name=\"Publish Meet\", exact=True)\n\n"
+      },
+      "registration": {
+        "error": "Locator.wait_for: Timeout 15000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"button\", name=\"Create account\", exact=True).last to be visible\n",
+        "trace": "Traceback (most recent call last):\n  File \"C:\\Users\\kpollack\\.aki\\tmp\\astra-how\\browser.py\", line 9, in run\n    try:fn()\n        ~~^^\n  File \"C:\\Users\\kpollack\\.aki\\tmp\\astra-how\\browser.py\", line 68, in registration\n    c=context(b);p=page(c,'/register/'+slug);p.get_by_role('button',name='Create account',exact=True).last.wait_for();rec('inlineGate',{'mode':p.get_by_role('button',name='Create account',exact=True).first.get_attribute('aria-pressed'),'athleteFormAbsent':p.locator('#reg-athlete-name').count()==0})\n                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\sync_api\\_generated.py\", line 13635, in wait_for\n    self._sync(\n    ~~~~~~~~~~^\n        self._impl_obj.wait_for(state=state, timeout=to_milliseconds(timeout))\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_sync_base.py\", line 111, in _sync\n    return task.result()\n           ~~~~~~~~~~~^^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_locator.py\", line 767, in wait_for\n    await self._frame.wait_for_selector(\n        self._selector, strict=True, timeout=timeout, state=state\n    )\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_frame.py\", line 395, in wait_for_selector\n    await self._channel.send(\n        \"waitForSelector\", self._timeout, locals_to_params(locals())\n    )\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_connection.py\", line 78, in send\n    return await self._connection.wrap_api_call(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<3 lines>...\n    )\n    ^\n  File \"C:\\Users\\kpollack\\AppData\\Local\\uv\\cache\\archive-v0\\OhaSrLZgVIjs-xbCU0gkM\\Lib\\site-packages\\playwright\\_impl\\_connection.py\", line 636, in wrap_api_call\n    raise rewrite_error(error, f\"{parsed_st['apiName']}: {error}\") from None\nplaywright._impl._errors.TimeoutError: Locator.wait_for: Timeout 15000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"button\", name=\"Create account\", exact=True).last to be visible\n\n"
+      }
+    },
+    "pageErrors": [
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  "remaining-evidence": {
+    "checks": {
+      "prod/how-it-works/first-show": {
+        "status": 200,
+        "path": "/how-it-works/first-show",
+        "text": "ZEROTACKY\nZER\nTACKY\nHOME\nHOW IT WORKS\nFIND A SHOW\nGYM DIRECTORY\nATHLETES\nACCOUNT\nJOIN A MEET\nHow It Works\n PROMOTER GUIDE\nSet up your first show\n\nThis walks one made-up meet, the Iron Harbor Classic, from a blank screen to meet day. Every screen below is the real one you will use, and each step says what it changes for athletes and spectators. Budget about half an hour the first time.\n\nWHAT YOU NEED\nA ZeroTacky account with Promoter ticked on the Account page. The meet belongs to that account, so it follows you from laptop to phone and only you can change it.\nA laptop for the setup. Everything here also works from the phone scorer under Meet Setup, but the tabs are easier to read on a bigger screen.\nOn the day: one phone per judge and one for the pit crew. Volunteers do not need accounts; they join with a code you hand out in step 9.\n1\nCreate the meet\n2\nMeet details and rules\n3\nDivisions\n4\nStations and floor plan\n5\nEvents\n6\nAthletes\n7\nList it and open entries\n8\nApprove registrations\n9\nMeet day codes and screens\n10\nThe live scoreboard\n1\nMY MEETS, NEW MEET\nCreate the meet\n\nOpen My Meets and tap New Meet. It asks for the name, the competition date and an optional web address. The address (the slug) becomes zerotacky.com/shows/your-slug; leave it blank and one is made from the name.\n\nCreate & Open Meet saves the meet to your account and opens it as eight numbered tabs. The order of the tabs is the order you fill them in.\n\nON THE PUBLIC SIDE\n\nNothing yet. A new meet starts unlisted, so it is not in Find a Show. Its page exists at the direct link, which is handy for checking your work before anyone else sees it.\n\nMy Meets\n2\nTAB 1, MEET\nMeet details and rules\n\nThe admin PIN is four to six digits. Judges and anyone who needs to change the setup on meet day type it once on their phone, after the join code from step 9. Collar weight is per pair and is added to every bar load the pit crew calculator shows.\n\nAthlete run order decides who lifts when. Reverse Overall Points is the usual choice: the leader goes last so the podium race builds. Reverse Previous Event looks only at the last event. Roster Order never reshuffles. The screen explains each one under the buttons.\n\nThe tiebreaker only matters when two athletes finish on the same points. Available Gym Plates tells the pit crew calculator what it is allowed to use; turn off anything the gym does not own.\n\nON THE PUBLIC SIDE\n\nThe run order drives the Next Up list on the scoreboard and on volunteer phones. Plates and collars drive the loads the pit crew sees. None of this is shown to athletes directly.\n\n3\nTAB 2, DIVISIONS\nDivisions\n\nAdd one division per weight class or experience group, named the way athletes expect to read them. Type a name and press Add; the arrows reorder them.\n\nThe order here is the order they appear everywhere else: the registration dropdown, the scoreboard and the show card. Edits sit in working memory until you press Save Changes in the banner at the bottom.\n\nON THE PUBLIC SIDE\n\nDivision names show as chips on the show card in Find a Show, as the choices on the registration form and as the sections of the live scoreboard.\n\n4\nTAB 3, STATIONS\nStations and floor plan\n\nA station is one set of implements running its own order. Divisions on the same station run back to back; two stations run at the same time in different parts of the gym.\n\nA small meet is fine on one station. Most promoters decide this after sign-ups close, when they know how many athletes each division has. Rename the stations if the gym calls them something else. If one station runs the events in a different order from the rest, the arrows on its card set that order.\n\nON THE PUBLIC SIDE\n\nEach station gets an Up Now strip at the top of the scoreboard, so spectators can see who is lifting where. Next Up on the volunteer phones is per station.\n\n5\nTAB 4, EVENTS\nEvents\n\nAdd Event opens the form. Pick how it is scored (reps, max weight, time or distance, time or implements), set the time cap and lanes, then tell the loader how the implement works: load points is how many places plates go on, tare is what the empty implement weighs. Those two numbers are what make the pit crew plate maths right.\n\nUnder per-division weights, enter the target weight for each division. Add a callout title if the pit crew should see a note, for example the keg or the pin height. Save Event, then Save Changes.\n\nEvents run in the order listed. Use the arrows on the cards if the running order changes.\n\nON THE PUBLIC SIDE\n\nImplement names show as chips on the show card. The registration page lists every division with its target weight for each event, so athletes know what they are signing up to lift. The scoreboard gets one column per event.\n\n6\nTAB 5, ATHLETES\nAthletes\n\nThere are two ways onto the roster. Athletes who register online land here when you accept them in step 8. Paper sign-ups and walk-ins you add yourself: Bulk Add takes one name per line into a division, Single Add takes one at a time.\n\nEach athlete gets a lot number inside their division. That is the order for the first event, and the fallback order whenever two athletes are level.\n\nON THE PUBLIC SIDE\n\nRoster names appear on the live scoreboard as soon as the meet is listed, with a dash in every event column until scores come in. Add only athletes you expect to show up.\n\n7\nTAB 6, LISTING\nList it and open entries\n\nTick Listed to put the meet in Find a Show. The three status dropdowns are the badges the public sees: competition status (upcoming, live, completed), registration status (open, waitlist, closed, day-of only) and results status.\n\nFill in the venue, the federation or format, the entry fee as you want it displayed, the deadline, an athlete cap and a contact. No money moves through the site; the fee line tells athletes how you want to be paid. Save Listing Settings writes it straight to the server.\n\nON THE PUBLIC SIDE\n\nThis tab is the public face of the show. The card in Find a Show, the show page and the top of the registration page are all built from it, and the capacity line counts accepted entries against your cap.\n\nFind a Show\nThe card athletes see in Find a Show.\nThe show page at zerotacky.com/shows/your-slug.\n8\nTAB 7, REGISTRATIONS\nApprove registrations\n\nAn athlete signs in or creates a free account on the form, picks a division, gives a name, email, emergency contact and date of birth, signs the waiver and submits. The entry is tied to their account, which is how it shows on their My Meets page. Under-18s are entered by a parent or guardian from the guardian's account.\n\nEach entry shows up here as Pending with the division and the signed waiver. Accept adds the athlete to that division roster with the next lot number; Decline removes them. Emergency contacts and dates of birth are visible to you only.\n\nON THE PUBLIC SIDE\n\nThe athlete sees Pending, then Registered or Declined, on their My Meets page. Accepted entries count toward the capacity line on the registration page.\n\nWhat the athlete fills in.\nWhat you see.\n9\nTAB 8, MEET DAY\nMeet day codes and screens\n\nThe six-character join code is how volunteer phones attach to your meet. Print Both gives you two QR codes for the gym wall: one for judges and pit crew, one for the live scoreboard. Rotate the code if it gets out to people who should not have it; phones signed in to your account are unaffected.\n\nVolunteers open Join a Meet, enter the code and pick a role. Athlete and Spectator are read-only. Pit crew get the loading calculator. Judge and Promoter also type the admin PIN from step 2.\n\nThe scorer link is for your own phone. The TV link is a full-width standings table for a laptop plugged into the gym TV.\n\nON THE PUBLIC SIDE\n\nThe scoreboard link is public and needs no sign-in. Share it with spectators and put the TV layout on a screen in the gym.\n\nJoin a Meet\nWhat a volunteer sees after scanning the join QR.\n10\nZEROTACKY.COM/M/YOUR-SLUG\nThe live scoreboard\n\nAs judges score, the board updates on every phone and TV that has it open. Each division is its own table, with one column per event and the total on the right. The strips at the top show who is up on each station, and the chips filter to one division.\n\nWhen the last event is in, go back to the Listing tab and set competition status to Completed and results to Final. The show moves to Completed on every athlete's My Meets page and the standings stay up as the record of the day.\n\nON THE PUBLIC SIDE\n\nThis is the page spectators share. It works on any phone with no app and no account, and it keeps the final standings after the show.\n\nSee a demo board\nAfter the show\n\nSet the statuses to Completed and Final on the Listing tab and the show becomes a record: the public page and scoreboard stay up, and it moves to Completed on every athlete's My Meets. A video walkthrough of this guide is coming after our first full show.\n\nOPEN MY MEETS\nPROMOTER FAQ\nZEROTACKY\nZER\nTACKY\n\nYour one stop for strongman: shows, registration, live scoring, and a gym directory.\n\nHome\nHow It Works\nShows\nGyms\nAthletes\nAccount\nLive Scoring Demo\nTerms\nPrivacy",
+        "width": 375,
+        "keyMentions": [],
+        "canonical": "https://www.zerotacky.com/how-it-works/first-show",
+        "title": "Set up your first show \u2014 ZeroTacky",
+        "images": [
+          {
+            "src": "/guide/01-new-meet.png",
+            "alt": "The New Meet form with a meet name, date and web address filled in",
+            "loading": "lazy"
+          },
+          {
+            "src": "/guide/03-meet.png",
+            "alt": "The Meet tab: name, date, slug, admin PIN, collar weight, run order, tiebreaker and gym plates",
+            "loading": "lazy"
+          },
+          {
+            "src": "/guide/04-divisions.png",
+            "alt": "The Divisions tab with five divisions listed",
+            "loading": "lazy"
+          },
+          {
+            "src": "/guide/05-stations.png",
+            "alt": "The Stations tab with women and novice divisions on Station 1 and open men on Station 2",
+            "loading": "lazy"
+          },
+          {
+            "src": "/guide/06-events.png",
+            "alt": "The Events tab listing five events with scoring type, time cap and load points",
+            "loading": "lazy"
+          },
+          {
+            "src": "/guide/07-event-form.png",
+            "alt": "The event form for a log clean and press with per-division target weights",
+            "loading": "lazy"
+          },
+          {
+            "src": "/guide/08-athletes.png",
+            "alt": "The Athletes tab with rosters under each division",
+            "loading": "lazy"
+          },
+          {
+            "src": "/guide/09-listing.png",
+            "alt": "The Listing tab with the meet listed, registration open and venue details filled in",
+            "loading": "lazy"
+          },
+          {
+            "src": "/guide/12-show-card.png",
+            "alt": "The resulting card in Find a Show with divisions and implements",
+            "loading": "lazy"
+          },
+          {
+            "src": "/guide/13-show-page.png",
+            "alt": "The public show page built from the listing",
+            "loading": "lazy"
+          },
+          {
+            "src": "/guide/14-register.png",
+            "alt": "The public registration form showing divisions with target weights and the athlete fields",
+            "loading": "lazy"
+          },
+          {
+            "src": "/guide/10-registrations.png",
+            "alt": "The Registrations tab with two pending entries and Accept and Decline buttons",
+            "loading": "lazy"
+          },
+          {
+            "src": "/guide/11-meet-day.png",
+            "alt": "The Meet Day tab with the join code, QR codes and the scorer, join and TV links",
+            "loading": "lazy"
+          },
+          {
+            "src": "/guide/16-join.png",
+            "alt": "The Join a Meet page with a code entered",
+            "loading": "lazy"
+          },
+          {
+            "src": "/guide/15-scoreboard.png",
+            "alt": "The live scoreboard with station strips, division filter chips and a per-event standings table",
+            "loading": "lazy"
+          }
+        ],
+        "imagesLoaded": false,
+        "performance": [
+          {
+            "loadMs": 766.0999999940395,
+            "domMs": 611.4000000059605
+          }
+        ]
+      },
+      "prod/how-it-works": {
+        "status": 200,
+        "path": "/how-it-works",
+        "text": "ZEROTACKY\nZER\nTACKY\nHOME\nHOW IT WORKS\nFIND A SHOW\nGYM DIRECTORY\nATHLETES\nACCOUNT\nJOIN A MEET\nHow ZeroTacky Works\n\nOne site for the whole meet: the promoter builds it on a phone or laptop, athletes find and enter it here, volunteers join with a six-character code on the day, and everyone watches the same live scoreboard. Pick the track that fits you.\n\nPROMOTERS\nATHLETES & SPECTATORS\nVOLUNTEERS & JUDGES\nFAQ\nWHAT'S COMING\nRUNNING A SHOW\nPromoters\n\nYou set the meet up once, on your phone or a laptop. When you publish it, every judge, pit crew phone, and the public scoreboard see the same divisions, events, and scores, so nobody is working from a different copy.\n\n1\nCreate an account and tick Promoter\n\nYour account is what proves a meet is yours. Only you can change or delete it, and if you lose your phone you sign in on another one and everything is still there. There is nothing to write down or pass around between promoters.\n\nAccount\n2\nBuild the meet\n\nOn My Meets, New Meet asks for a name and a date and opens the meet as eight tabs: details and rules (admin PIN, run order, tiebreaker, gym plates), divisions, stations, events, athletes, listing, registrations and meet day. The phone scorer has the same steps under Meet Setup if you would rather build it there. The first-show guide walks through every tab with pictures.\n\nSet up your first show\n3\nList it and open entries\n\nA new meet starts unlisted: it has a web page, but only people with the link can see it. On the Listing tab you tick Listed to put it in Find a Show, fill in the venue and entry fee, and decide whether athletes can register right now, join a waitlist, or only enter on the day. Building on the phone instead? Publish from the scorer while signed in and the meet lands under My Meets the same way.\n\nMy Meets\n4\nApprove registrations\n\nWhen an athlete registers, their entry appears on your Registrations tab with the division they picked and their signed waiver. Accepting them adds them to the roster for that division. You can also decline, or leave them pending while you sort out numbers.\n\n5\nHand out the join code on meet day\n\nThe Meet Day tab shows a six-character code. Anyone helping you enters it on Join a Meet and their phone is connected to your meet. Judges and anyone who needs to change the setup also type in the admin PIN from step 1. If the code gets out to people who should not have it, tap rotate and the old one stops working.\n\nJoin a Meet\n6\nShare the live scoreboard\n\nEvery published meet gets a web page with the standings, each event's results and who is up next. The link is on the Meet Day tab. Put it on a TV in the gym with the TV layout and send it to spectators, who can open it on any phone without signing in.\n\nSee a demo board\nSetting up your first show, step by step\n\nOne meet from a blank screen to posted results, with a picture of every screen and what each change does on the public side.\n\nCOMPETING AND WATCHING\nAthletes & Spectators\n\nFind a show, keep an eye on it, register when entries open, then follow the scoring live on the day. Shows marked DEMO are made up so you can see what a listing and a scoreboard look like; they do not take entries.\n\n1\nFind a show\n\nSearch by name, division, status, state, implement, or federation. Each show page has the venue, the divisions and events, and whether registration is open.\n\nFind a Show\n2\nFollow it\n\nIf you are signed in you can tap Follow on a show you are thinking about. It then appears under Following on your My Meets page so you can find it again without searching. Following does not enter you in anything and the promoter is not told.\n\nAccount\n3\nRegister\n\nOnce entries are open, sign in or create a free account on the form itself, then pick your division, give an emergency contact and your date of birth, and sign the waiver. You need to be 12 or older on the day of the meet. If you are under 18, a parent or guardian creates the account and fills in their part of the form.\n\n4\nTrack it on My Meets\n\nYour entry starts as Pending approval until the promoter looks at it, then becomes Registered, Waitlisted, or Declined. After the meet it moves to Completed, so over time My Meets becomes a record of where you have competed.\n\nMy Meets\n5\nWatch live\n\nThe scoreboard page updates as judges enter scores. If you are at the venue you can also enter the join code on Join a Meet and see the Next Up list, including the weights and heights for each athlete, without being able to change anything.\n\nJoin a Meet\nMEET-DAY CREW\nVolunteers & Judges\n\nYou do not need an account. The promoter gives you a six-character code, you pick what you are doing that day, and the app opens already set up for your job.\n\n1\nEnter the join code\n\nOpen Join a Meet and type the code. The meet name comes back so you can check it is the right one.\n\nJoin a Meet\n2\nPick your role\n\nAthlete or Spectator shows the standings and who is up next, with nothing to tap by accident. Volunteer is for pit crew and shows the plate loading calculator. Judge and Promoter need the admin PIN from the promoter; you type it once and the phone remembers which role you chose.\n\n3\nJudges: score from the pad\n\nPick the event and the athletes come up in the right order. Enter reps, time, distance, the bar height reached or stone splits, depending on the event. Scores go to the scoreboard the moment the phone has signal.\n\n4\nPit crew: load from Next Up\n\nNext Up shows who is lifting, the weight they need, the plates to put on each side and any rack or pin height, so nobody is doing plate maths at the bar. The promoter decides whether you can change the bar weight or enter a custom load.\n\n5\nLose signal? Keep going\n\nThe app keeps working with no signal. Anything you enter is held on the phone and sent as soon as it reconnects, so a dead spot in the gym does not cost you any scores.\n\nCOMMON QUESTIONS\nFAQ\nEVERYONE\nDoes it cost anything?\nNo. Finding shows, registering, running a meet, the live scoreboard and the gym directory are all free right now. If that changes for any part of it, the price will be on the page before you use it, and what is already free for athletes stays free.\nDoes it work without Wi-Fi?\nYes. Scoring happens on the phone and is held there until it can be sent. A judge can score a whole event with no signal, and the public scoreboard catches up when the phone reconnects.\nDo I need to install an app?\nNo. Everything runs in the browser on any phone, tablet or laptop. Promoters and judges can add the scorer to the home screen so it opens like an app, but nothing is downloaded from a store. Open the scorer\nI forgot my password.\nOn the sign-in form, enter your email and tap Forgot password. The email you get has a link that brings you back to the Account page to choose a new one. If you are already signed in, use Change password on the same page. Account\nWhat happens to my data?\nWhat you enter when you register goes to the promoter of that meet, and ZeroTacky keeps what it needs to run the service. Your email is never shown publicly. The Privacy Policy lists what is kept and for how long. Privacy Policy\nATHLETES AND SPECTATORS\nDo I need an account to register for a show?\nYes, a free one, and you can create it right on the registration form without leaving the page. The entry is tied to your account: it shows on My Meets so you can see when the promoter accepts it, and after the meet it stays there as part of your record. You need to be 12 or older on the day of the meet; under 18, a parent or guardian creates the account, registers you and completes their part of the waiver. Find a Show\nHow do I watch a show live?\nOpen the show page and tap the live scoreboard link. It shows standings, each event and who is up next, and updates as judges score. No account, no code. If you are at the venue, the promoter can also give you the join code, which adds the Next Up list with each athlete's weights.\nWhat shows up publicly about me?\nOnce the promoter accepts you, your name and division appear on the meet roster and the live scoreboard, the same as a printed start list. Your email, date of birth and emergency contact go to the promoter only. Nothing else is public unless you turn on your own athlete page.\nHow do I get my own athlete page?\nOn your Account page, pick a username and turn on Show my profile publicly. Your name, photo, roles, location, home gym, favorite lift, PRs and the social handles you added show at zerotacky.com/athletes/yourname and in the Athletes list. Turn it off any time and the page is gone. Athletes\nPROMOTERS\nWhat do I need to run a show on ZeroTacky?\nAn account with Promoter ticked, your phone or a laptop to set the meet up, and one phone per judge on the day. Nothing is installed and the gym does not need Wi-Fi. The first-show guide walks through the whole thing with pictures. Set up your first show\nJoin code or admin PIN: who gets which?\nTwo codes, two jobs. The six-character join code gets a phone into your meet; give it to everyone helping, and to athletes or spectators who want the Next Up list. The admin PIN lets a joined phone score and change the setup; give it to judges and your co-promoters only. Both are on the Meet Day tab.\nCan other people help me run it?\nYes. Anyone with the join code and the admin PIN can judge or edit from their phone; several phones can score different stations at the same time and everything merges. The meet itself belongs to your account, so only you can list, unlist or delete it.\nHow do athletes get on the roster?\nTwo ways, and you can mix them. Open registration on the Listing tab and athletes register from the show page; each entry appears on your Registrations tab and you accept, decline or waitlist it. Or type athletes straight into the roster in Meet Setup, which is what most people do for a small show or for day-of entries.\nCan I unlist or delete a meet?\nUnlist any time from the Listing tab; the meet stays yours, it just leaves Find a Show. Delete from the Meet Day tab as long as the meet is not running or finished; if it already has athletes or results you type its name to confirm. Finished meets are kept so results stay available. My Meets\nGYM OWNERS\nMy gym is in the directory. How do I claim it?\nOpen the gym's page and tap Claim this gym, then give your name, email and role at the gym. Sign in first and the approved listing attaches to your account straight away; otherwise we confirm by email. We check each claim against the gym's own site or contact address. Once approved, the listing is yours to edit from My Gym: equipment, day passes, drop-in hours, website and contact. Gym Directory\nMy gym is not listed. How do I add it?\nSign in, tick Gym owner on your Account page, and use Add my gym. It goes into a short review queue so the directory stays real gyms with real equipment, then appears under your account. Add my gym\nNOT HERE YET\nWhat's coming\n\nEverything above is live today and free. These are the next pieces, in roughly the order we plan to build them.\n\nPaid show registration\n\nPromoters set an entry fee and athletes pay when they register, instead of settling up separately.\n\nDay passes from the gym directory\n\nBuy a drop-in pass for a listed gym from its page, so travelling athletes can train on the way to a show.\n\nTrainer directory\n\nCoaches who train in person or online get their own searchable list, built from the trainer flag on athlete profiles.\n\nShow history on athlete pages\n\nMeets you competed in, with placings, listed on your public page once the promoter marks the show complete.\n\nGyms and shows linked both ways\n\nA show page points at its host gym, and a gym page lists the shows it has hosted.\n\nZEROTACKY\nZER\nTACKY\n\nYour one stop for strongman: shows, registration, live scoring, and a gym directory.\n\nHome\nHow It Works\nShows\nGyms\nAthletes\nAccount\nLive Scoring Demo\nTerms\nPrivacy",
+        "width": 375,
+        "keyMentions": []
+      },
+      "prod/website/account": {
+        "status": 200,
+        "path": "/website/account",
+        "text": "ZEROTACKY\nZER\nTACKY\nHOME\nHOW IT WORKS\nFIND A SHOW\nGYM DIRECTORY\nATHLETES\nACCOUNT\nJOIN A MEET\nYour ZeroTacky account\n\nOne account covers everything you do in strongman, whether you compete, run shows or list a gym. If you promote, the meets you publish belong to this account and follow you from phone to phone.\n\nSIGN IN\nCREATE ACCOUNT\nEMAIL ME A LINK\nEMAIL\nPASSWORD\nForgot password?\nSIGN IN\n\nMeet-day volunteers do not need an account: judges and pit crew join with the meet code on Join a Meet.\n\nZEROTACKY\nZER\nTACKY\n\nYour one stop for strongman: shows, registration, live scoring, and a gym directory.\n\nHome\nHow It Works\nShows\nGyms\nAthletes\nAccount\nLive Scoring Demo\nTerms\nPrivacy",
+        "width": 375,
+        "keyMentions": []
+      },
+      "prod/join": {
+        "status": 200,
+        "path": "/join",
+        "text": "ZEROTACKY\nJoin a meet\nFIND MEET\n\nThe promoter has the 6-character code on the Meet Day tab of their meet.\n\nBACK TO ZEROTACKY HOME\nAccount and sign in",
+        "width": 375,
+        "keyMentions": []
+      },
+      "staging/join": {
+        "status": 200,
+        "path": "/join",
+        "text": "ZEROTACKY\nJoin a meet\nFIND MEET\n\nThe promoter has the 6-character code on the Meet Day tab of their meet.\n\nBACK TO ZEROTACKY HOME\nAccount and sign in",
+        "width": 375,
+        "keyMentions": []
+      },
+      "staging/shows": {
+        "status": 200,
+        "path": "/shows",
+        "text": "ZEROTACKY\nZER\nTACKY\nHOME\nHOW IT WORKS\nFIND A SHOW\nGYM DIRECTORY\nATHLETES\nACCOUNT\nJOIN A MEET\nStrongman Shows\n8 LISTED SHOWS\n\nFilter competitions by status, state, or specific strongman implements. Supports both inclusive strength-based groups (such as Strongfest Groups 1\u20135) and traditional weight classes.\n\nSEARCH BY SHOW NAME, CITY, VENUE, OR IMPLEMENT\nDIVISION OR GROUP FILTER (OPTIONAL)\nCOMPETITION STATUS\nAll Statuses\nUpcoming\nLive Now\nCompleted\nPostponed\nCancelled\nSTATE / LOCATION\nAll States\nMD\nNJ\nNOT PROVIDED\nPA\nIMPLEMENT / EQUIPMENT\nAny Implement\n12\" Log\n12\" Log Clean & Press\n4-Post Yoke\n50ft Harness Truck Pull\nAstra Deadlift\nAstra Press\nAtlas Stones\nAxle Deadlift\nBasket Deadlift\nCircus Dumbbell\nConan Wheel\nFarmers Walk\nHarness Truck Pull\nHusafell Stone\nKeg Over Bar\nSandbag Carry Medley\nSandbag Toss\nYoke Carry 50 ft\nFEDERATION / FORMAT (OPTIONAL)\nAny Federation / Unsanctioned\nStrongman Corporation\nUnsanctioned\nUnsanctioned / Inclusive Format\nUSS (United States Strongman)\nShowing 8 of 8 shows\nUPCOMING\nREGISTRATION CLOSED\nNO RESULTS YET\nAstra Rehearsal 20261017\n2026-10-17\nNot provided, Not provided\nVIEW SHOW DETAILS\nDIVISIONS / STRENGTH GROUPS (2)\nAstra Beta\nAstra Alpha\nIMPLEMENTS (2)\nAstra Press\nAstra Deadlift\nUPCOMING\nREGISTRATION OPEN\nNO RESULTS YET\nAll Out Strongfest 2026 (The Power Plant Gym)\n2026-10-24\nPower Plant Gym \u2022 York, PA\nVIEW SHOW DETAILS\nDIVISIONS / STRENGTH GROUPS (5)\nGroup 1\nGroup 2\nGroup 3\nGroup 4\nGroup 5\nIMPLEMENTS (3)\nBasket Deadlift\nKeg Over Bar\n50ft Harness Truck Pull\nUPCOMING\nREGISTRATION OPEN\nNO RESULTS YET\nIron Harbor Classic 2026\n2026-11-14\nNorthbank Barbell \u2022 Erie, PA\nFormat: Unsanctioned\nVIEW SHOW DETAILS\nDIVISIONS / STRENGTH GROUPS (5)\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nIMPLEMENTS (5)\n12\" Log Clean & Press\nYoke Carry 50 ft\nAxle Deadlift\nSandbag Carry Medley\nAtlas Stones\nUPCOMING\nREGISTRATION CLOSED\nNO RESULTS YET\nDEMO FIXTURE\nRiverside Iron Fest 2026 (Demo Upcoming)\n2026-11-14\nRiverside Strength Co. (Fictional) \u2022 Lancaster, PA\nFormat: Unsanctioned / Inclusive Format\nVIEW SHOW DETAILS\n\nSample inclusive strength-grouped competition (Groups 1\u20135 by working weight rather than gender or bodyweight). Fictional show with sample data.\n\nDIVISIONS / STRENGTH GROUPS (5)\nGroup 1 (Inclusive)\nGroup 2 (Inclusive)\nGroup 3 (Inclusive)\nGroup 4 (Inclusive)\nGroup 5 (Inclusive)\nIMPLEMENTS (3)\nBasket Deadlift\nKeg Over Bar\nHarness Truck Pull\nLIVE NOW\nREGISTRATION CLOSED\nLIVE PROVISIONAL STANDINGS\nDEMO FIXTURE\nKeystone Fall Brawl 2026 (Demo Live Show)\n2026-10-16\nSusquehanna Strength Barn \u2022 York, PA\nFormat: Strongman Corporation\nLIVE SCOREBOARD\nVIEW SHOW DETAILS\n\nLive meet in progress. Event 1 is locked; Event 2 is currently on the platform.\n\nDIVISIONS / STRENGTH GROUPS (2)\nOpen 105kg\nOpen 82kg\nIMPLEMENTS (3)\n12\" Log\nAxle Deadlift\n4-Post Yoke\nCOMPLETED\nREGISTRATION CLOSED\nOFFICIAL FINALIZED RESULTS\nDEMO FIXTURE\nIron Valley Summer Slam 2026 (Demo Completed Final)\n2026-08-15\nIron Valley Barbell Club \u2022 Lancaster, PA\nFormat: USS (United States Strongman)\nVIEW RESULTS & BREAKDOWN\n\nOfficial finalized demo results. Demonstrates a tied 1st-place podium (two co-champions at #1, next athlete at #3) and a 2-athlete division with no fabricated 3rd place.\n\nDIVISIONS / STRENGTH GROUPS (2)\nMiddleweight 100kg\nMasters Heavyweight\nIMPLEMENTS (3)\nCircus Dumbbell\nFarmers Walk\nAtlas Stones\nCOMPLETED\nREGISTRATION CLOSED\nPROVISIONAL RESULTS (PENDING AUDIT)\nDEMO FIXTURE\nChesapeake Harbor Strongman 2026 (Demo Completed Provisional)\n2026-10-03\nHarbor Iron Warehouse \u2022 Baltimore, MD\nFormat: Strongman Corporation\nVIEW RESULTS & BREAKDOWN\n\nCompleted show where scores are still marked provisional pending promoter video review of Event 2. Demonstrates that completed + provisional does not render certified official podium cards.\n\nDIVISIONS / STRENGTH GROUPS (1)\nOpen Heavyweight\nIMPLEMENTS (2)\n12\" Log\nSandbag Toss\nPOSTPONED\nWAITLIST ONLY\nNO RESULTS YET\nDEMO FIXTURE\nGarden State Winter Wreckage (Demo Postponed)\n2026-11-21\nPine Barrens Ironworks \u2022 Cherry Hill, NJ\nFormat: Unsanctioned\nVIEW SHOW DETAILS\n\nPostponed due to venue roof repairs. New date announcement pending; existing entries remain held.\n\nDIVISIONS / STRENGTH GROUPS (3)\nTier 1\nTier 2\nTier 3\nIMPLEMENTS (3)\nAxle Deadlift\nHusafell Stone\nConan Wheel\nZEROTACKY\nZER\nTACKY\n\nYour one stop for strongman: shows, registration, live scoring, and a gym directory.\n\nHome\nHow It Works\nShows\nGyms\nAthletes\nAccount\nLive Scoring Demo\nTerms\nPrivacy",
+        "width": 375,
+        "keyMentions": []
+      },
+      "staging/shows/iron-harbor-classic-2026": {
+        "status": 200,
+        "path": "/shows/iron-harbor-classic-2026",
+        "text": "ZEROTACKY\nZER\nTACKY\nHOME\nHOW IT WORKS\nFIND A SHOW\nGYM DIRECTORY\nATHLETES\nACCOUNT\nJOIN A MEET\nBACK TO SHOW DIRECTORY\nCOMPETITION: UPCOMING\nREGISTRATION OPEN\nRESULTS: NO RESULTS YET\nIron Harbor Classic 2026\n2026-11-14\nNorthbank Barbell, Erie, PA\nFederation / Format: Unsanctioned\nLast updated: 2026-10-21T12:28:19.478358+00:00\nSIGN IN TO FOLLOW\nOPEN PUBLIC LIVE SCOREBOARD\nREGISTER NOW \u2192\nEVENTS, RULES & DIVISION WEIGHTS (5 EVENTS)\n\nWeights and implement callouts by division or strength group. Unavailable details are labeled explicitly rather than guessed.\n\nEVENT 1\n12\" Log Clean & Press\nFor Reps\n60s Time Cap\n\u2022 Single Lane\nNovice Women\n110 lbs\nNovice Men\n160 lbs\nOpen Women\n130 lbs\nOpen Men LW (u231)\n200 lbs\nOpen Men HW (231+)\n230 lbs\nEVENT 2\nYoke Carry 50 ft\nFastest Time / Distance if Capped\n60s Time Cap\n\u2022 Single Lane\nNovice Women\n350 lbs\nNovice Men\n500 lbs\nOpen Women\n450 lbs\nOpen Men LW (u231)\n600 lbs\nOpen Men HW (231+)\n700 lbs\nEVENT 3\nAxle Deadlift\nFor Reps\n60s Time Cap\n\u2022 Single Lane\nNovice Women\n225 lbs\nNovice Men\n365 lbs\nOpen Women\n275 lbs\nOpen Men LW (u231)\n455 lbs\nOpen Men HW (231+)\n545 lbs\nEVENT 4\nSandbag Carry Medley\nImplements + Time / Split Tiebreaker\n75s Time Cap\n\u2022 Single Lane\nNovice Women\n100 lbs\nNovice Men\n150 lbs\nOpen Women\n125 lbs\nOpen Men LW (u231)\n200 lbs\nOpen Men HW (231+)\n250 lbs\nEVENT 5\nAtlas Stones\nImplements + Time / Split Tiebreaker\n60s Time Cap\n\u2022 Single Lane\nNovice Women\n150 lbs\nNovice Men\n200 lbs\nOpen Women\n175 lbs\nOpen Men LW (u231)\n250 lbs\nOpen Men HW (231+)\n300 lbs\nREGISTRATION & WEIGH-IN DETAILS\nRegistration Status\nRegistration Open\nEntry Fee\n$75 (Venmo or cash at weigh-in)\nRegistration Deadline\n2026-11-07\nPromoter Contact\nironharbor@example.com\nWeigh-In / Grouping Policy\nNot provided\nVENUE, SCHEDULE & RULES SUMMARY\nFacility & Address\nNorthbank Barbell \u2014 418 Harbor Ave, Erie, PA 16507\nSchedule Notes\nNot provided\nRules & Scoring Format\nNot provided\nZEROTACKY\nZER\nTACKY\n\nYour one stop for strongman: shows, registration, live scoring, and a gym directory.\n\nHome\nHow It Works\nShows\nGyms\nAthletes\nAccount\nLive Scoring Demo\nTerms\nPrivacy",
+        "width": 375,
+        "keyMentions": []
+      },
+      "staging/register/iron-harbor-classic-2026": {
+        "status": 200,
+        "path": "/register/iron-harbor-classic-2026",
+        "text": "ZEROTACKY\nZER\nTACKY\nHOME\nHOW IT WORKS\nFIND A SHOW\nGYM DIRECTORY\nATHLETES\nACCOUNT\nJOIN A MEET\nBACK TO STRONGMAN SHOWS\nUPCOMING\nREGISTRATION OPEN\nUNSANCTIONED\nIron Harbor Classic 2026\n2026-11-14\nNorthbank Barbell, Erie, PA\nENTRY FEE\n$75 (Venmo or cash at weigh-in)\nREGISTRATION DEADLINE\n2026-11-07\nCAPACITY\n14 of 40 spots taken\nPROMOTER\nSlate Staging\nironharbor@example.com\n1. DIVISION & INFO\n2. WAIVER\n3. REVIEW\n4. CONFIRMATION\nSTEP 1: CHOOSE DIVISION & ATHLETE DETAILS\nSELECT DIVISION / STRENGTH GROUP *\nNovice Women\nTarget Weights: 12\" Log Clean & Press: 110 lb \u2022 Yoke Carry 50 ft: 350 lb \u2022 Axle Deadlift: 225 lb \u2022 Sandbag Carry Medley: 100 lb \u2022 Atlas Stones: 150 lb\nNovice Men\nTarget Weights: 12\" Log Clean & Press: 160 lb \u2022 Yoke Carry 50 ft: 500 lb \u2022 Axle Deadlift: 365 lb \u2022 Sandbag Carry Medley: 150 lb \u2022 Atlas Stones: 200 lb\nOpen Women\nTarget Weights: 12\" Log Clean & Press: 130 lb \u2022 Yoke Carry 50 ft: 450 lb \u2022 Axle Deadlift: 275 lb \u2022 Sandbag Carry Medley: 125 lb \u2022 Atlas Stones: 175 lb\nOpen Men LW (u231)\nTarget Weights: 12\" Log Clean & Press: 200 lb \u2022 Yoke Carry 50 ft: 600 lb \u2022 Axle Deadlift: 455 lb \u2022 Sandbag Carry Medley: 200 lb \u2022 Atlas Stones: 250 lb\nOpen Men HW (231+)\nTarget Weights: 12\" Log Clean & Press: 230 lb \u2022 Yoke Carry 50 ft: 700 lb \u2022 Axle Deadlift: 545 lb \u2022 Sandbag Carry Medley: 250 lb \u2022 Atlas Stones: 300 lb\nATHLETE FULL NAME *\nEMAIL ADDRESS *\nEMERGENCY CONTACT (NAME, RELATIONSHIP & PHONE) *\n\nA name and a phone number with at least 7 digits. Only the promoter sees this.\n\nATHLETE DATE OF BIRTH *\n\nOnly the promoter sees this. Athletes under 18 on competition day are registered by a parent or legal guardian.\n\nENTRY FEE & PAYMENT NOTICE: Entry fee is $75 (Venmo or cash at weigh-in). No online payment is collected on this form; the promoter will collect payment directly.\nCONTINUE TO WAIVER \u2192\nZEROTACKY\nZER\nTACKY\n\nYour one stop for strongman: shows, registration, live scoring, and a gym directory.\n\nHome\nHow It Works\nShows\nGyms\nAthletes\nAccount\nLive Scoring Demo\nTerms\nPrivacy",
+        "width": 381,
+        "keyMentions": []
+      },
+      "staging/m/iron-harbor-classic-2026": {
+        "status": 200,
+        "path": "/m/iron-harbor-classic-2026",
+        "text": "Loading\u2026",
+        "width": 375,
+        "keyMentions": []
+      },
+      "staging/shows/astra-how-75d44283": {
+        "status": 404,
+        "path": "/shows/astra-how-75d44283",
+        "text": "ZEROTACKY\nZER\nTACKY\nHOME\nHOW IT WORKS\nFIND A SHOW\nGYM DIRECTORY\nATHLETES\nACCOUNT\nJOIN A MEET\n404 \u2022 SHOW NOT FOUND\nThat show is not in the show directory.\n\nIf this meet was published straight from a phone for live scoring, it has a live scoreboard at /m/<slug> instead of a show page.\n\nBROWSE SHOWS\nZEROTACKY\nZER\nTACKY\n\nYour one stop for strongman: shows, registration, live scoring, and a gym directory.\n\nHome\nHow It Works\nShows\nGyms\nAthletes\nAccount\nLive Scoring Demo\nTerms\nPrivacy",
+        "width": 375,
+        "keyMentions": []
+      },
+      "staging/m/astra-how-75d44283": {
+        "status": 200,
+        "path": "/m/astra-how-75d44283",
+        "text": "Loading\u2026",
+        "width": 375,
+        "keyMentions": []
+      },
+      "staging/register/astra-how-75d44283": {
+        "status": 200,
+        "path": "/register/astra-how-75d44283",
+        "text": "ZEROTACKY\nZER\nTACKY\nHOME\nHOW IT WORKS\nFIND A SHOW\nGYM DIRECTORY\nATHLETES\nACCOUNT\nJOIN A MEET\nBACK TO STRONGMAN SHOWS\nUPCOMING\nREGISTRATION OPEN\nAstra Disposable Guide Audit\n2026-12-05\nVenue not provided\nENTRY FEE\nCollected by promoter\nREGISTRATION DEADLINE\nOpen until filled\nCAPACITY\n1 of 30 spots taken\nPROMOTER\nAstra Staging\ncontact not provided\n1. DIVISION & INFO\n2. WAIVER\n3. REVIEW\n4. CONFIRMATION\nSTEP 1: CHOOSE DIVISION & ATHLETE DETAILS\nSELECT DIVISION / STRENGTH GROUP *\nAudit Division\nTarget Weights: Audit Log Press: 135 lb\nATHLETE FULL NAME *\nEMAIL ADDRESS *\nEMERGENCY CONTACT (NAME, RELATIONSHIP & PHONE) *\n\nA name and a phone number with at least 7 digits. Only the promoter sees this.\n\nATHLETE DATE OF BIRTH *\n\nOnly the promoter sees this. Athletes under 18 on competition day are registered by a parent or legal guardian.\n\nENTRY FEE & PAYMENT NOTICE: Entry fee is set by the promoter. No online payment is collected on this form; the promoter will collect payment directly.\nCONTINUE TO WAIVER \u2192\nZEROTACKY\nZER\nTACKY\n\nYour one stop for strongman: shows, registration, live scoring, and a gym directory.\n\nHome\nHow It Works\nShows\nGyms\nAthletes\nAccount\nLive Scoring Demo\nTerms\nPrivacy",
+        "width": 381,
+        "keyMentions": []
+      },
+      "signedOutDisabled": {
+        "disabled": true,
+        "legacyKeyDoesNotEnable": true,
+        "keyInputs": 1
+      },
+      "publishRetry": {
+        "status": 200,
+        "key": null,
+        "text": "VOLUNTEER PHONE ROLE LOCK\nUnlock PIN: [REDACTED]\nLock Judge\nLock Pit Crew\nLock Spectator\nBACKUP & EXPORT\n0 scores on this device\nBackup (JSON)\nCopy Standings\nRestore from File\nAUTO-SNAPSHOTS (0)\nLIVE SYNC\nidle\nJOIN CODE\n/astra-how-75d44283 \u00b7 admin\n929BPU\nJOIN LINK\nSCOREBOARD\nhttps://zerotacky-git-v2-kvpollack-6654.vercel.app/m/astra-how-75d44283\nPUBLISHING AS\nAstra Staging\nACCOUNT\nPUBLISH UPDATE\nConfig changes (weights, events, roster adds and removals) re-publish automatically from this phone. If the server refuses one (an athlete with a recorded result, or on the roster through an accepted registration), the reason shows here and the roster comes back.\nLEAVE MEET (KEEP SCORES ON THIS PHONE)\nCLEAR ALL SCORES"
+      },
+      "guidePromoterTabs": {
+        "1. MEET": "1. MEET DETAILS & RULES\nMEET NAME\nMEET DATE\nURL SLUG (CLOUD SYNC)\nADMIN PIN (4\u20136 DIGITS)\nCOLLAR WEIGHT / PAIR (LBS)\nATHLETE RUN ORDER\n\nThe first event on a station runs by lot number. The reverse methods take over once an earlier event on that station has results.\n\nReverse Overall Pts\nReverse Prev Event\nRoster Order\n\nReverse Overall Pts: Lowest overall points lifts first and the current leader goes last. Athletes level on points go by lot number. Most promoters pick this so the podium race builds to the final attempt.\n\nReverse Prev Event: Only the last event counts. Whoever placed last in it goes first and its winner goes last, whatever the overall standings. Athletes tied in that event go lower overall points first, then by lot number.\n\nRoster Order: Athletes go in lot order for every event, never reshuffled. Pick this when the order was published ahead of time.\n\nOVERALL PODIUM TIEBREAKER\n\nUsed only when two athletes finish on the same total points.\n\nMost Event Wins\nFinal Event Score\n\nMost Event Wins: The athlete with more event wins places higher. If that is level too, more points in the final event wins. Still level after both: the athletes share the place.\n\nFinal Event Score: The athlete with more points in the final event places higher. If that is level too, more event wins. Still level after both: the athletes share the place.\n\nAVAILABLE GYM PLATES (TAP TO ENABLE/DISABLE)\n100 lb\n55 lb\n45 lb\n35 lb\n25 lb\n15 lb\n10 lb\n5 lb\n2.5 lb",
+        "2. DIVISIONS\n5": "2. DIVISIONS (5)\nStations are assigned in step 3\nStation 1\n3 ath\nStation 1\n4 ath\nStation 1\n2 ath\nStation 2\n3 ath\nStation 2\n2 ath\nADD",
+        "3. STATIONS\n2": "3. STATIONS & FLOOR PLAN (2)\nMin 1 station\n\nA station is one set of implements running its own order. Divisions on the same station run back to back; two stations run at the same time in different parts of the gym. Most promoters decide this after sign-ups close, and a small meet is fine on one station.\n\nA\n3 divs \u00b7 9 ath\nNovice Women\nNovice Men\nOpen Women\nEVENT ORDER ON THIS STATION (MEET ORDER)\n1.\nEv 1 12\" Log Clean & Press\n2.\nEv 2 Yoke Carry 50 ft\n3.\nEv 3 Axle Deadlift\n4.\nEv 4 Sandbag Carry Medley\n5.\nEv 5 Atlas Stones\nB\n2 divs \u00b7 5 ath\nOpen Men LW (u231)\nOpen Men HW (231+)\nEVENT ORDER ON THIS STATION (MEET ORDER)\n1.\nEv 1 12\" Log Clean & Press\n2.\nEv 2 Yoke Carry 50 ft\n3.\nEv 3 Axle Deadlift\n4.\nEv 4 Sandbag Carry Medley\n5.\nEv 5 Atlas Stones\nADD STATION\nASSIGN DIVISIONS TO STATIONS\nNovice Women\n3 ath\nStation 1\nStation 2\nNovice Men\n4 ath\nStation 1\nStation 2\nOpen Women\n2 ath\nStation 1\nStation 2\nOpen Men LW (u231)\n3 ath\nStation 1\nStation 2\nOpen Men HW (231+)\n2 ath\nStation 1\nStation 2",
+        "4. EVENTS\n5": "4. EVENTS (5)\nADD EVENT\nEV 1\nREPS\n60s \u2022 1 Lane \u2022 2pt\n12\" Log Clean & Press\nEV 2\nTIME / DIST\n60s \u2022 1 Lane \u2022 4pt\nYoke Carry 50 ft\nEV 3\nREPS\n60s \u2022 1 Lane \u2022 2pt\nAxle Deadlift\nEV 4\nSTONES / IMPL\n75s \u2022 1 Lane \u2022 2pt\nSandbag Carry Medley\nEV 5\nSTONES / IMPL\n60s \u2022 1 Lane \u2022 2pt\nAtlas Stones",
+        "5. ATHLETES\n14": "5. ATHLETES (14)\nBULK ADD\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nADD\nNovice Women(3 athletes)\nDRAW LOTS\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nNovice Men(4 athletes)\nDRAW LOTS\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nOpen Women(2 athletes)\nDRAW LOTS\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nOpen Men LW (u231)(3 athletes)\nDRAW LOTS\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nOpen Men HW (231+)(2 athletes)\nDRAW LOTS\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)",
+        "6. LISTING": "6. SHOW LISTING & LIFECYCLE\n\nControls what the public sees on Find a Show and the meet's registration page. Unlisted meets still open by direct link.\n\nMeet Date: 2026-11-14\nListed in the public shows directory\n\nListed meets appear on the public shows page and can be found by athletes. Unlist to hide the meet while you finish setting it up.\n\nCOMPETITION STATUS\nUpcoming\nLive Now\nCompleted\nPostponed\nCancelled\nREGISTRATION STATUS\nOpen\nWaitlist Only\nClosed\nDay-Of Entry Only\nNot Applicable\nNot Provided\nRESULTS STATUS\nNot Started\nIn Progress (Live Provisional)\nProvisional (Pending Audit)\nFinal (Certifies Official Podiums)\nVENUE & LOCATION\nFACILITY / GYM NAME\nSTREET ADDRESS\nCITY\nSTATE\nPOSTAL CODE\nCOUNTRY\nSANCTIONING, ENTRY FEE, CAPS & CONTACT\nFEDERATION / FORMAT\nENTRY FEE DISPLAY\nREGISTRATION DEADLINE\nATHLETE CAP\nPROMOTER CONTACT (SHOWN TO ATHLETES)\n\nAppears on the registration page and in the waiver. Leave blank to show \"contact not provided\".\n\nRESET\nSAVE LISTING SETTINGS",
+        "7. REGISTRATIONS\n3 PENDING": "7. ATHLETE REGISTRATIONS (3)\n\n3 pending, 0 accepted. Accepting adds the athlete to that division's roster (Section 4) with the next lot number; declining removes the roster row unless it already has results. Emergency contacts are visible to you only.\n\nATHLETE\tEMERGENCY CONTACT\tDIVISION\tSTATUS & ROSTER LINK\tWAIVER\tPAID\tSUBMITTED\tACTIONS\n\nSlate Staging\nslate.staging@zerotacky.com\n\t\nPat Staging (Friend) 814-555-0190\nAge 36 on meet day.\n\tNovice Men\t\nPENDING\n\tSigned 2026-10-21\tUNPAID\t2026-10-21\t\nACCEPT\nDECLINE\nWITHDRAW\n\n\nReuben Castellano\nreuben.c@example.com\n\t\nAna Castellano (Sister) 814-555-0177\nAge 35 on meet day.\n\tOpen Men HW (231+)\t\nPENDING\n\tSigned 2026-10-21\tUNPAID\t2026-10-21\t\nACCEPT\nDECLINE\nWITHDRAW\n\n\nNadia Fuller\nnadia.fuller@example.com\n\t\nMark Fuller (Husband) 814-555-0142\nAge 32 on meet day.\n\tOpen Women\t\nPENDING\n\tSigned 2026-10-21\tUNPAID\t2026-10-21\t\nACCEPT\nDECLINE\nWITHDRAW",
+        "8. MEET DAY": "8. MEET DAY CODES & SCREEN LINKS\n\nMeet-day codes and screen links for this meet. The join code is checked on every write from a volunteer phone.\n\nVOLUNTEER PHONE JOIN CODE (OWNER ONLY)\nXYJL6F\n\nRotate replaces the code. Every phone that joined with the old code, including an admin phone that published with it, is locked out on its next write until it rejoins with the new one. A phone signed in to this account is unaffected.\n\nCOPY CODE\nROTATE CODE\nQR CODES FOR THE GYM WALL\nPRINT BOTH\nJudges & pit crew: join this meet\nScan, then pick your role. Code XYJL6F.\nLive scoreboard\nScan to follow the standings on your phone.\n\nPrint both on one sheet each and tape them up by the sign-in table and the platform. The join QR carries the current code; print again after you rotate it.\n\nPROMOTER / ADMIN SCORER APP\nOPEN\n\nOpen on the admin phone to run Meet Setup, Judge Pad, Pit Crew, and Live Sync.\n\nCOPY\nVOLUNTEER JUDGE & PIT CREW JOIN URL\nOPEN\n\nShare with judges and pit crew. Their phones attach to this meet with the current join code.\n\nCOPY\nGYM TV / PROJECTOR LIVE LEADERBOARD URL\nOPEN\n\nFull-width multi-division standings table for a laptop HDMI feed or gym TV.\n\nCOPY\nDELETE THIS MEET\n\nRemoves the meet, its divisions, events, roster, scores, registrations, and the public page for good. Only the promoter who owns the meet can do this. A live or completed meet cannot be deleted; set it to cancelled on the Listing tab or keep it as a record.\n\nDELETE MEET"
+      }
+    },
+    "failures": {}
+  },
+  "local-browser-evidence": {
+    "checks": {
+      "inlineGate": {
+        "mode": "true",
+        "athleteFormAbsent": true
+      },
+      "inlineSignIn": {
+        "path": "/register/astra-how-75d44283",
+        "noReload": true,
+        "prefillName": "Slate Staging",
+        "emailMatchesAccount": true
+      },
+      "minorFields": {
+        "shown": true,
+        "buttons": [
+          "",
+          "Configure",
+          "Continue to Waiver \u2192",
+          ""
+        ]
+      },
+      "uiMinorSubmit": {
+        "status": 200,
+        "body": {
+          "id": "a95aa7e2-d537-464c-92bf-165944bfadf5",
+          "status": "pending"
+        }
+      },
+      "staleReturnToAfterInlineSignin": "/register/astra-how-75d44283",
+      "accountAfterInlineSignin": "/register/astra-how-75d44283",
+      "returnToGuard": [
+        {
+          "input": "/register/astra-how-75d44283",
+          "url": "http://localhost:3079/website/account",
+          "remaining": null
+        },
+        {
+          "input": "//example.invalid/escape",
+          "url": "http://localhost:3079/website/account",
+          "remaining": null
+        },
+        {
+          "input": "/\\example.invalid/escape",
+          "url": "chrome-error://chromewebdata/",
+          "remaining": null
+        },
+        {
+          "input": "https://example.invalid/escape",
+          "url": "http://localhost:3079/website/account",
+          "remaining": null
+        },
+        {
+          "input": "/\t/example.invalid/escape",
+          "url": "chrome-error://chromewebdata/",
+          "remaining": null
+        }
+      ],
+      "emailNewTabModel": {
+        "originalReturnTo": "/register/astra-how-75d44283",
+        "newTabReturnTo": null,
+        "newTabPath": "/website/account",
+        "modelOnly": true
+      }
+    },
+    "failures": {},
+    "pageErrors": [
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document.",
+      "Failed to read the 'sessionStorage' property from 'Window': Access is denied for this document."
+    ]
+  },
+  "final-browser-evidence": {
+    "checks": {
+      "board-iron-harbor-classic-2026": {
+        "text": "LIVE SCOREBOARD\nIron Harbor Classic 2026\nTV\nupdated 10:01:01 AM\nSTATION 1 \u00b7 UP NOW\nidle\nSTATION 2 \u00b7 UP NOW\nidle\nAll\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nOVERALL STANDINGS \u2022 NOVICE WOMEN\nTiebreaker: Event Wins\nT-#1\nTessa Marlow\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nPriya Natarajan\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nJo Kessler\nEvent Wins: 0\n0\nTOTAL PTS\nEVENT 1 BREAKDOWN \u2022 12\" LOG CLEAN & PRESS\n#3\nTessa Marlow\n\u2014\n0 pts\n#3\nPriya Natarajan\n\u2014\n0 pts\n#3\nJo Kessler\n\u2014\n0 pts\nOVERALL STANDINGS \u2022 NOVICE MEN\nTiebreaker: Event Wins\nT-#1\nEli Brandt\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nDevin Okafor\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nLuis Herrera\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nSam Whitcomb\nEvent Wins: 0\n0\nTOTAL PTS\nEVENT 1 BREAKDOWN \u2022 12\" LOG CLEAN & PRESS\n#4\nDevin Okafor\n\u2014\n0 pts\n#4\nLuis Herrera\n\u2014\n0 pts\n#4\nSam Whitcomb\n\u2014\n0 pts\n#4\nEli Brandt\n\u2014\n0 pts\nOVERALL STANDINGS \u2022 OPEN WOMEN\nTiebreaker: Event Wins\nT-#1\nMarisol Quinn\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nHana Lindqvist\nEvent Wins: 0\n0\nTOTAL PTS\nEVENT 1 BREAKDOWN \u2022 12\" LOG CLEAN & PRESS\n#2\nMarisol Quinn\n\u2014\n0 pts\n#2\nHana Lindqvist\n\u2014\n0 pts\nOVERALL STANDINGS \u2022 OPEN MEN LW (U231)\nTiebreaker: Event Wins\nT-#1\nCole Ashby\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nTariq Mensah\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nBen Rourke\nEvent Wins: 0\n0\nTOTAL PTS\nEVENT 1 BREAKDOWN \u2022 12\" LOG CLEAN & PRESS\n#3\nCole Ashby\n\u2014\n0 pts\n#3\nTariq Mensah\n\u2014\n0 pts\n#3\nBen Rourke\n\u2014\n0 pts\nOVERALL STANDINGS \u2022 OPEN MEN HW (231+)\nTiebreaker: Event Wins\nT-#1\nGus Fairweather\nEvent Wins: 0\n0\nTOTAL PTS\nT-#1\nOwen Delacroix\nEvent Wins: 0\n0\nTOTAL PTS\nEVENT 1 BREAKDOWN \u2022 12\" LOG CLEAN & PRESS\n#2\nGus Fairweather\n\u2014\n0 pts\n#2\nOwen Delacroix\n\u2014\n0 pts\nZEROTACKY \u00b7 refreshes every 4s \u00b7 Home \u00b7 Account",
+        "width": 375
+      },
+      "board-astra-how-75d44283": {
+        "text": "LIVE SCOREBOARD\nAstra Disposable Guide Audit\nTV\nSTATION 1 \u00b7 UP NOW\nidle\nSTATION 2 \u00b7 UP NOW\nidle\nAll\nAudit Division\nOVERALL STANDINGS \u2022 AUDIT DIVISION\nTiebreaker: Event Wins\n#1\nAudit Walkon Fixture\nEvent Wins: 1\n1\nTOTAL PTS\nEVENT 1 BREAKDOWN \u2022 AUDIT LOG PRESS\n#1\nAudit Walkon Fixture\n3 reps\n1 pts\nZEROTACKY \u00b7 refreshes every 4s \u00b7 Home \u00b7 Account",
+        "width": 375
+      },
+      "guidePerformance": {
+        "method": "Chromium navigation + Web Vitals observer, unthrottled 375px",
+        "cls": 0.20210130534979426,
+        "lcp": 2052,
+        "width": 375,
+        "scrollWidth": 375,
+        "images": [
+          {
+            "src": "/guide/01-new-meet.png",
+            "widthAttr": null,
+            "heightAttr": null,
+            "loaded": true
+          },
+          {
+            "src": "/guide/03-meet.png",
+            "widthAttr": null,
+            "heightAttr": null,
+            "loaded": true
+          },
+          {
+            "src": "/guide/04-divisions.png",
+            "widthAttr": null,
+            "heightAttr": null,
+            "loaded": true
+          },
+          {
+            "src": "/guide/05-stations.png",
+            "widthAttr": null,
+            "heightAttr": null,
+            "loaded": true
+          },
+          {
+            "src": "/guide/06-events.png",
+            "widthAttr": null,
+            "heightAttr": null,
+            "loaded": true
+          },
+          {
+            "src": "/guide/07-event-form.png",
+            "widthAttr": null,
+            "heightAttr": null,
+            "loaded": true
+          },
+          {
+            "src": "/guide/08-athletes.png",
+            "widthAttr": null,
+            "heightAttr": null,
+            "loaded": true
+          },
+          {
+            "src": "/guide/09-listing.png",
+            "widthAttr": null,
+            "heightAttr": null,
+            "loaded": true
+          },
+          {
+            "src": "/guide/12-show-card.png",
+            "widthAttr": null,
+            "heightAttr": null,
+            "loaded": true
+          },
+          {
+            "src": "/guide/13-show-page.png",
+            "widthAttr": null,
+            "heightAttr": null,
+            "loaded": true
+          },
+          {
+            "src": "/guide/14-register.png",
+            "widthAttr": null,
+            "heightAttr": null,
+            "loaded": true
+          },
+          {
+            "src": "/guide/10-registrations.png",
+            "widthAttr": null,
+            "heightAttr": null,
+            "loaded": true
+          },
+          {
+            "src": "/guide/11-meet-day.png",
+            "widthAttr": null,
+            "heightAttr": null,
+            "loaded": true
+          },
+          {
+            "src": "/guide/16-join.png",
+            "widthAttr": null,
+            "heightAttr": null,
+            "loaded": true
+          },
+          {
+            "src": "/guide/15-scoreboard.png",
+            "widthAttr": null,
+            "heightAttr": null,
+            "loaded": true
+          }
+        ],
+        "resources": [
+          {
+            "path": "/guide/01-new-meet.png",
+            "encodedBytes": 51926,
+            "durationMs": 120.2000000178814
+          },
+          {
+            "path": "/guide/03-meet.png",
+            "encodedBytes": 274159,
+            "durationMs": 117.89999997615814
+          },
+          {
+            "path": "/guide/04-divisions.png",
+            "encodedBytes": 140961,
+            "durationMs": 76.19999998807907
+          },
+          {
+            "path": "/guide/05-stations.png",
+            "encodedBytes": 316076,
+            "durationMs": 99.7000000178814
+          },
+          {
+            "path": "/guide/06-events.png",
+            "encodedBytes": 134947,
+            "durationMs": 103.5
+          },
+          {
+            "path": "/guide/07-event-form.png",
+            "encodedBytes": 238925,
+            "durationMs": 110.69999998807907
+          },
+          {
+            "path": "/guide/08-athletes.png",
+            "encodedBytes": 311486,
+            "durationMs": 78.09999999403954
+          },
+          {
+            "path": "/guide/09-listing.png",
+            "encodedBytes": 232052,
+            "durationMs": 703.8999999761581
+          },
+          {
+            "path": "/guide/12-show-card.png",
+            "encodedBytes": 75557,
+            "durationMs": 694.7000000178814
+          },
+          {
+            "path": "/guide/13-show-page.png",
+            "encodedBytes": 346987,
+            "durationMs": 793.8000000119209
+          },
+          {
+            "path": "/guide/14-register.png",
+            "encodedBytes": 368266,
+            "durationMs": 878.1000000238419
+          },
+          {
+            "path": "/guide/10-registrations.png",
+            "encodedBytes": 177620,
+            "durationMs": 755.0999999940395
+          },
+          {
+            "path": "/guide/11-meet-day.png",
+            "encodedBytes": 328136,
+            "durationMs": 815.0999999940395
+          },
+          {
+            "path": "/guide/16-join.png",
+            "encodedBytes": 38544,
+            "durationMs": 780.6999999880791
+          },
+          {
+            "path": "/guide/15-scoreboard.png",
+            "encodedBytes": 74979,
+            "durationMs": 871.7999999821186
+          }
+        ]
+      }
+    },
+    "failures": {
+      "handoff": "Locator.click: Error: strict mode violation: locator(\"a[href=\\\"/scorer\\\"]\") resolved to 2 elements:\n    1) <a href=\"/scorer\" class=\"text-xs font-extrabold uppercase text-zt-primary hover:underline inline-flex items-center gap-1\">\u2026</a> aka get_by_role(\"link\", name=\"Open\").first\n    2) <a href=\"/scorer\" class=\"hover:text-zt-primary\">Live Scoring Demo</a> aka get_by_role(\"link\", name=\"Live Scoring Demo\")\n\nCall log:\n  - waiting for locator(\"a[href=\\\"/scorer\\\"]\")\n",
+      "recovery": "Locator.wait_for: Timeout 18000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"heading\", name=\"Set a new password\") to be visible\n",
+      "redirectEdges": "Page.evaluate: Execution context was destroyed, most likely because of a navigation"
+    }
+  },
+  "close-gaps-evidence": {
+    "checks": {
+      "guideScorerHandoff": {
+        "path": "/scorer",
+        "scorerMeet": "Riverside Iron Fest 2026 (Demo Upcoming)",
+        "linked": false
+      },
+      "recovery-False": {
+        "path": "/website/account",
+        "newPasswordPanel": 1,
+        "model": "fresh navigation with valid existing staging session in recovery-shaped hash, not email delivery"
+      },
+      "recovery-True": {
+        "path": "/register/astra-how-75d44283",
+        "newPasswordPanel": 0,
+        "model": "fresh navigation with valid existing staging session in recovery-shaped hash, not email delivery"
+      },
+      "tvBoard": {
+        "tables": 5,
+        "columns": [
+          "#",
+          "Athlete",
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5",
+          "Total"
+        ],
+        "text": "LIVE SCOREBOARD\nIron Harbor Classic 2026\nPHONE\nupdated 10:02:32 AM\nSTATION 1 \u00b7 UP NOW\nidle\nSTATION 2 \u00b7 UP NOW\nidle\nAll\nNovice Women\nNovice Men\nOpen Women\nOpen Men LW (u231)\nOpen Men HW (231+)\nNOVICE WOMEN\n3 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tE4\tE5\tTOTAL\nT-1\t\nTessa Marlow\n\t\u2013\t\u2013\t\u2013\t\u2013\t\u2013\t0\nT-1\t\nPriya Natarajan\n\t\u2013\t\u2013\t\u2013\t\u2013\t\u2013\t0\nT-1\t\nJo Kessler\n\t\u2013\t\u2013\t\u2013\t\u2013\t\u2013\t0\nNOVICE MEN\n4 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tE4\tE5\tTOTAL\nT-1\t\nEli Brandt\n\t\u2013\t\u2013\t\u2013\t\u2013\t\u2013\t0\nT-1\t\nDevin Okafor\n\t\u2013\t\u2013\t\u2013\t\u2013\t\u2013\t0\nT-1\t\nLuis Herrera\n\t\u2013\t\u2013\t\u2013\t\u2013\t\u2013\t0\nT-1\t\nSam Whitcomb\n\t\u2013\t\u2013\t\u2013\t\u2013\t\u2013\t0\nOPEN WOMEN\n2 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tE4\tE5\tTOTAL\nT-1\t\nMarisol Quinn\n\t\u2013\t\u2013\t\u2013\t\u2013\t\u2013\t0\nT-1\t\nHana Lindqvist\n\t\u2013\t\u2013\t\u2013\t\u2013\t\u2013\t0\nOPEN MEN LW (U231)\n3 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tE4\tE5\tTOTAL\nT-1\t\nCole Ashby\n\t\u2013\t\u2013\t\u2013\t\u2013\t\u2013\t0\nT-1\t\nTariq Mensah\n\t\u2013\t\u2013\t\u2013\t\u2013\t\u2013\t0\nT-1\t\nBen Rourke\n\t\u2013\t\u2013\t\u2013\t\u2013\t\u2013\t0\nOPEN MEN HW (231+)\n2 athletes \u00b7 Tiebreaker: Event Wins\n#\tATHLETE\tE1\tE2\tE3\tE4\tE5\tTOTAL\nT-1\t\nGus Fairweather\n\t\u2013\t\u2013\t\u2013\t\u2013\t\u2013\t0\nT-1\t\nOwen Delacroix\n\t\u2013\t\u2013\t\u2013\t\u2013\t\u2013\t0\nZEROTACKY \u00b7 refreshes every 4s"
+      }
+    },
+    "failures": {}
+  },
+  "redirect-evidence": [
+    {
+      "input": "//example.invalid/escape",
+      "externalRequests": [],
+      "error": null
+    },
+    {
+      "input": "/\\example.invalid/escape",
+      "externalRequests": [],
+      "error": null
+    },
+    {
+      "input": "/\t/example.invalid/escape",
+      "externalRequests": [],
+      "error": null
+    },
+    {
+      "input": "https://example.invalid/escape",
+      "externalRequests": [],
+      "error": null
+    }
+  ],
+  "redirect-pure-evidence": [
+    {
+      "input": "/register/audit",
+      "accepted": "/register/audit",
+      "resolved": "http://localhost:3079/register/audit"
+    },
+    {
+      "input": "//example.invalid/escape",
+      "accepted": null,
+      "resolved": null
+    },
+    {
+      "input": "/\\example.invalid/escape",
+      "accepted": "/\\example.invalid/escape",
+      "resolved": "http://example.invalid/escape"
+    },
+    {
+      "input": "/\t/example.invalid/escape",
+      "accepted": "/\t/example.invalid/escape",
+      "resolved": "http://example.invalid/escape"
+    },
+    {
+      "input": "https://example.invalid/escape",
+      "accepted": null,
+      "resolved": null
+    }
+  ],
+  "rate-evidence": [
+    {
+      "attempt": 1,
+      "status": 200,
+      "body": {
+        "id": "e97c2947-c741-4a05-bee2-2a0c4e383ff5",
+        "status": "pending"
+      }
+    },
+    {
+      "attempt": 2,
+      "status": 200,
+      "body": {
+        "id": "88f08756-aa64-488a-a6d8-eb06e6992575",
+        "status": "pending"
+      }
+    },
+    {
+      "attempt": 3,
+      "status": 200,
+      "body": {
+        "id": "758447dc-9351-4e5d-90f4-2098aeee53d2",
+        "status": "pending"
+      }
+    },
+    {
+      "attempt": 4,
+      "status": 200,
+      "body": {
+        "id": "f8661795-5c3c-4a16-b997-cdde0d5d4f33",
+        "status": "pending"
+      }
+    },
+    {
+      "attempt": 5,
+      "status": 200,
+      "body": {
+        "id": "7979959f-685d-4f9c-8e02-e67afc740cc3",
+        "status": "pending"
+      }
+    },
+    {
+      "attempt": 6,
+      "status": 200,
+      "body": {
+        "id": "01c919ef-fde7-4bc3-8c4d-0aedc92f3e6a",
+        "status": "pending"
+      }
+    },
+    {
+      "attempt": 7,
+      "status": 200,
+      "body": {
+        "id": "0e3cddc5-274c-43ee-835f-3b0738eeee44",
+        "status": "pending"
+      }
+    },
+    {
+      "attempt": 8,
+      "status": 200,
+      "body": {
+        "id": "6c6e24f7-7e76-4df8-821c-3403cf900619",
+        "status": "pending"
+      }
+    },
+    {
+      "attempt": 9,
+      "status": 400,
+      "body": {
+        "code": "P0001",
+        "details": null,
+        "hint": null,
+        "message": "Too many attempts from this device. Wait a few minutes and try again."
+      }
+    }
+  ],
+  "cleanup-evidence": {
+    "fixtureBeforeDeletion": {
+      "id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+      "slug": "astra-how-75d44283",
+      "registrationCount": 10
+    },
+    "deleted": {
+      "status": 200,
+      "body": {
+        "id": "75d44283-9dc0-4e3d-85eb-de32fa49feee",
+        "name": "Astra Disposable Guide Audit",
+        "deleted": {
+          "events": 1,
+          "results": 1,
+          "athletes": 1,
+          "divisions": 1,
+          "registrations": 10
+        }
+      }
+    },
+    "remaining": {
+      "meets": 0,
+      "divisions": 0,
+      "events": 0,
+      "athletes": 0,
+      "results": 0,
+      "live_state": 0,
+      "registrations": 0
+    },
+    "guidePublicUnchanged": true,
+    "guideRosterCount": 14,
+    "finalFingerprint": {
+      "sha": "83aba59da3f6d1d89f506c81bfc2b3613b1fd672",
+      "tracked": 338,
+      "mismatches": []
+    }
+  },
+  "testSummary": {
+    "pass": 362,
+    "fail": 0,
+    "files": 30,
+    "tscExit": 0,
+    "testExit": 0
+  },
+  "deploymentSummary": {
+    "local": {
+      "status": 200,
+      "hasNewCopy": true,
+      "hasOldCopy": false,
+      "error": null
+    }
+  },
+  "limitations": [
+    "Hosted preview pre-account-gate; current UI exercised on existing local staging-backed server.",
+    "No actual email signup/magic/reset delivery.",
+    "No production registration RPC or authenticated publish test.",
+    "Per-meet throttle source reviewed, not exhausted.",
+    "Initial harness failures retained; corrected checks are in subsequent evidence files.",
+    "Initial pageErrors include audit init-script access to opaque documents; not claimed as app hydration defects."
+  ]
+}

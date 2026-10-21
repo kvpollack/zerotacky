@@ -19,13 +19,13 @@ export async function generateMetadata({ params }: ShowDetailPageProps): Promise
   const { slug } = await params;
   const res = await getPublicShowBySlug(slug);
   if (!res.data) {
-    return { title: 'Show Not Found — ZeroTacky' };
+    return { title: 'Show Not Found | ZeroTacky' };
   }
   const show = res.data;
   const description =
     show.summaryNote ||
     `${show.name} in ${show.venue.city}, ${show.venue.state} on ${show.date}. Divisions, events, weights, and results.`;
-  const title = `${show.name} (${show.date}) — ZeroTacky`;
+  const title = `${show.name} (${show.date}) | ZeroTacky`;
   // Link previews (Kurt 10/19): the image comes from ./opengraph-image.tsx; Next adds og:image and twitter:image itself.
   return {
     title,

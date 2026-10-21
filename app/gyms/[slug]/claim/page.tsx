@@ -10,7 +10,7 @@ interface Props { params: Promise<{ slug: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const res = await getPublicGymBySlug(slug);
-  return { title: res.data ? `Claim ${res.data.name} — ZeroTacky` : 'Gym Not Found — ZeroTacky', robots: { index: false } };
+  return { title: res.data ? `Claim ${res.data.name} | ZeroTacky` : 'Gym Not Found | ZeroTacky', robots: { index: false } };
 }
 
 export default async function GymClaimPage({ params }: Props) {
