@@ -3,7 +3,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Camera, Dumbbell, Eye, EyeOff, KeyRound, LogOut, Mail, Play, Save, ShieldCheck, Trash2, Trophy, UserCheck } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/useAuth';
+import SignInForm, { takeReturnTo } from '@/components/auth/SignInForm';
 import { FAVORITE_LIFT_OPTIONS, MAX_PRS, SOCIAL_KEYS, USERNAME_MAX, athleteProfilePath, normalizeUsername, profileLabel, roleBadges, usernameProblem, type Profile, type ProfilePR, type ProfileSocials } from '@/lib/auth/profile';
 import { AVATAR_MAX_BYTES, avatarProblem } from '@/lib/auth/avatar';
 import { aboutFromProfile, aboutKey, reconcileAbout, type AboutDraft } from '@/lib/auth/profileDraft';
@@ -12,8 +14,6 @@ import { getSupabase } from '@/lib/auth/supabaseBrowser';
 
 // Real account page (v2): sign in / create account / magic link, then a profile editor. The three role flags
 // are self-declared and only shape what the site shows; meet access is decided by meets.owner_id / meet_members.
-type Mode = 'signin' | 'signup' | 'magic';
-
 const inputCls = 'w-full bg-zt-inset border border-zt-border-strong rounded-lg px-3 py-2 text-sm text-zt-text';
 const labelCls = 'block text-[10px] font-extrabold uppercase text-zt-muted mb-1';
 const primaryBtn = 'px-4 py-2 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase tracking-wider inline-flex items-center gap-1.5 disabled:opacity-40';
@@ -117,10 +117,14 @@ function AdminLink() {
 
 export default function AccountClient() {
   const auth = useAuth();
-  const [mode, setMode] = useState<Mode>('signin');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const router = useRouter();
+  // Back to where the sign-in started (the registration page, 10/21): SignInForm remembers it before any email round
+  // trip, so a confirmation or magic link that lands here carries on to the show instead of stranding the athlete.
+  useEffect(() => {
+    if (!auth.user) return;
+    const back = takeReturnTo();
+    if (back && back !== '/website/account') router.replace(back);
+  }, [auth.user, router]);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ text: string; tone: 'ok' | 'warn' } | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -226,19 +230,6 @@ export default function AccountClient() {
   }
 
   if (!auth.user) {
-    const submit = (e: React.FormEvent) => {
-      e.preventDefault();
-      if (mode === 'signin') return run(async () => { await auth.signInWithPassword(email, password); });
-      if (mode === 'signup') {
-        return run(async () => {
-          if (password.length < 8) throw new Error('Password needs at least 8 characters.');
-          const r = await auth.signUp(email, password, name || email.split('@')[0]);
-          return r === 'check_email' ? `Check ${email.trim()} for a confirmation link, then come back here.` : undefined;
-        });
-      }
-      return run(async () => { await auth.sendMagicLink(email); return `Magic link sent to ${email.trim()}. Open it on this device.`; });
-    };
-    const tabs: Array<[Mode, string]> = [['signin', 'Sign in'], ['signup', 'Create account'], ['magic', 'Email me a link']];
     return (
       <div className="space-y-6">
         <section className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-4 max-w-xl">
@@ -249,74 +240,7 @@ export default function AccountClient() {
               promote, the meets you publish belong to this account and follow you from phone to phone.
             </p>
           </div>
-          {/* Mode switch. Plain toggle buttons (aria-pressed), not a tablist: one form changes shape below, there are no
-              separate panels to associate, and tab roles without arrow-key handling misled assistive tech (Astra B1). */}
-          <div role="group" aria-label="Sign-in method" className="grid grid-cols-3 gap-2">
-            {tabs.map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                aria-pressed={mode === id}
-                onClick={() => { setMode(id); setNotice(null); }}
-                className={`py-2 rounded-xl border text-[11px] font-black uppercase ${mode === id ? 'bg-zt-primary/15 border-zt-primary text-zt-text' : 'bg-zt-inset border-zt-border text-zt-text-2'}`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <form onSubmit={submit} className="space-y-3">
-            {mode === 'signup' && (
-              <div>
-                <label htmlFor="acct-name" className={labelCls}>Display name</label>
-                <input id="acct-name" value={name} onChange={(e) => setName(e.target.value)} className={inputCls} maxLength={80} autoComplete="name" />
-              </div>
-            )}
-            <div>
-              <label htmlFor="acct-email" className={labelCls}>Email</label>
-              <input id="acct-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} autoComplete="email" />
-            </div>
-            {mode !== 'magic' && (
-              <div>
-                <label htmlFor="acct-password" className={labelCls}>Password{mode === 'signup' ? ' (8+ characters)' : ''}</label>
-                <input
-                  id="acct-password"
-                  type="password"
-                  required
-                  minLength={mode === 'signup' ? 8 : undefined}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={inputCls}
-                  autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-                />
-                {mode === 'signin' && (
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => run(async () => {
-                      if (!email.trim()) throw new Error('Enter your email above first, then tap Forgot password.');
-                      await auth.sendPasswordReset(email);
-                      return `Reset link sent to ${email.trim()}. Open it on this device; it brings you back here to set a new password.`;
-                    })}
-                    className="mt-1.5 text-[11px] font-bold text-zt-primary underline underline-offset-2"
-                  >
-                    Forgot password?
-                  </button>
-                )}
-              </div>
-            )}
-            {mode === 'signup' && (
-              <p className="text-[11px] text-zt-muted">
-                By creating an account you agree to the <Link href="/legal/terms" className="text-zt-primary font-bold">Terms of Use</Link> and{' '}
-                <Link href="/legal/privacy" className="text-zt-primary font-bold">Privacy Policy</Link>. You must be 13 or older; under 18 needs a
-                parent or guardian&apos;s agreement.
-              </p>
-            )}
-            {notice && <Notice {...notice} />}
-            <button type="submit" disabled={busy} className={primaryBtn}>
-              {mode === 'magic' ? <Mail className="w-3.5 h-3.5" aria-hidden="true" /> : <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />}
-              {mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create account' : 'Send link'}
-            </button>
-          </form>
+          <SignInForm auth={auth} />
           <p className="text-[11px] text-zt-muted">
             Meet-day volunteers do not need an account: judges and pit crew join with the meet code on <Link href="/join" className="text-zt-primary font-bold underline">Join a Meet</Link>.
           </p>

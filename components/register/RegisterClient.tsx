@@ -11,6 +11,7 @@ import {
   FileText,
   Lock,
   MapPin,
+  UserCheck,
 } from 'lucide-react';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import type { PublicRegistrationMeet } from '@/lib/promoter/contract';
@@ -28,6 +29,8 @@ import {
 import { getPromoterApi, isLiveBackend } from '@/lib/promoter/usePromoterApi';
 import MarkdownBlocks from '@/components/legal/MarkdownBlocks';
 import { parseMarkdown } from '@/lib/legal/markdown';
+import { useAuth } from '@/lib/auth/useAuth';
+import SignInForm from '@/components/auth/SignInForm';
 
 interface RegisterClientProps {
   slug: string;
@@ -48,6 +51,18 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [step, setStep] = useState<Step>(1);
+  // Registration needs an account (Kurt 10/21: the entry belongs to the athlete, and it is how the user base grows).
+  // The server refuses anonymous submissions too (021); this gate keeps the athlete on the page while they sign in.
+  // Preview builds have no accounts, so the fixture backend stays open.
+  const auth = useAuth();
+  const needsAccount = isLiveBackend() && !auth.user;
+
+  // Prefill from the account when it is known (the profile arrives a beat after the session); both stay editable and a
+  // value the athlete already typed wins.
+  const accountEmail = auth.user?.email ?? '';
+  const accountName = auth.profile?.display_name ?? '';
+  useEffect(() => { if (accountEmail) setEmail((v) => v || accountEmail); }, [accountEmail]);
+  useEffect(() => { if (accountName) setAthleteName((v) => v || accountName); }, [accountName]);
   const [divisionId, setDivisionId] = useState<string>('');
   const [athleteName, setAthleteName] = useState('');
   const [email, setEmail] = useState('');
@@ -398,8 +413,30 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
             </div>
           )}
 
+          {/* STEP 0: ACCOUNT. Registration is tied to a ZeroTacky account. */}
+          {step === 1 && isLiveBackend() && auth.loading && (
+            <section className="bg-zt-surface border border-zt-border rounded-2xl p-5 sm:p-6">
+              <div className="text-xs font-bold uppercase text-zt-muted">Checking your session…</div>
+            </section>
+          )}
+          {step === 1 && needsAccount && !auth.loading && (
+            <section aria-labelledby="reg-account-heading" className="bg-zt-surface border border-zt-border rounded-2xl p-5 sm:p-6 space-y-4">
+              <h2 id="reg-account-heading" className="text-base font-black uppercase tracking-wider text-zt-primary flex items-center gap-2">
+                <UserCheck className="w-4 h-4" aria-hidden="true" /> Step 1: Your ZeroTacky account
+              </h2>
+              <p className="text-xs sm:text-sm text-zt-text-2 leading-relaxed max-w-2xl">
+                Registering takes a free account. Your entry is tied to it, so you can follow its status on My Meets and
+                every show you compete in builds your record. Create one here, or sign in if you already have one; you
+                stay on this page. Under 18? A parent or guardian creates the account and registers you.
+              </p>
+              <div className="max-w-xl">
+                <SignInForm auth={auth} defaultMode="signup" returnTo={`/register/${slug}`} idPrefix="reg-acct" />
+              </div>
+            </section>
+          )}
+
           {/* STEP 1: DIVISION & ATHLETE DETAILS */}
-          {step === 1 && (
+          {step === 1 && !needsAccount && !(isLiveBackend() && auth.loading) && (
             <form
               onSubmit={goToStep2}
               className="bg-zt-surface border border-zt-border rounded-2xl p-5 sm:p-6 space-y-5"
