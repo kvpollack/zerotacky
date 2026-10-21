@@ -20,7 +20,6 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
     { id: 'home', label: 'Home', href: '/website' },
     { id: 'how', label: 'How It Works', href: '/how-it-works' },
     { id: 'shows', label: 'Find a Show', href: '/shows' },
-    { id: 'join', label: 'Join a Meet', href: '/join' },
     { id: 'gyms', label: 'Gym Directory', href: '/gyms' },
     { id: 'athletes', label: 'Athletes', href: '/athletes' },
     { id: 'account', label: 'Account', href: '/website/account' },
@@ -70,6 +69,18 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
             <PromoterNavLink active={activeNav === 'promoter'} />
           </nav>
           <WebsiteAccountChip />
+          {/* Kurt 10/21: Join a Meet sits at the far right, next to the theme toggle, as the meet-day action. */}
+          <Link
+            href="/join"
+            aria-current={activeNav === 'join' ? 'page' : undefined}
+            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase tracking-wide transition border ${
+              activeNav === 'join'
+                ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
+                : 'bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong'
+            }`}
+          >
+            Join a Meet
+          </Link>
           <WebsiteThemeControls />
           </div>
         </div>
