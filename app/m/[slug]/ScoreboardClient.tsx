@@ -37,8 +37,8 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   const tv = layout === 'tv';
 
   useEffect(() => {
-    if (meet?.state.meet.name) document.title = `${meet.state.meet.name} — Live Scoreboard | ZeroTacky`;
-  }, [meet?.state.meet.name]);
+    if (meet?.state.meet.name) document.title = `${meet.state.meet.name} — ${meet.competitionStatus === 'completed' ? 'Final Results' : 'Live Scoreboard'} | ZeroTacky`;
+  }, [meet?.state.meet.name, meet?.competitionStatus]);
 
   useEffect(() => {
     const t = new URLSearchParams(window.location.search).get('theme');
@@ -50,7 +50,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
     const fx = getDemoScoreboardState(slug);
     if (!fx) return false;
     setDemo(true);
-    setMeet({ state: fx.state, slug: fx.slug, stations: fx.state.meet.stations ?? [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }], isDemo: true, latestServerAt: null, updatedAt: null });
+    setMeet({ state: fx.state, slug: fx.slug, stations: fx.state.meet.stations ?? [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }], isDemo: true, competitionStatus: null, resultsStatus: null, latestServerAt: null, updatedAt: null });
     setState(fx.state);
     setUpdatedAt(Date.now());
     return true;
@@ -90,6 +90,8 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
         const [chg, ls] = await Promise.all([pullChanges(client, meetId, since.current), getLiveState(client, meetId)]);
         since.current = chg.latestIso;
         setLive(ls);
+        setMeet((prev) => prev && (prev.competitionStatus !== chg.competitionStatus || prev.resultsStatus !== chg.resultsStatus)
+          ? { ...prev, competitionStatus: chg.competitionStatus, resultsStatus: chg.resultsStatus } : prev);
         setState((prev) => {
           if (!prev) return prev;
           let next = prev;
@@ -121,6 +123,8 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   if (!state || !meet) return shell(<Notice text={error ? `Could not load: ${error}` : 'Loading…'} />);
 
   const stations = meet.stations?.length ? meet.stations : [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }];
+  const completed = meet.competitionStatus === 'completed';
+  const cancelled = meet.competitionStatus === 'cancelled';
   const divisions = division === 'ALL' ? state.divisions : state.divisions.filter((d) => d.id === division);
   const eventFor = (d: Division): EventDef | undefined => {
     const st = live.find((l) => l.station === d.flight);
@@ -136,40 +140,43 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
     <>
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[10px] font-black uppercase tracking-widest text-zt-primary flex items-center gap-1.5">
-            <span className={`inline-block w-2 h-2 rounded-full ${error ? 'bg-amber-500' : 'bg-emerald-400 animate-pulse'}`} />
-            Live scoreboard
+          <div className="text-xs font-black uppercase tracking-widest text-zt-primary flex items-center gap-1.5">
+            {completed
+              ? <span className="inline-block w-2 h-2 rounded-full bg-zt-muted" aria-hidden="true" />
+              : <span className={`inline-block w-2 h-2 rounded-full ${error ? 'bg-amber-500' : 'bg-emerald-400 animate-pulse'}`} aria-hidden="true" />}
+            {completed ? (meet.resultsStatus === 'final' ? 'Final results' : 'Completed · results provisional') : cancelled ? 'Cancelled' : 'Live scoreboard'}
             {meet.isDemo && (
               <span className={`font-black uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500 text-black ${tv ? 'text-2xl' : 'text-sm'}`}>
                 DEMO
               </span>
             )}
           </div>
-          <h1 className={`font-black truncate ${tv ? 'text-3xl' : 'text-xl'}`}>{state.meet.name}</h1>
+          <h1 className={`font-black break-words ${tv ? 'text-3xl' : 'text-xl leading-tight'}`}>{state.meet.name}</h1>
         </div>
         <div className="flex items-start gap-2 flex-shrink-0">
         <LayoutToggle layout={layout} onToggle={toggleLayout} />
-        <div className="text-right text-[10px] font-bold text-zt-muted flex-shrink-0">
+        <div className="text-right text-xs font-bold text-zt-muted flex-shrink-0">
           {updatedAt ? `updated ${new Date(updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })}` : ''}
           {error && <div className="text-zt-danger-text">retrying…</div>}
         </div>
         </div>
       </header>
 
-      {/* Up now per station */}
-      <div className={`grid gap-2 ${stations.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+      {/* Up now per station. Hidden once the meet is completed: the last live_state rows would otherwise show stale
+          names as if someone were still lifting (Astra DR-02). Stacked on phones so names and events can wrap (MS-06). */}
+      {!completed && <div className={`grid gap-2 ${stations.length > 1 ? (tv ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2') : 'grid-cols-1'}`}>
         {stations.map((s) => {
           const l = live.find((x) => x.station === s.id);
           const ev = state.events.find((e) => e.id === l?.current_event_id);
           const dv = state.divisions.find((d) => d.id === l?.current_division_id);
           return (
             <div key={s.id} className="bg-zt-surface border border-zt-border rounded-2xl p-3">
-              <div className="text-[10px] font-extrabold uppercase text-zt-muted">{s.label} · up now</div>
+              <div className="text-xs font-extrabold uppercase text-zt-muted">{s.label} · up now</div>
               {l && ev ? (
                 <>
-                  <div className={`font-black text-zt-text truncate ${tv ? 'text-2xl' : 'text-base'}`}>{name(l.current_athlete_id) ?? '—'}</div>
-                  {l.lane2_athlete_id && <div className="text-sm font-bold text-zt-text-2 truncate">+ {name(l.lane2_athlete_id)}</div>}
-                  <div className="text-[11px] text-zt-muted truncate">Ev {ev.eventNumber} {ev.name}{dv ? ` · ${dv.name}` : ''}</div>
+                  <div className={`font-black text-zt-text break-words ${tv ? 'text-2xl truncate' : 'text-base leading-tight'}`}>{name(l.current_athlete_id) ?? '—'}</div>
+                  {l.lane2_athlete_id && <div className={`text-sm font-bold text-zt-text-2 ${tv ? 'truncate' : 'break-words'}`}>+ {name(l.lane2_athlete_id)}</div>}
+                  <div className={`text-xs text-zt-muted ${tv ? 'truncate' : ''}`}>Ev {ev.eventNumber} {ev.name}{dv ? ` · ${dv.name}` : ''}</div>
                 </>
               ) : (
                 <div className="text-sm font-bold text-zt-muted">idle</div>
@@ -177,7 +184,15 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
             </div>
           );
         })}
-      </div>
+      </div>}
+
+      {completed && (
+        <div role="status" className="bg-zt-surface border border-zt-border rounded-2xl p-3 text-sm font-bold text-zt-text-2">
+          {meet.resultsStatus === 'final'
+            ? 'This show is complete and the standings below are final.'
+            : 'This show is complete. Standings are provisional until the promoter marks them final.'}
+        </div>
+      )}
 
       {/* Division filter */}
       <div className="flex gap-1.5 overflow-x-auto pb-1">
@@ -186,7 +201,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
             key={d.id}
             type="button"
             onClick={() => setDivision(d.id)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-extrabold whitespace-nowrap border ${division === d.id ? 'bg-zt-primary text-zt-on-primary border-zt-primary' : 'bg-zt-inset text-zt-muted border-zt-border'}`}
+            className={`px-3 min-h-[44px] rounded-lg text-xs font-extrabold whitespace-nowrap border ${division === d.id ? 'bg-zt-primary text-zt-on-primary border-zt-primary' : 'bg-zt-inset text-zt-muted border-zt-border'}`}
           >
             {d.name}
           </button>
@@ -225,7 +240,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
           />
         );
       })}
-      <div className="text-center text-[10px] text-zt-muted pt-2">
+      <div className="text-center text-xs text-zt-muted pt-2">
         ZEROTACKY · refreshes every {POLL_MS / 1000}s
         {!tv && (
           <>

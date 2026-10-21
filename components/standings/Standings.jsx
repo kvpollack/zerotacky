@@ -49,7 +49,7 @@ export default function Standings({
                 Overall Standings • {currentDivision.name}
               </h2>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-zt-muted">
+                <span className="text-xs font-bold text-zt-muted">
                   Tiebreaker: {meet.tiebreakerRule === 'event_wins' ? 'Event Wins' : 'Final Event'}
                 </span>
                 {toggleLayout && <LayoutToggle layout={layout} onToggle={toggleLayout} />}
@@ -75,7 +75,7 @@ export default function Standings({
                       </span>
                       <span className="font-black text-base text-zt-text">{row.athleteName}</span>
                       {row.status === 'withdrawn' && (
-                        <span className="text-[10px] bg-zt-danger text-white px-1.5 py-0.5 rounded font-extrabold">
+                        <span className="text-xs bg-zt-danger text-white px-1.5 py-0.5 rounded font-extrabold">
                           SCRATCHED
                         </span>
                       )}
@@ -87,7 +87,7 @@ export default function Standings({
 
                   <div className="text-right">
                     <div className="text-2xl font-black text-zt-primary">{row.totalPoints}</div>
-                    <div className="text-[10px] uppercase text-zt-muted font-bold">Total Pts</div>
+                    <div className="text-xs uppercase text-zt-muted font-bold">Total Pts</div>
                   </div>
                 </div>
               ))}
@@ -117,7 +117,7 @@ function EventBreakdown({ currentEvent, eventScores, size = 'phone' }) {
                     <span className="font-black text-zt-muted">#{s.place}</span>
                     <span className={`font-bold text-zt-text ${tv ? 'text-base' : ''}`}>{s.athleteName}</span>
                     {s.isTied && (
-                      <span className="text-[10px] bg-zt-primary/20 text-zt-primary-2 px-1.5 py-0.5 rounded font-bold">
+                      <span className="text-xs bg-zt-primary/20 text-zt-primary-2 px-1.5 py-0.5 rounded font-bold">
                         TIE SPLIT
                       </span>
                     )}

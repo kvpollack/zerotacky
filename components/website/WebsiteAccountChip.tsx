@@ -26,7 +26,7 @@ export default function WebsiteAccountChip() {
     return (
       <Link
         href="/website/account"
-        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-extrabold bg-zt-inset text-zt-text border-zt-primary/50 hover:border-zt-primary transition"
+        className="inline-flex items-center gap-1.5 px-2.5 min-h-[44px] rounded-xl border text-xs font-extrabold bg-zt-inset text-zt-text border-zt-primary/50 hover:border-zt-primary transition"
       >
         <UserCheck className="w-3.5 h-3.5 text-zt-primary" aria-hidden="true" />
         <span className="max-w-[140px] truncate">{label}</span>

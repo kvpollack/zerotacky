@@ -15,13 +15,13 @@ export default function LeaderboardTable({ division, events, standings, meet, hi
         <h2 className={`font-black uppercase tracking-wide text-zt-primary ${tv ? 'text-2xl' : 'text-base'}`}>
           {division.name}
         </h2>
-        <span className="text-[11px] font-bold text-zt-muted">
+        <span className="text-xs font-bold text-zt-muted">
           {standings.length} athletes · Tiebreaker: {meet.tiebreakerRule === 'event_wins' ? 'Event Wins' : 'Final Event'}
         </span>
       </div>
       <table className="w-full border-collapse">
         <thead>
-          <tr className="text-[10px] uppercase tracking-wider text-zt-muted border-b border-zt-border">
+          <tr className="text-xs uppercase tracking-wider text-zt-muted border-b border-zt-border">
             <th scope="col" className={`${cell} text-left w-12`}>#</th>
             <th scope="col" className={`${cell} text-left`}>Athlete</th>
             {events.map((ev) => (
@@ -55,7 +55,7 @@ export default function LeaderboardTable({ division, events, standings, meet, hi
               <td className={`${cell} font-black text-zt-text ${tv ? 'text-xl' : 'text-sm'} min-w-0`}>
                 <span className="truncate block">{row.athleteName}</span>
                 {row.status === 'withdrawn' && (
-                  <span className="text-[10px] bg-zt-danger text-white px-1.5 py-0.5 rounded font-extrabold">SCRATCHED</span>
+                  <span className="text-xs bg-zt-danger text-white px-1.5 py-0.5 rounded font-extrabold">SCRATCHED</span>
                 )}
               </td>
               {events.map((ev) => {
@@ -66,7 +66,7 @@ export default function LeaderboardTable({ division, events, standings, meet, hi
                     {b ? (
                       <>
                         <span className={`font-black ${tv ? 'text-lg' : 'text-sm'}`}>{b.points}</span>
-                        {tv && <span className="block text-[10px] text-zt-muted leading-none">{b.display}</span>}
+                        {tv && <span className="block text-xs text-zt-muted leading-none">{b.display}</span>}
                       </>
                     ) : (
                       <span className="text-zt-subtle">–</span>

@@ -425,3 +425,21 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Accessible accent text (Astra MS-04, 10/21). text-zt-primary is used for small labels and headings as well as
+   fills; every theme's --zt-primary-2 is the text-safe tint (>= 6.9:1 on its surface), so text takes that. The
+   secondary accent fails as text on steel and brass only, so those two get a dedicated text value. */
+[data-zt-theme] { --zt-secondary-text: var(--zt-secondary); }
+[data-zt-theme='steel'] { --zt-secondary-text: #60a5fa; }
+[data-zt-theme='brass'] { --zt-secondary-text: #f87171; }
+[data-zt-theme] .text-zt-primary { color: var(--zt-primary-2); }
+[data-zt-theme] .text-zt-secondary { color: var(--zt-secondary-text); }
+
+/* Light schemes (Astra MS-03): status badges and callouts use Tailwind emerald/amber/red text tuned for dark surfaces
+   (1.1-1.8:1 on the pale translucent fills). Swap to the dark shades of the same hue without touching the fills, so
+   the live / demo / warning distinctions stay. */
+:is([data-zt-theme='daylight'], [data-zt-theme='sandstone']) :is(.text-emerald-200, .text-emerald-300, .text-emerald-400) { color: #047857; }
+:is([data-zt-theme='daylight'], [data-zt-theme='sandstone']) :is(.text-amber-200, .text-amber-300, .text-amber-400) { color: #92400e; }
+:is([data-zt-theme='daylight'], [data-zt-theme='sandstone']) :is(.text-red-100, .text-red-200, .text-red-300, .text-red-400) { color: #991b1b; }
+:is([data-zt-theme='daylight'], [data-zt-theme='sandstone']) .text-sky-300 { color: #075985; }
+:is([data-zt-theme='daylight'], [data-zt-theme='sandstone']) .text-emerald-200\/80 { color: #047857; }

@@ -56,7 +56,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
                   key={item.href}
                   href={item.href}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase tracking-wide transition border ${
+                  className={`px-3 min-h-[44px] inline-flex items-center rounded-xl text-xs font-extrabold uppercase tracking-wide transition border ${
                     isActive
                       ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
                       : 'bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong'
@@ -73,7 +73,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
           <Link
             href="/join"
             aria-current={activeNav === 'join' ? 'page' : undefined}
-            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase tracking-wide transition border ${
+            className={`px-3 min-h-[44px] inline-flex items-center rounded-xl text-xs font-extrabold uppercase tracking-wide transition border ${
               activeNav === 'join'
                 ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
                 : 'bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong'
@@ -100,32 +100,32 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
               Your one stop for strongman: shows, registration, live scoring, and a gym directory.
             </p>
           </div>
-          <div className="flex flex-wrap gap-4 font-bold text-zt-text-2">
-            <Link href="/website" className="hover:text-zt-primary">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 font-bold text-zt-text-2">
+            <Link href="/website" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
               Home
             </Link>
-            <Link href="/how-it-works" className="hover:text-zt-primary">
+            <Link href="/how-it-works" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
               How It Works
             </Link>
-            <Link href="/shows" className="hover:text-zt-primary">
+            <Link href="/shows" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
               Shows
             </Link>
-            <Link href="/gyms" className="hover:text-zt-primary">
+            <Link href="/gyms" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
               Gyms
             </Link>
-            <Link href="/athletes" className="hover:text-zt-primary">
+            <Link href="/athletes" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
               Athletes
             </Link>
-            <Link href="/website/account" className="hover:text-zt-primary">
+            <Link href="/website/account" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
               Account
             </Link>
-            <Link href="/scorer" className="hover:text-zt-primary">
+            <Link href="/scorer" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
               Live Scoring Demo
             </Link>
-            <Link href="/legal/terms" className="hover:text-zt-primary">
+            <Link href="/legal/terms" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
               Terms
             </Link>
-            <Link href="/legal/privacy" className="hover:text-zt-primary">
+            <Link href="/legal/privacy" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
               Privacy
             </Link>
           </div>

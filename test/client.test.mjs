@@ -236,8 +236,8 @@ describe('meetApi.pullChanges / push*', () => {
     const { f, calls } = fakeFetch(() => ({ status: 200, json: [] }));
     const c = C.createSyncClient({ ...CFG, fetchImpl: f });
     const r = await A.pullChanges(c, UUID, null);
-    assert.deepEqual(r, { results: [], athletes: [], latestIso: null, meetUpdatedAt: null });
-    assert.ok(calls.some((k) => new URL(k.url).pathname === '/rest/v1/meets' && new URL(k.url).searchParams.get('select') === 'updated_at'));
+    assert.deepEqual(r, { results: [], athletes: [], latestIso: null, meetUpdatedAt: null, competitionStatus: null, resultsStatus: null });
+    assert.ok(calls.some((k) => new URL(k.url).pathname === '/rest/v1/meets' && new URL(k.url).searchParams.get('select') === 'updated_at,competition_status,results_status'));
     const u = new URL(calls[0].url);
     assert.equal(u.searchParams.get('server_at'), null);
     assert.equal(u.searchParams.get('updated_at'), null);
