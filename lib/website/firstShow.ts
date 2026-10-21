@@ -4,6 +4,27 @@
 // first real show.
 
 export type GuideImage = { src: string; alt: string; caption?: string };
+/** Intrinsic pixel size of each screenshot in public/guide, so the page reserves the space before the lazy image
+ *  loads (Astra HI-L4, 10/21). A test checks every referenced image has an entry. Recompute from the PNG headers
+ *  after recapturing a screenshot. */
+export const GUIDE_IMAGE_SIZES: Record<string, { width: number; height: number }> = {
+  '/guide/01-new-meet.png': { width: 2340, height: 545 },
+  '/guide/02-my-meets.png': { width: 2376, height: 1888 },
+  '/guide/03-meet.png': { width: 2304, height: 2066 },
+  '/guide/04-divisions.png': { width: 2304, height: 1375 },
+  '/guide/05-stations.png': { width: 2304, height: 2923 },
+  '/guide/06-events.png': { width: 2304, height: 1280 },
+  '/guide/07-event-form.png': { width: 2178, height: 2835 },
+  '/guide/08-athletes.png': { width: 2304, height: 2853 },
+  '/guide/09-listing.png': { width: 2304, height: 1901 },
+  '/guide/10-registrations.png': { width: 2304, height: 1177 },
+  '/guide/11-meet-day.png': { width: 2304, height: 2813 },
+  '/guide/12-show-card.png': { width: 2322, height: 556 },
+  '/guide/13-show-page.png': { width: 2376, height: 3150 },
+  '/guide/14-register.png': { width: 2376, height: 3150 },
+  '/guide/15-scoreboard.png': { width: 2160, height: 1350 },
+  '/guide/16-join.png': { width: 1080, height: 864 },
+};
 export type GuideLink = { label: string; href: string };
 export type FirstShowStep = {
   id: string;
@@ -23,7 +44,7 @@ export const FIRST_SHOW_INTRO = {
     'This walks one made-up meet, the Iron Harbor Classic, from a blank screen to meet day. Every screen below is the real one you will use, and each step says what it changes for athletes and spectators. Budget about half an hour the first time.',
   needs: [
     'A ZeroTacky account with Promoter ticked on the Account page. The meet belongs to that account, so it follows you from laptop to phone and only you can change it.',
-    'A laptop for the setup. Everything here also works from the phone scorer under Meet Setup, but the tabs are easier to read on a bigger screen.',
+    'A laptop for the setup. The phone scorer can build the meet itself under Meet Setup (divisions, stations, events, athletes), but Listing and Registrations live on My Meets only, and the tabs are easier to read on a bigger screen.',
     'On the day: one phone per judge and one for the pit crew. Volunteers do not need accounts; they join with a code you hand out in step 9.',
   ],
 };
@@ -38,7 +59,7 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
       'Create & Open Meet saves the meet to your account and opens it as eight numbered tabs. The order of the tabs is the order you fill them in.',
     ],
     publicSide:
-      'Nothing yet. A new meet starts unlisted, so it is not in Find a Show. Its page exists at the direct link, which is handy for checking your work before anyone else sees it.',
+      'Nothing yet. A new meet starts unlisted, so it is not in Find a Show and has no show page until you tick Listed in step 6. Its registration page and live scoreboard do open by direct link, which is handy for checking your work before anyone else sees it.',
     images: [{ src: '/guide/01-new-meet.png', alt: 'The New Meet form with a meet name, date and web address filled in' }],
     link: { label: 'My Meets', href: '/promoter' },
   },
@@ -52,7 +73,7 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
       'The tiebreaker only matters when two athletes finish on the same points. Available Gym Plates tells the pit crew calculator what it is allowed to use; turn off anything the gym does not own.',
     ],
     publicSide:
-      'The run order drives the Next Up list on the scoreboard and on volunteer phones. Plates and collars drive the loads the pit crew sees. None of this is shown to athletes directly.',
+      'The run order drives the Next Up queue on volunteer phones; the public scoreboard only shows who is Up Now on each station. Plates and collars drive the loads the pit crew sees. None of this is shown to athletes directly.',
     images: [{ src: '/guide/03-meet.png', alt: 'The Meet tab: name, date, slug, admin PIN, collar weight, run order, tiebreaker and gym plates' }],
   },
   {
@@ -89,7 +110,7 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
       'Events run in the order listed. Use the arrows on the cards if the running order changes.',
     ],
     publicSide:
-      'Implement names show as chips on the show card. The registration page lists every division with its target weight for each event, so athletes know what they are signing up to lift. The scoreboard gets one column per event.',
+      'Implement names show as chips on the show card. The registration page lists every division with its target weight for each event, so athletes know what they are signing up to lift. In the TV layout the scoreboard gets one column per event.',
     images: [
       { src: '/guide/06-events.png', alt: 'The Events tab listing five events with scoring type, time cap and load points' },
       { src: '/guide/07-event-form.png', alt: 'The event form for a log clean and press with per-division target weights' },
@@ -101,7 +122,7 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
     where: 'Tab 5, Athletes',
     body: [
       'There are two ways onto the roster. Athletes who register online land here when you accept them in step 8. Paper sign-ups and walk-ins you add yourself: Bulk Add takes one name per line into a division, Single Add takes one at a time.',
-      'Each athlete gets a lot number inside their division. That is the order for the first event, and the fallback order whenever two athletes are level.',
+      'Each athlete gets a lot number inside their division. That is the order for the first event, and the fallback order whenever two athletes are level. The one exception is Reverse Previous Event, which breaks a tie on the last event by overall points first and lot number second.',
     ],
     publicSide:
       'Roster names appear on the live scoreboard as soon as the meet is listed, with a dash in every event column until scores come in. Add only athletes you expect to show up.',
@@ -116,7 +137,7 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
       'Fill in the venue, the federation or format, the entry fee as you want it displayed, the deadline, an athlete cap and a contact. No money moves through the site; the fee line tells athletes how you want to be paid. Save Listing Settings writes it straight to the server.',
     ],
     publicSide:
-      'This tab is the public face of the show. The card in Find a Show, the show page and the top of the registration page are all built from it, and the capacity line counts accepted entries against your cap.',
+      'This tab is the public face of the show. The card in Find a Show, the show page and the top of the registration page are all built from it, and the capacity line counts every athlete on the roster against your cap, including the ones you added by hand.',
     images: [
       { src: '/guide/09-listing.png', alt: 'The Listing tab with the meet listed, registration open and venue details filled in' },
       { src: '/guide/12-show-card.png', alt: 'The resulting card in Find a Show with divisions and implements', caption: 'The card athletes see in Find a Show.' },
@@ -133,9 +154,9 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
       'Each entry shows up here as Pending with the division and the signed waiver. Accept adds the athlete to that division roster with the next lot number; Decline removes them. Emergency contacts and dates of birth are visible to you only.',
     ],
     publicSide:
-      'The athlete sees Pending, then Registered or Declined, on their My Meets page. Accepted entries count toward the capacity line on the registration page.',
+      'The athlete sees Pending, then Registered or Declined, on their My Meets page. An entry only takes a spot on the capacity line once you accept it and it joins the roster; pending entries do not count.',
     images: [
-      { src: '/guide/14-register.png', alt: 'The public registration form showing divisions with target weights and the athlete fields', caption: 'What the athlete fills in.' },
+      { src: '/guide/14-register.png', alt: 'The public registration form showing divisions with target weights and the athlete fields', caption: 'What the athlete fills in, once signed in. The account step comes first and is not pictured.' },
       { src: '/guide/10-registrations.png', alt: 'The Registrations tab with two pending entries and Accept and Decline buttons', caption: 'What you see.' },
     ],
   },
@@ -146,12 +167,12 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
     body: [
       'The six-character join code is how volunteer phones attach to your meet. Print Both gives you two QR codes for the gym wall: one for judges and pit crew, one for the live scoreboard. Rotate the code if it gets out to people who should not have it; phones signed in to your account are unaffected.',
       'Volunteers open Join a Meet, enter the code and pick a role. Athlete and Spectator are read-only. Pit crew get the loading calculator. Judge and Promoter also type the admin PIN from step 2.',
-      'The scorer link is for your own phone. The TV link is a full-width standings table for a laptop plugged into the gym TV.',
+      'Your own phone joins the same way: open the join link, pick Promoter and enter the admin PIN. Opening the scorer on its own shows whatever meet that phone had last, so always come in through the join link. The TV link is a full-width standings table for a laptop plugged into the gym TV.',
     ],
     publicSide:
       'The scoreboard link is public and needs no sign-in. Share it with spectators and put the TV layout on a screen in the gym.',
     images: [
-      { src: '/guide/11-meet-day.png', alt: 'The Meet Day tab with the join code, QR codes and the scorer, join and TV links' },
+      { src: '/guide/11-meet-day.png', alt: 'The Meet Day tab with the join code, QR codes and the join, scoreboard and TV links' },
       { src: '/guide/16-join.png', alt: 'The Join a Meet page with a code entered', caption: 'What a volunteer sees after scanning the join QR.' },
     ],
     link: { label: 'Join a Meet', href: '/join' },
@@ -161,12 +182,12 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
     title: 'The live scoreboard',
     where: 'zerotacky.com/m/your-slug',
     body: [
-      'As judges score, the board updates on every phone and TV that has it open. Each division is its own table, with one column per event and the total on the right. The strips at the top show who is up on each station, and the chips filter to one division.',
+      'As judges score, the board updates on every phone and TV that has it open. On a phone each division shows standing cards plus the current event. The TV layout, from the Phone/TV button in the header or the TV link on Meet Day, gives each division its own table with one column per event and the total on the right. In both, the strips at the top show who is up on each station and the chips filter to one division.',
       'When the last event is in, go back to the Listing tab and set competition status to Completed and results to Final. The show moves to Completed on every athlete\'s My Meets page and the standings stay up as the record of the day.',
     ],
     publicSide:
       'This is the page spectators share. It works on any phone with no app and no account, and it keeps the final standings after the show.',
-    images: [{ src: '/guide/15-scoreboard.png', alt: 'The live scoreboard with station strips, division filter chips and a per-event standings table' }],
+    images: [{ src: '/guide/15-scoreboard.png', alt: 'The live scoreboard in the TV layout with station strips, division filter chips and a per-event standings table', caption: 'The TV layout. On a phone the same board shows standing cards.' }],
     link: { label: 'See a demo board', href: '/m/keystone-fall-brawl-2026' },
   },
 ];

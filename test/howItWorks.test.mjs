@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { existsSync, openSync, readSync, closeSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = process.env.ZT_ROOT || '..';
@@ -57,6 +57,16 @@ describe('first-show guide', () => {
     for (const img of FS.FIRST_SHOW_STEPS.flatMap((s) => s.images)) {
       assert.ok(img.src.startsWith('/guide/') && img.alt, `bad image entry ${img.src}`);
       assert.ok(existsSync(fileURLToPath(new URL(`${ROOT}/public${img.src}`, import.meta.url))), `missing ${img.src}`);
+    }
+  });
+  test('every screenshot has its intrinsic size recorded, matching the PNG header', () => {
+    for (const step of FS.FIRST_SHOW_STEPS) for (const img of step.images) {
+      const size = FS.GUIDE_IMAGE_SIZES[img.src];
+      assert.ok(size, `no size for ${img.src}`);
+      const fd = openSync(fileURLToPath(new URL(`${ROOT}/public${img.src}`, import.meta.url)), 'r');
+      const head = Buffer.alloc(24); readSync(fd, head, 0, 24, 0); closeSync(fd);
+      assert.equal(head.readUInt32BE(16), size.width, `${img.src} width`);
+      assert.equal(head.readUInt32BE(20), size.height, `${img.src} height`);
     }
   });
   test('every link points at a route that exists', () => {

@@ -10,7 +10,7 @@ import { canonical } from '@/lib/website/seo';
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: 'Athletes — ZeroTacky',
+  title: 'Athletes | ZeroTacky',
   description: 'Strongman athletes, promoters, gym owners and trainers who chose to be listed on ZeroTacky.',
   ...canonical('/athletes'),   // filters are query strings; one indexable page
 };

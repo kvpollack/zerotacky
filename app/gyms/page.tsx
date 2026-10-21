@@ -11,7 +11,7 @@ import { cleanSearchParam, cleanStateParam } from '@/lib/website/athletes';
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: 'Gym Directory — ZeroTacky',
+  title: 'Gym Directory | ZeroTacky',
   description:
     'Find strongman and powerlifting gyms: logs, axles, yokes, Atlas stones, monolifts, calibrated plates, with day-pass and drop-in details.',
   ...canonical('/gyms'),

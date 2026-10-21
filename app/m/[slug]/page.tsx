@@ -8,7 +8,7 @@ import { canonical } from '@/lib/website/seo';
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const meta = await getScoreboardMeta(slug);
-  const title = meta ? `${meta.name} — Live Scoreboard — ZeroTacky` : 'Live Scoreboard — ZeroTacky';
+  const title = meta ? `${meta.name} — Live Scoreboard | ZeroTacky` : 'Live Scoreboard | ZeroTacky';
   const description = 'Standings, event results and who is up next, updating as judges score.';
   return {
     title,

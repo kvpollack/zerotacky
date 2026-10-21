@@ -4,7 +4,7 @@ import AccountClient from '@/components/website/AccountClient';
 import { NOINDEX } from '@/lib/website/seo';
 
 export const metadata: Metadata = {
-  title: 'Account — ZeroTacky',
+  title: 'Account | ZeroTacky',
   description: 'Sign in to ZeroTacky: compete, run shows and list your gym from one account.',
   ...NOINDEX,
 };

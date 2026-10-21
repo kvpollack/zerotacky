@@ -7,7 +7,7 @@ import { DEMO_SHOW_RECORDS } from '@/lib/website/fixtures';
 import { canonical } from '@/lib/website/seo';
 
 export const metadata: Metadata = {
-  title: 'Check Out a Demo Show — ZeroTacky',
+  title: 'Check Out a Demo Show | ZeroTacky',
   description:
     'Open the meet-day scorer loaded with a made-up strongman show: upcoming, in progress, or finished. Score it, edit it, and see how a meet runs.',
   ...canonical('/demo'),

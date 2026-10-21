@@ -13,7 +13,7 @@ interface PromoterMeetPageProps {
 export async function generateMetadata({ params }: PromoterMeetPageProps): Promise<Metadata> {
   const { serverId } = await params;
   void serverId; // resolved in the browser; the client sets document.title to the meet name once it loads
-  return { title: 'Manage Meet — ZeroTacky Promoter', ...NOINDEX };
+  return { title: 'Manage Meet | ZeroTacky Promoter', ...NOINDEX };
 }
 
 export default async function PromoterMeetDetailPage({ params }: PromoterMeetPageProps) {

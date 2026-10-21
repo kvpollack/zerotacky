@@ -51,12 +51,12 @@ export const HOW_IT_WORKS_TRACKS: HowTrack[] = [
       },
       {
         title: 'Build the meet',
-        body: 'On My Meets, New Meet asks for a name and a date and opens the meet as eight tabs: details and rules (admin PIN, run order, tiebreaker, gym plates), divisions, stations, events, athletes, listing, registrations and meet day. The phone scorer has the same steps under Meet Setup if you would rather build it there. The first-show guide walks through every tab with pictures.',
+        body: 'On My Meets, New Meet asks for a name and a date and opens the meet as eight tabs: details and rules (admin PIN, run order, tiebreaker, gym plates), divisions, stations, events, athletes, listing, registrations and meet day. The phone scorer can build the meet itself under Meet Setup, but listing it and approving registrations happen on My Meets. The first-show guide walks through every tab with pictures.',
         link: { label: 'Set up your first show', href: '/how-it-works/first-show' },
       },
       {
         title: 'List it and open entries',
-        body: 'A new meet starts unlisted: it has a web page, but only people with the link can see it. On the Listing tab you tick Listed to put it in Find a Show, fill in the venue and entry fee, and decide whether athletes can register right now, join a waitlist, or only enter on the day. Building on the phone instead? Publish from the scorer while signed in and the meet lands under My Meets the same way.',
+        body: 'A new meet starts unlisted: it is not in Find a Show and has no show page yet, though its registration page and scoreboard open for anyone with the direct link. On the Listing tab you tick Listed to put it in Find a Show, fill in the venue and entry fee, and decide whether athletes can register right now, join a waitlist, or only enter on the day. Building on the phone instead? Publish from the scorer while signed in and the meet lands under My Meets the same way.',
         link: { label: 'My Meets', href: '/promoter' },
       },
       {
@@ -202,7 +202,7 @@ export const HOW_IT_WORKS_FAQ: HowFaq[] = [
   {
     group: 'promoters',
     q: 'Join code or admin PIN: who gets which?',
-    a: 'Two codes, two jobs. The six-character join code gets a phone into your meet; give it to everyone helping, and to athletes or spectators who want the Next Up list. The admin PIN lets a joined phone score and change the setup; give it to judges and your co-promoters only. Both are on the Meet Day tab.',
+    a: 'Two codes, two jobs. The six-character join code gets a phone into your meet; give it to everyone helping, and to athletes or spectators who want the Next Up list. The admin PIN lets a joined phone score and change the setup; give it to judges and your co-promoters only. The join code is on the Meet Day tab; the PIN is set on the Meet tab.',
   },
   {
     group: 'promoters',
@@ -212,7 +212,7 @@ export const HOW_IT_WORKS_FAQ: HowFaq[] = [
   {
     group: 'promoters',
     q: 'How do athletes get on the roster?',
-    a: 'Two ways, and you can mix them. Open registration on the Listing tab and athletes register from the show page; each entry appears on your Registrations tab and you accept, decline or waitlist it. Or type athletes straight into the roster in Meet Setup, which is what most people do for a small show or for day-of entries.',
+    a: 'Two ways, and you can mix them. Open registration on the Listing tab and athletes register from the show page; each entry appears on your Registrations tab and you accept or decline it (Waitlist Only on the Listing tab holds new entries instead). Or type athletes straight into the roster in Meet Setup, which is what most people do for a small show or for day-of entries.',
   },
   {
     group: 'promoters',

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Radio, KeyRound, Copy, Unlink, UploadCloud, Link2, UserCheck } from 'lucide-react';
 import { copyText } from '@/lib/download';
 import { slugFor } from '@/hooks/useMeetSync';
+import { rememberReturnTo } from '@/components/auth/SignInForm';
 
 // Admin side of live sync: publish this meet from the signed-in account, show the join code and the public scoreboard
 // link, or join another phone's meet by code. Hidden when sync is not configured. The publish key UI was retired 10/21
@@ -107,7 +108,7 @@ export default function SyncPanel({ sync, meet }) {
             <div className="text-[10px] text-zt-muted">
               Sign in to publish this meet. Judges and pit crew do not sign in; they join with the code.
             </div>
-            <Link href="/website/account" className="text-[10px] font-bold uppercase text-zt-primary whitespace-nowrap">Sign in</Link>
+            <Link href="/website/account" onClick={() => rememberReturnTo('/scorer')} className="text-[10px] font-bold uppercase text-zt-primary whitespace-nowrap">Sign in</Link>
           </div>
         )}
         {!link && (

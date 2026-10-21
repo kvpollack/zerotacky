@@ -54,7 +54,6 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const scorerUrl = `${origin}/scorer`;
   const joinUrl = summary.joinCode
     ? `${origin}/join?code=${summary.joinCode}`
     : `${origin}/join`;
@@ -87,11 +86,13 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
 
   const copyRows = [
     {
+      // Astra HI-M3 (10/21): a bare /scorer link opens whatever meet that phone had last (a demo on a fresh phone). The
+      // admin phone attaches the same way volunteers do, with the join URL, then the Promoter role and the admin PIN.
       key: 'scorer',
-      label: 'Promoter / Admin Scorer App',
-      path: '/scorer',
-      fullUrl: scorerUrl,
-      help: 'Open on the admin phone to run Meet Setup, Judge Pad, Pit Crew, and Live Sync.',
+      label: 'Promoter / Admin Phone: Open This Meet',
+      path: summary.joinCode ? `/join?code=${summary.joinCode}` : '/join',
+      fullUrl: joinUrl,
+      help: 'Open on the admin phone, pick Promoter and enter the admin PIN from the Meet tab. The phone attaches to this meet; check the meet name before scoring. Opening /scorer on its own shows whatever meet that phone had last.',
     },
     {
       key: 'join',

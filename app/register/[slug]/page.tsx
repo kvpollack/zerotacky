@@ -50,7 +50,7 @@ async function meetExists(slug: string): Promise<boolean> {
 export async function generateMetadata({ params }: RegisterPageProps): Promise<Metadata> {
   const { slug } = await params;
   return {
-    title: 'Athlete Registration — ZeroTacky',
+    title: 'Athlete Registration | ZeroTacky',
     description: `Athlete registration and waiver for /register/${slug}.`,
     ...canonical(`/register/${slug}`),
   };

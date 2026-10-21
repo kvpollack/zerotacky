@@ -2,11 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Eye, Trophy } from 'lucide-react';
 import WebsiteShell from '@/components/website/WebsiteShell';
-import { FIRST_SHOW_INTRO, FIRST_SHOW_OUTRO, FIRST_SHOW_STEPS } from '@/lib/website/firstShow';
+import { FIRST_SHOW_INTRO, FIRST_SHOW_OUTRO, FIRST_SHOW_STEPS, GUIDE_IMAGE_SIZES } from '@/lib/website/firstShow';
 import { canonical } from '@/lib/website/seo';
 
 export const metadata: Metadata = {
-  title: 'Set up your first show — ZeroTacky',
+  title: 'Set up your first show | ZeroTacky',
   description:
     'A promoter walkthrough: one strongman meet from a blank screen to meet day, with a picture of every screen and what each step changes on the public side.',
   ...canonical('/how-it-works/first-show'),
@@ -78,6 +78,8 @@ export default function FirstShowPage() {
                   <img
                     src={img.src}
                     alt={img.alt}
+                    width={GUIDE_IMAGE_SIZES[img.src]?.width}
+                    height={GUIDE_IMAGE_SIZES[img.src]?.height}
                     loading="lazy"
                     decoding="async"
                     className="w-full h-auto rounded-xl border border-zt-border bg-zt-bg"

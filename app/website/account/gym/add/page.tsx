@@ -4,7 +4,7 @@ import AddGymClient from '@/components/website/AddGymClient';
 import { NOINDEX } from '@/lib/website/seo';
 
 export const metadata: Metadata = {
-  title: 'Add my gym — ZeroTacky',
+  title: 'Add my gym | ZeroTacky',
   description: 'List a strongman or powerlifting gym that is not in the ZeroTacky Gym Directory yet.',
   ...NOINDEX,
 };

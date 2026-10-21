@@ -6,7 +6,7 @@ import { HOW_IT_WORKS_TRACKS, HOW_IT_WORKS_FAQ, HOW_FAQ_GROUPS, HOW_IT_WORKS_ROA
 import { canonical } from '@/lib/website/seo';
 
 export const metadata: Metadata = {
-  title: 'How ZeroTacky Works — ZeroTacky',
+  title: 'How ZeroTacky Works | ZeroTacky',
   description:
     'How promoters build and run a meet, how athletes find, follow and register for shows, and how volunteers and judges join on meet day.',
   ...canonical('/how-it-works'),
