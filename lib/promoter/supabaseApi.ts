@@ -700,7 +700,13 @@ export function createSupabasePromoterApi(
           error: null,
         };
       } catch (e) {
-        return { data: null, error: errMessage(e) };
+        // 021: anon has no execute on zt_submit_registration, so a submission without a session comes back as a grant
+        // error; say what to do instead of quoting Postgres.
+        const msg = errMessage(e);
+        if (/permission denied for function zt_submit_registration/i.test(msg)) {
+          return { data: null, error: 'Sign in to your ZeroTacky account to register for this show.' };
+        }
+        return { data: null, error: msg };
       }
     },
   };

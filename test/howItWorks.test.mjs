@@ -68,3 +68,21 @@ describe('first-show guide', () => {
     assert.ok(!/All Out Strongfest|Power Plant|Pollack/.test(text));
   });
 });
+
+// Registration needs an account (Kurt 10/21). The copy and the grant must agree.
+describe('registration requires an account', () => {
+  test('FAQ says yes and points at the form', () => {
+    const f = H.HOW_IT_WORKS_FAQ.find((x) => /account to register/i.test(x.q));
+    assert.ok(f && /^Yes/.test(f.a), 'FAQ should say an account is needed');
+    const reg = FS.FIRST_SHOW_STEPS.find((s) => s.id === 'registrations');
+    assert.ok(reg.body.some((p) => /signs in or creates a free account/.test(p)));
+    assert.ok(!JSON.stringify([H.HOW_IT_WORKS_TRACKS, H.HOW_IT_WORKS_FAQ, FS.FIRST_SHOW_STEPS]).includes('do not need an account. Under'));
+  });
+  test('021 takes execute away from anon on zt_submit_registration', async () => {
+    const { readFileSync } = await import('node:fs');
+    const sql = readFileSync(fileURLToPath(new URL(`${ROOT}/supabase/021_registration_requires_account.sql`, import.meta.url)), 'utf8');
+    assert.ok(/revoke execute on function zt_submit_registration\(text, jsonb\) from public, anon;/.test(sql));
+    assert.ok(/grant execute on function zt_submit_registration\(text, jsonb\) to authenticated, service_role;/.test(sql));
+    assert.ok(/auth\.uid\(\) is null/.test(sql));
+  });
+});

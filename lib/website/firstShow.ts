@@ -129,11 +129,11 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
     title: 'Approve registrations',
     where: 'Tab 7, Registrations',
     body: [
-      'An athlete picks a division, gives a name, email, emergency contact and date of birth, signs the waiver and submits. They do not need an account. Under-18s are entered by a parent or guardian.',
+      'An athlete signs in or creates a free account on the form, picks a division, gives a name, email, emergency contact and date of birth, signs the waiver and submits. The entry is tied to their account, which is how it shows on their My Meets page. Under-18s are entered by a parent or guardian from the guardian\'s account.',
       'Each entry shows up here as Pending with the division and the signed waiver. Accept adds the athlete to that division roster with the next lot number; Decline removes them. Emergency contacts and dates of birth are visible to you only.',
     ],
     publicSide:
-      'The athlete sees Pending, then Registered or Declined, on their My Meets page if they signed in. Accepted entries count toward the capacity line on the registration page.',
+      'The athlete sees Pending, then Registered or Declined, on their My Meets page. Accepted entries count toward the capacity line on the registration page.',
     images: [
       { src: '/guide/14-register.png', alt: 'The public registration form showing divisions with target weights and the athlete fields', caption: 'What the athlete fills in.' },
       { src: '/guide/10-registrations.png', alt: 'The Registrations tab with two pending entries and Accept and Decline buttons', caption: 'What you see.' },

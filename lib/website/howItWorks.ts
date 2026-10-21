@@ -94,7 +94,7 @@ export const HOW_IT_WORKS_TRACKS: HowTrack[] = [
       },
       {
         title: 'Register',
-        body: 'Once entries are open, pick your division, give an emergency contact and your date of birth, and sign the waiver. You need to be 12 or older on the day of the meet. If you are under 18, a parent or guardian fills in their part of the form.',
+        body: 'Once entries are open, sign in or create a free account on the form itself, then pick your division, give an emergency contact and your date of birth, and sign the waiver. You need to be 12 or older on the day of the meet. If you are under 18, a parent or guardian creates the account and fills in their part of the form.',
       },
       {
         title: 'Track it on My Meets',
@@ -174,7 +174,7 @@ export const HOW_IT_WORKS_FAQ: HowFaq[] = [
   {
     group: 'athletes',
     q: 'Do I need an account to register for a show?',
-    a: 'No. The registration form works without one. If you sign in first, the entry lands on your My Meets page so you can see when the promoter accepts it, and after the meet it stays there as part of your record. You need to be 12 or older on the day of the meet; under 18, a parent or guardian completes their part of the waiver.',
+    a: 'Yes, a free one, and you can create it right on the registration form without leaving the page. The entry is tied to your account: it shows on My Meets so you can see when the promoter accepts it, and after the meet it stays there as part of your record. You need to be 12 or older on the day of the meet; under 18, a parent or guardian creates the account, registers you and completes their part of the waiver.',
     link: { label: 'Find a Show', href: '/shows' },
   },
   {
