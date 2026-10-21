@@ -127,6 +127,21 @@ export default function AccountClient() {
     const back = takeReturnTo();
     if (back && back !== '/website/account') router.replace(back);
   }, [auth.user, auth.recovery, router]);
+  // A dead email link (expired, or already used, often by a mail scanner or a second click) comes back from Supabase
+  // with ?error=...&error_code=otp_expired or the same in the hash. Say so instead of showing a bare sign-in form
+  // (Kurt 10/21, after clicking a stale confirmation email).
+  const [linkError, setLinkError] = useState<string | null>(null);
+  useEffect(() => {
+    const read = (q: string) => new URLSearchParams(q.replace(/^[#?]/, ''));
+    const h = read(window.location.hash), q = read(window.location.search);
+    const code = h.get('error_code') || q.get('error_code');
+    const desc = h.get('error_description') || q.get('error_description');
+    if (!code && !desc && !h.get('error') && !q.get('error')) return;
+    setLinkError(code === 'otp_expired'
+      ? 'That email link has expired or was already used. Request a new one below and open the newest email.'
+      : `That email link did not work${desc ? `: ${desc.replace(/\+/g, ' ')}` : ''}. Request a new one below.`);
+    window.history.replaceState(null, '', window.location.pathname);
+  }, []);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ text: string; tone: 'ok' | 'warn' } | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -242,6 +257,7 @@ export default function AccountClient() {
               promote, the meets you publish belong to this account and follow you from phone to phone.
             </p>
           </div>
+          {linkError && <Notice text={linkError} tone="warn" />}
           <SignInForm auth={auth} />
           <p className="text-[11px] text-zt-muted">
             Meet-day volunteers do not need an account: judges and pit crew join with the meet code on <Link href="/join" className="text-zt-primary font-bold underline">Join a Meet</Link>.
