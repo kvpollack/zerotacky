@@ -38,8 +38,8 @@ export default async function WebsiteLandingPage() {
             watch a live public scoreboard.
           </p>
           <p className="text-sm font-bold text-zt-text">
-            Everything an athlete does here is free, always: finding shows, registering, following your meets, your
-            profile and the live scoreboard. No premium tier for athletes, now or later.
+            Everything ZeroTacky offers athletes is free, always: finding shows, following your meets, your profile and
+            the live scoreboard. No premium tier for athletes, now or later.
           </p>
         </div>
 
