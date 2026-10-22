@@ -80,7 +80,7 @@ export const HOW_IT_WORKS_TRACKS: HowTrack[] = [
     kicker: 'Competing and watching',
     title: 'Athletes & Spectators',
     intro:
-      'Find a show, keep an eye on it, register when entries open, then follow the scoring live on the day. All of it is free for athletes, always. Shows marked DEMO are made up so you can see what a listing and a scoreboard look like; they do not take entries.',
+      'Find a show, keep an eye on it, register when entries open, then follow the scoring live on the day. ZeroTacky itself is free for athletes, always. Shows marked DEMO are made up so you can see what a listing and a scoreboard look like; they do not take entries.',
     steps: [
       {
         title: 'Find a show',
@@ -146,7 +146,7 @@ export const HOW_IT_WORKS_FAQ: HowFaq[] = [
   {
     group: 'everyone',
     q: 'Does it cost anything?',
-    a: 'Athlete features are free, always: finding shows, registering, My Meets, your profile and the live scoreboard. There is no premium tier for athletes and there will not be one. Running a meet and the gym directory are free right now too; if that ever changes for promoters or gyms, the price will be on the page before you use it.',
+    a: 'Athlete features on ZeroTacky are free, always: finding shows, My Meets, your profile and the live scoreboard. Show entry fees, if any, are set and collected by the promoter, not by us. There is no premium tier for athletes and there will not be one. Running a meet and the gym directory are free right now too; if that ever changes for promoters or gyms, the price will be on the page before you use it.',
   },
   {
     group: 'everyone',
