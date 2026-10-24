@@ -332,15 +332,6 @@ export default function App() {
       ? resolveAthleteHeightCallout(currentEvent, currentDivision.id, nextRunItem.athlete)
       : null;
 
-  const lockAndAdvance = () => {
-    if (!currentAthlete) return;
-    saveResultPatch(currentAthlete.id, { locked: true });
-    if (currentEvent?.lanes === 2 && lane2Athlete) {
-      saveResultPatch(lane2Athlete.id, { locked: true });
-    }
-    resetStopwatch();
-    if (nextRunItem) selectRunOrderItem(nextRunItem);
-  };
 
   const unlockScore = () => {
     if (!currentAthlete) return;
@@ -419,6 +410,33 @@ export default function App() {
       : nextEventInMeet && stationDivisions[0]
       ? { event: nextEventInMeet, division: stationDivisions[0] }
       : null;
+
+  // Last athlete in the group (Kurt, meet day 10/24): the lock button used to land back on the same athlete, so the
+  // judge had to pick the next group from the dropdown. Now it follows Pit Crew's nextSetup: next division on this
+  // station, or the station's next event from its first division. Clearing the athlete id lets the new run order pick.
+  const goToNextSetup = () => {
+    if (!nextSetup) return;
+    setStatusMenuOpen(false);
+    setPendingStatusAction(null);
+    if (nextSetup.event.id !== currentEvent?.id) {
+      setSelectedEventId(nextSetup.event.id);
+      setPitCrewCustomWeight('');
+    }
+    setSelectedDivisionId(nextSetup.division.id);
+    setSelectedAthleteId('');
+    setLane2AthleteId('');
+  };
+
+  const lockAndAdvance = () => {
+    if (!currentAthlete) return;
+    saveResultPatch(currentAthlete.id, { locked: true });
+    if (currentEvent?.lanes === 2 && lane2Athlete) {
+      saveResultPatch(lane2Athlete.id, { locked: true });
+    }
+    resetStopwatch();
+    if (nextRunItem) selectRunOrderItem(nextRunItem);
+    else goToNextSetup();
+  };
   const transitionRows =
     currentEvent && currentDivision && nextSetup
       ? buildTransitionDeltas(
@@ -506,6 +524,8 @@ export default function App() {
             lane2AthleteId={lane2AthleteId}
             lane2Result={lane2Result}
             lockAndAdvance={lockAndAdvance}
+        nextSetup={nextSetup}
+        goToNextSetup={goToNextSetup}
             meet={meet}
             nextRunItem={nextRunItem}
             pendingStatusAction={pendingStatusAction}

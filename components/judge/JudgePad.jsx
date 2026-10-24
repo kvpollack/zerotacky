@@ -25,8 +25,10 @@ export default function JudgePad({
   lane2AthleteId,
   lane2Result,
   lockAndAdvance,
+  goToNextSetup,
   meet,
   nextRunItem,
+  nextSetup,
   pendingStatusAction,
   resetStopwatch,
   results,
@@ -531,7 +533,7 @@ export default function JudgePad({
                   <Unlock className="w-4 h-4" aria-hidden="true" />
                   Unlock to Edit
                 </button>
-                {nextRunItem && (
+                {nextRunItem ? (
                   <button
                     type="button"
                     onClick={() => selectRunOrderItem(nextRunItem)}
@@ -540,7 +542,17 @@ export default function JudgePad({
                     Go to {nextRunItem.athlete.name}
                     <ArrowRight className="w-4 h-4" aria-hidden="true" />
                   </button>
-                )}
+                ) : nextSetup ? (
+                  <button
+                    type="button"
+                    onClick={goToNextSetup}
+                    className="w-full py-3 rounded-xl bg-zt-primary/15 border border-zt-primary/50 text-zt-primary font-extrabold text-sm flex items-center justify-center gap-2"
+                  >
+                    Go to {nextSetup.division.name}
+                    {nextSetup.event.id !== currentEvent.id ? ` (${nextSetup.event.name})` : ''}
+                    <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                ) : null}
               </div>
             ) : (
               <button
@@ -550,13 +562,21 @@ export default function JudgePad({
               >
                 <span className="flex items-center gap-2">
                   <Lock className="w-4 h-4" aria-hidden="true" />
-                  Lock Score &amp; Advance to Next Athlete
+                  {nextRunItem
+                    ? 'Lock Score & Advance to Next Athlete'
+                    : nextSetup
+                    ? 'Lock Score & Advance to Next Group'
+                    : 'Lock Score'}
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />
                 </span>
-                <span className="text-[11px] font-bold opacity-80">
+                <span className="text-xs font-bold opacity-80">
                   {nextRunItem
                     ? `Up next: ${nextRunItem.athlete.name}`
-                    : 'Last athlete in run order — locks score only'}
+                    : nextSetup
+                    ? `Up next: ${nextSetup.division.name}${
+                        nextSetup.event.id !== currentEvent.id ? ` on ${nextSetup.event.name}` : ''
+                      }`
+                    : 'Last athlete of the meet on this station'}
                 </span>
               </button>
             )}
