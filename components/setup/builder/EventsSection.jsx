@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, Edit3, Plus, Trash2 } from 'lucide-react';
 import EventForm from './EventForm';
 
@@ -20,12 +20,20 @@ export default function EventsSection({
   removeEvent,
   reorderEvents,
   onEditingChange, // optional: (open: boolean) => void, true while an EventForm draft is open (promoter dirty bar, Astra M2)
+  closeFormSignal, // optional: a counter; each change closes any open EventForm draft (promoter bar's Discard draft, 10/26)
+  defaultCollarWeightPerPair = 0, // meet.collarWeightPerPair, prefilled on new events (collars are per event, 10/26)
 }) {
   const [editingId, setEditingId] = useState(null); // 'NEW' | event.id | null
 
   useEffect(() => {
     if (onEditingChange) onEditingChange(editingId !== null);
   }, [editingId, onEditingChange]);
+  const lastCloseSignal = useRef(closeFormSignal);
+  useEffect(() => {
+    if (closeFormSignal === lastCloseSignal.current) return;
+    lastCloseSignal.current = closeFormSignal;
+    setEditingId(null);
+  }, [closeFormSignal]);
   const [armedDeleteId, setArmedDeleteId] = useState(null);
 
   const sortedEvents = [...events].sort((a, b) => a.eventNumber - b.eventNumber);
@@ -58,6 +66,7 @@ export default function EventsSection({
       {editingId === 'NEW' && (
         <EventForm
           divisions={sortedDivisions}
+          defaultCollarWeightPerPair={defaultCollarWeightPerPair}
           initialEvent={null}
           onSave={(payload) => {
             addEvent(payload);
@@ -180,6 +189,7 @@ export default function EventsSection({
                 {isEditing && (
                   <EventForm
                     divisions={sortedDivisions}
+                    defaultCollarWeightPerPair={defaultCollarWeightPerPair}
                     initialEvent={ev}
                     onSave={(patch) => {
                       updateEvent(ev.id, patch);

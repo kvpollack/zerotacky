@@ -286,6 +286,18 @@ describe('calculatePlateLoading', () => {
     assert.deepEqual(r.platesPerPoint, [{ weight: 100, count: 1 }, { weight: 55, count: 1 }, { weight: 15, count: 1 }, { weight: 5, count: 1 }, { weight: 2.5, count: 1 }]);
     assert.equal(r.remainderUnloadedTotal, 0); assert.equal(r.warningMessage, undefined);
   });
+  // 10/26: collars are per event; the meet value is only the fallback for events built before that.
+  test('event collar weight overrides the meet default; 0 on the event means no collars even when the meet says 5', () => {
+    const base = { loadingPoints: 2, implementEmptyWeight: 45, divisionWeights: { d1: 405 } };
+    const own = calculatePlateLoading(ev({ ...base, collarWeightPerPair: 10 }), 'd1', PL, 5);
+    assert.equal(own.collarWeightApplied, 10); assert.equal(own.weightPerLoadingPoint, 175);
+    const none = calculatePlateLoading(ev({ ...base, collarWeightPerPair: 0 }), 'd1', PL, 5);
+    assert.equal(none.collarWeightApplied, 0); assert.equal(none.weightPerLoadingPoint, 180);
+    const legacy = calculatePlateLoading(ev(base), 'd1', PL, 5);
+    assert.equal(legacy.collarWeightApplied, 5);
+    const pin = calculatePlateLoading(ev({ loadingPoints: 1, implementEmptyWeight: 20, divisionWeights: { d1: 120 }, collarWeightPerPair: 10 }), 'd1', PL, 5);
+    assert.equal(pin.collarWeightApplied, 0);   // 1-point loads never take collars
+  });
   test('4 points per_hand: farmers, target is per hand, total doubles', () => {
     const r = calculatePlateLoading(ev({ loadingPoints: 4, weightEntryMode: 'per_hand', implementEmptyWeight: 25, divisionWeights: { d1: 260 } }), 'd1', PL, 5);
     assert.equal(r.totalSystemWeight, 520); assert.equal(r.weightPerLoadingPoint, 115);

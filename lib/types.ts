@@ -27,7 +27,7 @@ export interface Meet {
   runOrderMethod: RunOrderMethod;
   tiebreakerRule: TiebreakerRule;
   availablePlates: number[];
-  collarWeightPerPair: number;
+  collarWeightPerPair: number;   // default for new events; each event carries its own (EventDef.collarWeightPerPair)
   adminPin?: string;
   isDemo?: boolean;
   stations?: Station[];
@@ -81,6 +81,9 @@ export interface EventDef {
   weightEntryMode: WeightEntryMode;
   weightIsAddedPlatesOnly?: boolean;
   implementEmptyWeight: number;
+  // Collar weight per pair for this event's 2- and 4-point loads (10/26, Kurt 10/21: collars differ per bar, not per
+  // meet). Absent on events built before this shipped: the meet-level value is the fallback.
+  collarWeightPerPair?: number;
   implementCount?: number;
   divisionWeights: Record<string, number>;
   hasTrumpWeight?: boolean;

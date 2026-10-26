@@ -197,6 +197,16 @@ describe('events CRUD & reorder', () => {
     assert.equal(updatedEv2.pitCrewCallout.byDivision['sf-g1'].stats.length, 2);
   });
 
+  test('addEvent prefills collarWeightPerPair from the meet default; updateEvent keeps an explicit 0 (10/26)', () => {
+    let s = MB.createBlankMeet('Test', '2026-11-01');
+    s = { ...s, meet: { ...s.meet, collarWeightPerPair: 5 } };
+    s = MB.addEvent(s, { id: 'e1', name: 'Log', scoringType: 'reps' });
+    assert.equal(s.events[0].collarWeightPerPair, 5);
+    s = MB.updateEvent(s, 'e1', { collarWeightPerPair: 0 });
+    assert.equal(s.events[0].collarWeightPerPair, 0);
+    s = MB.updateEvent(s, 'e1', { collarWeightPerPair: -3 });
+    assert.equal(s.events[0].collarWeightPerPair, 0);   // never negative
+  });
   test('reorderEvents renumbers eventNumber 1..n', () => {
     let s = MB.createBlankMeet('Test', '2026-11-01');
     s = MB.addEvent(s, { id: 'e1', name: 'Log', scoringType: 'reps' });

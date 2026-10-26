@@ -1,10 +1,11 @@
 import type { EventDef, PlateLoad, PlateStack } from '../types';
 
+// `collarWeightPerPair` is the meet-level fallback; an event that carries its own collar weight wins.
 export function calculatePlateLoading(
   event: EventDef,
   divisionId: string,
   availablePlates: number[],
-  collarWeightPerPair = 0,
+  meetCollarWeightPerPair = 0,
   overrideTargetWeight?: number | string,
   useLightTier = false
 ): PlateLoad {
@@ -31,6 +32,9 @@ export function calculatePlateLoading(
     };
   }
 
+  const collarWeightPerPair = typeof event.collarWeightPerPair === 'number' && Number.isFinite(event.collarWeightPerPair)
+    ? Math.max(0, event.collarWeightPerPair)
+    : Math.max(0, meetCollarWeightPerPair);
   let weightToLoadAcrossPoints = 0;
   let pointsDivisor = event.loadingPoints;
   let callOutLabel = 'Per Side';

@@ -9,7 +9,8 @@ const SCORING_OPTIONS = [
   { id: 'time_or_implements', label: 'Time or Implements', help: 'Stones/Medley: fastest all-in time, or count + split.' },
 ];
 
-export default function EventForm({ divisions, initialEvent, onSave, onCancel }) {
+// `defaultCollarWeightPerPair`: the meet's default, prefilled on a new event (collars are per event since 10/26).
+export default function EventForm({ divisions, initialEvent, onSave, onCancel, defaultCollarWeightPerPair = 0 }) {
   const ev = initialEvent || {};
   const [name, setName] = useState(ev.name || '');
   const [scoringType, setScoringType] = useState(ev.scoringType || 'reps');
@@ -18,6 +19,7 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel })
   const [loadingPoints, setLoadingPoints] = useState(ev.loadingPoints ?? 2);
   const [weightEntryMode, setWeightEntryMode] = useState(ev.weightEntryMode || 'total');
   const [implementEmptyWeight, setImplementEmptyWeight] = useState(ev.implementEmptyWeight ?? 0);
+  const [collarWeightPerPair, setCollarWeightPerPair] = useState(ev.collarWeightPerPair ?? defaultCollarWeightPerPair ?? 0);
   const [weightIsAddedPlatesOnly, setWeightIsAddedPlatesOnly] = useState(!!ev.weightIsAddedPlatesOnly);
   const [fixedImplementDescription, setFixedImplementDescription] = useState(ev.fixedImplementDescription || '');
 
@@ -112,6 +114,7 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel })
       loadingPoints: Number(loadingPoints),
       weightEntryMode: Number(loadingPoints) === 4 ? weightEntryMode : 'total',
       implementEmptyWeight: Number(implementEmptyWeight) || 0,
+      collarWeightPerPair: Number(loadingPoints) === 2 || Number(loadingPoints) === 4 ? Math.max(0, Number(collarWeightPerPair) || 0) : 0,
       weightIsAddedPlatesOnly,
       fixedImplementDescription: Number(loadingPoints) === 0 ? fixedImplementDescription.trim() : undefined,
       divisionWeights: cleanWeights,
@@ -252,6 +255,20 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel })
               className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-lg px-2.5 py-1.5 text-xs font-bold"
             />
           </div>
+          {(Number(loadingPoints) === 2 || Number(loadingPoints) === 4) && (
+            <div>
+              <label className="text-[10px] font-extrabold uppercase text-zt-muted">Collar Weight / Pair (lb)</label>
+              <input
+                type="number"
+                min="0"
+                step="0.5"
+                value={collarWeightPerPair}
+                onChange={(e) => setCollarWeightPerPair(e.target.value)}
+                className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-lg px-2.5 py-1.5 text-xs font-bold"
+              />
+              <p className="text-[10px] text-zt-muted mt-0.5">Deducted once per load, per sleeve pair. 0 if this bar runs no collars.</p>
+            </div>
+          )}
           <label className="flex items-center gap-2 text-xs font-bold text-zt-text py-1.5">
             <input
               type="checkbox"
