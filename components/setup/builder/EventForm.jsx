@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { loadingTakesCollars } from '@/lib/engine/plates';
 
 const SCORING_OPTIONS = [
   { id: 'reps', label: 'Reps', help: 'Most reps in time cap; optional Heavy/Light trump bar.' },
@@ -20,6 +21,8 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
   const [weightEntryMode, setWeightEntryMode] = useState(ev.weightEntryMode || 'total');
   const [implementEmptyWeight, setImplementEmptyWeight] = useState(ev.implementEmptyWeight ?? 0);
   const [collarWeightPerPair, setCollarWeightPerPair] = useState(ev.collarWeightPerPair ?? defaultCollarWeightPerPair ?? 0);
+  // Astra PS-01: collars only on two sleeves or four sleeves per hand; a four-post total load (yoke) never deducts them.
+  const takesCollars = loadingTakesCollars({ loadingPoints: Number(loadingPoints), weightEntryMode: Number(loadingPoints) === 4 ? weightEntryMode : 'total' });
   const [weightIsAddedPlatesOnly, setWeightIsAddedPlatesOnly] = useState(!!ev.weightIsAddedPlatesOnly);
   const [fixedImplementDescription, setFixedImplementDescription] = useState(ev.fixedImplementDescription || '');
 
@@ -114,7 +117,7 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
       loadingPoints: Number(loadingPoints),
       weightEntryMode: Number(loadingPoints) === 4 ? weightEntryMode : 'total',
       implementEmptyWeight: Number(implementEmptyWeight) || 0,
-      collarWeightPerPair: Number(loadingPoints) === 2 || Number(loadingPoints) === 4 ? Math.max(0, Number(collarWeightPerPair) || 0) : 0,
+      collarWeightPerPair: takesCollars ? Math.max(0, Number(collarWeightPerPair) || 0) : 0,
       weightIsAddedPlatesOnly,
       fixedImplementDescription: Number(loadingPoints) === 0 ? fixedImplementDescription.trim() : undefined,
       divisionWeights: cleanWeights,
@@ -255,7 +258,7 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
               className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-lg px-2.5 py-1.5 text-xs font-bold"
             />
           </div>
-          {(Number(loadingPoints) === 2 || Number(loadingPoints) === 4) && (
+          {takesCollars && (
             <div>
               <label className="text-[10px] font-extrabold uppercase text-zt-muted">Collar Weight / Pair (lb)</label>
               <input

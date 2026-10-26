@@ -3,6 +3,7 @@
 // with the same engine the board uses (via standingsAdapter), never stored or re-implemented.
 
 import type { AthleteRow, DivisionRow, EventRow, MeetRow, ResultRow } from '../sync/mapping';
+import { scoringField } from '@/lib/engine/scoring';
 import { rowsToState } from '../sync/mapping';
 import { buildDivisionResultsView } from './standingsAdapter';
 import type { PublicShowRecord } from './types';
@@ -85,7 +86,10 @@ export function buildShowHistoryEntry(row: ShowHistoryRow, bundle: ShowHistoryBu
     suppliedDivisionPlacements: undefined,
   } as unknown as PublicShowRecord;
   const view = buildDivisionResultsView(show, division);
-  const active = view.standings.filter((s) => s.status !== 'withdrawn');
+  // Astra PS-07: the denominator is the points field the engine ranked (scratches with no score excluded, mid-meet
+  // withdrawals kept), so a placing can never read "3rd of 2".
+  const divisionAthletes = state.athletes.filter((a) => a.divisionId === division.id);
+  const field = scoringField(divisionAthletes, state.results, state.events);
   const mine = view.standings.find((s) => s.athleteId === athlete.id);
   const scored = mine ? Object.keys(mine.eventBreakdown).length : 0;
   const withdrawn = athlete.status === 'withdrawn';
@@ -101,7 +105,7 @@ export function buildShowHistoryEntry(row: ShowHistoryRow, bundle: ShowHistoryBu
     athleteName: athlete.name,
     place: mine && !withdrawn && scored > 0 ? mine.overallPlace : null,
     isTied: Boolean(mine?.isTiedOverall),
-    fieldSize: active.length,
+    fieldSize: field.length,
     totalPoints: mine?.totalPoints ?? 0,
     eventWins: mine?.eventWins ?? 0,
     eventCount: state.events.length,

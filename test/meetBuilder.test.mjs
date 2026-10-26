@@ -206,6 +206,15 @@ describe('events CRUD & reorder', () => {
     assert.equal(s.events[0].collarWeightPerPair, 0);
     s = MB.updateEvent(s, 'e1', { collarWeightPerPair: -3 });
     assert.equal(s.events[0].collarWeightPerPair, 0);   // never negative
+    // PS-09: strings coerce; PS-01: a four-post total load or a pin stores 0 for collars
+    s = MB.updateEvent(s, 'e1', { collarWeightPerPair: '7.5' });
+    assert.equal(s.events[0].collarWeightPerPair, 7.5);
+    s = MB.updateEvent(s, 'e1', { loadingPoints: 4, weightEntryMode: 'total' });
+    assert.equal(s.events[0].collarWeightPerPair, 0);
+    s = MB.updateEvent(s, 'e1', { loadingPoints: 4, weightEntryMode: 'per_hand', collarWeightPerPair: 5 });
+    assert.equal(s.events[0].collarWeightPerPair, 5);
+    s = MB.updateEvent(s, 'e1', { loadingPoints: 1 });
+    assert.equal(s.events[0].collarWeightPerPair, 0);
   });
   test('reorderEvents renumbers eventNumber 1..n', () => {
     let s = MB.createBlankMeet('Test', '2026-11-01');

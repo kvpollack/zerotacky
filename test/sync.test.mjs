@@ -38,6 +38,10 @@ describe('mapping round-trips', () => {
     assert.equal(M.rowToEvent({ ...row, meet_id: 'm' }).collarWeightPerPair, 7.5);
     const legacy = M.rowToEvent({ ...M.eventToRow(P.getInitialSeedState('york-iron-2026').events[1]), meet_id: 'm' });
     assert.equal(legacy.collarWeightPerPair, undefined);   // pre-10/26 rows: engine falls back to the meet value
+    assert.equal('collarWeightPerPair' in legacy, false);
+    // PS-09: a string in config comes back numeric; junk is dropped (treated as absent)
+    assert.equal(M.rowToEvent({ ...row, meet_id: 'm', config: { ...row.config, collarWeightPerPair: '10' } }).collarWeightPerPair, 10);
+    assert.equal('collarWeightPerPair' in M.rowToEvent({ ...row, meet_id: 'm', config: { ...row.config, collarWeightPerPair: 'abc' } }), false);
   });
   test('result payload excludes ids/locked/updatedAt and row carries ISO time + device', () => {
     const row = M.resultToRow({ id: 'e_a', eventId: 'e', athleteId: 'a', reps: 3, locked: true, updatedAt: 1760000000000 }, 'm1', 'phone-7');

@@ -234,7 +234,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
             key={d.id}
             currentDivision={d}
             currentEvent={ev}
-            eventScores={scoreSingleEvent(ev, divAth, state.results)}
+            eventScores={scoreSingleEvent(ev, divAth, state.results, state.events)}
             meet={state.meet}
             overallStandings={calculateDivisionStandings(d, divAth, state.events, state.results, state.meet.tiebreakerRule)}
           />

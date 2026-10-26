@@ -30,7 +30,7 @@ export function buildDivisionResultsView(
       (r) => r.eventId === ev.id && divisionAthletes.some((a) => a.id === r.athleteId)
     );
     if (hasAnyResult) {
-      eventScoreboards[ev.id] = scoreSingleEvent(ev, divisionAthletes, results);
+      eventScoreboards[ev.id] = scoreSingleEvent(ev, divisionAthletes, results, sortedEvents);
     } else {
       eventScoreboards[ev.id] = [];
     }

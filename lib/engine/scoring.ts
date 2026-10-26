@@ -9,45 +9,63 @@ import type {
 } from '../types';
 
 // A result that scored something in some event. Used to decide whether a withdrawn athlete stays in the points field.
-export function resultHasScore(r: Result): boolean {
+// With the event in hand this is exactly "not a zero" under that event's rules (Astra PS-02: a 61 s time in a 60 s
+// time-or-distance event with 0 ft is a zero, not a score). Without the event, the raw-field heuristic is the fallback.
+export function resultHasScore(r: Result, event?: EventDef): boolean {
   if (r.didNotStart) return false;
-  if ((r.reps ?? 0) > 0 || (r.timeSeconds ?? 0) > 0 || (r.distanceFeet ?? 0) > 0) return true;
-  if ((r.implementsCompleted ?? 0) > 0 || (r.maxWeightLbs ?? 0) > 0) return true;
-  return Object.values(r.risingBarAttempts ?? {}).some((st) => st === 'good');
+  if (!event) {
+    if ((r.reps ?? 0) > 0 || (r.timeSeconds ?? 0) > 0 || (r.distanceFeet ?? 0) > 0) return true;
+    if ((r.implementsCompleted ?? 0) > 0 || (r.maxWeightLbs ?? 0) > 0) return true;
+    return Object.values(r.risingBarAttempts ?? {}).some((st) => st === 'good');
+  }
+  const time = r.timeSeconds ?? 0;
+  const finished = time > 0 && time <= event.timeCapSeconds;
+  switch (event.scoringType) {
+    case 'reps': return (r.reps ?? 0) > 0;
+    case 'time_or_distance': return finished || (r.distanceFeet ?? 0) > 0;
+    case 'time_or_implements': return finished || (r.implementsCompleted ?? 0) > 0;
+    case 'max_weight': return effectiveMaxWeight(r) > 0;
+    default: return false;
+  }
+}
+
+function effectiveMaxWeight(r: Result | undefined): number {
+  if (!r || r.didNotStart) return 0;
+  if (r.maxWeightLbs && r.maxWeightLbs > 0) return r.maxWeightLbs;
+  if (r.risingBarAttempts) {
+    const goodWeights = Object.entries(r.risingBarAttempts)
+      .filter(([, status]) => status === 'good')
+      .map(([w]) => Number(w));
+    return goodWeights.length > 0 ? Math.max(...goodWeights) : 0;
+  }
+  return 0;
 }
 
 // Points field for a division (Strongfest 10/26): an athlete scratched before scoring anything does not count toward
 // N, so the rest of the group is not handed an extra point per event. An athlete who withdraws mid-meet keeps the
-// field size they competed in (their earlier placings stand, later events score zero).
-export function scoringField(divisionAthletes: Athlete[], results: Result[]): Athlete[] {
+// field size they competed in (their earlier placings stand, later events score zero). Pass `events` so each result
+// is judged by its own event's rules (PS-02); results for an unknown event fall back to the heuristic.
+export function scoringField(divisionAthletes: Athlete[], results: Result[], events?: EventDef[]): Athlete[] {
+  const byId = new Map((events ?? []).map((e) => [e.id, e] as const));
   return divisionAthletes.filter(
-    (a) => a.status !== 'withdrawn' || results.some((r) => r.athleteId === a.id && resultHasScore(r))
+    (a) => a.status !== 'withdrawn' || results.some((r) => r.athleteId === a.id && resultHasScore(r, byId.get(r.eventId)))
   );
 }
 
 export function scoreSingleEvent(
   event: EventDef,
   divisionAthletes: Athlete[],
-  results: Result[]
+  results: Result[],
+  allEvents?: EventDef[]   // the meet's events, so the points field judges every result by its own event (PS-02)
 ): ScoredRow[] {
-  const field = new Set(scoringField(divisionAthletes, results).map((a) => a.id));
+  const field = new Set(scoringField(divisionAthletes, results, allEvents ?? [event]).map((a) => a.id));
   const N = field.size;
   const resultMap = new Map<string, Result>();
   results.forEach((r) => {
     if (r.eventId === event.id) resultMap.set(r.athleteId, r);
   });
 
-  const getEffectiveMaxWeight = (r: Result | undefined) => {
-    if (!r || r.didNotStart) return 0;
-    if (r.maxWeightLbs && r.maxWeightLbs > 0) return r.maxWeightLbs;
-    if (r.risingBarAttempts) {
-      const goodWeights = Object.entries(r.risingBarAttempts)
-        .filter(([, status]) => status === 'good')
-        .map(([w]) => Number(w));
-      return goodWeights.length > 0 ? Math.max(...goodWeights) : 0;
-    }
-    return 0;
-  };
+  const getEffectiveMaxWeight = effectiveMaxWeight;
 
   const evaluated = divisionAthletes.map((athlete) => {
     const r = resultMap.get(athlete.id);
@@ -205,6 +223,9 @@ export function calculateDivisionStandings(
 ): StandingRow[] {
   const sortedEvents = [...events].sort((a, b) => a.eventNumber - b.eventNumber);
   const finalEventId = sortedEvents[sortedEvents.length - 1]?.id;
+  // Astra PS-03: the overall table ranks the same field the events score. Scratches with no score sit below it at
+  // N+1 with 0 points and are never shown tied with an active athlete.
+  const field = new Set(scoringField(divisionAthletes, allResults, sortedEvents).map((a) => a.id));
 
   const standingMap = new Map<string, StandingRow>();
   divisionAthletes.forEach((a) => {
@@ -225,7 +246,7 @@ export function calculateDivisionStandings(
     const evHasAnyResult = allResults.some((r) => r.eventId === ev.id);
     if (!evHasAnyResult) continue;
 
-    const scored = scoreSingleEvent(ev, divisionAthletes, allResults);
+    const scored = scoreSingleEvent(ev, divisionAthletes, allResults, sortedEvents);
     for (const row of scored) {
       const entry = standingMap.get(row.athleteId);
       if (!entry) continue;
@@ -240,7 +261,9 @@ export function calculateDivisionStandings(
     }
   }
 
-  const rows = Array.from(standingMap.values());
+  const allRows = Array.from(standingMap.values());
+  const rows = allRows.filter((r) => field.has(r.athleteId));
+  const scratches = allRows.filter((r) => !field.has(r.athleteId));
   rows.sort((a, b) => {
     if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
     if (tiebreakerRule === 'event_wins') {
@@ -267,6 +290,11 @@ export function calculateDivisionStandings(
       row.isTiedOverall = false;
     }
   });
+  for (const s of scratches) {
+    s.overallPlace = rows.length + 1;
+    s.isTiedOverall = false;
+    s.totalPoints = 0;
+  }
 
-  return rows;
+  return [...rows, ...scratches.sort((a, b) => a.athleteName.localeCompare(b.athleteName))];
 }

@@ -15,6 +15,7 @@ import type {
   Station,
   WeightEntryMode,
 } from './types';
+import { loadingTakesCollars, normalizeCollarWeight } from './engine/plates';
 import { ALL_POSSIBLE_PLATES } from './constants';
 import { getInitialSeedState, MEET_PRESETS } from './presets';
 import { normalizeEventOrder } from './engine/eventOrder';
@@ -208,7 +209,7 @@ export function normalizeState(raw: unknown): AppState {
         loadingPoints,
         weightEntryMode,
         implementEmptyWeight: Number(e.implementEmptyWeight) || 0,
-        collarWeightPerPair: e.collarWeightPerPair === undefined || e.collarWeightPerPair === null ? undefined : Math.max(0, Number(e.collarWeightPerPair) || 0),
+        collarWeightPerPair: loadingTakesCollars({ loadingPoints, weightEntryMode }) ? normalizeCollarWeight(e.collarWeightPerPair) : (e.collarWeightPerPair === undefined || e.collarWeightPerPair === null ? undefined : 0),
         divisionWeights:
           e.divisionWeights && typeof e.divisionWeights === 'object'
             ? { ...(e.divisionWeights as Record<string, number>) }
@@ -448,7 +449,9 @@ function sanitizeEventFields(
     lanes: Number(merged.lanes) === 2 ? 2 : 1,
     timeCapSeconds: Number(merged.timeCapSeconds) > 0 ? Number(merged.timeCapSeconds) : 60,
     implementEmptyWeight: Number(merged.implementEmptyWeight) || 0,
-    collarWeightPerPair: merged.collarWeightPerPair === undefined || merged.collarWeightPerPair === null ? undefined : Math.max(0, Number(merged.collarWeightPerPair) || 0),
+    // Collars only exist on 2-sleeve and 4-sleeve per-hand loads (PS-01); other modes store 0 so the engine, form and
+    // pit crew agree. Absent stays absent (legacy events fall back to the meet default).
+    collarWeightPerPair: loadingTakesCollars({ loadingPoints, weightEntryMode }) ? normalizeCollarWeight(merged.collarWeightPerPair) : (merged.collarWeightPerPair === undefined || merged.collarWeightPerPair === null ? undefined : 0),
     divisionWeights: { ...(merged.divisionWeights ?? {}) },
   };
 

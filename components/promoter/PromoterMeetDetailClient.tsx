@@ -777,11 +777,11 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center justify-end gap-2.5 max-w-full">
             {eventFormOpen && activeTab !== 'events' && (
               <button
                 type="button"
-                onClick={() => setActiveTab('events')}
+                onClick={() => requestTab('events')}
                 className="px-4 py-2.5 rounded-xl bg-zt-surface-2 border border-zt-border-strong text-zt-text-2 font-extrabold text-xs uppercase"
               >
                 Go to Events
@@ -800,7 +800,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             {listingDirty && activeTab !== 'listing' && (
               <button
                 type="button"
-                onClick={() => setActiveTab('listing')}
+                onClick={() => requestTab('listing')}
                 className="px-4 py-2.5 rounded-xl bg-zt-surface-2 border border-zt-border-strong text-zt-text-2 font-extrabold text-xs uppercase"
               >
                 Go to Listing
