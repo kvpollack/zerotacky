@@ -5,6 +5,7 @@ import WebsiteThemeFrame from './WebsiteThemeFrame';
 import WebsiteThemeControls from './WebsiteThemeControls';
 import WebsiteAccountChip from './WebsiteAccountChip';
 import PromoterNavLink from './PromoterNavLink';
+import NavActiveScroll from './NavActiveScroll';
 import { readSyncEnv } from '@/lib/sync/client';
 
 interface WebsiteShellProps {
@@ -71,7 +72,9 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
           </div>
 
           <div className="flex items-center gap-3 flex-wrap w-full sm:w-auto">
-          <nav aria-label="Primary website navigation" className="flex items-center gap-1.5 flex-nowrap overflow-x-auto w-full -mx-4 px-4 sm:mx-0 sm:px-0 sm:w-auto sm:flex-wrap sm:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {/* LT-07: the phone row scrolls; the active item is scrolled into view on load and a right-edge fade says there is more */}
+          <div className="relative w-full sm:w-auto">
+          <nav id="zt-primary-nav" aria-label="Primary website navigation" className="flex items-center gap-1.5 flex-nowrap overflow-x-auto w-full pr-8 sm:pr-0 sm:w-auto sm:flex-wrap sm:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {navItems.map((item) => {
               const isActive = activeNav === item.id;
               return (
@@ -91,6 +94,9 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
             })}
             <PromoterNavLink active={activeNav === 'promoter'} />
           </nav>
+          <div aria-hidden="true" className="sm:hidden pointer-events-none absolute right-0 inset-y-0 w-10 bg-gradient-to-l from-zt-surface to-transparent" />
+          <NavActiveScroll navId="zt-primary-nav" active={activeNav} />
+          </div>
           {/* sm and up: Kurt 10/21, Join a Meet sits at the far right, next to the theme toggle, as the meet-day action. */}
           <div className="hidden sm:flex items-center gap-3 flex-wrap">
             <WebsiteAccountChip />

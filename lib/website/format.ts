@@ -9,9 +9,19 @@ export function formatLocalDateTime(iso: string | null | undefined, locale?: str
   return d.toLocaleString(locale, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 
-/** Google Maps search link for a venue; null when there is nothing to search for (no invented addresses). */
-export function directionsUrl(v: { facilityName?: string; streetAddress?: string; city?: string; state?: string; postalCode?: string }): string | null {
-  const parts = [v.facilityName, v.streetAddress, v.city, v.state, v.postalCode].map((p) => (p ?? '').trim()).filter(Boolean);
-  if (!v.streetAddress?.trim() && !(v.city?.trim() && v.state?.trim())) return null;
+/** Display placeholders that sometimes stand in for missing address data (LT-05). Never part of a search. */
+const PLACEHOLDERS = new Set(['not provided', 'tbd', 'tba', 'n/a', 'unknown', 'pending', '']);
+const real = (p: string | undefined): string => {
+  const t = (p ?? '').trim();
+  return PLACEHOLDERS.has(t.toLowerCase()) ? '' : t;
+};
+
+/** Google Maps search link for a venue; null when there is nothing real to search for (no invented addresses,
+ *  no placeholders). Demo fixtures pass `demo: true` and get no link: their venues are made up (LT-06). */
+export function directionsUrl(v: { facilityName?: string; streetAddress?: string; city?: string; state?: string; postalCode?: string }, opts: { demo?: boolean } = {}): string | null {
+  if (opts.demo) return null;
+  const street = real(v.streetAddress), city = real(v.city), state = real(v.state);
+  if (!street && !(city && state)) return null;
+  const parts = [real(v.facilityName), street, city, state, real(v.postalCode)].filter(Boolean);
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(parts.join(', '))}`;
 }
