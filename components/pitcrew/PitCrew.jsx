@@ -274,7 +274,10 @@ export default function PitCrew({
           </div>
         </div>
 
-          {/* Next Group / Lifter Transition */}
+          {/* Next Group / Lifter Transition. Astra DR-05 (10/21, fixed 10/26): the card carries two different "next"s,
+              the next lifter inside the current group and the next group's setup change. Each half now says which it is:
+              the badge reads "Next group:", the lifter line is labelled with the current group, and the change rows get
+              a heading naming the group they apply to. */}
           <section
             aria-label="Next group transition"
             className={`bg-zt-surface border-2 border-zt-secondary/60 rounded-2xl p-4 space-y-3 ${tv ? 'lg:col-span-2' : ''}`}
@@ -289,17 +292,20 @@ export default function PitCrew({
               {nextSetup && (
                 <span className="text-[10px] font-black uppercase tracking-wider bg-zt-secondary text-zt-on-secondary px-2 py-0.5 rounded">
                   {nextSetup.event.id === currentEvent.id
-                    ? nextSetup.division.name
-                    : `Ev ${nextSetup.event.eventNumber} • ${nextSetup.division.name}`}
+                    ? `Next group: ${nextSetup.division.name}`
+                    : `Next: Ev ${nextSetup.event.eventNumber} • ${nextSetup.division.name}`}
                 </span>
               )}
             </div>
 
             {nextRunItem && nextRunItem.athlete.divisionId === currentDivision.id && (
               <div className="text-xs font-bold text-zt-muted bg-zt-inset border border-zt-border rounded-xl px-3 py-2">
+                <div className="text-[10px] font-extrabold uppercase tracking-wider text-zt-subtle mb-0.5">
+                  Still in {currentDivision.name}
+                </div>
                 Next lifter:{' '}
                 <span className="text-zt-text font-black">{nextRunItem.athlete.name}</span> —
-                same {currentDivision.name} weight setup
+                same weight setup
                 {onDeckPinHeight && onDeckPinHeight !== upNowPinHeight
                   ? ` (Pin changes: ${upNowPinHeight} → ${onDeckPinHeight})`
                   : ', no change.'}
@@ -307,7 +313,12 @@ export default function PitCrew({
             )}
 
             {nextSetup ? (
-              <ul className="space-y-2">
+              <ul className="space-y-2" aria-label={`Setup change for ${nextSetup.division.name}`}>
+                <li className="text-[10px] font-extrabold uppercase tracking-wider text-zt-subtle px-1">
+                  {nextSetup.event.id === currentEvent.id
+                    ? `When ${nextSetup.division.name} starts`
+                    : `When Ev ${nextSetup.event.eventNumber} starts (${nextSetup.division.name})`}
+                </li>
                 {transitionRows.map((row) => (
                   <li
                     key={row.label}
