@@ -69,12 +69,12 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
     title: 'Meet details and rules',
     where: 'Tab 1, Meet',
     body: [
-      'The admin PIN is four to six digits. Judges and anyone who needs to change the setup on meet day type it once on their phone, after the join code from step 9. Collar weight here is the default for new events; each event form sets its own, and the pit crew calculator deducts it from that event's bar loads.',
+      'The admin PIN is four to six digits. Judges and anyone who needs to change the setup on meet day type it once on their phone, after the join code from step 9. Collar weight here is the default for new events; each event form sets its own, and the pit crew calculator deducts it from the bar loads for that event.',
       'Athlete run order decides who lifts when. Reverse Overall Points is the usual choice: the leader goes last so the podium race builds. Reverse Previous Event looks only at the last event. Roster Order never reshuffles. The screen explains each one under the buttons.',
       'The tiebreaker only matters when two athletes finish on the same points. Available Gym Plates tells the pit crew calculator what it is allowed to use; turn off anything the gym does not own.',
     ],
     publicSide:
-      'The run order drives the Next Up queue on volunteer phones; the public scoreboard only shows who is Up Now on each station. Plates (and each event's collar weight) drive the loads the pit crew sees. None of this is shown to athletes directly.',
+      'The run order drives the Next Up queue on volunteer phones; the public scoreboard only shows who is Up Now on each station. Plates (and the collar weight on each event) drive the loads the pit crew sees. None of this is shown to athletes directly.',
     images: [{ src: '/guide/03-meet.png', alt: 'The Meet tab: name, date, slug, admin PIN, collar weight, run order, tiebreaker and gym plates' }],
   },
   {
