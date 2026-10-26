@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Globe, KeyRound, Play } from 'lucide-react';
-import { DEFAULT_THEME_ID } from '@/lib/constants';
+import WebsiteThemeFrame from '@/components/website/WebsiteThemeFrame';
+import WebsiteThemeControls from '@/components/website/WebsiteThemeControls';
 import { hasResumeLink, readResume, refreshResumeStatus, type ResumeInfo } from '@/lib/landing';
 import { createSyncClient, readSyncEnv } from '@/lib/sync/client';
 
@@ -26,7 +27,9 @@ export default function RootLanding() {
   const btn = 'w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2';
 
   return (
-    <div data-zt-theme={DEFAULT_THEME_ID} className="min-h-screen bg-zt-bg text-zt-text font-sans p-5 flex flex-col items-center justify-center">
+    <WebsiteThemeFrame className="p-5 items-center justify-center">
+      {/* MS-12: the shared theme preference and its controls, like the site and the scorer */}
+      <div className="w-full max-w-sm flex justify-end"><WebsiteThemeControls /></div>
       <div className="w-full max-w-sm space-y-4">
         <div className="text-center space-y-1">
           <div className="text-[10px] font-black uppercase tracking-widest text-zt-primary">ZEROTACKY</div>
@@ -57,6 +60,6 @@ export default function RootLanding() {
         <p className="text-[11px] text-zt-muted text-center -mt-2">Type the promoter's 6-character code.</p>
 
       </div>
-    </div>
+    </WebsiteThemeFrame>
   );
 }

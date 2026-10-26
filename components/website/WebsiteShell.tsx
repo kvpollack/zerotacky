@@ -27,28 +27,51 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
 
   return (
     <WebsiteThemeFrame>
-      {/* Primary Website Header */}
+      {/* MS-13: keyboard users jump past the header */}
+      <a href="#zt-main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:rounded-xl focus:bg-zt-primary focus:text-zt-on-primary focus:text-xs focus:font-extrabold focus:uppercase">
+        Skip to content
+      </a>
+      {/* Primary Website Header. MS-13 (10/26): two rows on phones instead of a 210 px wrap: wordmark + the meet-day
+          actions (account, Join, theme) on the first row, the nav as one horizontally scrolling row below. From sm up
+          the old single-row layout wraps as before. */}
       <header className="bg-zt-surface/95 backdrop-blur border-b border-zt-border sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+        <div className="max-w-5xl mx-auto px-4 py-2.5 sm:py-3.5 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <Link
               href="/website"
               className="text-base sm:text-lg font-black tracking-wider uppercase text-zt-text flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-zt-primary rounded-lg"
             >
               <Wordmark />
             </Link>
-            <span className="hidden sm:inline-block text-xs font-bold text-zt-muted">
+            <span className="hidden lg:inline-block text-xs font-bold text-zt-muted">
               Your one stop for strongman: shows, registration, live scoring, and a gym directory.
             </span>
             {!live && (
-              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
+              <span className="hidden sm:inline text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
                 Website Skeleton Preview
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
-          <nav aria-label="Primary website navigation" className="flex items-center gap-1.5 flex-wrap">
+          {/* phones: meet-day actions stay on the wordmark row, far right */}
+          <div className="flex items-center gap-2 sm:hidden">
+            <WebsiteAccountChip compact />
+            <Link
+              href="/join"
+              aria-current={activeNav === 'join' ? 'page' : undefined}
+              className={`px-3 min-h-[44px] inline-flex items-center rounded-xl text-xs font-extrabold uppercase tracking-wide transition border ${
+                activeNav === 'join'
+                  ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
+                  : 'bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong'
+              }`}
+            >
+              Join
+            </Link>
+            <WebsiteThemeControls />
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap w-full sm:w-auto">
+          <nav aria-label="Primary website navigation" className="flex items-center gap-1.5 flex-nowrap overflow-x-auto w-full -mx-4 px-4 sm:mx-0 sm:px-0 sm:w-auto sm:flex-wrap sm:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {navItems.map((item) => {
               const isActive = activeNav === item.id;
               return (
@@ -56,7 +79,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
                   key={item.href}
                   href={item.href}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`px-3 min-h-[44px] inline-flex items-center rounded-xl text-xs font-extrabold uppercase tracking-wide transition border ${
+                  className={`px-3 min-h-[44px] inline-flex items-center whitespace-nowrap flex-shrink-0 rounded-xl text-xs font-extrabold uppercase tracking-wide transition border ${
                     isActive
                       ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
                       : 'bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong'
@@ -68,26 +91,28 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
             })}
             <PromoterNavLink active={activeNav === 'promoter'} />
           </nav>
-          <WebsiteAccountChip />
-          {/* Kurt 10/21: Join a Meet sits at the far right, next to the theme toggle, as the meet-day action. */}
-          <Link
-            href="/join"
-            aria-current={activeNav === 'join' ? 'page' : undefined}
-            className={`px-3 min-h-[44px] inline-flex items-center rounded-xl text-xs font-extrabold uppercase tracking-wide transition border ${
-              activeNav === 'join'
-                ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
-                : 'bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong'
-            }`}
-          >
-            Join a Meet
-          </Link>
-          <WebsiteThemeControls />
+          {/* sm and up: Kurt 10/21, Join a Meet sits at the far right, next to the theme toggle, as the meet-day action. */}
+          <div className="hidden sm:flex items-center gap-3 flex-wrap">
+            <WebsiteAccountChip />
+            <Link
+              href="/join"
+              aria-current={activeNav === 'join' ? 'page' : undefined}
+              className={`px-3 min-h-[44px] inline-flex items-center rounded-xl text-xs font-extrabold uppercase tracking-wide transition border ${
+                activeNav === 'join'
+                  ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
+                  : 'bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong'
+              }`}
+            >
+              Join a Meet
+            </Link>
+            <WebsiteThemeControls />
+          </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-6 sm:py-8 space-y-8">
+      <main id="zt-main" tabIndex={-1} className="flex-1 w-full max-w-5xl mx-auto px-4 py-6 sm:py-8 space-y-8 focus:outline-none">
         {children}
       </main>
 
