@@ -21,3 +21,21 @@ describe('website format helpers (MS-14)', () => {
     assert.equal(F.directionsUrl({}), null);
   });
 });
+
+describe('directions: placeholders and demo venues (LT-05/06)', () => {
+  test('display placeholders are not an address', () => {
+    assert.equal(F.directionsUrl({ city: 'Not provided', state: 'Not provided' }), null);
+    assert.equal(F.directionsUrl({ facilityName: 'Some Gym', city: 'TBD', state: 'TBA' }), null);
+    assert.equal(F.directionsUrl({ streetAddress: 'Not provided', city: 'Raleigh', state: 'NC' }), 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Raleigh, NC'));
+  });
+  test('normalizeVenue(null) composes to no link', async () => {
+    const S = await import(`${ROOT}/lib/website/supabaseShows.ts`);
+    const fn = S.normalizeVenue ?? S.default?.normalizeVenue;
+    if (!fn) return;   // not exported in this build
+    assert.equal(F.directionsUrl(fn(null)), null);
+  });
+  test('demo fixtures get no Directions', () => {
+    assert.equal(F.directionsUrl({ streetAddress: '1 Made Up Way', city: 'Baltimore', state: 'MD' }, { demo: true }), null);
+    assert.equal(F.directionsUrl({ streetAddress: '1 Real St', city: 'Baltimore', state: 'MD' }, { demo: false }) !== null, true);
+  });
+});

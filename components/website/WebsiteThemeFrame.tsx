@@ -13,11 +13,13 @@ import WebsiteThemeControls from './WebsiteThemeControls';
 export default function WebsiteThemeFrame({ children, className = '', override = null, onUserChange }: {
   children: React.ReactNode; className?: string; override?: string | null; onUserChange?: () => void;
 }) {
-  const { themeId, isDaylight: prefDaylight, selectTheme: pick, toggleDaylight: toggle } = useTheme();
+  const { themeId, selectTheme: pick, toggleDaylight: toggle } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const shown = override ?? (mounted ? themeId : DEFAULT_THEME_ID);
-  const isDaylight = override ? isLightTheme(override) : prefDaylight;
+  // LT-03 (Astra 10/26): the Sun/Moon button must follow `shown`, not the saved preference, or a saved light theme
+  // renders a Moon on the first client paint against the server's Sun (React 418 on / and /join).
+  const isDaylight = isLightTheme(shown);
   const selectTheme = (id: string) => { onUserChange?.(); pick(id); };
   const toggleDaylight = () => {
     onUserChange?.();

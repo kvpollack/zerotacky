@@ -248,6 +248,9 @@ export class SyncController {
   // account (setAccessToken): the server takes the owner from auth.uid() (024 retired the publish key). A legacy 'key'
   // link re-published from a signed-in phone becomes an 'account' link.
   async publish(extra: Omit<PublishExtra, 'meetId' | 'deviceId'>): Promise<SyncLink> {
+    // LT-08 (Astra 10/26): the account guards run before any network work, so a signed-out call makes zero requests.
+    if (this.accessToken === null) throw new Error('Sign in to your ZeroTacky account to publish this meet.');
+    if (this.otherAccount) throw new Error('This meet was published from a different ZeroTacky account. Sign in as that account, or unlink this phone and publish again.');
     // Re-publish is authoritative for the roster, so first bring in anything the floor phones added. R2 (Astra
     // rehearsal 10/17): if that pre-pull fails, stop. Publishing a stale roster would tell the server to delete
     // athletes this phone has simply not seen yet (the server refuses the dangerous cases since 008, but the
@@ -269,8 +272,6 @@ export class SyncController {
       ? { ...base, results: pulled.results ?? base.results, athletes: pulled.athletes ?? base.athletes }
       : base;
     const meetId = this.link?.localMeetId === state.meet.id ? this.link.meetId : newMeetUuid();
-    if (this.accessToken === null) throw new Error('Sign in to your ZeroTacky account to publish this meet.');
-    if (this.otherAccount) throw new Error('This meet was published from a different ZeroTacky account. Sign in as that account, or unlink this phone and publish again.');
     const gen = this.session;
     this.setStatus({ state: 'syncing', error: null });
     try {
@@ -398,6 +399,23 @@ export class SyncController {
   // Parents before children so FK checks pass (athlete row before its result).
   private static FLUSH_ORDER = ['athletes', 'results', 'live_state'];
 
+  // 025 (Astra LT-01): the join code alone no longer writes athlete rows. A joined phone without a grant (pit crew, no
+  // PIN asked) can still send rack pins through zt_set_rack_heights, which merges only that column. Everything else a
+  // grantless phone could queue on athletes (nothing in the UI today) is refused by the server and dropped like any
+  // other rejected row.
+  private athletesViaRpc(): boolean {
+    return !!this.link && this.link.role !== 'admin' && !this.link.grant;
+  }
+  private async writeRows(table: string, rows: Record<string, unknown>[], onConflict: string): Promise<void> {
+    if (table === 'athletes' && this.athletesViaRpc()) {
+      for (const row of rows) {
+        await this.writer.rpc('zt_set_rack_heights', { p_meet_id: row.meet_id, p_athlete_id: row.id, p_rack_heights: row.rack_heights ?? {} });
+      }
+      return;
+    }
+    await this.writer.upsert(table, rows, onConflict);
+  }
+
   // Push the queue, one upsert per table. If a batch is rejected with a 4xx (an FK to a row the admin
   // deleted, a bad payload), retry row by row and drop the rows that still fail: one poisoned row must not
   // freeze the phone. Network errors propagate (the queue is kept for the next tick).
@@ -412,7 +430,7 @@ export class SyncController {
       if (!items?.length) continue;
       const onConflict = ON_CONFLICT[table] ?? 'id';
       try {
-        await this.writer.upsert(table, items.map((i) => i.row), onConflict);
+        await this.writeRows(table, items.map((i) => i.row), onConflict);
         if (gen !== this.session) return;   // signed in/out meanwhile: upserts are idempotent, leave the queue for the next session
         this.queue = removeFlushed(this.queue, items);
       } catch (e) {
@@ -423,7 +441,7 @@ export class SyncController {
         let dropped = 0;
         for (const item of items) {
           try {
-            await this.writer.upsert(table, [item.row], onConflict);
+            await this.writeRows(table, [item.row], onConflict);
             if (gen !== this.session) return;
             this.queue = removeFlushed(this.queue, [item]);
           } catch (e2) {

@@ -7,12 +7,13 @@ Dump (anon read, safe to run against prod any time):
     uv run scripts/dump_meet.py <slug>                     # reads .env.local
     uv run scripts/dump_meet.py <slug> --join-code NS4J82  # also captures admin_pin + join_code
 
-Restore (writes; needs a publish key, goes through the zt_publish_meet RPC):
-    uv run scripts/dump_meet.py --restore dumps/<file>.json --publish-key <key>
-    uv run scripts/dump_meet.py --restore dumps/<file>.json --publish-key <key> --slug restore-test
+Restore (writes; goes through the zt_publish_meet RPC as a signed-in promoter account, 024 retired publish keys):
+    ZT_ACCOUNT_EMAIL=... ZT_ACCOUNT_PASSWORD=... uv run scripts/dump_meet.py --restore dumps/<file>.json
+    uv run scripts/dump_meet.py --restore dumps/<file>.json --email promoter@example.com --slug restore-test
+    (the password is read from ZT_ACCOUNT_PASSWORD or prompted; the account must own the meet, or the slug must be new)
 
 Credentials come from --env (default .env.local: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY)
-or from SUPABASE_URL / SUPABASE_ANON_KEY in the environment. Keys are never printed.
+or from SUPABASE_URL / SUPABASE_ANON_KEY in the environment. Keys, tokens and passwords are never printed.
 
 What a dump holds: the meet row, divisions, events, athletes, results, live_state, as returned by PostgREST
 (select=*). Without --join-code the meet row has only the anon-visible columns, so a restore from it resets
@@ -27,6 +28,7 @@ phones rewrite it on their next sync.
 from __future__ import annotations
 
 import argparse
+import getpass
 import csv
 import json
 import os
@@ -66,11 +68,19 @@ def load_env(path: str | None) -> tuple[str, str]:
 
 
 class Api:
-    def __init__(self, url: str, key: str):
+    def __init__(self, url: str, key: str, access_token: str | None = None):
         self.url, self.key = url, key
+        self.access_token = access_token   # user JWT for writes; the anon key stays the apikey (LT-02)
+
+    def sign_in(self, email: str, password: str) -> None:
+        out = self._req("POST", "/auth/v1/token?grant_type=password", {"email": email, "password": password})
+        tok = (out or {}).get("access_token")
+        if not tok:
+            sys.exit("sign-in returned no access token")
+        self.access_token = tok
 
     def _req(self, method: str, path: str, body=None, headers: dict | None = None):
-        h = {"apikey": self.key, "Authorization": f"Bearer {self.key}", "Accept": "application/json"}
+        h = {"apikey": self.key, "Authorization": f"Bearer {self.access_token or self.key}", "Accept": "application/json"}
         if body is not None:
             h["Content-Type"] = "application/json"
         h.update(headers or {})
@@ -167,7 +177,9 @@ def write_results_csv(payload: dict, path: Path) -> None:
                         *[p.get(k) for k in payload_keys], r.get("locked"), r.get("updated_at"), r.get("updated_by"), r["id"]])
 
 
-def restore(api: Api, dump_path: Path, publish_key: str, slug: str | None, admin_pin: str | None) -> None:
+def restore(api: Api, dump_path: Path, slug: str | None, admin_pin: str | None) -> None:
+    if not api.access_token:
+        sys.exit("restore needs a signed-in account (024 retired publish keys)")
     data = json.loads(dump_path.read_text(encoding="utf-8"))
     meet = {k: v for k, v in data["meet"].items() if k in MEET_PUBLISH_COLS}
     if slug:
@@ -192,7 +204,7 @@ def restore(api: Api, dump_path: Path, publish_key: str, slug: str | None, admin
     print(f"target    {api.url} slug {meet['slug']!r}")
     for k, v in children.items():
         print(f"{k[2:]:<10} {len(v)}")
-    out = api.rpc("zt_publish_meet", {"p_key": publish_key, "p_meet": meet, **children})
+    out = api.rpc("zt_publish_meet", {"p_meet": meet, **children})
     print(f"published meet id {out.get('id')} join code {out.get('join_code')}")
     # verify by counting what the server now holds
     for table in ("divisions", "events", "athletes", "results"):
@@ -209,7 +221,7 @@ def main() -> None:
     ap.add_argument("--out", default="dumps", help="output directory for dumps (default dumps/, gitignored)")
     ap.add_argument("--join-code", help="meet join code; adds admin_pin and join_code to the dump via zt_meet_by_join_code")
     ap.add_argument("--restore", metavar="DUMP_JSON", help="restore this dump through zt_publish_meet instead of dumping")
-    ap.add_argument("--publish-key", help="publish key for --restore (or env ZT_PUBLISH_KEY)")
+    ap.add_argument("--email", help="with --restore: promoter account email (or env ZT_ACCOUNT_EMAIL); password from ZT_ACCOUNT_PASSWORD or a prompt")
     ap.add_argument("--slug", dest="restore_slug", help="with --restore: publish under this slug instead of the dumped one")
     ap.add_argument("--admin-pin", help="with --restore: admin PIN to set when the dump lacks one")
     args = ap.parse_args()
@@ -217,10 +229,12 @@ def main() -> None:
     url, key = load_env(args.env)
     api = Api(url, key)
     if args.restore:
-        publish_key = args.publish_key or os.environ.get("ZT_PUBLISH_KEY")
-        if not publish_key:
-            sys.exit("--restore needs --publish-key (or ZT_PUBLISH_KEY in the environment)")
-        restore(api, Path(args.restore), publish_key, args.restore_slug, args.admin_pin)
+        email = args.email or os.environ.get("ZT_ACCOUNT_EMAIL")
+        if not email:
+            sys.exit("--restore needs --email (or ZT_ACCOUNT_EMAIL in the environment)")
+        password = os.environ.get("ZT_ACCOUNT_PASSWORD") or getpass.getpass(f"password for {email}: ")
+        api.sign_in(email, password)
+        restore(api, Path(args.restore), args.restore_slug, args.admin_pin)
     else:
         if not args.slug:
             ap.error("slug is required unless --restore is given")

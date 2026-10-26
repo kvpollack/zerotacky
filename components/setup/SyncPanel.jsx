@@ -118,8 +118,12 @@ export default function SyncPanel({ sync, meet }) {
         >
           <UploadCloud className="w-4 h-4" /> {link ? 'Publish update' : `Publish as /${slug}`}
         </button>
-        {link?.role === 'admin' && (
+        {link?.role === 'admin' && canPublish && (
           <div className="text-[10px] text-zt-muted">Config changes (weights, events, roster adds and removals) re-publish automatically from this phone. If the server refuses one (an athlete with a recorded result, or on the roster through an accepted registration), the reason shows here and the roster comes back.</div>
+        )}
+        {/* LT-04 (Astra 10/26): a signed-out admin phone (legacy key link) keeps scoring through its grant but publishes nothing */}
+        {link?.role === 'admin' && !canPublish && (
+          <div className="text-[10px] text-zt-muted">Signed out: scores from this phone still sync, but weights, events and roster changes stay on this phone until the promoter signs in here and publishes.</div>
         )}
       </div>
 

@@ -634,10 +634,11 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                   {show.venue.streetAddress ? `${show.venue.streetAddress}, ` : ''}
                   {show.venue.city}, {show.venue.state} {show.venue.postalCode || ''}
                 </div>
-                {/* MS-14: a map link built from the address on file; nothing is invented when the address is missing */}
-                {directionsUrl(show.venue) && (
+                {/* MS-14: a map link built from the address on file; nothing is invented when the address is missing or
+                    a placeholder, and demo fixtures (made-up venues) get none (Astra LT-05/06) */}
+                {directionsUrl(show.venue, { demo: show.isDemoFixture }) && (
                   <a
-                    href={directionsUrl(show.venue) ?? '#'}
+                    href={directionsUrl(show.venue, { demo: show.isDemoFixture }) ?? '#'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 mt-1 text-zt-primary hover:underline"

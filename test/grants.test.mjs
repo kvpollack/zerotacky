@@ -112,3 +112,40 @@ describe('judge grants (011)', () => {
     assert.equal(row.rack_heights[joined.state.events[0].id], 7);
   });
 });
+
+// 025 (Astra LT-01, 10/26): the join code alone writes no athlete rows; pit-crew rack pins go through zt_set_rack_heights.
+describe('025: athlete writes need a grant; rack pins by join code', () => {
+  test('a joined phone without a grant sends rack pins through the RPC and the server merges only rack_heights', async () => {
+    const { srv, admin, joined } = await setup();
+    const ev = joined.state.events[0].id, ath = joined.state.athletes[0].id;
+    joined.mutate((s) => ({ ...s, athletes: s.athletes.map((a) => (a.id === ath ? { ...a, name: 'Renamed By Spectator', rackHeights: { ...(a.rackHeights ?? {}), [ev]: 7 } } : a)) }));
+    await joined.ctl.tick();
+    const calls = srv.log.filter((e) => e.path.endsWith('/rpc/zt_set_rack_heights'));
+    assert.equal(calls.length, 1, 'one RPC call for the one changed athlete');
+    assert.equal(srv.log.some((e) => e.method === 'POST' && e.path.endsWith('/athletes')), false, 'no table upsert from a grantless phone');
+    const row = srv.db.athletes.find((a) => a.id === ath);
+    assert.equal(row.rack_heights[ev], 7, 'pin landed');
+    assert.equal(row.name, admin.state.athletes[0].name, 'name untouched: the RPC only merges rack heights');
+    assert.equal(joined.ctl.status.pending, 0);
+  });
+
+  test('a grant holder still upserts athlete rows (walk-ons, scratches)', async () => {
+    const { srv, joined } = await setup();
+    const token = await joined.ctl.checkAdminPin('1050');
+    assert.ok(token, 'PIN mints a grant');
+    joined.mutate((s) => ({ ...s, athletes: [...s.athletes, { id: 'ath-floor', divisionId: s.divisions[0].id, name: 'Floor Walk-On', lotNumber: 60, status: 'active', rackHeights: {} }] }));
+    await joined.ctl.tick();
+    assert.ok(srv.db.athletes.some((a) => a.id === 'ath-floor'), 'walk-on written through the table');
+    assert.equal(srv.log.some((e) => e.path.endsWith('/rpc/zt_set_rack_heights')), false);
+  });
+
+  test('a stale or wrong join code gets 401 from the RPC and the row stays queued', async () => {
+    const { srv, joined } = await setup();
+    srv.db.meets[0].join_code = 'ROTATED';   // the promoter rotated the code; this phone still carries the old one
+    const ev = joined.state.events[0].id, ath = joined.state.athletes[0].id;
+    joined.mutate((s) => ({ ...s, athletes: s.athletes.map((a) => (a.id === ath ? { ...a, rackHeights: { [ev]: 9 } } : a)) }));
+    await joined.ctl.tick().catch(() => {});
+    assert.equal(srv.db.athletes.find((a) => a.id === ath).rack_heights[ev], undefined);
+    assert.equal(joined.ctl.status.pending, 1, 'kept for the retry after the code is re-entered');
+  });
+});

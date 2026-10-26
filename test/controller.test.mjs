@@ -849,3 +849,28 @@ describe('SyncController account binding + publish errors (gate round)', () => {
     assert.equal(srv.db.meets[0].admin_pin, '7391');
   });
 });
+
+// LT-08 (Astra 10/26): a signed-out publish makes zero requests, even with a link, a grant and a queued score.
+describe('publish guards run before any network work (LT-08)', () => {
+  test('signed-out publish on a legacy key link: no flush, no pull, no RPC', async () => {
+    const storage = memStorage();
+    storage.setItem(K.LINK_KEY, JSON.stringify({ meetId: 'srv-uuid-1', localMeetId: 'x', slug: 's', joinCode: 'ABC234', role: 'admin', auth: 'key', grant: 'g-1', since: null }));
+    const a = a4Controller({ storage });
+    a.st.meet.id = 'x';
+    a.ctl.setLive({ station: 'A', current_event_id: null, current_division_id: null, current_athlete_id: null, lane2_athlete_id: null });
+    assert.equal(a.ctl.status.pending, 1);
+    await assert.rejects(() => a.ctl.publish({ slug: 's', stations: [], isDemo: false }), /Sign in/);
+    assert.equal(a.log.length, 0, 'zero requests');
+    assert.equal(a.ctl.status.pending, 1, 'queue untouched');
+  });
+
+  test('a different account is refused before any network work too', async () => {
+    const storage = memStorage();
+    storage.setItem(K.LINK_KEY, JSON.stringify({ meetId: 'srv-uuid-1', localMeetId: 'x', slug: 's', joinCode: 'ABC234', role: 'admin', auth: 'account', userId: 'user-a', since: null }));
+    const a = a4Controller({ storage });
+    a.st.meet.id = 'x';
+    a.ctl.setAccessToken('TOKEN_B', 'user-b');
+    await assert.rejects(() => a.ctl.publish({ slug: 's', stations: [], isDemo: false }), /different ZeroTacky account/);
+    assert.equal(a.log.length, 0);
+  });
+});

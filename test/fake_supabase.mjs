@@ -63,6 +63,16 @@ export function fakeServer() {
         for (const g of db.grants) if (g.token === body.p_token && !g.revoked_at) g.revoked_at = serverNow();
         return reply(204, undefined);
       }
+      // 025: pit-crew rack pins by join code; merges only rack_heights, per event key
+      if (parts[3] === 'zt_set_rack_heights') {
+        const meet = db.meets.find((x) => x.id === body.p_meet_id);
+        if (!meet || meet.join_code !== init.headers['x-zt-join']) return reply(401, { code: '42501', message: 'join code does not match this meet' });
+        if (!body.p_rack_heights || typeof body.p_rack_heights !== 'object' || Array.isArray(body.p_rack_heights)) return reply(400, { code: '22023', message: 'rack heights must be an object of event id -> height' });
+        const a = db.athletes.find((x) => x.meet_id === body.p_meet_id && x.id === body.p_athlete_id);
+        if (!a) return reply(400, { code: 'P0002', message: 'no such athlete on this meet' });
+        a.rack_heights = { ...(a.rack_heights ?? {}), ...body.p_rack_heights };
+        return reply(200, a.rack_heights);
+      }
       if (parts[3] !== 'zt_publish_meet') return reply(404, { message: 'no fn' });
       // 024: publishing needs a signed-in account (anon bearer refused, like the server grants). The fake models the
       // final signature with no p_key; the server keeps a shim overload for older phones for a while.
@@ -96,14 +106,11 @@ export function fakeServer() {
       return reply(200, table === 'meets' ? rows.map(publicMeet) : rows);
     }
     if (init.method === 'POST') {
-      // RLS stand-in: athletes writes need the join code of that meet; results/live_state writes need a live grant
-      // for that meet whose join code is still the one in force (011).
-      const code = init.headers['x-zt-join'];
+      // RLS stand-in: athletes (025), results and live_state (011) writes all need a live grant for that meet whose
+      // join code is still the one in force. The join code alone writes nothing; rack pins go through the RPC above.
       const grant = init.headers['x-zt-grant'];
       const hasGrant = (r) => db.grants.some((g) => g.token === grant && g.meet_id === r.meet_id && !g.revoked_at && db.meets.some((m) => m.id === r.meet_id && m.join_code === g.join_code));
-      const ok = body.every((r) => (table === 'results' || table === 'live_state')
-        ? hasGrant(r)
-        : db.meets.some((m) => m.id === r.meet_id && m.join_code === code));
+      const ok = body.every((r) => hasGrant(r));
       if (!ok) return reply(401, { message: 'new row violates row-level security policy' });
       upsert(table, body);
       return reply(201, undefined);
