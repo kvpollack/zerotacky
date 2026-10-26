@@ -180,16 +180,19 @@ export default function MeetSection({
 
         <div>
           <label className="text-[11px] font-extrabold uppercase text-zt-muted">
-            Collar Weight / Pair (lbs)
+            Default Collar Weight / Pair (lbs)
           </label>
           <input
             type="number"
+            min="0"
+            step="0.5"
             value={meet.collarWeightPerPair}
             onChange={(e) =>
               updateMeetConfig({ collarWeightPerPair: Number(e.target.value) || 0 })
             }
             className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-sm font-bold text-zt-text"
           />
+          <p className="text-[10px] text-zt-muted mt-1">Prefilled on new events. Each event sets its own collar weight in the event form.</p>
         </div>
       </div>
 

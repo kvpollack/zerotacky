@@ -31,6 +31,14 @@ describe('mapping round-trips', () => {
     assert.deepEqual(Object.keys(row.config).sort(), ['divisionLightWeights', 'divisionWeights', 'hasTrumpWeight']);
     assert.equal(row.scoring_type, 'reps'); assert.equal(row.implement_empty_weight, 75);
   });
+  test('event collarWeightPerPair rides in config and survives the round trip (10/26)', () => {
+    const e = { ...P.getInitialSeedState('york-iron-2026').events[1], collarWeightPerPair: 7.5 };
+    const row = M.eventToRow(e);
+    assert.equal(row.config.collarWeightPerPair, 7.5);
+    assert.equal(M.rowToEvent({ ...row, meet_id: 'm' }).collarWeightPerPair, 7.5);
+    const legacy = M.rowToEvent({ ...M.eventToRow(P.getInitialSeedState('york-iron-2026').events[1]), meet_id: 'm' });
+    assert.equal(legacy.collarWeightPerPair, undefined);   // pre-10/26 rows: engine falls back to the meet value
+  });
   test('result payload excludes ids/locked/updatedAt and row carries ISO time + device', () => {
     const row = M.resultToRow({ id: 'e_a', eventId: 'e', athleteId: 'a', reps: 3, locked: true, updatedAt: 1760000000000 }, 'm1', 'phone-7');
     assert.deepEqual(row.payload, { reps: 3 });

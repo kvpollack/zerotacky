@@ -96,6 +96,7 @@ export default function MeetSetup({
       {/* 4. Events Section */}
       <EventsSection
         divisions={divisions}
+        defaultCollarWeightPerPair={meet.collarWeightPerPair}
         events={events}
         results={results}
         addEvent={addEvent}

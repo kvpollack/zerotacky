@@ -208,6 +208,7 @@ export function normalizeState(raw: unknown): AppState {
         loadingPoints,
         weightEntryMode,
         implementEmptyWeight: Number(e.implementEmptyWeight) || 0,
+        collarWeightPerPair: e.collarWeightPerPair === undefined || e.collarWeightPerPair === null ? undefined : Math.max(0, Number(e.collarWeightPerPair) || 0),
         divisionWeights:
           e.divisionWeights && typeof e.divisionWeights === 'object'
             ? { ...(e.divisionWeights as Record<string, number>) }
@@ -447,6 +448,7 @@ function sanitizeEventFields(
     lanes: Number(merged.lanes) === 2 ? 2 : 1,
     timeCapSeconds: Number(merged.timeCapSeconds) > 0 ? Number(merged.timeCapSeconds) : 60,
     implementEmptyWeight: Number(merged.implementEmptyWeight) || 0,
+    collarWeightPerPair: merged.collarWeightPerPair === undefined || merged.collarWeightPerPair === null ? undefined : Math.max(0, Number(merged.collarWeightPerPair) || 0),
     divisionWeights: { ...(merged.divisionWeights ?? {}) },
   };
 
@@ -500,6 +502,7 @@ export function addEvent(
     loadingPoints: scoringType === 'time_or_implements' ? 0 : 2,
     weightEntryMode: 'total',
     implementEmptyWeight: 0,
+    collarWeightPerPair: Number(state.meet.collarWeightPerPair) || 0,
     divisionWeights: defaultWeights,
     hasTrumpWeight: false,
   };

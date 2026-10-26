@@ -90,6 +90,26 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   // Astra M2: an open EventForm holds a draft that reaches workingState only through its own Save button, so the
   // global dirty bar and the registration guard treat it like unsaved work.
   const [eventFormOpen, setEventFormOpen] = useState(false);
+  // 10/26 (Kurt 10/21): while that form is open, the tabs refuse to leave Events. A refused click flashes the bar
+  // and moves focus to it; the bar's Discard draft closes the form (closeFormSignal) so the promoter can move on.
+  const [navBlockedAt, setNavBlockedAt] = useState(0);
+  const [closeFormSignal, setCloseFormSignal] = useState(0);
+  const dirtyBarRef = useRef<HTMLDivElement | null>(null);
+  const requestTab = useCallback((id: SectionId) => {
+    if (eventFormOpen && id !== 'events') {
+      setNavBlockedAt(Date.now());
+      dirtyBarRef.current?.focus();
+      return false;
+    }
+    setActiveTab(id);
+    return true;
+  }, [eventFormOpen]);
+  useEffect(() => {
+    if (!navBlockedAt) return;
+    const t = setTimeout(() => setNavBlockedAt(0), 2500);
+    return () => clearTimeout(t);
+  }, [navBlockedAt]);
+  useEffect(() => { if (!eventFormOpen) setNavBlockedAt(0); }, [eventFormOpen]);
   const [athleteLinks, setAthleteLinks] = useState<AthleteAccountLink[]>([]);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -445,8 +465,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     if (e.key === 'End') next = tabs.length - 1;
     if (next === null) return;
     e.preventDefault();
-    setActiveTab(tabs[next].id);
-    tabRefs.current[next]?.focus();
+    if (requestTab(tabs[next].id)) tabRefs.current[next]?.focus();
   };
 
   return (
@@ -567,11 +586,14 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
                 aria-controls={`panel-${tab.id}`}
                 tabIndex={active ? 0 : -1}
                 onKeyDown={(e) => onTabKeyDown(e, index)}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => requestTab(tab.id)}
+                aria-disabled={eventFormOpen && tab.id !== 'events' ? true : undefined}
                 className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wide whitespace-nowrap border transition flex items-center gap-1.5 ${
                   active
                     ? 'bg-zt-primary text-zt-on-primary border-zt-primary shadow'
-                    : 'bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong'
+                    : eventFormOpen && tab.id !== 'events'
+                      ? 'bg-zt-inset text-zt-muted border-zt-border opacity-60 cursor-not-allowed'
+                      : 'bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong'
                 }`}
               >
                 <span>
@@ -663,6 +685,8 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             removeEvent={removeEvent}
             reorderEvents={reorderEvents}
             onEditingChange={setEventFormOpen}
+            closeFormSignal={closeFormSignal}
+            defaultCollarWeightPerPair={workingState.meet.collarWeightPerPair}
           />
         </div>
 
@@ -721,9 +745,14 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
       {/* Sticky Dirty-State Save Bar: builder sections (Tabs 1-4) save here; Listing (Tab 5) saves on its own tab. */}
       {(isDirty || listingDirty || eventFormOpen) && (
         <div
+          ref={dirtyBarRef}
+          tabIndex={-1}
           role="region"
           aria-label="Unsaved meet changes"
-          className="fixed bottom-4 inset-x-4 max-w-5xl mx-auto bg-zt-surface border-2 border-zt-primary rounded-2xl p-4 shadow-2xl z-30 flex flex-wrap items-center justify-between gap-3"
+          aria-live={navBlockedAt ? 'assertive' : undefined}
+          className={`fixed bottom-4 inset-x-4 max-w-5xl mx-auto bg-zt-surface border-2 rounded-2xl p-4 shadow-2xl z-30 flex flex-wrap items-center justify-between gap-3 outline-none transition-colors ${
+            navBlockedAt ? 'border-zt-danger ring-2 ring-zt-danger/40' : 'border-zt-primary'
+          }`}
         >
           <div className="space-y-0.5">
             <div className="text-xs font-black uppercase tracking-wider text-zt-primary">
@@ -738,6 +767,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
               {isDirty && listingDirty ? ' The Listing tab also has edited fields.' : ''}
               {listingDirty ? ' Use Save Listing Settings or Reset on the Listing tab.' : ''}
               {eventFormOpen ? ' Save or cancel the event form on the Events tab to include or drop that draft.' : ''}
+              {navBlockedAt ? <strong className="text-zt-danger"> The other tabs stay locked until you do.</strong> : null}
             </div>
           </div>
 
@@ -749,6 +779,16 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
                 className="px-4 py-2.5 rounded-xl bg-zt-surface-2 border border-zt-border-strong text-zt-text-2 font-extrabold text-xs uppercase"
               >
                 Go to Events
+              </button>
+            )}
+            {eventFormOpen && (
+              <button
+                type="button"
+                onClick={() => setCloseFormSignal((n) => n + 1)}
+                className="px-4 py-2.5 rounded-xl bg-zt-surface-2 border border-zt-border-strong text-zt-text-2 font-extrabold text-xs uppercase inline-flex items-center gap-1.5"
+              >
+                <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+                Discard draft
               </button>
             )}
             {listingDirty && activeTab !== 'listing' && (
