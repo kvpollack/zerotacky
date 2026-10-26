@@ -14,6 +14,7 @@ export default function AthletesSection({
   moveAthlete,
   shuffleLots,
   toggleAthleteWithdrawn,
+  sectionNumber = 5, // heading number; the promoter editor passes its tab number (build order 10/26)
 }) {
   const sortedDivisions = [...divisions].sort((a, b) => a.sortOrder - b.sortOrder);
   const [targetDivId, setTargetDivId] = useState(sortedDivisions[0]?.id || '');
@@ -55,7 +56,7 @@ export default function AthletesSection({
     <section className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-black uppercase tracking-wider text-zt-primary">
-          5. Athletes ({athletes.length})
+          {sectionNumber}. Athletes ({athletes.length})
         </h2>
         <button
           type="button"

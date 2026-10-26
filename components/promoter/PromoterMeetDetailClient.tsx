@@ -442,18 +442,21 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   const pendingRegCount = registrations.filter((r) => r.status === 'pending').length;
 
   const tabs: Array<{ id: SectionId; number: number; label: string; badge?: string | number }> = [
+    // Build order (Kurt 10/21, shipped 10/26): divisions before events (weights are per division), events before
+    // stations (each station orders the events), listing before registrations (entries open from Listing), and
+    // registrations before athletes (accepted entries land on the roster). Meet Day last.
     { id: 'meet', number: 1, label: 'Meet' },
     { id: 'divisions', number: 2, label: 'Divisions', badge: workingState.divisions.length },
-    { id: 'stations', number: 3, label: 'Stations', badge: (workingState.meet.stations ?? []).length || undefined },
-    { id: 'events', number: 4, label: 'Events', badge: workingState.events.length },
-    { id: 'athletes', number: 5, label: 'Athletes', badge: workingState.athletes.length },
-    { id: 'listing', number: 6, label: 'Listing' },
+    { id: 'events', number: 3, label: 'Events', badge: workingState.events.length },
+    { id: 'stations', number: 4, label: 'Stations', badge: (workingState.meet.stations ?? []).length || undefined },
+    { id: 'listing', number: 5, label: 'Listing' },
     {
       id: 'registrations',
-      number: 7,
+      number: 6,
       label: 'Registrations',
       badge: pendingRegCount > 0 ? `${pendingRegCount} pending` : registrations.length,
     },
+    { id: 'athletes', number: 7, label: 'Athletes', badge: workingState.athletes.length },
     { id: 'meetday', number: 8, label: 'Meet Day' },
   ];
 
@@ -659,6 +662,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             updateStation={updateStation}
             removeStation={removeStation}
             updateDivision={updateDivision}
+            sectionNumber={4}
           />
         </div>
 
@@ -687,6 +691,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             onEditingChange={setEventFormOpen}
             closeFormSignal={closeFormSignal}
             defaultCollarWeightPerPair={workingState.meet.collarWeightPerPair}
+            sectionNumber={3}
           />
         </div>
 
@@ -702,6 +707,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             moveAthlete={moveAthlete}
             shuffleLots={shuffleLots}
             toggleAthleteWithdrawn={toggleAthleteWithdrawn}
+            sectionNumber={7}
           />
           <AthleteAccountsSection
             athletes={detail.state.athletes}
@@ -742,7 +748,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
         </div>
       </div>
 
-      {/* Sticky Dirty-State Save Bar: builder sections (Tabs 1-4) save here; Listing (Tab 5) saves on its own tab. */}
+      {/* Sticky Dirty-State Save Bar: builder sections (Meet, Divisions, Events, Stations, Athletes) save here; Listing saves on its own tab. */}
       {(isDirty || listingDirty || eventFormOpen) && (
         <div
           ref={dirtyBarRef}

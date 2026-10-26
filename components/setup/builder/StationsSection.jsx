@@ -15,6 +15,7 @@ export default function StationsSection({
   updateStation,
   removeStation,
   updateDivision,
+  sectionNumber = 4, // heading number; the promoter editor passes its tab number (build order 10/26)
 }) {
   const [newStationLabel, setNewStationLabel] = useState('');
   const eventList = Array.isArray(events) ? events : [];
@@ -41,7 +42,7 @@ export default function StationsSection({
     <section className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-black uppercase tracking-wider text-zt-primary">
-          3. Stations &amp; Floor Plan ({stations.length})
+          {sectionNumber}. Stations &amp; Floor Plan ({stations.length})
         </h2>
         <span className="text-[10px] font-bold text-zt-subtle">Min 1 station</span>
       </div>

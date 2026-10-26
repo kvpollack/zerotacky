@@ -90,21 +90,9 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
     images: [{ src: '/guide/04-divisions.png', alt: 'The Divisions tab with five divisions listed' }],
   },
   {
-    id: 'stations',
-    title: 'Stations and floor plan',
-    where: 'Tab 3, Stations',
-    body: [
-      'A station is one set of implements running its own order. Divisions on the same station run back to back; two stations run at the same time in different parts of the gym.',
-      'A small meet is fine on one station. Most promoters decide this after sign-ups close, when they know how many athletes each division has. Rename the stations if the gym calls them something else. If one station runs the events in a different order from the rest, the arrows on its card set that order.',
-    ],
-    publicSide:
-      'Each station gets an Up Now strip at the top of the scoreboard, so spectators can see who is lifting where. Next Up on the volunteer phones is per station.',
-    images: [{ src: '/guide/05-stations.png', alt: 'The Stations tab with women and novice divisions on Station 1 and open men on Station 2' }],
-  },
-  {
     id: 'events',
     title: 'Events',
-    where: 'Tab 4, Events',
+    where: 'Tab 3, Events',
     body: [
       'Add Event opens the form. Pick how it is scored (reps, max weight, time or distance, time or implements), set the time cap and lanes, then tell the loader how the implement works: load points is how many places plates go on, tare is what the empty implement weighs. Those two numbers are what make the pit crew plate maths right.',
       'Under per-division weights, enter the target weight for each division. Add a callout title if the pit crew should see a note, for example the keg or the pin height. Save Event, then Save Changes.',
@@ -118,21 +106,21 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
     ],
   },
   {
-    id: 'athletes',
-    title: 'Athletes',
-    where: 'Tab 5, Athletes',
+    id: 'stations',
+    title: 'Stations and floor plan',
+    where: 'Tab 4, Stations',
     body: [
-      'There are two ways onto the roster. Athletes who register online land here when you accept them in step 8. Paper sign-ups and walk-ins you add yourself: Bulk Add takes one name per line into a division, Single Add takes one at a time.',
-      'Each athlete gets a lot number inside their division. That is the order for the first event, and the fallback order whenever two athletes are level. The one exception is Reverse Previous Event, which breaks a tie on the last event by overall points first and lot number second.',
+      'A station is one set of implements running its own order. Divisions on the same station run back to back; two stations run at the same time in different parts of the gym.',
+      'A small meet is fine on one station. Most promoters decide this after sign-ups close, when they know how many athletes each division has. Rename the stations if the gym calls them something else. If one station runs the events in a different order from the rest, the arrows on its card set that order.',
     ],
     publicSide:
-      'Roster names appear on the live scoreboard as soon as the meet is listed, with a dash in every event column until scores come in. Add only athletes you expect to show up.',
-    images: [{ src: '/guide/08-athletes.png', alt: 'The Athletes tab with rosters under each division' }],
+      'Each station gets an Up Now strip at the top of the scoreboard, so spectators can see who is lifting where. Next Up on the volunteer phones is per station.',
+    images: [{ src: '/guide/05-stations.png', alt: 'The Stations tab with women and novice divisions on Station 1 and open men on Station 2' }],
   },
   {
     id: 'listing',
     title: 'List it and open entries',
-    where: 'Tab 6, Listing',
+    where: 'Tab 5, Listing',
     body: [
       'Tick Listed to put the meet in Find a Show. The three status dropdowns are the badges the public sees: competition status (upcoming, live, completed), registration status (open, waitlist, closed, day-of only) and results status.',
       'Fill in the venue, the federation or format, the entry fee as you want it displayed, the deadline, an athlete cap and a contact. No money moves through the site; the fee line tells athletes how you want to be paid. Save Listing Settings writes it straight to the server.',
@@ -149,7 +137,7 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
   {
     id: 'registrations',
     title: 'Approve registrations',
-    where: 'Tab 7, Registrations',
+    where: 'Tab 6, Registrations',
     body: [
       'An athlete signs in or creates a free account on the form, picks a division, gives a name, email, emergency contact and date of birth, signs the waiver and submits. The entry is tied to their account, which is how it shows on their My Meets page. Under-18s are entered by a parent or guardian from the guardian\'s account.',
       'Each entry shows up here as Pending with the division and the signed waiver. Accept adds the athlete to that division roster with the next lot number; Decline removes them. Emergency contacts and dates of birth are visible to you only.',
@@ -161,6 +149,18 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
       { src: '/guide/14b-register-form.png', alt: 'The registration form once signed in, showing divisions with target weights and the athlete fields', caption: 'Then the entry form, with name and email filled from the account.' },
       { src: '/guide/10-registrations.png', alt: 'The Registrations tab with two pending entries and Accept and Decline buttons', caption: 'What you see.' },
     ],
+  },
+  {
+    id: 'athletes',
+    title: 'Athletes',
+    where: 'Tab 7, Athletes',
+    body: [
+      'There are two ways onto the roster. Athletes who register online land here when you accept them in step 7. Paper sign-ups and walk-ins you add yourself: Bulk Add takes one name per line into a division, Single Add takes one at a time.',
+      'Each athlete gets a lot number inside their division. That is the order for the first event, and the fallback order whenever two athletes are level. The one exception is Reverse Previous Event, which breaks a tie on the last event by overall points first and lot number second.',
+    ],
+    publicSide:
+      'Roster names appear on the live scoreboard as soon as the meet is listed, with a dash in every event column until scores come in. Add only athletes you expect to show up.',
+    images: [{ src: '/guide/08-athletes.png', alt: 'The Athletes tab with rosters under each division' }],
   },
   {
     id: 'meetday',

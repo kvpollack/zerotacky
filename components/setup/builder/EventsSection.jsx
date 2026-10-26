@@ -22,6 +22,7 @@ export default function EventsSection({
   onEditingChange, // optional: (open: boolean) => void, true while an EventForm draft is open (promoter dirty bar, Astra M2)
   closeFormSignal, // optional: a counter; each change closes any open EventForm draft (promoter bar's Discard draft, 10/26)
   defaultCollarWeightPerPair = 0, // meet.collarWeightPerPair, prefilled on new events (collars are per event, 10/26)
+  sectionNumber = 3, // heading number; the promoter editor passes its tab number (build order 10/26)
 }) {
   const [editingId, setEditingId] = useState(null); // 'NEW' | event.id | null
 
@@ -52,7 +53,7 @@ export default function EventsSection({
     <section className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-black uppercase tracking-wider text-zt-primary">
-          4. Events ({sortedEvents.length})
+          {sectionNumber}. Events ({sortedEvents.length})
         </h2>
         <button
           type="button"
