@@ -7,7 +7,9 @@ import type { LiveStateRow, RemoteMeet } from '@/lib/sync/meetApi';
 import { mergeResults } from '@/lib/sync/mapping';
 import { mergeAthletes } from '@/lib/sync/controller';
 import { scoreSingleEvent, calculateDivisionStandings } from '@/lib/engine';
-import { DEFAULT_THEME_ID, THEMES } from '@/lib/constants';
+import { THEMES } from '@/lib/constants';
+import WebsiteThemeFrame from '@/components/website/WebsiteThemeFrame';
+import WebsiteThemeControls from '@/components/website/WebsiteThemeControls';
 import type { AppState, Division, EventDef } from '@/lib/types';
 import Standings from '@/components/standings/Standings';
 import LeaderboardTable from '@/components/standings/LeaderboardTable';
@@ -18,8 +20,9 @@ import { getDemoScoreboardState } from '@/lib/website/data';
 const POLL_MS = 4000;
 
 // Public, read-only scoreboard: /m/<slug>. Loads the meet once, then polls results, athletes and
-// live_state. No login, no join code. ?theme=volt (any THEMES id) and ?layout=tv for the gym TV; the header
-// button toggles phone/TV too and remembers the choice on this device.
+// live_state. No login, no join code. ?theme=volt (any THEMES id) pins a theme for a TV link; otherwise the shared
+// preference applies and the header controls change it (MS-12). ?layout=tv for the gym TV; the header button
+// toggles phone/TV too and remembers the choice on this device.
 export default function ScoreboardClient({ slug }: { slug: string }) {
   const env = useMemo(() => readSyncEnv(), []);
   const client = useMemo(() => (env ? createSyncClient(env) : null), [env]);
@@ -32,7 +35,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [division, setDivision] = useState<string>('ALL');
   const since = useRef<string | null>(null);
-  const [theme, setTheme] = useState(DEFAULT_THEME_ID);
+  const [themeOverride, setThemeOverride] = useState<string | null>(null);   // from ?theme=, dropped once the user picks
   const [layout, toggleLayout] = useLayoutMode() as ['phone' | 'tv', () => void];
   const tv = layout === 'tv';
 
@@ -42,7 +45,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
 
   useEffect(() => {
     const t = new URLSearchParams(window.location.search).get('theme');
-    if (t && THEMES.some((x) => x.id === t)) setTheme(t);
+    if (t && THEMES.some((x) => x.id === t)) setThemeOverride(t);
   }, []);
 
   // fixture-backed demo board: used when there is no backend, or when the slug is not on the server but matches a demo show
@@ -113,9 +116,9 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   }, [client, meetId, demo]);
 
   const shell = (children: React.ReactNode) => (
-    <div data-zt-theme={theme} className="min-h-screen bg-zt-bg text-zt-text font-sans pb-10">
-      <div className={`mx-auto space-y-4 ${tv ? 'max-w-[1800px] p-6' : 'max-w-xl p-3.5'}`}>{children}</div>
-    </div>
+    <WebsiteThemeFrame className="pb-10" override={themeOverride} onUserChange={() => setThemeOverride(null)}>
+      <div className={`w-full mx-auto space-y-4 ${tv ? 'max-w-[1800px] p-6' : 'max-w-xl p-3.5'}`}>{children}</div>
+    </WebsiteThemeFrame>
   );
 
   if (!env) return shell(<Notice text="Live scoreboard is not configured on this build." />);
@@ -138,8 +141,10 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
 
   return shell(
     <>
-      <header className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+      {/* MS-12: theme controls joined the right cluster; on phones that cluster wraps under the title instead of
+          squeezing the meet name to one word per line */}
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1 basis-56">
           <div className="text-xs font-black uppercase tracking-widest text-zt-primary flex items-center gap-1.5">
             {completed
               ? <span className="inline-block w-2 h-2 rounded-full bg-zt-muted" aria-hidden="true" />
@@ -153,7 +158,8 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
           </div>
           <h1 className={`font-black break-words ${tv ? 'text-3xl' : 'text-xl leading-tight'}`}>{state.meet.name}</h1>
         </div>
-        <div className="flex items-start gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+        <WebsiteThemeControls />
         <LayoutToggle layout={layout} onToggle={toggleLayout} />
         <div className="text-right text-xs font-bold text-zt-muted flex-shrink-0">
           {updatedAt ? `updated ${new Date(updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })}` : ''}

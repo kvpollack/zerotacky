@@ -117,7 +117,7 @@ export default async function WebsiteLandingPage() {
               One URL Before, During &amp; After the Meet
             </h3>
             <p className="text-xs text-zt-text-2 leading-relaxed">
-              Upcoming shows list divisions, event rules, and target weights—supporting both
+              Upcoming shows list divisions, event rules, and target weights, supporting both
               traditional weight classes and inclusive strength-based groups like Strongfest.
               Live shows link directly to the public scoreboard, and completed shows display
               finalized podiums and event-by-event breakdowns.

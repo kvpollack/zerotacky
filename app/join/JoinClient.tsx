@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { createSyncClient, readSyncEnv } from '@/lib/sync/client';
 import { SyncController, getDeviceId } from '@/lib/sync/controller';
 import { checkAdminPin } from '@/lib/sync/meetApi';
-import { STORAGE_KEY, ROLE_STORAGE_KEY, DEFAULT_THEME_ID, SNAPSHOT_STORAGE_KEY, SNAPSHOT_LIMIT } from '@/lib/constants';
+import { STORAGE_KEY, ROLE_STORAGE_KEY, SNAPSHOT_STORAGE_KEY, SNAPSHOT_LIMIT } from '@/lib/constants';
+import WebsiteThemeFrame from '@/components/website/WebsiteThemeFrame';
+import WebsiteThemeControls from '@/components/website/WebsiteThemeControls';
 import type { RemoteMeet } from '@/lib/sync/meetApi';
 import type { AppState } from '@/lib/types';
 
@@ -92,8 +94,9 @@ export default function JoinClient() {
   const btn = 'w-full py-3 rounded-xl font-black text-sm uppercase';
 
   return (
-    <div data-zt-theme={DEFAULT_THEME_ID} className="min-h-screen bg-zt-bg text-zt-text font-sans p-5 flex flex-col items-center">
-      <div className="w-full max-w-sm space-y-4 mt-10">
+    <WebsiteThemeFrame className="p-5 items-center">
+      <div className="w-full max-w-sm flex justify-end"><WebsiteThemeControls /></div>
+      <div className="w-full max-w-sm space-y-4 mt-4">
         <div className="text-center">
           <div className="text-[10px] font-black uppercase tracking-widest text-zt-primary">ZEROTACKY</div>
           <h1 className="text-2xl font-black">Join a meet</h1>
@@ -201,7 +204,7 @@ export default function JoinClient() {
           Account and sign in
         </a>
       </div>
-    </div>
+    </WebsiteThemeFrame>
   );
 }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import FollowShowButton from './FollowShowButton';
 import {
@@ -15,6 +15,8 @@ import {
   Trophy,
 } from 'lucide-react';
 import { describeShowLifecycle } from '@/lib/website/filters';
+import { formatShowDate } from '@/lib/website/showHistory';
+import { directionsUrl, formatLocalDateTime } from '@/lib/website/format';
 import type { DivisionResultsView, PublicShowRecord } from '@/lib/website/types';
 
 interface ShowDetailClientProps {
@@ -118,7 +120,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
           </div>
           {show.lastUpdatedIso && (
             <div className="text-[11px] font-semibold text-zt-muted">
-              Last updated: {show.lastUpdatedIso}
+              Last updated: <UpdatedStamp iso={show.lastUpdatedIso} />
             </div>
           )}
         </div>
@@ -202,7 +204,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
             </div>
             {show.lastUpdatedIso && (
               <span className="text-[11px] font-bold text-emerald-200/80">
-                Snapshot updated: {show.lastUpdatedIso}
+                Snapshot updated: <UpdatedStamp iso={show.lastUpdatedIso} />
               </span>
             )}
           </div>
@@ -232,7 +234,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
               <span>
                 {life.canRenderOfficialPodium
                   ? `Official Finalized Podiums${show.isDemoFixture ? ' (Demo Results)' : ''}`
-                  : 'Provisional Standings — Pending Official Finalization'}
+                  : 'Provisional Standings, Pending Official Finalization'}
               </span>
             </h2>
 
@@ -627,9 +629,23 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
             <div>
               <dt className="font-bold text-zt-muted">Facility &amp; Address</dt>
               <dd className="font-bold text-zt-text mt-0.5">
-                {show.venue.facilityName || 'Not provided'} —{' '}
-                {show.venue.streetAddress ? `${show.venue.streetAddress}, ` : ''}
-                {show.venue.city}, {show.venue.state} {show.venue.postalCode || ''}
+                <div>{show.venue.facilityName || 'Facility not provided'}</div>
+                <div className="font-semibold text-zt-text-2">
+                  {show.venue.streetAddress ? `${show.venue.streetAddress}, ` : ''}
+                  {show.venue.city}, {show.venue.state} {show.venue.postalCode || ''}
+                </div>
+                {/* MS-14: a map link built from the address on file; nothing is invented when the address is missing */}
+                {directionsUrl(show.venue) && (
+                  <a
+                    href={directionsUrl(show.venue) ?? '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 mt-1 text-zt-primary hover:underline"
+                  >
+                    <ExternalLink className="w-3 h-3" aria-hidden="true" />
+                    Directions
+                  </a>
+                )}
               </dd>
             </div>
             <div>
@@ -649,4 +665,12 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
       </section>
     </div>
   );
+}
+
+// MS-14: the ISO instant from the server, shown in the reader's local time once mounted. The server render (and the
+// first client paint) shows the date only, which is the same string in every zone, so hydration stays clean.
+function UpdatedStamp({ iso }: { iso: string }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return <time dateTime={iso}>{mounted ? formatLocalDateTime(iso) || formatShowDate(iso) : formatShowDate(iso)}</time>;
 }
