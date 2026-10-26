@@ -155,16 +155,16 @@ function seeded() {
 const UUID = '11111111-2222-3333-4444-555555555555';
 
 describe('meetApi.publishMeet', () => {
-  test('one RPC call with the publish key and every table, remote uuid stamped on every row', async () => {
+  test('one RPC call with every table and no p_key (024), remote uuid stamped on every row', async () => {
     const { f, calls } = fakeFetch(() => ({ status: 200, json: { id: UUID, join_code: 'ABC123' } }));
-    const c = C.createSyncClient({ ...CFG, fetchImpl: f });
+    const c = C.createSyncClient({ ...CFG, accessToken: 'JWT', fetchImpl: f });
     const state = seeded();
-    const out = await A.publishMeet(c, state, { slug: 'strongfest', meetId: UUID, isDemo: false, deviceId: 'dev1', stations: [{ id: 'A', label: 'Only' }] }, 'KEY-1');
+    const out = await A.publishMeet(c, state, { slug: 'strongfest', meetId: UUID, isDemo: false, deviceId: 'dev1', stations: [{ id: 'A', label: 'Only' }] });
     assert.deepEqual(out, { id: UUID, joinCode: 'ABC123' });
     assert.equal(calls.length, 1);
     assert.equal(calls[0].url, 'https://abc.supabase.co/rest/v1/rpc/zt_publish_meet');
     const b = calls[0].body;
-    assert.equal(b.p_key, 'KEY-1');
+    assert.equal('p_key' in b, false);
     assert.equal(b.p_meet.id, UUID);
     assert.equal(b.p_meet.slug, 'strongfest');
     assert.deepEqual(b.p_meet.stations, [{ id: 'A', label: 'Only' }]);

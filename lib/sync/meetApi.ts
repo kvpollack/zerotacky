@@ -80,14 +80,13 @@ export async function fetchMeetByJoinCode(client: SyncClient, code: string): Pro
   return toRemoteMeet(meet, await fetchChildren(client, meet.id));
 }
 
-// Publish the full meet (promoter/admin phone). Goes through the zt_publish_meet RPC, which checks the caller
-// server-side (a signed-in user via the client's access token, or a legacy publish key), upserts meet + divisions +
-// events + athletes (authoritative: stale children are removed) and merges results last-writer-wins. Returns the
-// remote meet id and its join code. `publishKey` may be null when the client carries a session token.
-export async function publishMeet(client: SyncClient, state: AppState, extra: PublishExtra, publishKey: string | null): Promise<{ id: string; joinCode: string }> {
+// Publish the full meet (promoter/admin phone). Goes through the zt_publish_meet RPC, which identifies the caller
+// server-side from the client's access token (auth.uid(); 024 retired the legacy publish key), upserts meet +
+// divisions + events + athletes (authoritative: stale children are removed) and merges results last-writer-wins.
+// Returns the remote meet id and its join code.
+export async function publishMeet(client: SyncClient, state: AppState, extra: PublishExtra): Promise<{ id: string; joinCode: string }> {
   const rows = stateToRows(state, extra);
   const out = await client.rpc<{ id: string; join_code: string }>('zt_publish_meet', {
-    p_key: publishKey || null,
     p_meet: rows.meet,
     p_divisions: rows.divisions,
     p_events: rows.events,

@@ -29,15 +29,6 @@ export function slugFor(meet) {
   return String(base).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'meet';
 }
 
-// What to hand zt_publish_meet as p_key: the saved key when there is one, else null. Signed out, null is refused by
-// the server. Signed in, null means "use auth.uid()", and a key alongside the JWT claims an ownerless meet that was
-// published with that key before accounts existed (006; Astra gate HIGH, 10/17 pm). Before this the signed-in
-// phone always sent null and the claim the server asked for could not be made from the UI.
-export function keyToSend(signedIn, publishKey) {
-  void signedIn;
-  return publishKey || null;
-}
-
 export function useMeetSync({ state, setState, applyNewState, roleLock, station, live, activeTab = 'judge' }) {
   const env = useMemo(() => readSyncEnv(), []);
   const stateRef = useRef(state);
@@ -45,24 +36,18 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
   const ctlRef = useRef(null);
   const [status, setStatus] = useState(OFF_STATUS);
   const [link, setLink] = useState(null);
-  const [publishKey, setPublishKeyState] = useState('');
   const timers = useRef({});
   const auth = useAuth();
   const accessToken = auth.session?.access_token ?? null;
   const userId = auth.session?.user?.id ?? auth.user?.id ?? null;
   const signedIn = !!accessToken;
-  // 10/21 (Kurt): the publish key is retired from the UI. Publishing needs a signed-in account; a key already saved on
-  // this phone still rides along (keyToSend) so a meet published with it before accounts existed is claimed, not refused.
+  // 10/21 (Kurt): the publish key is retired from the UI; 024 (10/26) retired it server-side too. Publishing needs a
+  // signed-in account.
   const canPublish = signedIn;
   const tokenRef = useRef(accessToken);
   tokenRef.current = accessToken;
   const userIdRef = useRef(userId);
   userIdRef.current = userId;
-
-  const setPublishKey = useCallback((k) => {
-    setPublishKeyState(k);
-    try { if (k) localStorage.setItem(PUBLISH_KEY_KEY, k); else localStorage.removeItem(PUBLISH_KEY_KEY); } catch (e) { /* ignore */ }
-  }, []);
 
   // Controller lifetime = component lifetime.
   useEffect(() => {
@@ -109,7 +94,7 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
     ctlRef.current = ctl;
     setStatus(ctl.status);
     setLink(ctl.link);
-    try { setPublishKeyState(localStorage.getItem(PUBLISH_KEY_KEY) || ''); } catch (e) { /* ignore */ }
+    try { localStorage.removeItem(PUBLISH_KEY_KEY); } catch (e) { /* ignore */ }   // 024: a key saved before accounts is dead weight
     return () => {
       ctlRef.current = null;
       Object.values(timers.current).forEach(clearTimeout);
@@ -187,21 +172,19 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
     debounce('republish', REPUBLISH_DEBOUNCE_MS, () => {
       const meet = stateRef.current.meet;
       // The controller records a refusal in status.publishError (shown in the Sync panel); nothing else to do here.
-      ctlRef.current?.publish({ slug: ctlRef.current.link?.slug || slugFor(meet), stations: meet.stations, isDemo: !!meet.isDemo }, keyToSend(signedIn, publishKey)).catch(() => {});
+      ctlRef.current?.publish({ slug: ctlRef.current.link?.slug || slugFor(meet), stations: meet.stations, isDemo: !!meet.isDemo }).catch(() => {});
     });
-  }, [configSig, publishKey, canPublish, signedIn, debounce]);
+  }, [configSig, canPublish, debounce]);
 
   const publish = useCallback(async (opts = {}) => {
     const ctl = ctlRef.current;
     if (!ctl) throw new Error('Sync is not configured on this build.');
-    const key = opts.publishKey ?? publishKey;
     if (!signedIn) throw new Error('Sign in to your ZeroTacky account to publish this meet.');
     const meet = stateRef.current.meet;
-    // Signed in: the server records this account as owner / member. A saved key goes along too, so a meet that was
-    // published with the key before accounts existed is claimed by this account (006) instead of being refused.
-    const out = await ctl.publish({ slug: opts.slug || slugFor(meet), stations: meet.stations, isDemo: !!meet.isDemo }, keyToSend(signedIn, key));
+    // Signed in: the server records this account as owner / member (auth.uid()).
+    const out = await ctl.publish({ slug: opts.slug || slugFor(meet), stations: meet.stations, isDemo: !!meet.isDemo });
     return out;
-  }, [publishKey, signedIn]);
+  }, [signedIn]);
 
   // Linked phone: server-side admin PIN check (007). Resolves null when not linked (useRoleLock then uses local state).
   const checkAdminPin = useCallback(async (pin) => {
@@ -231,8 +214,6 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
     joinByCode,
     unlink,
     syncNow,
-    publishKey,
-    setPublishKey,
     canPublish,
     account: signedIn ? { email: auth.user?.email ?? null, label: profileLabel(auth.profile, auth.user?.email), loading: auth.loading } : null,
     deviceId: ctlRef.current?.deviceId ?? null,

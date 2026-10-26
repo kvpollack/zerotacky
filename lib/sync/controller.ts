@@ -13,7 +13,7 @@ import type { RemoteMeet, LiveStateRow } from './meetApi';
 
 export const LINK_KEY = 'ZEROTACKY_SYNC_LINK_V1';
 export const DEVICE_KEY = 'ZEROTACKY_DEVICE_ID_V1';
-export const PUBLISH_KEY_KEY = 'ZEROTACKY_PUBLISH_KEY_V1';
+export const PUBLISH_KEY_KEY = 'ZEROTACKY_PUBLISH_KEY_V1';   // 024: retired; the hook removes a leftover value once
 
 export interface SyncLink {
   meetId: string;        // remote uuid
@@ -22,8 +22,8 @@ export interface SyncLink {
   joinCode: string;
   role: 'admin' | 'device';
   // How this phone earned its write authority (Astra A4, 10/17). 'account' links pause when the account signs out;
-  // 'key' (legacy publish key) and 'join' (volunteer join code) links are intentionally accountless and keep going.
-  // Absent on links written before 10/17: treated as 'key' for admin and 'join' for device.
+  // 'key' (legacy publish key, no new ones since 024) and 'join' (volunteer join code) links are accountless and keep
+  // going. Absent on links written before 10/17: treated as 'key' for admin and 'join' for device.
   auth?: 'account' | 'key' | 'join';
   // 011 (Astra R-H1): the grant token the server issued when this phone proved the meet PIN. Sent as x-zt-grant;
   // results/live_state writes from a joined phone are refused without it. Null until a PIN succeeds on this phone.
@@ -244,10 +244,10 @@ export class SyncController {
     } else if (this.status.state === 'paused') this.setStatus({ state: 'idle', error: null });
   }
 
-  // Admin phone: publish (or re-publish) the whole meet. Keeps the remote uuid across re-publishes.
-  // `publishKey` is null when the phone is signed in (setAccessToken) and the server should use auth.uid(). A signed-in
-  // phone that also holds a key sends both: that is how an ownerless meet published with the key is claimed (006).
-  async publish(extra: Omit<PublishExtra, 'meetId' | 'deviceId'>, publishKey: string | null): Promise<SyncLink> {
+  // Admin phone: publish (or re-publish) the whole meet. Keeps the remote uuid across re-publishes. Needs a signed-in
+  // account (setAccessToken): the server takes the owner from auth.uid() (024 retired the publish key). A legacy 'key'
+  // link re-published from a signed-in phone becomes an 'account' link.
+  async publish(extra: Omit<PublishExtra, 'meetId' | 'deviceId'>): Promise<SyncLink> {
     // Re-publish is authoritative for the roster, so first bring in anything the floor phones added. R2 (Astra
     // rehearsal 10/17): if that pre-pull fails, stop. Publishing a stale roster would tell the server to delete
     // athletes this phone has simply not seen yet (the server refuses the dangerous cases since 008, but the
@@ -269,24 +269,24 @@ export class SyncController {
       ? { ...base, results: pulled.results ?? base.results, athletes: pulled.athletes ?? base.athletes }
       : base;
     const meetId = this.link?.localMeetId === state.meet.id ? this.link.meetId : newMeetUuid();
-    if (publishKey === null && this.accessToken === null) throw new Error('Sign in to your ZeroTacky account to publish this meet.');
-    if (publishKey === null && this.otherAccount) throw new Error('This meet was published from a different ZeroTacky account. Sign in as that account, or unlink this phone and publish again.');
+    if (this.accessToken === null) throw new Error('Sign in to your ZeroTacky account to publish this meet.');
+    if (this.otherAccount) throw new Error('This meet was published from a different ZeroTacky account. Sign in as that account, or unlink this phone and publish again.');
     const gen = this.session;
     this.setStatus({ state: 'syncing', error: null });
     try {
-      const out = await publishMeet(this.o.client, state, { ...extra, meetId, deviceId: this.o.deviceId }, publishKey);
+      const out = await publishMeet(this.o.client, state, { ...extra, meetId, deviceId: this.o.deviceId });
       if (gen !== this.session) throw new Error('Sign-in changed while publishing; this phone was not linked. Publish again.');
       const link: SyncLink = {
         meetId: out.id, localMeetId: state.meet.id, slug: extra.slug, joinCode: out.joinCode, role: 'admin',
-        auth: publishKey === null ? 'account' : 'key',
-        userId: this.accessToken ? this.userId : null,
+        auth: 'account',
+        userId: this.userId,
         since: this.link?.meetId === out.id ? this.link.since : null,
         grant: this.link?.meetId === out.id && this.link.joinCode === out.joinCode ? this.link.grant ?? null : null,
       };
       this.setLink(link);
       this.seedKnown(state);
-      // 011: a signed-in owner writes scores as a member, but a publish-key phone has no account, so it proves the PIN
-      // it just set and carries the grant like a judge would. Best effort: a refusal here does not undo the publish.
+      // 011: the owner writes scores as a member, and also proves the PIN it just set and carries the grant like a judge
+      // would (a judge-style unlock on this phone later reuses it). Best effort: a refusal here does not undo the publish.
       if (!link.grant) {
         try {
           const token = await checkAdminPin(this.o.client, out.joinCode, state.meet.adminPin || '1050', this.o.deviceId);

@@ -19,6 +19,7 @@ function phone(server, deviceId, initialState) {
   const box = { state: initialState };
   const client = C.createSyncClient({ url: 'https://x.supabase.co', anonKey: 'A', fetchImpl: server.fetchImpl });
   const ctl = new K.SyncController({ client, storage: memStorage(), deviceId, getState: () => box.state, onIncoming: (p) => { box.state = { ...box.state, ...p }; }, now: clock });
+  if (/^a/.test(deviceId)) ctl.setAccessToken(`TOKEN_${deviceId}`, `user-${deviceId}`);   // 024: admins publish signed in
   box.mutate = (fn) => { box.state = fn(box.state); ctl.noteLocalChange(); };
   box.ctl = ctl;
   return box;
@@ -31,7 +32,7 @@ function score(state, reps) {
 async function setup() {
   const srv = fakeServer();
   const admin = phone(srv, 'admin1', P.getInitialSeedState('strongfest-2026'));
-  await admin.ctl.publish({ slug: 'sf', stations: [], isDemo: false }, 'GOODKEY');
+  await admin.ctl.publish({ slug: 'sf', stations: [], isDemo: false });
   const joined = phone(srv, 'spectator1', { meet: {}, divisions: [], events: [], athletes: [], results: [] });
   const remote = await joined.ctl.lookupJoinCode('JC0001');
   joined.state = remote.state;
@@ -98,7 +99,7 @@ describe('judge grants (011)', () => {
     assert.equal(srv.db.results[0].payload.reps, 7);
     // a re-publish with the same code keeps the grant instead of spending another PIN try
     const before = srv.db.grants.length;
-    await admin.ctl.publish({ slug: 'sf', stations: [], isDemo: false }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'sf', stations: [], isDemo: false });
     assert.equal(srv.db.grants.length, before);
   });
 
