@@ -6,6 +6,7 @@ import { normalizeState, slugify } from '../meetBuilder';
 import { rowsToState, stateToRows } from '../sync/mapping';
 import type { AppState } from '../types';
 import {
+  type AthleteAccountLink,
   emptyListing,
   type ApiResult,
   type DeletedMeet,
@@ -589,6 +590,37 @@ export function createSupabasePromoterApi(
           return { data: null, error: `No registration found with id "${id}".` };
         }
         return { data: rowToRegistrationRequest(row), error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    async listAthleteAccounts(serverId: string): Promise<ApiResult<AthleteAccountLink[]>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) {
+          return { data: null, error: 'Sign in required to view linked accounts.' };
+        }
+        const rows = (await db.rpc<AthleteAccountLink[] | null>('zt_meet_athlete_accounts', { p_meet_id: serverId })) ?? [];
+        return { data: rows.map((r) => ({ ...r, fromRegistration: Boolean(r.fromRegistration) })), error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    async linkAthleteAccount(serverId: string, athleteId: string, username: string | null): Promise<ApiResult<AthleteAccountLink | null>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) {
+          return { data: null, error: 'Sign in required to link an account.' };
+        }
+        const row = await db.rpc<{ athleteId: string; username: string | null; displayName: string | null } | null>('zt_link_athlete_account', {
+          p_meet_id: serverId,
+          p_athlete_id: athleteId,
+          p_username: username ?? '',
+        });
+        if (!row || !row.username) return { data: null, error: null };
+        return { data: { athleteId: row.athleteId, username: row.username, displayName: row.displayName ?? row.username, fromRegistration: false }, error: null };
       } catch (e) {
         return { data: null, error: errMessage(e) };
       }

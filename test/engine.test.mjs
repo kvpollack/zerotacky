@@ -91,6 +91,40 @@ describe('scoreSingleEvent: reps', () => {
   });
 });
 
+describe('scoreSingleEvent: scratched athletes and the points field (10/26)', () => {
+  test('scratched with no score leaves the field: 3 active athletes score 3-2-1, scratch sits last with 0', () => {
+    const e = ev();
+    const roster = [ath(1), ath(2), ath(3), ath(4, 4, { status: 'withdrawn' })];
+    const rows = byId(scoreSingleEvent(e, roster, [
+      res('a1', 'e1', { reps: 15 }), res('a2', 'e1', { reps: 8 }), res('a3', 'e1', { reps: 1 }),
+    ]));
+    assert.equal(rows.a1.points, 3); assert.equal(rows.a2.points, 2); assert.equal(rows.a3.points, 1);
+    assert.equal(rows.a4.points, 0); assert.equal(rows.a4.place, 4); assert.equal(rows.a4.isZero, true);
+  });
+  test('withdrawn mid-meet after scoring keeps the field size for every event', () => {
+    const e1 = ev(); const e2 = ev({ id: 'e2', eventNumber: 2 });
+    const roster = [ath(1), ath(2), ath(3), ath(4, 4, { status: 'withdrawn' })];
+    const all = [
+      res('a1', 'e1', { reps: 15 }), res('a2', 'e1', { reps: 8 }), res('a3', 'e1', { reps: 1 }), res('a4', 'e1', { reps: 9 }),
+      res('a1', 'e2', { reps: 5 }), res('a2', 'e2', { reps: 4 }), res('a3', 'e2', { reps: 3 }),
+    ];
+    const r1 = byId(scoreSingleEvent(e1, roster, all));
+    assert.equal(r1.a1.points, 4); assert.equal(r1.a4.points, 3); assert.equal(r1.a4.place, 2);
+    const r2 = byId(scoreSingleEvent(e2, roster, all));
+    assert.equal(r2.a1.points, 4); assert.equal(r2.a3.points, 2); assert.equal(r2.a4.points, 0); assert.equal(r2.a4.place, 4);
+  });
+  test('a stray empty row (card opened, nothing entered) does not keep a scratch in the field', () => {
+    const e = ev();
+    const roster = [ath(1), ath(2), ath(3, 3, { status: 'withdrawn' })];
+    const rows = byId(scoreSingleEvent(e, roster, [res('a1', 'e1', { reps: 2 }), res('a2', 'e1', { reps: 1 }), res('a3', 'e1', { tier: 'heavy' })]));
+    assert.equal(rows.a1.points, 2); assert.equal(rows.a2.points, 1); assert.equal(rows.a3.points, 0);
+  });
+  test('all-active roster is unchanged', () => {
+    const rows = byId(scoreSingleEvent(ev(), A4, [res('a1', 'e1', { reps: 5 }), res('a2', 'e1', { reps: 9 }), res('a3', 'e1', { reps: 7 }), res('a4', 'e1', { reps: 1 })]));
+    assert.equal(rows.a2.points, 4); assert.equal(rows.a4.points, 1);
+  });
+});
+
 describe('scoreSingleEvent: time_or_distance', () => {
   const e = ev({ scoringType: 'time_or_distance', timeCapSeconds: 60 });
   test('any finish beats any DNF; faster time wins; DNF by distance', () => {

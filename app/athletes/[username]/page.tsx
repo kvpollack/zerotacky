@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Dumbbell, ExternalLink, MapPin, User } from 'lucide-react';
+import { ArrowLeft, Dumbbell, ExternalLink, MapPin, Trophy, User } from 'lucide-react';
 import WebsiteShell from '@/components/website/WebsiteShell';
-import { getPublicAthleteByUsername } from '@/lib/website/data';
+import { getAthleteShowHistory, getPublicAthleteByUsername } from '@/lib/website/data';
+import { formatPlace, formatShowDate } from '@/lib/website/showHistory';
 import { SOCIAL_KEYS, socialUrl } from '@/lib/auth/profile';
 import { athleteJsonLd, canonical } from '@/lib/website/seo';
 import JsonLd from '@/components/website/JsonLd';
@@ -33,6 +34,7 @@ export default async function AthleteProfilePage({ params }: AthletePageProps) {
   const res = await getPublicAthleteByUsername(username);
   const a = res.data;
   if (!a) notFound();
+  const history = (await getAthleteShowHistory(a.username)).data ?? [];
 
   const socials = SOCIAL_KEYS.map((sk) => ({ ...sk, value: a.socials[sk.key] ?? '', href: a.socials[sk.key] ? socialUrl(sk.key, a.socials[sk.key] as string) : '' })).filter((s) => s.value && s.href);
 
@@ -112,6 +114,42 @@ export default async function AthleteProfilePage({ params }: AthletePageProps) {
                 </div>
               )}
             </div>
+          </section>
+        )}
+
+        {history.length > 0 && (
+          <section aria-labelledby="history-heading" className="space-y-3">
+            <h2 id="history-heading" className="text-base font-black uppercase tracking-wider text-zt-primary">Show History</h2>
+            <ul className="space-y-2">
+              {history.map((h) => {
+                const placeLabel = formatPlace(h);
+                const podium = h.place != null && h.place <= 3 && !h.withdrawn;
+                return (
+                  <li key={h.meetId} className="bg-zt-surface border border-zt-border rounded-2xl p-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <div className="text-xs font-extrabold uppercase text-zt-muted">{formatShowDate(h.date)}{h.venue ? ` • ${h.venue}` : ''}</div>
+                      <Link href={h.href} className="block text-sm font-black text-zt-text hover:text-zt-primary break-words">{h.name}</Link>
+                      <div className="text-xs font-semibold text-zt-text-2">
+                        {h.divisionName}
+                        {h.athleteName !== a.displayName ? ` • entered as ${h.athleteName}` : ''}
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className={`text-lg font-black flex items-center justify-end gap-1.5 ${podium ? 'text-zt-primary' : 'text-zt-text'}`}>
+                        {podium && <Trophy className="w-4 h-4" aria-hidden="true" />}
+                        {placeLabel}
+                      </div>
+                      {h.place != null && !h.withdrawn && (
+                        <div className="text-xs font-bold text-zt-muted">
+                          {h.totalPoints} pts • {h.eventWins} event {h.eventWins === 1 ? 'win' : 'wins'} of {h.eventCount}
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="text-xs text-zt-muted">Official results from shows scored on ZeroTacky and marked final by the promoter.</p>
           </section>
         )}
 

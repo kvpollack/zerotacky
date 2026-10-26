@@ -512,7 +512,7 @@ export default function AccountClient() {
                 <span className="text-sm font-black text-zt-muted">@</span>
                 <input id="profile-username" value={draftUsername} onChange={(e) => setDraftUsername(e.target.value)} className={inputCls} maxLength={USERNAME_MAX} autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="yourname" />
               </div>
-              <div className="text-[10px] text-zt-muted mt-1">3 to 30 characters, lowercase letters, numbers and underscores. If you change it, the old one is held for 30 days so nobody else can grab it right away.</div>
+              <div className="text-[10px] text-zt-muted mt-1">3 to 30 characters, lowercase letters, numbers and underscores. If you change it, the old one is held for 30 days so nobody else can grab it right away. Promoters use it to link your results to this page (Show History).</div>
             </div>
             <button type="submit" disabled={usernameBusy || normalizeUsername(draftUsername) === (p.username ?? '')} className={quietBtn}>
               {usernameBusy ? 'Saving…' : p.username ? 'Change username' : 'Set username'}

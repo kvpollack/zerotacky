@@ -41,6 +41,7 @@ import {
 } from '@/lib/meetBuilder';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import type {
+  AthleteAccountLink,
   MeetListing,
   PromoterMeetDetail,
   PromoterUser,
@@ -51,6 +52,7 @@ import { isLiveBackend, usePromoterApi } from '@/lib/promoter/usePromoterApi';
 import type { AppState, Athlete, Division, EventDef, Meet } from '@/lib/types';
 import ListingSection from './ListingSection';
 import RegistrationsSection from './RegistrationsSection';
+import AthleteAccountsSection from './AthleteAccountsSection';
 import MeetDaySection from './MeetDaySection';
 
 type SectionId =
@@ -88,6 +90,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   // Astra M2: an open EventForm holds a draft that reaches workingState only through its own Save button, so the
   // global dirty bar and the registration guard treat it like unsaved work.
   const [eventFormOpen, setEventFormOpen] = useState(false);
+  const [athleteLinks, setAthleteLinks] = useState<AthleteAccountLink[]>([]);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const loadAll = useCallback(async () => {
@@ -106,9 +109,10 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
       return;
     }
 
-    const [meetRes, regsRes] = await Promise.all([
+    const [meetRes, regsRes, linksRes] = await Promise.all([
       api.getMeet(serverId),
       api.listRegistrations(serverId),
+      api.listAthleteAccounts(serverId),
     ]);
 
     if (meetRes.error || !meetRes.data) {
@@ -116,6 +120,8 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
       setLoading(false);
       return;
     }
+    // 023: linked accounts are a side panel; a failure there must not block the meet.
+    setAthleteLinks(linksRes.data ?? []);
 
     setDetail(meetRes.data);
     setWorkingState(JSON.parse(JSON.stringify(meetRes.data.state)));
@@ -262,6 +268,19 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     : eventFormOpen
       ? 'An event form is open on the Events tab. Save or cancel it first; accepting or declining reloads the meet and would drop that draft.'
       : null;
+
+  // 023: links need the saved roster ids, so the row list comes from `detail.state`, and a dirty draft blocks it.
+  const handleLinkAthleteAccount = async (athleteId: string, username: string | null): Promise<{ error?: string }> => {
+    if (isDirty) {
+      return { error: 'Save or discard your roster changes first, then link accounts to the saved athletes.' };
+    }
+    const res = await api.linkAthleteAccount(serverId, athleteId, username);
+    if (res.error) return { error: res.error };
+    const refreshed = await api.listAthleteAccounts(serverId);
+    if (refreshed.data) setAthleteLinks(refreshed.data);
+    else setAthleteLinks((prev) => (res.data ? [...prev.filter((l) => l.athleteId !== athleteId), res.data] : prev.filter((l) => l.athleteId !== athleteId)));
+    return {};
+  };
 
   const handleSetRegistrationStatus = async (
     regId: string,
@@ -659,6 +678,13 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             moveAthlete={moveAthlete}
             shuffleLots={shuffleLots}
             toggleAthleteWithdrawn={toggleAthleteWithdrawn}
+          />
+          <AthleteAccountsSection
+            athletes={detail.state.athletes}
+            divisions={detail.state.divisions}
+            links={athleteLinks}
+            onLink={handleLinkAthleteAccount}
+            blockedReason={isDirty ? 'Save or discard your roster changes first, then link accounts to the saved athletes.' : null}
           />
         </div>
 

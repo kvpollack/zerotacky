@@ -8,12 +8,30 @@ import type {
   TiebreakerRule,
 } from '../types';
 
+// A result that scored something in some event. Used to decide whether a withdrawn athlete stays in the points field.
+export function resultHasScore(r: Result): boolean {
+  if (r.didNotStart) return false;
+  if ((r.reps ?? 0) > 0 || (r.timeSeconds ?? 0) > 0 || (r.distanceFeet ?? 0) > 0) return true;
+  if ((r.implementsCompleted ?? 0) > 0 || (r.maxWeightLbs ?? 0) > 0) return true;
+  return Object.values(r.risingBarAttempts ?? {}).some((st) => st === 'good');
+}
+
+// Points field for a division (Strongfest 10/26): an athlete scratched before scoring anything does not count toward
+// N, so the rest of the group is not handed an extra point per event. An athlete who withdraws mid-meet keeps the
+// field size they competed in (their earlier placings stand, later events score zero).
+export function scoringField(divisionAthletes: Athlete[], results: Result[]): Athlete[] {
+  return divisionAthletes.filter(
+    (a) => a.status !== 'withdrawn' || results.some((r) => r.athleteId === a.id && resultHasScore(r))
+  );
+}
+
 export function scoreSingleEvent(
   event: EventDef,
   divisionAthletes: Athlete[],
   results: Result[]
 ): ScoredRow[] {
-  const N = divisionAthletes.length;
+  const field = new Set(scoringField(divisionAthletes, results).map((a) => a.id));
+  const N = field.size;
   const resultMap = new Map<string, Result>();
   results.forEach((r) => {
     if (r.eventId === event.id) resultMap.set(r.athleteId, r);
@@ -133,7 +151,8 @@ export function scoreSingleEvent(
       scoredRows.push({
         athleteId: current.athlete.id,
         athleteName: current.athlete.name,
-        place: N,
+        // last in the field; a scratched athlete outside the field sits one place below it
+        place: field.has(current.athlete.id) ? N : N + 1,
         points: 0,
         displayScore: current.displayScore,
         isZero: true,

@@ -59,6 +59,15 @@ export interface DeletedMeet {
 // Athlete side of My Meets (010, Kurt 10/19): one row per meet the signed-in account follows or registered for.
 // A registration beats a follow for the same meet. The UI buckets rows with `bucketAthleteMeets` (lib/promoter/rules):
 // Following (kind 'follow'), Registered (registration, meet not completed), Completed (registration, meet completed).
+// 023: a roster athlete linked to a ZeroTacky account (show history on the public athlete page). Links arrive from
+// accepted registrations automatically; the promoter adds the rest by username (hand-entered rosters).
+export interface AthleteAccountLink {
+  athleteId: string;
+  username: string;
+  displayName: string;
+  fromRegistration: boolean;
+}
+
 export interface MyAthleteMeet {
   meetServerId: string;
   slug: string;
@@ -199,6 +208,10 @@ export interface PromoterApi {
 
   // registrations (M4; fixture only until the schema lands)
   listRegistrations(serverId: string): Promise<ApiResult<RegistrationRequest[]>>;
+  // 023 show history: which roster athletes are linked to an account, and link/unlink one by username (null or ''
+  // unlinks). Owner or member only; the server rejects a username already linked to another athlete on the meet.
+  listAthleteAccounts(serverId: string): Promise<ApiResult<AthleteAccountLink[]>>;
+  linkAthleteAccount(serverId: string, athleteId: string, username: string | null): Promise<ApiResult<AthleteAccountLink | null>>;
   // accept: validates the division still exists, refuses when the roster is at listing.athleteCap (raise the cap first;
   // there is no silent override), creates the state.athletes row, stores athleteId on the request.
   // decline/withdraw of an accepted request removes exactly that athleteId's row, and only if it has no results.

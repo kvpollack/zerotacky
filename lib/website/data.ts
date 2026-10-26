@@ -12,6 +12,7 @@
 import type { MeetListingRow } from '../promoter/db';
 import { createSyncClient, readSyncEnv, type SyncClient } from '../sync/client';
 import type { AthleteRow, DivisionRow, EventRow, ResultRow } from '../sync/mapping';
+import { buildShowHistoryEntry, type ShowHistoryEntry, type ShowHistoryRow } from './showHistory';
 import { latestServerAt } from '../sync/meetApi';
 import {
   DEMO_GYM_LISTINGS,
@@ -307,6 +308,43 @@ export async function getPublicAthleteByUsername(
     return { source: 'live_supabase', data: rows.length ? mapPublicProfileRow(rows[0], base) : null, error: null };
   } catch (err) {
     return { source: 'live_supabase', data: null, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
+// Show history (023, 10/26): Final, non-demo shows a public profile competed in, with the placing computed from the
+// public meet data by the board's engine. Empty for unknown or private usernames; a meet whose data fails to load
+// is dropped rather than failing the page.
+export async function getAthleteShowHistory(
+  username: string,
+  opts: ShowDataOptions = {}
+): Promise<DataResult<ShowHistoryEntry[]>> {
+  const key = cleanUsernameParam(username);
+  const client = resolveClient(opts);
+  if (!client) return { source: 'demo', data: [], error: null };
+  if (!key) return { source: 'live_supabase', data: [], error: null };
+  try {
+    const rows = (await client.rpc<ShowHistoryRow[] | null>('zt_athlete_show_history', { p_username: key })) ?? [];
+    const entries = await Promise.all(
+      rows.map(async (row) => {
+        try {
+          const q = `meet_id=eq.${row.meet_id}`;
+          const [meets, divisions, events, athletes, results] = await Promise.all([
+            client.select<MeetListingRow>('meets', `id=eq.${row.meet_id}&select=${PUBLIC_SHOW_MEET_COLS}&limit=1`),
+            client.select<DivisionRow>('divisions', `${q}&order=sort_order.asc`),
+            client.select<EventRow>('events', `${q}&order=event_number.asc`),
+            client.select<AthleteRow>('athletes', q),
+            client.select<ResultRow>('results', q),
+          ]);
+          if (!meets?.length) return null;
+          return buildShowHistoryEntry(row, { meet: meets[0], divisions: divisions ?? [], events: events ?? [], athletes: athletes ?? [], results: results ?? [] });
+        } catch {
+          return null;
+        }
+      })
+    );
+    return { source: 'live_supabase', data: entries.filter((e): e is ShowHistoryEntry => e !== null), error: null };
+  } catch (err) {
+    return { source: 'live_supabase', data: [], error: err instanceof Error ? err.message : String(err) };
   }
 }
 
