@@ -72,7 +72,7 @@ export function resultsToCsv(state: AppState): string {
     const athletes = state.athletes.filter((a) => a.divisionId === div.id);
     if (athletes.length === 0) continue;
     const standings = calculateDivisionStandings(div, athletes, state.events, state.results, state.meet.tiebreakerRule);
-    const perEvent = new Map(events.map((e) => [e.id, new Map(scoreSingleEvent(e, athletes, state.results).map((r) => [r.athleteId, r]))]));
+    const perEvent = new Map(events.map((e) => [e.id, new Map(scoreSingleEvent(e, athletes, state.results, state.events).map((r) => [r.athleteId, r]))]));
     const scoredEventIds = new Set(events.filter((e) => state.results.some((r) => r.eventId === e.id)).map((e) => e.id));
     for (const st of standings) {
       const a = athletes.find((x) => x.id === st.athleteId)!;

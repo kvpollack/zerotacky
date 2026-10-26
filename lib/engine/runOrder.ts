@@ -48,7 +48,7 @@ export function generateEventRunOrder(
     orderedAthletes = [...activeAthletes].sort((a, b) => a.lotNumber - b.lotNumber);
   } else if (method === 'reverse_previous_event') {
     const prevEvent = completedPriorEvents[completedPriorEvents.length - 1];
-    const prevScored = scoreSingleEvent(prevEvent, divisionAthletes, allResults);
+    const prevScored = scoreSingleEvent(prevEvent, divisionAthletes, allResults, allEvents);
     prevScored.forEach((s) => prevScoreLookup.set(s.athleteId, s.displayScore));
     // Astra R-M5 (10/19): athletes tied in the previous event share a place, so compare places (not array index) and
     // let the documented fallbacks decide: lower overall points first, then lot number. Worst place in the previous

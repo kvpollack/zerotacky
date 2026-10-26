@@ -1,5 +1,19 @@
 import type { EventDef, PlateLoad, PlateStack } from '../types';
 
+// Which loading modes take collars at all: two sleeves, or four sleeves loaded per hand. Pins, fixed implements and
+// four-post total loads (yoke) never do (Astra PS-01), so the form hides the field and stores 0 for them.
+export function loadingTakesCollars(event: Pick<EventDef, 'loadingPoints' | 'weightEntryMode'>): boolean {
+  return event.loadingPoints === 2 || (event.loadingPoints === 4 && event.weightEntryMode === 'per_hand');
+}
+
+// Finite, non-negative number or undefined (absent = use the meet default). Strings from imported JSON are coerced
+// (Astra PS-09); anything unparseable is treated as absent rather than silently zeroed.
+export function normalizeCollarWeight(v: unknown): number | undefined {
+  if (v === undefined || v === null || v === '') return undefined;
+  const n = typeof v === 'number' ? v : Number(v);
+  return Number.isFinite(n) ? Math.max(0, n) : undefined;
+}
+
 // `collarWeightPerPair` is the meet-level fallback; an event that carries its own collar weight wins.
 export function calculatePlateLoading(
   event: EventDef,
@@ -32,9 +46,8 @@ export function calculatePlateLoading(
     };
   }
 
-  const collarWeightPerPair = typeof event.collarWeightPerPair === 'number' && Number.isFinite(event.collarWeightPerPair)
-    ? Math.max(0, event.collarWeightPerPair)
-    : Math.max(0, meetCollarWeightPerPair);
+  const own = normalizeCollarWeight(event.collarWeightPerPair);
+  const collarWeightPerPair = own !== undefined ? own : Math.max(0, meetCollarWeightPerPair);
   let weightToLoadAcrossPoints = 0;
   let pointsDivisor = event.loadingPoints;
   let callOutLabel = 'Per Side';

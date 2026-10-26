@@ -460,7 +460,7 @@ export default function App() {
       : null;
 
   const eventScores =
-    currentEvent && currentDivision ? scoreSingleEvent(currentEvent, divisionAthletes, results) : [];
+    currentEvent && currentDivision ? scoreSingleEvent(currentEvent, divisionAthletes, results, events) : [];
   const overallStandings = currentDivision
     ? calculateDivisionStandings(
         currentDivision,

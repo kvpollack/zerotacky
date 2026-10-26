@@ -4,6 +4,11 @@ import type { SyncClient } from '@/lib/sync/client';
 
 type StorageLike = Pick<Storage, 'getItem'>;
 
+// Whether this phone carries a sync link at all (the splash refreshes status whenever it does, PS-06).
+export function hasResumeLink(storage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>): boolean {
+  return readLink(storage) !== null;
+}
+
 // A meet in one of these states is over for this phone: nothing to resume.
 export function meetIsOver(status: string | null | undefined): boolean {
   return status === 'completed' || status === 'cancelled';

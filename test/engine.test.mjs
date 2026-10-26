@@ -119,6 +119,32 @@ describe('scoreSingleEvent: scratched athletes and the points field (10/26)', ()
     const rows = byId(scoreSingleEvent(e, roster, [res('a1', 'e1', { reps: 2 }), res('a2', 'e1', { reps: 1 }), res('a3', 'e1', { tier: 'heavy' })]));
     assert.equal(rows.a1.points, 2); assert.equal(rows.a2.points, 1); assert.equal(rows.a3.points, 0);
   });
+  // Astra PS-02: field membership follows the event's own zero rule, not any positive number in the row.
+  test('PS-02: over-cap time with 0 ft on a withdrawn athlete is a zero, so they leave the field', () => {
+    const e = ev({ scoringType: 'time_or_distance', timeCapSeconds: 60 });
+    const roster = [ath(1), ath(2), ath(3, 3, { status: 'withdrawn' })];
+    const all = [res('a1', 'e1', { timeSeconds: 30 }), res('a2', 'e1', { timeSeconds: 40 }), res('a3', 'e1', { timeSeconds: 61, distanceFeet: 0 })];
+    const rows = byId(scoreSingleEvent(e, roster, all, [e]));
+    assert.equal(rows.a1.points, 2); assert.equal(rows.a2.points, 1); assert.equal(rows.a3.points, 0); assert.equal(rows.a3.place, 3);
+    // a real partial (DNF with distance) keeps them in
+    const rows2 = byId(scoreSingleEvent(e, roster, [all[0], all[1], res('a3', 'e1', { timeSeconds: 61, distanceFeet: 12 })], [e]));
+    assert.equal(rows2.a1.points, 3);
+    // implements: over cap with 0 implements is a zero; 1 implement is a score
+    const ei = ev({ id: 'e2', scoringType: 'time_or_implements', timeCapSeconds: 60 });
+    const z = byId(scoreSingleEvent(ei, roster, [res('a1', 'e2', { implementsCompleted: 5, timeSeconds: 40 }), res('a2', 'e2', { implementsCompleted: 2 }), res('a3', 'e2', { timeSeconds: 70, implementsCompleted: 0 })], [ei]));
+    assert.equal(z.a1.points, 2);
+    const o = byId(scoreSingleEvent(ei, roster, [res('a1', 'e2', { implementsCompleted: 5, timeSeconds: 40 }), res('a2', 'e2', { implementsCompleted: 2 }), res('a3', 'e2', { timeSeconds: 70, implementsCompleted: 1 })], [ei]));
+    assert.equal(o.a1.points, 3);
+    // DNS never counts
+    const d = byId(scoreSingleEvent(e, roster, [all[0], all[1], res('a3', 'e1', { didNotStart: true, timeSeconds: 30 })], [e]));
+    assert.equal(d.a1.points, 2);
+  });
+  test('PS-02: a scratch whose only result is in another event is judged by that event', () => {
+    const e1 = ev({ scoringType: 'time_or_distance', timeCapSeconds: 60 }); const e2 = ev({ id: 'e2', eventNumber: 2 });
+    const roster = [ath(1), ath(2), ath(3, 3, { status: 'withdrawn' })];
+    const all = [res('a1', 'e1', { timeSeconds: 30 }), res('a2', 'e1', { timeSeconds: 40 }), res('a3', 'e1', { timeSeconds: 61, distanceFeet: 0 }), res('a1', 'e2', { reps: 3 }), res('a2', 'e2', { reps: 2 })];
+    assert.equal(byId(scoreSingleEvent(e2, roster, all, [e1, e2])).a1.points, 2);
+  });
   test('all-active roster is unchanged', () => {
     const rows = byId(scoreSingleEvent(ev(), A4, [res('a1', 'e1', { reps: 5 }), res('a2', 'e1', { reps: 9 }), res('a3', 'e1', { reps: 7 }), res('a4', 'e1', { reps: 1 })]));
     assert.equal(rows.a2.points, 4); assert.equal(rows.a4.points, 1);
@@ -225,6 +251,30 @@ describe('calculateDivisionStandings', () => {
 });
 
 // ---------- generateEventRunOrder ----------
+describe('calculateDivisionStandings: scratches (Astra PS-03)', () => {
+  const e1 = ev(); const e2 = ev({ id: 'e2', eventNumber: 2 });
+  test('no-score scratch sits below the field at N+1 with 0, never tied with an active zero', () => {
+    const roster = [ath(1), ath(2), ath(3, 3, { status: 'withdrawn' })];
+    const all = [res('a1', 'e1', { reps: 10 }), res('a2', 'e1', { reps: 0 })];
+    for (const rule of ['event_wins', 'final_event']) {
+      const st = calculateDivisionStandings(div, roster, [e1, e2], all, rule);
+      assert.deepEqual(st.map((s) => [s.athleteId, s.overallPlace, s.totalPoints, !!s.isTiedOverall]), [['a1', 1, 2, false], ['a2', 2, 0, false], ['a3', 3, 0, false]], rule);
+    }
+  });
+  test('mid-meet withdrawal keeps earned points and ranks inside the field', () => {
+    const roster = [ath(1), ath(2), ath(3, 3, { status: 'withdrawn' })];
+    const all = [res('a1', 'e1', { reps: 10 }), res('a2', 'e1', { reps: 1 }), res('a3', 'e1', { reps: 5 }), res('a1', 'e2', { reps: 4 }), res('a2', 'e2', { reps: 3 })];
+    const st = calculateDivisionStandings(div, roster, [e1, e2], all);
+    assert.deepEqual(st.map((s) => [s.athleteId, s.overallPlace, s.totalPoints]), [['a1', 1, 6], ['a2', 2, 3], ['a3', 3, 2]]);
+  });
+  test('two no-score scratches both at N+1, alphabetical, active athletes unaffected', () => {
+    const roster = [ath(1), ath(2), ath(3, 3, { status: 'withdrawn' }), ath(4, 4, { status: 'withdrawn' })];
+    const st = calculateDivisionStandings(div, roster, [e1], [res('a1', 'e1', { reps: 2 }), res('a2', 'e1', { reps: 1 })]);
+    assert.deepEqual(st.map((s) => [s.athleteId, s.overallPlace, s.totalPoints]), [['a1', 1, 2], ['a2', 2, 1], ['a3', 3, 0], ['a4', 3, 0]]);
+    assert.ok(st.every((s) => !s.isTiedOverall));
+  });
+});
+
 describe('generateEventRunOrder', () => {
   const e1 = ev({ id: 'e1', eventNumber: 1 });
   const e2 = ev({ id: 'e2', eventNumber: 2 });
@@ -297,6 +347,22 @@ describe('calculatePlateLoading', () => {
     assert.equal(legacy.collarWeightApplied, 5);
     const pin = calculatePlateLoading(ev({ loadingPoints: 1, implementEmptyWeight: 20, divisionWeights: { d1: 120 }, collarWeightPerPair: 10 }), 'd1', PL, 5);
     assert.equal(pin.collarWeightApplied, 0);   // 1-point loads never take collars
+  });
+  test('PS-01/PS-09: loadingTakesCollars and normalizeCollarWeight', () => {
+    const { loadingTakesCollars, normalizeCollarWeight } = E;
+    assert.equal(loadingTakesCollars({ loadingPoints: 2, weightEntryMode: 'total' }), true);
+    assert.equal(loadingTakesCollars({ loadingPoints: 4, weightEntryMode: 'per_hand' }), true);
+    assert.equal(loadingTakesCollars({ loadingPoints: 4, weightEntryMode: 'total' }), false);
+    assert.equal(loadingTakesCollars({ loadingPoints: 1, weightEntryMode: 'total' }), false);
+    assert.equal(loadingTakesCollars({ loadingPoints: 0, weightEntryMode: 'total' }), false);
+    assert.equal(normalizeCollarWeight('10'), 10); assert.equal(normalizeCollarWeight(-3), 0); assert.equal(normalizeCollarWeight(''), undefined);
+    assert.equal(normalizeCollarWeight(null), undefined); assert.equal(normalizeCollarWeight('abc'), undefined); assert.equal(normalizeCollarWeight(NaN), undefined);
+    // a string event collar is honoured by the engine, not silently replaced by the meet value
+    const r = calculatePlateLoading(ev({ loadingPoints: 2, implementEmptyWeight: 45, divisionWeights: { d1: 405 }, collarWeightPerPair: '10' }), 'd1', PL, 5);
+    assert.equal(r.collarWeightApplied, 10);
+    // four-post total never takes collars even when the event carries a value
+    const y = calculatePlateLoading(ev({ loadingPoints: 4, weightEntryMode: 'total', implementEmptyWeight: 100, divisionWeights: { d1: 500 }, collarWeightPerPair: 10 }), 'd1', PL, 5);
+    assert.equal(y.collarWeightApplied, 0); assert.equal(y.weightPerLoadingPoint, 100);
   });
   test('4 points per_hand: farmers, target is per hand, total doubles', () => {
     const r = calculatePlateLoading(ev({ loadingPoints: 4, weightEntryMode: 'per_hand', implementEmptyWeight: 25, divisionWeights: { d1: 260 } }), 'd1', PL, 5);

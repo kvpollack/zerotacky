@@ -1,5 +1,6 @@
 // Pure AppState <-> Supabase row mapping. No I/O. Unit-tested in test/sync.test.mjs.
 import type { AppState, Athlete, Division, EventDef, Meet, Result } from '../types';
+import { normalizeCollarWeight } from '../engine/plates';
 
 export interface MeetRow {
   id: string; slug: string; name: string; date: string | null; owner_id?: string | null;
@@ -111,8 +112,13 @@ export function rowToDivision(row: DivisionRow): Division {
 }
 
 export function rowToEvent(row: EventRow): EventDef {
+  // PS-09: a string or junk collar value in config is coerced or dropped; absent stays absent (no key), so the legacy
+  // meet-level fallback and the preset round-trip tests both hold.
+  const config = { ...(row.config as Partial<EventDef>) };
+  const collar = normalizeCollarWeight((row.config as Record<string, unknown>).collarWeightPerPair);
+  if (collar === undefined) delete config.collarWeightPerPair; else config.collarWeightPerPair = collar;
   return {
-    ...(row.config as Partial<EventDef>),
+    ...config,
     id: row.id, meetId: row.meet_id, eventNumber: row.event_number, name: row.name,
     scoringType: row.scoring_type as EventDef['scoringType'], timeCapSeconds: Number(row.time_cap_seconds),
     lanes: row.lanes, loadingPoints: row.loading_points as EventDef['loadingPoints'],

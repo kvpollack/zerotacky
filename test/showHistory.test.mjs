@@ -81,6 +81,24 @@ describe('showHistory.buildShowHistoryEntry', () => {
     assert.equal(H.formatPlace(e), 'Scratched');
   });
 
+  // Astra PS-07: a scored athlete who later withdraws stays in the field, so the denominator matches the placings.
+  test('mid-meet withdrawal ahead of the active athletes: last active reads 3rd of 3, not 3rd of 2', () => {
+    const { ids, bundle: b } = bundle({ withAmberResults: true });
+    const amber = b.athletes.find((a) => a.id === ids.amber);
+    const big = b.results.filter((r) => r.athlete_id === ids.amber).map((r) => ({ ...r, payload: { reps: 99 } }));   // Amber wins event 1
+    const b2 = { ...b, athletes: b.athletes.map((a) => (a.id === ids.amber ? { ...a, status: 'withdrawn' } : a)), results: [...b.results.filter((r) => r.athlete_id !== ids.amber), ...big] };
+    const entries = [ids.grace, ids.emily, ids.jessica].map((id) => H.buildShowHistoryEntry(row(id), b2));
+    for (const e of entries) assert.equal(e.fieldSize, 4, 'field keeps the scored withdrawal');
+    const places = entries.map((e) => e.place).sort();
+    assert.ok(places.every((p) => p <= 4));
+    for (const e of entries) assert.ok(/of 4$/.test(H.formatPlace(e)), H.formatPlace(e));
+    // a pre-score scratch (no results at all) is excluded from the denominator
+    const { bundle: b0 } = bundle();
+    const g = H.buildShowHistoryEntry(row(ids.grace), b0);
+    assert.equal(g.fieldSize, 3);
+    assert.equal(amber?.name, 'Amber Simcox');
+  });
+
   test('unlisted show links to the public board; missing roster row returns null', () => {
     const { ids, bundle: b } = bundle();
     const e = H.buildShowHistoryEntry(row(ids.grace, { is_public_listed: false, venue_city: null, venue_state: 'Not provided' }), b);

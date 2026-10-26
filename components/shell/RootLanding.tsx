@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Globe, KeyRound, Play } from 'lucide-react';
 import { DEFAULT_THEME_ID } from '@/lib/constants';
-import { readResume, refreshResumeStatus, type ResumeInfo } from '@/lib/landing';
+import { hasResumeLink, readResume, refreshResumeStatus, type ResumeInfo } from '@/lib/landing';
 import { createSyncClient, readSyncEnv } from '@/lib/sync/client';
 
 // Root splash. Two doors: the public site (gyms, shows, registration) and the volunteer join flow
@@ -12,14 +12,14 @@ import { createSyncClient, readSyncEnv } from '@/lib/sync/client';
 export default function RootLanding() {
   const [resume, setResume] = useState<ResumeInfo | null>(null);
   useEffect(() => {
-    const r = readResume(localStorage);
-    setResume(r);
-    if (!r) return;
-    // A meet finalized from the website after the scorer last pulled: ask once, drop the card if it is over.
+    setResume(readResume(localStorage));
+    // A meet finalized (or reopened, Astra PS-06) from the website after the scorer last pulled: ask once whenever
+    // this phone holds a link, then re-read so the card can disappear or come back.
+    if (!hasResumeLink(localStorage)) return;
     const env = readSyncEnv();
     if (!env) return;
     let live = true;
-    refreshResumeStatus(localStorage, createSyncClient(env)).then((over) => { if (live && over) setResume(null); });
+    refreshResumeStatus(localStorage, createSyncClient(env)).then(() => { if (live) setResume(readResume(localStorage)); });
     return () => { live = false; };
   }, []);
 
