@@ -231,7 +231,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
               <Trophy className="w-5 h-5" aria-hidden="true" />
               <span>
                 {life.canRenderOfficialPodium
-                  ? 'Official Finalized Podiums (Demo Results)'
+                  ? `Official Finalized Podiums${show.isDemoFixture ? ' (Demo Results)' : ''}`
                   : 'Provisional Standings — Pending Official Finalization'}
               </span>
             </h2>
