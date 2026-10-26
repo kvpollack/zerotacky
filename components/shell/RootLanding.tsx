@@ -3,14 +3,25 @@
 import { useEffect, useState } from 'react';
 import { Globe, KeyRound, Play } from 'lucide-react';
 import { DEFAULT_THEME_ID } from '@/lib/constants';
-import { readResume, type ResumeInfo } from '@/lib/landing';
+import { readResume, refreshResumeStatus, type ResumeInfo } from '@/lib/landing';
+import { createSyncClient, readSyncEnv } from '@/lib/sync/client';
 
 // Root splash. Two doors: the public site (gyms, shows, registration) and the volunteer join flow
 // (type the promoter's 6-character code). A phone that already carries a meet gets a
 // Resume button on top so judges who open the home-screen icon on meet day land in the scorer in one tap.
 export default function RootLanding() {
   const [resume, setResume] = useState<ResumeInfo | null>(null);
-  useEffect(() => { setResume(readResume(localStorage)); }, []);
+  useEffect(() => {
+    const r = readResume(localStorage);
+    setResume(r);
+    if (!r) return;
+    // A meet finalized from the website after the scorer last pulled: ask once, drop the card if it is over.
+    const env = readSyncEnv();
+    if (!env) return;
+    let live = true;
+    refreshResumeStatus(localStorage, createSyncClient(env)).then((over) => { if (live && over) setResume(null); });
+    return () => { live = false; };
+  }, []);
 
   const btn = 'w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2';
 

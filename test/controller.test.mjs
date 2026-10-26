@@ -261,6 +261,18 @@ describe('SyncController: config republish reaches judge phones', () => {
     judge.ctl.attach(remote); await judge.ctl.checkAdminPin('1050');   // 011: scores need the grant a correct PIN issues
     return { srv, admin, judge, remote };
   }
+  // 10/26: the splash hides Resume for a completed meet, read off the link; the pull keeps it current.
+  test('pull caches meets.competition_status on the link; a status change rewrites it', async () => {
+    const { judge, admin, srv } = await pair();
+    await judge.ctl.tick();
+    assert.equal(judge.ctl.link.competitionStatus ?? null, srv.db.meets[0].competition_status ?? null);
+    srv.db.meets[0].competition_status = 'completed';
+    await judge.ctl.tick();
+    assert.equal(judge.ctl.link.competitionStatus, 'completed');
+    assert.equal(JSON.parse(judge.storage.getItem(K.LINK_KEY)).competitionStatus, 'completed');
+    await admin.ctl.tick();
+    assert.equal(admin.ctl.link.competitionStatus, 'completed');
+  });
   test('attach records meets.updated_at; a plain tick does not re-read config', async () => {
     const { judge, remote } = await pair();
     assert.ok(remote.updatedAt);
