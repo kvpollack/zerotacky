@@ -36,6 +36,9 @@ function createFakePromoterDb(opts = {}) {
   const athletes = [];
   const results = [];
   const registrations = [];
+  // 023: athlete_accounts + the profiles a username can resolve to
+  const athleteAccounts = [];
+  const knownProfiles = [{ id: 'u-kurt', username: 'kurtpollack', display_name: 'Kurt Pollack' }, { id: 'u-grace', username: 'grace_g', display_name: 'Grace Gullo' }];
 
   for (const seed of FX.createSeedMeets()) {
     const rows = M.stateToRows(seed.state, {
@@ -357,6 +360,36 @@ function createFakePromoterDb(opts = {}) {
           for (let i = arr.length - 1; i >= 0; i--) if (arr[i].meet_id === m.id) arr.splice(i, 1);
         }
         return { id: m.id, name: m.name, deleted: counts };
+      }
+
+      if (fn === 'zt_meet_athlete_accounts') {
+        if (!meets.some((m) => m.id === params.p_meet_id)) throw new Error('You do not have permission to view this meet.');
+        return athleteAccounts.filter((l) => l.meet_id === params.p_meet_id).map((l) => {
+          const prof = knownProfiles.find((pr) => pr.id === l.user_id);
+          return { athleteId: l.athlete_id, username: prof.username, displayName: prof.display_name, fromRegistration: l.linked_by === null };
+        });
+      }
+
+      if (fn === 'zt_link_athlete_account') {
+        if (!meets.some((m) => m.id === params.p_meet_id)) throw new Error('You do not have permission to edit this meet.');
+        const ath = athletes.find((a) => a.meet_id === params.p_meet_id && a.id === params.p_athlete_id);
+        if (!ath) throw new Error('That athlete is not on this roster. Save the roster first.');
+        const uname = String(params.p_username ?? '').trim().replace(/^@/, '').toLowerCase();
+        const idx = athleteAccounts.findIndex((l) => l.meet_id === params.p_meet_id && l.athlete_id === params.p_athlete_id);
+        if (!uname) {
+          if (idx >= 0) athleteAccounts.splice(idx, 1);
+          return { athleteId: params.p_athlete_id, username: null, displayName: null };
+        }
+        const prof = knownProfiles.find((pr) => pr.username === uname);
+        if (!prof) throw new Error(`No ZeroTacky account has the username "${uname}".`);
+        const other = athleteAccounts.find((l) => l.meet_id === params.p_meet_id && l.user_id === prof.id && l.athlete_id !== params.p_athlete_id);
+        if (other) {
+          const otherName = athletes.find((a) => a.meet_id === params.p_meet_id && a.id === other.athlete_id)?.name ?? other.athlete_id;
+          throw new Error(`@${uname} is already linked to ${otherName} on this meet. Unlink that row first.`);
+        }
+        const link = { meet_id: params.p_meet_id, athlete_id: params.p_athlete_id, user_id: prof.id, linked_by: user.id };
+        if (idx >= 0) athleteAccounts[idx] = link; else athleteAccounts.push(link);
+        return { athleteId: params.p_athlete_id, username: prof.username, displayName: prof.display_name };
       }
 
       if (fn === 'zt_set_registration_status') {
@@ -728,6 +761,52 @@ describe('supabaseApi: accept/decline mapping of athleteId', () => {
   });
 });
 
+describe('supabaseApi: athlete account links (023 show history)', () => {
+  test('link by username (with @, any case), list, duplicate refused, unknown refused, unlink', async () => {
+    const fakeDb = createFakePromoterDb();
+    const api = SA.createSupabasePromoterApi(fakeDb);
+    const detail = (await api.getMeet('srv-meet-upcoming-1')).data;
+    const [a1, a2] = detail.state.athletes;
+
+    expect((await api.listAthleteAccounts('srv-meet-upcoming-1')).data).toEqual([]);
+
+    const linked = await api.linkAthleteAccount('srv-meet-upcoming-1', a1.id, '@KurtPollack');
+    expect(linked.error).toBeNull();
+    expect(linked.data).toEqual({ athleteId: a1.id, username: 'kurtpollack', displayName: 'Kurt Pollack', fromRegistration: false });
+
+    const list = (await api.listAthleteAccounts('srv-meet-upcoming-1')).data;
+    expect(list).toHaveLength(1);
+    expect(list[0].username).toBe('kurtpollack');
+    expect(list[0].fromRegistration).toBe(false);
+
+    const dup = await api.linkAthleteAccount('srv-meet-upcoming-1', a2.id, 'kurtpollack');
+    expect(dup.data).toBeNull();
+    expect(dup.error).toMatch(/already linked to/);
+
+    const unknown = await api.linkAthleteAccount('srv-meet-upcoming-1', a2.id, 'nobody_here');
+    expect(unknown.error).toMatch(/No ZeroTacky account has the username "nobody_here"/);
+
+    const missing = await api.linkAthleteAccount('srv-meet-upcoming-1', 'not-on-roster', 'grace_g');
+    expect(missing.error).toMatch(/not on this roster/);
+
+    const unlinked = await api.linkAthleteAccount('srv-meet-upcoming-1', a1.id, null);
+    expect(unlinked.error).toBeNull();
+    expect(unlinked.data).toBeNull();
+    expect((await api.listAthleteAccounts('srv-meet-upcoming-1')).data).toEqual([]);
+
+    const calls = fakeDb.rpcCalls.filter((c) => c.fn === 'zt_link_athlete_account');
+    expect(calls.at(-1).params).toEqual({ p_meet_id: 'srv-meet-upcoming-1', p_athlete_id: a1.id, p_username: '' });
+  });
+
+  test('signed out: both methods refuse without touching the database', async () => {
+    const fakeDb = createFakePromoterDb({ signedOut: true });
+    const api = SA.createSupabasePromoterApi(fakeDb);
+    expect((await api.listAthleteAccounts('srv-meet-upcoming-1')).error).toMatch(/Sign in required/);
+    expect((await api.linkAthleteAccount('srv-meet-upcoming-1', 'x', 'kurtpollack')).error).toMatch(/Sign in required/);
+    expect(fakeDb.rpcCalls.filter((c) => c.fn.startsWith('zt_link') || c.fn.startsWith('zt_meet_athlete'))).toHaveLength(0);
+  });
+});
+
 describe('supabaseApi: getPublicMeetBySlug H1 secret check & submitRegistration', () => {
   test('getPublicMeetBySlug output contains none of joinCode, adminPin, emergencyContact, ownerId, or results', async () => {
     const fakeDb = createFakePromoterDb({ signedOut: true });
@@ -850,6 +929,8 @@ describe('supabaseApi: every method returns { data: null, error } when db throws
       api.followShow('iron-furnace-classic-2026', true),
       api.listRegistrations('srv-meet-upcoming-1'),
       api.setRegistrationStatus('reg-ifc-3', 'accepted'),
+      api.listAthleteAccounts('srv-meet-upcoming-1'),
+      api.linkAthleteAccount('srv-meet-upcoming-1', 'a1', 'kurtpollack'),
       api.getPublicMeetBySlug('iron-furnace-classic-2026'),
       api.submitRegistration({
         slug: 'iron-furnace-classic-2026',

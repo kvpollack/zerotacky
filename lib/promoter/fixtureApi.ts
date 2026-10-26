@@ -10,6 +10,7 @@ import { DEMO_SHOW_RECORDS } from '../website/fixtures';
 import {
   emptyListing,
   type ApiResult,
+  type AthleteAccountLink,
   type DeletedMeet,
   type MyAthleteMeet,
   type MeetListing,
@@ -96,6 +97,8 @@ export function createFixturePromoterApi(
   let user: PromoterUser = clone(DEMO_PROMOTER_USER);
   const meets: PromoterMeetDetail[] = createSeedMeets();
   const registrations: RegistrationRequest[] = createSeedRegistrations();
+  // 023: in-memory account links keyed `${serverId}/${athleteId}`; any non-empty username resolves in the fixture.
+  const athleteAccounts = new Map<string, AthleteAccountLink>();
   const follows = new Map<string, string>();   // slug -> ISO followed at (010 fixture; this tab only)
   // Display name of the organizer per meet; fixture meets belong to the demo user, bridged /shows records carry
   // their own promoterName.
@@ -632,6 +635,44 @@ export function createFixturePromoterApi(
       recomputeSummary(meetDetail);
 
       return { data: clone(reg), error: null };
+    },
+
+    async listAthleteAccounts(serverId: string): Promise<ApiResult<AthleteAccountLink[]>> {
+      if (signedOut) {
+        return { data: null, error: 'Sign in required to view linked accounts.' };
+      }
+      if (!meets.some((m) => m.summary.serverId === serverId)) {
+        return { data: null, error: `No meet found with serverId "${serverId}".` };
+      }
+      const out = [...athleteAccounts.entries()].filter(([k]) => k.startsWith(`${serverId}/`)).map(([, v]) => clone(v));
+      return { data: out, error: null };
+    },
+
+    async linkAthleteAccount(serverId: string, athleteId: string, username: string | null): Promise<ApiResult<AthleteAccountLink | null>> {
+      if (signedOut) {
+        return { data: null, error: 'Sign in required to link an account.' };
+      }
+      const found = meets.find((m) => m.summary.serverId === serverId);
+      if (!found) {
+        return { data: null, error: `No meet found with serverId "${serverId}".` };
+      }
+      if (!found.state.athletes.some((a) => a.id === athleteId)) {
+        return { data: null, error: 'That athlete is not on this roster. Save the roster first.' };
+      }
+      const key = `${serverId}/${athleteId}`;
+      const clean = (username ?? '').trim().replace(/^@/, '').toLowerCase();
+      if (!clean) {
+        athleteAccounts.delete(key);
+        return { data: null, error: null };
+      }
+      const other = [...athleteAccounts.entries()].find(([k, v]) => k.startsWith(`${serverId}/`) && k !== key && v.username === clean);
+      if (other) {
+        const otherName = found.state.athletes.find((a) => a.id === other[1].athleteId)?.name ?? other[1].athleteId;
+        return { data: null, error: `@${clean} is already linked to ${otherName} on this meet. Unlink that row first.` };
+      }
+      const link: AthleteAccountLink = { athleteId, username: clean, displayName: clean, fromRegistration: false };
+      athleteAccounts.set(key, link);
+      return { data: clone(link), error: null };
     },
 
     async getPublicMeetBySlug(slug: string): Promise<ApiResult<PublicRegistrationMeet | null>> {

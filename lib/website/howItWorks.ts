@@ -194,6 +194,11 @@ export const HOW_IT_WORKS_FAQ: HowFaq[] = [
     link: { label: 'Athletes', href: '/athletes' },
   },
   {
+    group: 'athletes',
+    q: 'How do my results get onto my athlete page?',
+    a: 'Show History lists every show scored on ZeroTacky that you were linked to, with your placing and points, once the promoter marks the results final. Registering through the site links you automatically. If the promoter entered the roster by hand, give them your username and they link you from their Athletes tab. Your page has to be public for the history to show.',
+  },
+  {
     group: 'promoters',
     q: 'What do I need to run a show on ZeroTacky?',
     a: 'An account with Promoter ticked, your phone or a laptop to set the meet up, and one phone per judge on the day. Nothing is installed and the gym does not need Wi-Fi. The first-show guide walks through the whole thing with pictures.',
@@ -239,6 +244,5 @@ export const HOW_IT_WORKS_ROADMAP: HowRoadmapItem[] = [
   { title: 'Paid show registration', body: 'Promoters set an entry fee and athletes pay when they register, instead of settling up separately.' },
   { title: 'Day passes from the gym directory', body: 'Buy a drop-in pass for a listed gym from its page, so travelling athletes can train on the way to a show.' },
   { title: 'Trainer directory', body: 'Coaches who train in person or online get their own searchable list, built from the trainer flag on athlete profiles.' },
-  { title: 'Show history on athlete pages', body: 'Meets you competed in, with placings, listed on your public page once the promoter marks the show complete.' },
   { title: 'Gyms and shows linked both ways', body: 'A show page points at its host gym, and a gym page lists the shows it has hosted.' },
 ];

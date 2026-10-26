@@ -48,6 +48,8 @@ const PROMOTER_API_METHODS = [
   'followShow',
   'listRegistrations',
   'setRegistrationStatus',
+  'listAthleteAccounts',
+  'linkAthleteAccount',
   'getPublicMeetBySlug',
   'submitRegistration',
 ] as const;
