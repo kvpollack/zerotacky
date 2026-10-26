@@ -33,6 +33,9 @@ export interface SyncLink {
   userId?: string | null;
   since: string | null;  // results watermark for incremental pulls
   configAt?: string | null;  // meets.updated_at last applied on this phone (device role only)
+  // meets.competition_status as of the last pull. The root splash reads it so a phone that carries a
+  // completed or cancelled meet stops offering Resume (10/26); null/absent until the first pull after this shipped.
+  competitionStatus?: string | null;
 }
 
 export type SyncState = 'off' | 'idle' | 'syncing' | 'offline' | 'error' | 'paused';
@@ -445,8 +448,9 @@ export class SyncController {
     if (!this.link || this.paused) return null;
     const gen = this.session;
     const hasPendingAthletes = this.queue.some((q) => q.table === 'athletes');
-    const { results, athletes, latestIso, meetUpdatedAt } = await pullChanges(this.o.client, this.link.meetId, this.link.since);
+    const { results, athletes, latestIso, meetUpdatedAt, competitionStatus } = await pullChanges(this.o.client, this.link.meetId, this.link.since);
     if (!this.link || gen !== this.session) return null;   // unlinked or re-authenticated while awaiting
+    if (competitionStatus !== (this.link.competitionStatus ?? null)) { this.link = { ...this.link, competitionStatus }; writeLink(this.o.storage, this.link); }
     const state = this.o.getState();
     const patch: IncomingPatch = {};
     // Admin republished (weights, events, stations, demo flag): judge phones re-read the config. The admin phone
