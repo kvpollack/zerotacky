@@ -81,19 +81,7 @@ export default function MeetSetup({
         reorderDivisions={reorderDivisions}
       />
 
-      {/* 3. Stations & floor plan (after divisions; Kurt 10/19) */}
-      <StationsSection
-        meet={meet}
-        divisions={divisions}
-        athletes={athletes}
-        events={events}
-        addStation={addStation}
-        updateStation={updateStation}
-        removeStation={removeStation}
-        updateDivision={updateDivision}
-      />
-
-      {/* 4. Events Section */}
+      {/* 3. Events Section */}
       <EventsSection
         divisions={divisions}
         defaultCollarWeightPerPair={meet.collarWeightPerPair}
@@ -103,6 +91,18 @@ export default function MeetSetup({
         updateEvent={updateEvent}
         removeEvent={removeEvent}
         reorderEvents={reorderEvents}
+      />
+
+      {/* 4. Stations & floor plan (after events, so each station's event order has events to order; Kurt 10/21) */}
+      <StationsSection
+        meet={meet}
+        divisions={divisions}
+        athletes={athletes}
+        events={events}
+        addStation={addStation}
+        updateStation={updateStation}
+        removeStation={removeStation}
+        updateDivision={updateDivision}
       />
 
       {/* 5. Athletes Section */}

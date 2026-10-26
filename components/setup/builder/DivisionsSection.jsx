@@ -23,7 +23,7 @@ export default function DivisionsSection({
   const stationIds = new Set(stations.map((s) => s.id));
 
   const [newDivName, setNewDivName] = useState('');
-  // New divisions land on the first station; the promoter spreads them across stations in step 3.
+  // New divisions land on the first station; the promoter spreads them across stations in step 4 (after events, 10/26).
   const newDivFlight = stations[0]?.id ?? 'A';
   const stationLabel = (id) => stations.find((s) => s.id === id)?.label ?? `Missing (${id})`;
   const [armedDeleteId, setArmedDeleteId] = useState(null);
@@ -54,7 +54,7 @@ export default function DivisionsSection({
           2. Divisions ({sortedDivisions.length})
         </h2>
         <span className="text-[10px] font-bold text-zt-muted">
-          Stations are assigned in step 3
+          Stations are assigned in step 4
         </span>
       </div>
 
@@ -108,7 +108,7 @@ export default function DivisionsSection({
 
                   <span
                     className={`text-[10px] font-extrabold px-2 py-1 rounded whitespace-nowrap ${invalidStation ? 'bg-amber-500/15 text-amber-400' : 'bg-zt-surface-2 text-zt-primary'}`}
-                    title="Station (set in step 3)"
+                    title="Station (set in step 4)"
                   >
                     {stationLabel(div.flight)}
                   </span>
@@ -135,7 +135,7 @@ export default function DivisionsSection({
                   <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-400 px-1">
                     <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
                     <span>
-                      Station &ldquo;{div.flight}&rdquo; was removed; pick a station in step 3 or this division shows under
+                      Station &ldquo;{div.flight}&rdquo; was removed; pick a station in step 4 or this division shows under
                       &ldquo;All&rdquo; only.
                     </span>
                   </div>
