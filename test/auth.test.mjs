@@ -32,23 +32,15 @@ describe('v2 auth: access token on the sync client', () => {
     assert.equal(calls[2].headers['x-zt-join'], 'ABC123');
   });
 
-  test('publishMeet sends p_key null for a signed-in publish', async () => {
+  test('publishMeet sends no p_key (024); the session token carries the identity', async () => {
     const { f, calls } = fakeFetch(() => ({ status: 200, json: { id: 'm1', join_code: 'ZZZ999' } }));
     const client = C.createSyncClient({ ...CFG, accessToken: 'JWT', fetchImpl: f });
     const state = P.getInitialSeedState('strongfest-2026');
-    const out = await A.publishMeet(client, state, { meetId: '11111111-1111-4111-8111-111111111111', deviceId: 'd1', slug: 'x', stations: 1, isDemo: false }, null);
+    const out = await A.publishMeet(client, state, { meetId: '11111111-1111-4111-8111-111111111111', deviceId: 'd1', slug: 'x', stations: 1, isDemo: false });
     assert.equal(out.joinCode, 'ZZZ999');
     assert.equal(calls[0].url, 'https://abc.supabase.co/rest/v1/rpc/zt_publish_meet');
-    assert.equal(calls[0].body.p_key, null);
+    assert.equal('p_key' in calls[0].body, false);
     assert.equal(calls[0].headers.Authorization, 'Bearer JWT');
-  });
-
-  test('publishMeet with an empty key still sends null (server decides by auth.uid)', async () => {
-    const { f, calls } = fakeFetch(() => ({ status: 200, json: { id: 'm1', join_code: 'ZZZ999' } }));
-    const client = C.createSyncClient({ ...CFG, fetchImpl: f });
-    const state = P.getInitialSeedState('strongfest-2026');
-    await A.publishMeet(client, state, { meetId: '11111111-1111-4111-8111-111111111111', deviceId: 'd1', slug: 'x', stations: 1, isDemo: false }, '');
-    assert.equal(calls[0].body.p_key, null);
   });
 });
 

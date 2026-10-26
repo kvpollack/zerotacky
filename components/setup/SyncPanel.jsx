@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Radio, KeyRound, Copy, Unlink, UploadCloud, Link2, UserCheck } from 'lucide-react';
+import { Radio, Copy, Unlink, UploadCloud, Link2, UserCheck } from 'lucide-react';
 import { copyText } from '@/lib/download';
 import { slugFor } from '@/hooks/useMeetSync';
 import { rememberReturnTo } from '@/components/auth/SignInForm';
@@ -96,12 +96,6 @@ export default function SyncPanel({ sync, meet }) {
               </div>
               <Link href="/website/account" className="text-[10px] font-bold uppercase text-zt-primary">Account</Link>
             </div>
-            {sync.publishKey && (
-              <div className="text-[10px] text-zt-muted flex items-center justify-between gap-2">
-                <span><KeyRound className="w-3 h-3 inline mr-1" />An old publish key is saved on this phone. It still goes along with your account so meets published with it become yours.</span>
-                <button type="button" onClick={() => sync.setPublishKey('')} className="font-bold uppercase text-zt-primary">Forget</button>
-              </div>
-            )}
           </>
         ) : (
           <div className="flex items-center justify-between gap-2">

@@ -64,7 +64,10 @@ export function fakeServer() {
         return reply(204, undefined);
       }
       if (parts[3] !== 'zt_publish_meet') return reply(404, { message: 'no fn' });
-      if (body.p_key !== 'GOODKEY') return reply(403, { message: 'invalid publish key' });
+      // 024: publishing needs a signed-in account (anon bearer refused, like the server grants). The fake models the
+      // final signature with no p_key; the server keeps a shim overload for older phones for a while.
+      if ('p_key' in body) return reply(404, { message: 'Could not find the function public.zt_publish_meet(p_key, ...)' });
+      if (!init.headers.Authorization || init.headers.Authorization === `Bearer ${init.headers.apikey}`) return reply(401, { code: '42501', message: 'permission denied for function zt_publish_meet' });
       const existing = db.meets.find((x) => x.slug === body.p_meet.slug) ?? db.meets.find((x) => x.id === body.p_meet.id);
       const m = { ...body.p_meet, id: existing?.id ?? body.p_meet.id };
       // 004 result guard (and 008 publish guards): a removed athlete with a recorded result is refused as a whole.

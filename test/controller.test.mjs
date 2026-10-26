@@ -27,6 +27,8 @@ function phone(server, deviceId, initialState, now, { asyncIncoming = false } = 
     onStatus: (s) => box.statuses.push(s.state),
     now,
   });
+  // 024: publishing needs an account; admin phones (ids starting with "a") are signed in, judges/boards/spectators are not
+  if (/^a/.test(deviceId)) ctl.setAccessToken(`TOKEN_${deviceId}`, `user-${deviceId}`);
   // mimic the hook: any local mutation goes through this
   box.mutate = (fn) => { box.state = fn(box.state); ctl.noteLocalChange(); };
   box.ctl = ctl; box.storage = storage; box.client = client;
@@ -49,7 +51,7 @@ describe('SyncController: publish + join', () => {
     const srv = fakeServer();
     const admin = phone(srv, 'admin1', P.getInitialSeedState('strongfest-2026'), clock);
     assert.equal(admin.ctl.status.state, 'off');
-    const link = await admin.ctl.publish({ slug: 'strongfest', isDemo: false }, 'GOODKEY');
+    const link = await admin.ctl.publish({ slug: 'strongfest', isDemo: false });
     assert.equal(link.role, 'admin');
     assert.match(link.meetId, /^[0-9a-f-]{36}$/);
     assert.equal(link.joinCode, 'JC0001');
@@ -70,7 +72,7 @@ describe('SyncController: publish + join', () => {
     assert.equal(judge.ctl.status.state, 'idle');
     assert.equal(K.readLink(judge.storage).meetId, link.meetId);
 
-    const again = await admin.ctl.publish({ slug: 'strongfest', isDemo: false }, 'GOODKEY');
+    const again = await admin.ctl.publish({ slug: 'strongfest', isDemo: false });
     assert.equal(again.meetId, link.meetId);
     assert.equal(again.joinCode, 'JC0001');
     assert.equal(srv.db.meets.length, 1);
@@ -78,21 +80,24 @@ describe('SyncController: publish + join', () => {
   test('leave then publish the same slug updates the same remote meet (uuid and join code kept)', async () => {
     const srv = fakeServer();
     const admin = phone(srv, 'a', P.getInitialSeedState('strongfest-2026'), clock);
-    const first = await admin.ctl.publish({ slug: 'sf' }, 'GOODKEY');
+    const first = await admin.ctl.publish({ slug: 'sf' });
     admin.ctl.unlink();
-    const second = await admin.ctl.publish({ slug: 'sf' }, 'GOODKEY');
+    const second = await admin.ctl.publish({ slug: 'sf' });
     assert.equal(second.meetId, first.meetId);
     assert.equal(second.joinCode, first.joinCode);
     assert.equal(srv.db.meets.length, 1);
     assert.ok(srv.db.athletes.every((x) => x.meet_id === first.meetId));
   });
-  test('bad publish key -> error status, no link; unknown join code -> null', async () => {
+  test('signed-out publish -> refused before the network, no link; anon RPC -> 401; unknown join code -> null', async () => {
     const srv = fakeServer();
     const admin = phone(srv, 'a', P.getInitialSeedState('strongfest-2026'), clock);
-    await assert.rejects(admin.ctl.publish({ slug: 's' }, 'BAD'), (e) => e.status === 403);
+    admin.ctl.setAccessToken(null);
+    await assert.rejects(admin.ctl.publish({ slug: 's' }), /Sign in/);
     assert.equal(admin.ctl.link, null);
-    assert.equal(admin.ctl.status.state, 'error');
-    assert.match(admin.ctl.status.error, /invalid publish key/);
+    assert.equal(srv.log.length, 0, 'nothing sent');
+    // 024: the server itself refuses an anon bearer (no grant to anon on zt_publish_meet)
+    await assert.rejects(admin.client.rpc('zt_publish_meet', { p_meet: { slug: 's', name: 's' }, p_divisions: [], p_events: [], p_athletes: [], p_results: [] }), (e) => e.status === 401);
+    assert.equal(srv.db.meets.length, 0);
     assert.equal(await admin.ctl.lookupJoinCode('ZZZZZZ'), null);
   });
 });
@@ -101,7 +106,7 @@ describe('SyncController: scores flow between phones', () => {
   async function pair() {
     const srv = fakeServer();
     const admin = phone(srv, 'admin1', P.getInitialSeedState('strongfest-2026'), clock);
-    await admin.ctl.publish({ slug: 'sf' }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'sf' });
     const judge = phone(srv, 'judge1', { meet: {}, divisions: [], events: [], athletes: [], results: [] }, clock);
     const remote = await judge.ctl.lookupJoinCode('JC0001');
     judge.state = remote.state;
@@ -254,7 +259,7 @@ describe('SyncController: config republish reaches judge phones', () => {
   async function pair() {
     const srv = fakeServer();
     const admin = phone(srv, 'admin1', P.getInitialSeedState('strongfest-2026'), clock);
-    await admin.ctl.publish({ slug: 'sf', stations: [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }] }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'sf', stations: [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }] });
     const judge = phone(srv, 'judge1', { meet: {}, divisions: [], events: [], athletes: [], results: [] }, clock);
     const remote = await judge.ctl.lookupJoinCode('JC0001');
     judge.state = remote.state;
@@ -289,7 +294,7 @@ describe('SyncController: config republish reaches judge phones', () => {
       meet: { ...s.meet, stations: [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }, { id: 'C', label: 'Station 3' }] },
       events: s.events.map((e, i) => (i === 1 ? { ...e, divisionWeights: { ...e.divisionWeights, 'sf-g1': before + 25 } } : e)),
     }));
-    await admin.ctl.publish({ slug: 'sf', stations: admin.state.meet.stations }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'sf', stations: admin.state.meet.stations });
     await judge.ctl.tick();
     const cfgs = judge.incoming.filter((p) => p.config);
     assert.equal(cfgs.length, 1);
@@ -309,7 +314,7 @@ describe('SyncController: config republish reaches judge phones', () => {
     await admin.ctl.tick();
     assert.equal(admin.incoming.filter((p) => p.config).length, 0);
     assert.ok(admin.ctl.link.configAt);
-    await admin.ctl.publish({ slug: 'sf' }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'sf' });
     await admin.ctl.tick();
     assert.equal(admin.incoming.filter((p) => p.config).length, 0);
   });
@@ -319,7 +324,7 @@ describe('SyncController: resilience (verifier findings)', () => {
   async function pair() {
     const srv = fakeServer();
     const admin = phone(srv, 'admin1', P.getInitialSeedState('strongfest-2026'), clock);
-    await admin.ctl.publish({ slug: 'sf' }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'sf' });
     const judge = phone(srv, 'judge1', { meet: {}, divisions: [], events: [], athletes: [], results: [] }, clock);
     const remote = await judge.ctl.lookupJoinCode('JC0001');
     judge.state = remote.state;
@@ -378,7 +383,7 @@ describe('SyncController: resilience (verifier findings)', () => {
     admin.ctl.unlink();
     srv.db.meets[0].join_code = 'JC0001';
     admin.mutate((s) => score(s, 1, 2, { reps: 5 }, ++T));
-    const relink = await admin.ctl.publish({ slug: 'sf' }, 'GOODKEY');
+    const relink = await admin.ctl.publish({ slug: 'sf' });
     assert.equal(relink.joinCode, 'JC0001');
     srv.db.meets[0].join_code = 'ROTATED';
     await judge.ctl.tick();
@@ -411,7 +416,7 @@ describe('SyncController: resilience (verifier findings)', () => {
     await judge.ctl.tick();
     assert.ok(srv.db.athletes.some((a) => a.id === 'ath-floor'));
     admin.mutate((s) => ({ ...s, meet: { ...s.meet, collarWeightPerPair: 5 } }));   // config change -> republish
-    await admin.ctl.publish({ slug: 'sf' }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'sf' });
     assert.ok(srv.db.athletes.some((a) => a.id === 'ath-floor'));
     assert.ok(admin.state.athletes.some((a) => a.id === 'ath-floor'));
   });
@@ -505,32 +510,28 @@ function a4Controller({ auto = true, storage = memStorage(), state } = {}) {
 }
 
 describe('SyncController sign-out (A4)', () => {
-  test('account publish tags the link auth=account; key publish tags auth=key; attach tags auth=join', async () => {
+  test('account publish tags the link auth=account; attach tags auth=join', async () => {
     const a = a4Controller();
     a.ctl.setAccessToken('TOKEN_A');
-    const link = await a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, null);
+    const link = await a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false });
     assert.equal(link.auth, 'account');
     assert.equal(a.log.at(-1).token, 'TOKEN_A');
-
-    const k = a4Controller();
-    const klink = await k.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, 'legacy-key');
-    assert.equal(klink.auth, 'key');
 
     const j = a4Controller();
     const jl = j.ctl.attach({ state: j.st, slug: 'a4-meet', joinCode: 'ZZZ999', latestServerAt: null, updatedAt: null }, 'device');
     assert.equal(jl.auth, 'join');
   });
 
-  test('keyless publish with no token is refused before any network call', async () => {
+  test('publish with no token is refused before any network call', async () => {
     const a = a4Controller();
-    await assert.rejects(() => a.ctl.publish({ slug: 'x', stations: [], isDemo: false }, null), /Sign in/);
+    await assert.rejects(() => a.ctl.publish({ slug: 'x', stations: [], isDemo: false }), /Sign in/);
     assert.equal(a.log.length, 0);
   });
 
   test('sign-out pauses an account link: queue kept, nothing sent, status paused; sign-in resumes', async () => {
     const a = a4Controller();
     a.ctl.setAccessToken('TOKEN_A');
-    await a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, null);
+    await a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false });
     a.log.length = 0;
 
     a.ctl.setAccessToken(null);
@@ -556,10 +557,11 @@ describe('SyncController sign-out (A4)', () => {
     assert.equal(a.ctl.status.pending, 0);
   });
 
-  test('key and join links are accountless by design: sign-out does not pause them', async () => {
-    const k = a4Controller();
+  test('legacy key links and join links are accountless by design: sign-out does not pause them', async () => {
+    const ks = memStorage();   // a link written by a pre-024 build with the publish key
+    ks.setItem(K.LINK_KEY, JSON.stringify({ meetId: 'srv-uuid-1', localMeetId: 'x', slug: 's', joinCode: 'ABC234', role: 'admin', auth: 'key', since: null }));
+    const k = a4Controller({ storage: ks });
     k.ctl.setAccessToken('TOKEN_A');
-    await k.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, 'legacy-key');
     k.ctl.setAccessToken(null);
     assert.equal(k.ctl.paused, false);
     assert.equal(k.ctl.status.state, 'idle');
@@ -574,7 +576,7 @@ describe('SyncController sign-out (A4)', () => {
   test('a publish in flight when the account signs out does not create the link (session generation)', async () => {
     const a = a4Controller({ auto: false });
     a.ctl.setAccessToken('OLD_TOKEN');
-    const p = a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, null);
+    const p = a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false });
     await Promise.resolve();
     const rpc = a.log.find((e) => e.kind === 'rpc' && e.name === 'zt_publish_meet');
     assert.ok(rpc, 'publish rpc sent');
@@ -590,7 +592,7 @@ describe('SyncController sign-out (A4)', () => {
   test('a flush in flight across a sign-out leaves the queue alone and sends nothing more', async () => {
     const a = a4Controller({ auto: false });
     a.ctl.setAccessToken('TOKEN_A');
-    const pub = a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false }, null);
+    const pub = a.ctl.publish({ slug: 'a4-meet', stations: [], isDemo: false });
     await Promise.resolve();
     a.log.find((e) => e.kind === 'rpc').resolve({ id: 'srv-uuid-1', join_code: 'ABC234' });
     await pub;
@@ -625,7 +627,7 @@ describe('SyncController account binding + publish errors (gate round)', () => {
   test('account publish records the user id on the link', async () => {
     const a = a4Controller();
     a.ctl.setAccessToken('TOKEN_A', 'user-a');
-    const link = await a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null);
+    const link = await a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false });
     assert.equal(link.auth, 'account');
     assert.equal(link.userId, 'user-a');
     const stored = JSON.parse(a.storage.getItem(K.LINK_KEY));
@@ -635,7 +637,7 @@ describe('SyncController account binding + publish errors (gate round)', () => {
   test('a different signed-in account does not resume the queue: still paused, nothing sent, clear message', async () => {
     const a = a4Controller();
     a.ctl.setAccessToken('TOKEN_A', 'user-a');
-    await a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null);
+    await a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false });
     a.ctl.setAccessToken(null);
     a.ctl.setLive({ station: 'A', current_event_id: null, current_division_id: null, current_athlete_id: null, lane2_athlete_id: null });
     a.log.length = 0;
@@ -648,7 +650,7 @@ describe('SyncController account binding + publish errors (gate round)', () => {
     await a.ctl.flush();
     assert.equal(a.log.length, 0, 'no network under the other account');
     assert.equal(a.ctl.status.pending, 1, 'queue kept for the owner');
-    await assert.rejects(() => a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null), /different ZeroTacky account/);
+    await assert.rejects(() => a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }), /different ZeroTacky account/);
     assert.equal(a.log.length, 0);
 
     // the owner comes back: resumes and flushes under their token
@@ -669,16 +671,19 @@ describe('SyncController account binding + publish errors (gate round)', () => {
     assert.equal(a.ctl.paused, false);
   });
 
-  test('a signed-in phone that also holds a key sends the key (claim path) and the link is a key link', async () => {
-    const a = a4Controller();
+  test('024: publish sends no p_key; a legacy key link re-published from a signed-in phone becomes an account link', async () => {
+    const ks = memStorage();
+    ks.setItem(K.LINK_KEY, JSON.stringify({ meetId: 'srv-uuid-1', localMeetId: 'x', slug: 'g-meet', joinCode: 'ABC234', role: 'admin', auth: 'key', since: null }));
+    const a = a4Controller({ storage: ks });
     a.ctl.setAccessToken('TOKEN_A', 'user-a');
-    const link = await a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, 'legacy-key');
+    const link = await a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false });
     const call = a.log.find((e) => e.kind === 'rpc' && e.name === 'zt_publish_meet');
-    assert.equal(call.args.p_key, 'legacy-key');
+    assert.equal('p_key' in call.args, false);
     assert.equal(call.token, 'TOKEN_A');
-    assert.equal(link.auth, 'key');
+    assert.equal(link.auth, 'account');
+    assert.equal(link.userId, 'user-a');
     a.ctl.setAccessToken(null);
-    assert.equal(a.ctl.paused, false, 'key links are accountless');
+    assert.equal(a.ctl.paused, true, 'now an account link');
   });
 
   // Resolve pending fake calls (newest first is fine) until `stop(entry)` matches one, which is returned unresolved.
@@ -702,13 +707,13 @@ describe('SyncController account binding + publish errors (gate round)', () => {
   test('a refused publish stays visible in status.publishError across successful ticks; the next good publish clears it', async () => {
     const a = a4Controller({ auto: false });
     a.ctl.setAccessToken('TOKEN_A', 'user-a');
-    const p1 = a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null);
+    const p1 = a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false });
     const first = await driveUntil(a, isPublish);
     first.done = true; first.resolve(PUBLISH_OK(first));
     await p1;
     assert.equal(a.ctl.status.publishError, null);
 
-    const p2 = a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null).catch((e) => e);
+    const p2 = a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }).catch((e) => e);
     const rpc = await driveUntil(a, isPublish);
     rpc.done = true;
     rpc.reject(new C.SyncError(400, 'Jessica Rucci has 1 recorded result(s) and cannot be removed.'));
@@ -725,7 +730,7 @@ describe('SyncController account binding + publish errors (gate round)', () => {
     assert.equal(a.ctl.status.error, null);
     assert.match(a.ctl.status.publishError, /recorded result/);
 
-    const p3 = a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false }, null);
+    const p3 = a.ctl.publish({ slug: 'g-meet', stations: [], isDemo: false });
     const third = await driveUntil(a, isPublish);
     third.done = true; third.resolve(PUBLISH_OK(third));
     await p3;
@@ -749,19 +754,19 @@ describe('SyncController account binding + publish errors (gate round)', () => {
   test('publish aborts when the pre-publish flush/pull fails; nothing reaches the server, publishError says why', async () => {
     const srv = fakeServer();
     const admin = phone(srv, 'a-r2', P.getInitialSeedState('strongfest-2026'), clock);
-    await admin.ctl.publish({ slug: 'r2' }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'r2' });
     const athletesBefore = srv.db.athletes.length;
     const calls = srv.log.length;
     // roster shrinks locally while the network is down
     admin.mutate((s) => ({ ...s, athletes: s.athletes.slice(1) }));
     srv.setOffline(true);
-    await assert.rejects(admin.ctl.publish({ slug: 'r2' }, 'GOODKEY'), /Not published: could not fetch the latest/);
+    await assert.rejects(admin.ctl.publish({ slug: 'r2' }), /Not published: could not fetch the latest/);
     assert.match(admin.ctl.status.publishError, /Not published/);
     srv.setOffline(false);
     assert.equal(srv.db.athletes.length, athletesBefore);
     assert.ok(!srv.log.slice(calls).some((e) => e.path.endsWith('/rpc/zt_publish_meet')));
     // back online: the retry publishes and clears the message
-    await admin.ctl.publish({ slug: 'r2' }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'r2' });
     assert.equal(admin.ctl.status.publishError, null);
     assert.equal(srv.db.athletes.length, athletesBefore - 1);
   });
@@ -770,13 +775,13 @@ describe('SyncController account binding + publish errors (gate round)', () => {
   test('R5: a locally removed athlete is not resurrected by a pull; the republish deletes it on the server', async () => {
     const srv = fakeServer();
     const admin = phone(srv, 'a-r5', P.getInitialSeedState('strongfest-2026'), clock);
-    await admin.ctl.publish({ slug: 'r5' }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'r5' });
     const gone = admin.state.athletes[2];
     admin.mutate((s) => ({ ...s, athletes: s.athletes.filter((a) => a.id !== gone.id) }));
     await admin.ctl.tick();                                     // the 3 s poll before the 1.5 s republish fires
     assert.ok(!admin.state.athletes.some((a) => a.id === gone.id), 'pull brought the deleted athlete back');
     assert.ok(srv.db.athletes.some((a) => a.id === gone.id));   // still on the server until the publish
-    await admin.ctl.publish({ slug: 'r5' }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'r5' });
     assert.ok(!srv.db.athletes.some((a) => a.id === gone.id));
     // a judge phone sees the roster shrink
     const judge = phone(srv, 'j-r5', P.getInitialSeedState('york-iron-2026'), clock);
@@ -786,7 +791,7 @@ describe('SyncController account binding + publish errors (gate round)', () => {
   test('R5: removing a scored athlete is refused by the server; publishError says so and the next pull restores the athlete', async () => {
     const srv = fakeServer();
     const admin = phone(srv, 'a-r5b', P.getInitialSeedState('strongfest-2026'), clock);
-    await admin.ctl.publish({ slug: 'r5b' }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'r5b' });
     const judge = phone(srv, 'j-r5b', P.getInitialSeedState('york-iron-2026'), clock);
     const remote = await judge.ctl.lookupJoinCode(admin.ctl.link.joinCode);
     judge.state = remote.state; judge.ctl.attach(remote); await judge.ctl.checkAdminPin('1050');   // 011: scores need the grant a correct PIN issues
@@ -798,7 +803,7 @@ describe('SyncController account binding + publish errors (gate round)', () => {
     admin.mutate((s) => ({ ...s, athletes: s.athletes.filter((a) => a.id !== scored.id) }));
     await admin.ctl.tick();
     assert.ok(!admin.state.athletes.some((a) => a.id === scored.id));
-    await assert.rejects(admin.ctl.publish({ slug: 'r5b' }, 'GOODKEY'), /recorded result/);
+    await assert.rejects(admin.ctl.publish({ slug: 'r5b' }), /recorded result/);
     assert.match(admin.ctl.status.publishError, /recorded result/);
     assert.ok(srv.db.athletes.some((a) => a.id === scored.id));
     await admin.ctl.tick();
@@ -809,7 +814,7 @@ describe('SyncController account binding + publish errors (gate round)', () => {
   test('G2-H2: a walk-on fetched by the pre-publish pull is in the publish payload even before the host commits it', async () => {
     const srv = fakeServer();
     const admin = phone(srv, 'a-h2', P.getInitialSeedState('strongfest-2026'), clock, { asyncIncoming: true });
-    await admin.ctl.publish({ slug: 'h2' }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'h2' });
     const judge = phone(srv, 'j-h2', P.getInitialSeedState('york-iron-2026'), clock);
     const remote = await judge.ctl.lookupJoinCode(admin.ctl.link.joinCode);
     judge.state = remote.state; judge.ctl.attach(remote); await judge.ctl.checkAdminPin('1050');   // 011: scores need the grant a correct PIN issues
@@ -821,7 +826,7 @@ describe('SyncController account binding + publish errors (gate round)', () => {
     admin.mutate((s) => ({ ...s, meet: { ...s.meet, collarWeightPerPair: 5 } }));
     assert.ok(!admin.state.athletes.some((a) => a.id === 'walkon-h2'));
     const calls = srv.log.length;
-    await admin.ctl.publish({ slug: 'h2' }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'h2' });
     assert.ok(!admin.state.athletes.some((a) => a.id === 'walkon-h2'), 'test premise: host has not committed the pull yet');
     const pub = srv.log.slice(calls).find((e) => e.path.endsWith('/rpc/zt_publish_meet'));
     assert.ok(pub.body.p_athletes.some((a) => a.id === 'walkon-h2'), 'publish payload omitted the pulled walk-on');
@@ -835,12 +840,12 @@ describe('SyncController account binding + publish errors (gate round)', () => {
     const srv = fakeServer();
     const admin = phone(srv, 'a-r1', P.getInitialSeedState('strongfest-2026'), clock);
     admin.state = { ...admin.state, meet: { ...admin.state.meet, adminPin: '7391' } };
-    await admin.ctl.publish({ slug: 'r1' }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'r1' });
     assert.equal(srv.db.meets[0].admin_pin, '7391');
     const { adminPin: _x, ...noPin } = admin.state.meet;
     void _x;
     admin.state = { ...admin.state, meet: noPin };
-    await admin.ctl.publish({ slug: 'r1' }, 'GOODKEY');
+    await admin.ctl.publish({ slug: 'r1' });
     assert.equal(srv.db.meets[0].admin_pin, '7391');
   });
 });
