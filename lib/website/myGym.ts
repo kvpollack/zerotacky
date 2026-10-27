@@ -289,6 +289,27 @@ export async function adminApproveClaim(sb: SupabaseClient, id: string): Promise
   const { error } = await sb.rpc('zt_approve_gym_claim', { p_claim: id });
   if (error) throw error;
 }
+// 027: ask the server to send the claim-approved email. The route re-checks admin and reads the recipient from the
+// database; this only forwards the session token. Resolves with the address it went to (or 'already_notified').
+export async function sendClaimApprovedEmail(
+  sb: SupabaseClient,
+  claimId: string,
+  opts: { force?: boolean; fetchImpl?: typeof fetch } = {}
+): Promise<{ to: string; skipped?: string }> {
+  const { data } = await sb.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) throw new Error('Sign in required to send the approval email.');
+  const f = opts.fetchImpl ?? fetch;
+  const res = await f('/api/claim-approved', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ claimId, force: opts.force === true }),
+  });
+  const j = (await res.json().catch(() => ({}))) as { ok?: boolean; to?: string; skipped?: string; error?: string };
+  if (!res.ok || !j.ok) throw new Error(j.error || `Email request failed (${res.status}).`);
+  return { to: j.to ?? '', skipped: j.skipped };
+}
+
 export async function adminRejectClaim(sb: SupabaseClient, id: string): Promise<void> {
   const { error } = await sb.rpc('zt_reject_gym_claim', { p_claim: id });
   if (error) throw error;
