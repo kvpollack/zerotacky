@@ -22,6 +22,7 @@ export interface Profile {
   favorite_lift_note: string;   // free text: variation, best number, why
   location: string;
   home_gym_name: string;
+  home_gym_id: string | null;   // 029: directory gym (gyms.id) when the home gym is listed; name stays the free text
   prs: ProfilePR[];             // up to 3
   is_trainer: boolean;
   trainer_in_person: boolean;
@@ -37,7 +38,7 @@ export interface Profile {
 export type ProfilePatch = Partial<Omit<Profile, 'id' | 'email' | 'username' | 'created_at' | 'updated_at'>>;
 
 export const PROFILE_COLUMNS =
-  'id,email,display_name,is_athlete,is_promoter,is_gym_owner,favorite_lift,favorite_lift_note,location,home_gym_name,prs,' +
+  'id,email,display_name,is_athlete,is_promoter,is_gym_owner,favorite_lift,favorite_lift_note,location,home_gym_name,home_gym_id,prs,' +
   'is_trainer,trainer_in_person,trainer_online,socials,avatar_path,username,is_public,created_at,updated_at';
 
 export const FAVORITE_LIFT_OPTIONS: ReadonlyArray<{ id: string; label: string }> = [
@@ -66,6 +67,11 @@ export const SOCIAL_KEYS: ReadonlyArray<{ key: SocialKey; label: string; placeho
 
 export const MAX_PRS = 3;
 const LIMITS = { display_name: 80, favorite_lift: 40, favorite_lift_note: 120, location: 80, home_gym_name: 80, pr_lift: 40, pr_value: 40, handle: 60, website: 200, avatar_path: 200 } as const;
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export function isUuid(v: unknown): boolean {
+  return typeof v === 'string' && UUID_RE.test(v);
+}
 
 function str(v: unknown, max: number): string {
   return typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '';
@@ -144,6 +150,7 @@ export function cleanProfilePatch(patch: ProfilePatch): ProfilePatch {
   if ('favorite_lift_note' in patch) c.favorite_lift_note = str(patch.favorite_lift_note, LIMITS.favorite_lift_note);
   if ('location' in patch) c.location = str(patch.location, LIMITS.location);
   if ('home_gym_name' in patch) c.home_gym_name = str(patch.home_gym_name, LIMITS.home_gym_name);
+  if ('home_gym_id' in patch) c.home_gym_id = isUuid(patch.home_gym_id) ? (patch.home_gym_id as string) : null;
   if ('prs' in patch) c.prs = cleanPRs(patch.prs);
   if ('socials' in patch) c.socials = cleanSocials(patch.socials);
   if ('avatar_path' in patch) c.avatar_path = str(patch.avatar_path, LIMITS.avatar_path);
@@ -165,6 +172,7 @@ export function normalizeProfile(row: Partial<Profile> & Pick<Profile, 'id'>): P
     favorite_lift_note: row.favorite_lift_note ?? '',
     location: row.location ?? '',
     home_gym_name: row.home_gym_name ?? '',
+    home_gym_id: isUuid(row.home_gym_id) ? (row.home_gym_id as string) : null,
     prs: cleanPRs(row.prs),
     is_trainer: !!row.is_trainer,
     trainer_in_person: !!row.trainer_in_person,

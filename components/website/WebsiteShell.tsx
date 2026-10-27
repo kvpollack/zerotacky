@@ -147,6 +147,9 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
             <Link href="/athletes" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
               Athletes
             </Link>
+            <Link href="/trainers" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
+              Trainers
+            </Link>
             <Link href="/website/account" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
               Account
             </Link>

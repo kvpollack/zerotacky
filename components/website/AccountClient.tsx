@@ -11,6 +11,7 @@ import { AVATAR_MAX_BYTES, avatarProblem } from '@/lib/auth/avatar';
 import { aboutFromProfile, aboutKey, reconcileAbout, type AboutDraft } from '@/lib/auth/profileDraft';
 import { fetchIsAdmin } from '@/lib/website/myGym';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
+import HostGymPicker from '@/components/promoter/HostGymPicker';
 
 // Real account page (v2): sign in / create account / magic link, then a profile editor. The three role flags
 // are self-declared and only shape what the site shows; meet access is decided by meets.owner_id / meet_members.
@@ -418,6 +419,18 @@ export default function AccountClient() {
                   </div>
                 </div>
 
+                {/* 029: link the home gym to its Gym Directory listing; the public page shows the gym as a link. Picking a gym
+                    also fills the name above so the text and the link agree; clearing keeps the typed name. */}
+                <HostGymPicker
+                  value={about.home_gym_id ?? ''}
+                  onChange={(g) => patchAbout(g ? { home_gym_id: g.id, home_gym_name: g.name.slice(0, 80) } : { home_gym_id: null })}
+                  id="about-gym-directory"
+                  label="Home gym in the Gym Directory"
+                  help="Optional. Links your public profile to the gym's page. Not listed? Just type the name above."
+                  clearLabel="Clear directory gym"
+                  offlineNote="Home gym link: connects your profile to a Gym Directory listing when the live backend is on."
+                />
+
                 <div className="space-y-1.5">
                   <div className={labelCls}>Personal records (up to {MAX_PRS})</div>
                   {about.prs.map((pr, i) => (
@@ -443,7 +456,7 @@ export default function AccountClient() {
                         <input type="checkbox" checked={about.trainer_online} onChange={(e) => patchAbout({ trainer_online: e.target.checked })} className="w-4 h-4 accent-[var(--zt-primary)]" />
                         Online clients
                       </label>
-                      <p className="text-[11px] text-zt-muted">You can save your coaching details here. Other people cannot find them in a directory yet; that is on the roadmap.</p>
+                      <p className="text-[11px] text-zt-muted">With a public profile (below) you are listed under <Link href="/trainers" className="underline">Trainers</Link> as well as Athletes.</p>
                     </div>
                   )}
                 </div>

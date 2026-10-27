@@ -13,6 +13,7 @@ import type { MeetListingRow } from '../promoter/db';
 import { createSyncClient, readSyncEnv, type SyncClient } from '../sync/client';
 import type { AthleteRow, DivisionRow, EventRow, ResultRow } from '../sync/mapping';
 import { buildShowHistoryEntry, type ShowHistoryEntry, type ShowHistoryRow } from './showHistory';
+import { EMPTY_PROFILE_LINKS, mapProfileLinks, type ProfileLinks } from './profileLinks';
 import { latestServerAt } from '../sync/meetApi';
 import {
   DEMO_GYM_LISTINGS,
@@ -331,6 +332,20 @@ export async function getPublicAthleteByUsername(
     return { source: 'live_supabase', data: rows.length ? mapPublicProfileRow(rows[0], base) : null, error: null };
   } catch (err) {
     return { source: 'live_supabase', data: null, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
+// Profile cross-links (029, 10/27): home gym, shows run, gyms owned. Empty for unknown or private usernames.
+export async function getProfileLinks(username: string, opts: ShowDataOptions = {}): Promise<DataResult<ProfileLinks>> {
+  const key = cleanUsernameParam(username);
+  const client = resolveClient(opts);
+  if (!client) return { source: 'demo', data: EMPTY_PROFILE_LINKS, error: null };
+  if (!key) return { source: 'live_supabase', data: EMPTY_PROFILE_LINKS, error: null };
+  try {
+    const raw = await client.rpc<unknown>('zt_profile_links', { p_username: key });
+    return { source: 'live_supabase', data: mapProfileLinks(raw), error: null };
+  } catch (err) {
+    return { source: 'live_supabase', data: EMPTY_PROFILE_LINKS, error: err instanceof Error ? err.message : String(err) };
   }
 }
 

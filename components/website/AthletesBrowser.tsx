@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { MapPin, RotateCcw, Search, User } from 'lucide-react';
-import { filterPublicAthletes, ROLE_OPTIONS, type PublicAthlete } from '@/lib/website/athletes';
+import { filterPublicAthletes, ROLE_OPTIONS, TRAINER_MODE_OPTIONS, type PublicAthlete } from '@/lib/website/athletes';
 import { athleteProfilePath } from '@/lib/auth/profile';
 
 interface AthletesBrowserProps {
@@ -13,23 +13,27 @@ interface AthletesBrowserProps {
   initialState?: string;
   initialRole?: string;
   initialSearch?: string;
+  // /trainers (029): the role is fixed, the Role select is replaced by an in-person / online filter.
+  fixedRole?: 'trainer';
+  initialMode?: string;
 }
 
 const inputCls = 'w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text focus:outline-none focus:border-zt-primary';
 
-export default function AthletesBrowser({ initialAthletes, availableStates, initialState = 'ALL', initialRole = 'ALL', initialSearch = '' }: AthletesBrowserProps) {
+export default function AthletesBrowser({ initialAthletes, availableStates, initialState = 'ALL', initialRole = 'ALL', initialSearch = '', fixedRole, initialMode = 'ALL' }: AthletesBrowserProps) {
   const [search, setSearch] = useState(initialSearch);
   const [stateFilter, setStateFilter] = useState(initialState);
-  const [role, setRole] = useState(initialRole);
+  const [role, setRole] = useState(fixedRole ?? initialRole);
+  const [mode, setMode] = useState(fixedRole ? initialMode : 'ALL');
 
   const filtered = useMemo(
-    () => filterPublicAthletes(initialAthletes, { search, state: stateFilter, role }),
-    [initialAthletes, search, stateFilter, role]
+    () => filterPublicAthletes(initialAthletes, { search, state: stateFilter, role, mode }),
+    [initialAthletes, search, stateFilter, role, mode]
   );
   // A linked state nobody is listed in still shows as selected (with zero matches) rather than snapping to All.
   const stateOptions = stateFilter === 'ALL' || availableStates.includes(stateFilter) ? availableStates : [...availableStates, stateFilter].sort();
-  const active = search.trim() !== '' || stateFilter !== 'ALL' || role !== 'ALL';
-  const reset = () => { setSearch(''); setStateFilter('ALL'); setRole('ALL'); };
+  const active = search.trim() !== '' || stateFilter !== 'ALL' || (fixedRole ? mode !== 'ALL' : role !== 'ALL');
+  const reset = () => { setSearch(''); setStateFilter('ALL'); setRole(fixedRole ?? 'ALL'); setMode('ALL'); };
 
   return (
     <div className="space-y-4">
@@ -48,13 +52,23 @@ export default function AthletesBrowser({ initialAthletes, availableStates, init
             {stateOptions.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </label>
-        <label className="block">
-          <span className="text-[10px] font-extrabold uppercase text-zt-muted">Role</span>
-          <select value={role} onChange={(e) => setRole(e.target.value)} className={inputCls}>
-            <option value="ALL">Everyone</option>
-            {ROLE_OPTIONS.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
-          </select>
-        </label>
+        {fixedRole ? (
+          <label className="block">
+            <span className="text-[10px] font-extrabold uppercase text-zt-muted">Coaching</span>
+            <select value={mode} onChange={(e) => setMode(e.target.value)} className={inputCls}>
+              <option value="ALL">In person or online</option>
+              {TRAINER_MODE_OPTIONS.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+            </select>
+          </label>
+        ) : (
+          <label className="block">
+            <span className="text-[10px] font-extrabold uppercase text-zt-muted">Role</span>
+            <select value={role} onChange={(e) => setRole(e.target.value)} className={inputCls}>
+              <option value="ALL">Everyone</option>
+              {ROLE_OPTIONS.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
+            </select>
+          </label>
+        )}
         <button type="button" onClick={reset} disabled={!active} className="px-3 py-2 rounded-xl bg-zt-inset border border-zt-border text-zt-text-2 font-bold text-xs inline-flex items-center gap-1.5 disabled:opacity-40">
           <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" /> Reset
         </button>
@@ -67,7 +81,7 @@ export default function AthletesBrowser({ initialAthletes, availableStates, init
       {filtered.length === 0 ? (
         <p className="text-xs font-bold text-zt-muted bg-zt-surface border border-zt-border rounded-2xl p-4">
           {initialAthletes.length === 0
-            ? 'Nobody is listed yet. Turn on your public profile from the account page and you will be first.'
+            ? (fixedRole ? 'No trainers are listed yet. Tick "I coach" on your account page and turn on your public profile to be first.' : 'Nobody is listed yet. Turn on your public profile from the account page and you will be first.')
             : 'No one matches those filters.'}
         </p>
       ) : (

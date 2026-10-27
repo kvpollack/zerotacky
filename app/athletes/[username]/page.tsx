@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Dumbbell, ExternalLink, MapPin, Trophy, User } from 'lucide-react';
+import { ArrowLeft, Building2, Calendar, Dumbbell, ExternalLink, MapPin, Trophy, User } from 'lucide-react';
 import WebsiteShell from '@/components/website/WebsiteShell';
-import { getAthleteShowHistory, getPublicAthleteByUsername } from '@/lib/website/data';
+import { getAthleteShowHistory, getProfileLinks, getPublicAthleteByUsername } from '@/lib/website/data';
 import { formatPlace, formatShowDate } from '@/lib/website/showHistory';
+import { competitionStatusLabel, splitShows } from '@/lib/website/profileLinks';
 import { SOCIAL_KEYS, socialUrl } from '@/lib/auth/profile';
 import { athleteJsonLd, canonical } from '@/lib/website/seo';
 import JsonLd from '@/components/website/JsonLd';
@@ -34,7 +35,13 @@ export default async function AthleteProfilePage({ params }: AthletePageProps) {
   const res = await getPublicAthleteByUsername(username);
   const a = res.data;
   if (!a) notFound();
-  const history = (await getAthleteShowHistory(a.username)).data ?? [];
+  const [historyRes, linksRes] = await Promise.all([getAthleteShowHistory(a.username), getProfileLinks(a.username)]);
+  const history = historyRes.data ?? [];
+  const links = linksRes.data ?? { homeGym: null, shows: [], gyms: [] };
+  // 029: the directory row wins over the free text when both are set; a gym that left the directory falls back to the text.
+  const homeGymLabel = links.homeGym?.name || a.homeGymName;
+  const { upcoming: showsUpcoming, past: showsPast } = splitShows(links.shows);
+  const showsRun = [...showsUpcoming, ...showsPast];
 
   const socials = SOCIAL_KEYS.map((sk) => ({ ...sk, value: a.socials[sk.key] ?? '', href: a.socials[sk.key] ? socialUrl(sk.key, a.socials[sk.key] as string) : '' })).filter((s) => s.value && s.href);
 
@@ -70,7 +77,7 @@ export default async function AthleteProfilePage({ params }: AthletePageProps) {
             </div>
           </div>
 
-          {(a.location || a.homeGymName) && (
+          {(a.location || homeGymLabel) && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-zt-border text-xs">
               {a.location && (
                 <div className="bg-zt-inset border border-zt-border rounded-xl p-3">
@@ -78,10 +85,20 @@ export default async function AthleteProfilePage({ params }: AthletePageProps) {
                   <div className="text-sm font-black text-zt-text mt-0.5 flex items-center gap-1.5"><MapPin className="w-4 h-4 text-zt-primary" aria-hidden="true" />{a.location}</div>
                 </div>
               )}
-              {a.homeGymName && (
+              {homeGymLabel && (
                 <div className="bg-zt-inset border border-zt-border rounded-xl p-3">
                   <div className="text-[10px] font-extrabold uppercase text-zt-muted">Home gym</div>
-                  <div className="text-sm font-black text-zt-text mt-0.5 flex items-center gap-1.5"><Dumbbell className="w-4 h-4 text-zt-primary" aria-hidden="true" />{a.homeGymName}</div>
+                  <div className="text-sm font-black text-zt-text mt-0.5 flex items-center gap-1.5">
+                    <Dumbbell className="w-4 h-4 text-zt-primary shrink-0" aria-hidden="true" />
+                    {links.homeGym ? (
+                      <Link href={`/gyms/${links.homeGym.slug}`} className="hover:text-zt-primary underline-offset-2 hover:underline">{links.homeGym.name}</Link>
+                    ) : (
+                      <span>{homeGymLabel}</span>
+                    )}
+                  </div>
+                  {links.homeGym && (links.homeGym.city || links.homeGym.state) && (
+                    <div className="text-[11px] font-semibold text-zt-muted mt-0.5">{[links.homeGym.city, links.homeGym.state].filter(Boolean).join(', ')} • in the Gym Directory</div>
+                  )}
                 </div>
               )}
             </div>
@@ -150,6 +167,46 @@ export default async function AthleteProfilePage({ params }: AthletePageProps) {
               })}
             </ul>
             <p className="text-xs text-zt-muted">Official results from shows scored on ZeroTacky and marked final by the promoter.</p>
+          </section>
+        )}
+
+        {showsRun.length > 0 && (
+          <section aria-labelledby="shows-run-heading" className="space-y-3">
+            <h2 id="shows-run-heading" className="text-base font-black uppercase tracking-wider text-zt-primary">Shows They Run</h2>
+            <ul className="space-y-2">
+              {showsRun.map((sh) => (
+                <li key={sh.slug} className="bg-zt-surface border border-zt-border rounded-2xl p-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <div className="min-w-0 flex-1 space-y-0.5">
+                    <div className="text-xs font-extrabold uppercase text-zt-muted flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
+                      {formatShowDate(sh.date)}{sh.venue ? ` • ${sh.venue}` : ''}
+                    </div>
+                    <Link href={`/shows/${sh.slug}`} className="block text-sm font-black text-zt-text hover:text-zt-primary break-words">{sh.name}</Link>
+                  </div>
+                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border ${sh.competitionStatus === 'live' ? 'bg-zt-primary text-zt-on-primary border-zt-primary' : 'bg-zt-inset text-zt-text-2 border-zt-border'}`}>
+                    {competitionStatusLabel(sh.competitionStatus)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-zt-muted">Listed shows this promoter&apos;s account owns on ZeroTacky.</p>
+          </section>
+        )}
+
+        {links.gyms.length > 0 && (
+          <section aria-labelledby="gyms-heading" className="space-y-3">
+            <h2 id="gyms-heading" className="text-base font-black uppercase tracking-wider text-zt-primary">{links.gyms.length === 1 ? 'Gym' : 'Gyms'}</h2>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {links.gyms.map((g) => (
+                <li key={g.slug}>
+                  <Link href={`/gyms/${g.slug}`} className="block bg-zt-surface border border-zt-border hover:border-zt-primary rounded-2xl p-4 transition h-full">
+                    <div className="text-sm font-black text-zt-text flex items-center gap-1.5"><Building2 className="w-4 h-4 text-zt-primary shrink-0" aria-hidden="true" />{g.name}</div>
+                    <div className="text-[11px] font-semibold text-zt-text-2 mt-0.5">{[g.city, g.state].filter(Boolean).join(', ')}{g.gymType ? ` • ${g.gymType}` : ''}</div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-zt-muted">Claimed listings in the Gym Directory owned by this account.</p>
           </section>
         )}
 

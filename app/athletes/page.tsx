@@ -36,7 +36,8 @@ export default async function AthletesDirectoryPage({ searchParams }: { searchPa
           People who train, compete, run shows or coach, and chose to be listed. Everyone here opted in from their account
           page and can leave the list any time.{' '}
           <Link href="/website/account" className="font-bold text-zt-primary hover:underline">Add yourself</Link>: pick a
-          username and turn on your public profile.
+          username and turn on your public profile. Looking for a coach? See the{' '}
+          <Link href="/trainers" className="font-bold text-zt-primary hover:underline">Trainers</Link> list.
         </p>
         {res.error && (
           <p className="text-xs font-bold text-red-400" role="alert">The directory could not be loaded right now. {res.error}</p>
