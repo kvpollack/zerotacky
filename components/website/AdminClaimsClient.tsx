@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth/useAuth';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import {
   adminApproveClaim, adminRejectClaim, adminRemoveGym, adminResolveReport, emailMatchesSite, fetchAdminClaims, fetchIsAdmin,
+  sendClaimApprovedEmail,
   type AdminClaimRow,
 } from '@/lib/website/myGym';
 
@@ -41,7 +42,7 @@ function EmailChip({ accountEmail, website }: { accountEmail: string | null; web
   return <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded border ${cls}`}>{label}</span>;
 }
 
-function Row({ r, busy, onAction }: { r: AdminClaimRow; busy: boolean; onAction: (label: string, fn: () => Promise<void>) => void }) {
+function Row({ r, busy, onAction }: { r: AdminClaimRow; busy: boolean; onAction: (label: string, fn: () => Promise<void | string>) => void }) {
   const isReport = r.kind === 'report';
   const newListing = r.gym_status === 'pending';
   const site = r.gym_website || r.gym_source_url;
@@ -109,7 +110,17 @@ function Row({ r, busy, onAction }: { r: AdminClaimRow; busy: boolean; onAction:
           </>
         ) : (
           <>
-            <button type="button" disabled={busy || !r.user_id} title={r.user_id ? undefined : 'Claimant was not signed in; ask them to sign in and claim again'} className={primaryBtn} onClick={() => onAction(newListing ? 'Listing published' : 'Claim approved', () => adminApproveClaim(getSupabase()!, r.id))}>
+            <button type="button" disabled={busy || !r.user_id} title={r.user_id ? undefined : 'Claimant was not signed in; ask them to sign in and claim again'} className={primaryBtn} onClick={() => onAction(newListing ? 'Listing published' : 'Claim approved', async () => {
+              const sb = getSupabase()!;
+              await adminApproveClaim(sb, r.id);
+              // 027: the approval stands even if the email fails; the notice says which happened.
+              try {
+                const sent = await sendClaimApprovedEmail(sb, r.id);
+                return sent.skipped ? `${sent.to} was already notified` : `email sent to ${sent.to}`;
+              } catch (e) {
+                return `EMAIL_FAILED:${r.id}:${errText(e)}`;
+              }
+            })}>
               <UserCheck className="w-3.5 h-3.5" aria-hidden="true" /> {newListing ? 'Approve and publish' : 'Approve claim'}
             </button>
             <button type="button" disabled={busy} className={quietBtn} onClick={() => onAction('Claim rejected', () => adminRejectClaim(getSupabase()!, r.id))}>
@@ -137,7 +148,7 @@ export default function AdminClaimsClient() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [rows, setRows] = useState<AdminClaimRow[] | null>(null);
   const [busy, setBusy] = useState(false);
-  const [notice, setNotice] = useState<{ text: string; tone: 'ok' | 'warn' } | null>(null);
+  const [notice, setNotice] = useState<{ text: string; tone: 'ok' | 'warn'; retryClaimId?: string } | null>(null);
 
   const load = useCallback(async () => {
     const sb = getSupabase();
@@ -154,15 +165,33 @@ export default function AdminClaimsClient() {
   }, [auth.user]);
   useEffect(() => { void load(); }, [load]);
 
-  const onAction = async (label: string, fn: () => Promise<void>) => {
+  const onAction = async (label: string, fn: () => Promise<void | string>) => {
     setBusy(true);
     setNotice(null);
     try {
-      await fn();
-      setNotice({ text: `${label}.`, tone: 'ok' });
+      const extra = await fn();
+      if (typeof extra === 'string' && extra.startsWith('EMAIL_FAILED:')) {
+        const [, claimId, ...rest] = extra.split(':');
+        setNotice({ text: `${label}, but the email did not go out: ${rest.join(':')}`, tone: 'warn', retryClaimId: claimId });
+      } else {
+        setNotice({ text: extra ? `${label}; ${extra}.` : `${label}.`, tone: 'ok' });
+      }
       await load();
     } catch (e) {
       setNotice({ text: errText(e), tone: 'warn' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // 027: the claim is already approved (it has left the queue); only the email is retried.
+  const retryEmail = async (claimId: string) => {
+    setBusy(true);
+    try {
+      const sent = await sendClaimApprovedEmail(getSupabase()!, claimId);
+      setNotice({ text: sent.skipped ? `${sent.to} was already notified.` : `Email sent to ${sent.to}.`, tone: 'ok' });
+    } catch (e) {
+      setNotice({ text: `Email still failing: ${errText(e)}`, tone: 'warn', retryClaimId: claimId });
     } finally {
       setBusy(false);
     }
@@ -211,7 +240,14 @@ export default function AdminClaimsClient() {
         </button>
       </div>
       {notice && (
-        <div role="status" className={`text-xs font-bold rounded-lg px-3 py-2 ${notice.tone === 'warn' ? 'bg-zt-danger/10 text-zt-danger-text border border-zt-danger/50' : 'bg-zt-inset text-zt-text-2 border border-zt-border'}`}>{notice.text}</div>
+        <div role="status" className={`text-xs font-bold rounded-lg px-3 py-2 flex flex-wrap items-center gap-2 ${notice.tone === 'warn' ? 'bg-zt-danger/10 text-zt-danger-text border border-zt-danger/50' : 'bg-zt-inset text-zt-text-2 border border-zt-border'}`}>
+          <span className="min-w-0 break-words">{notice.text}</span>
+          {notice.retryClaimId && (
+            <button type="button" disabled={busy} className={quietBtn} onClick={() => void retryEmail(notice.retryClaimId!)}>
+              <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" /> Retry email
+            </button>
+          )}
+        </div>
       )}
 
       <section aria-labelledby="claims-heading" className="space-y-2">
