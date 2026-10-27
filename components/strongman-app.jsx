@@ -61,6 +61,7 @@ export default function App() {
     removeAthlete,
     moveAthlete,
     shuffleLots,
+    moveLot,
   } = useMeetState();
 
   const { meet, divisions, athletes, events, results } = state;
@@ -615,6 +616,7 @@ export default function App() {
             removeAthlete={removeAthlete}
             moveAthlete={moveAthlete}
             shuffleLots={shuffleLots}
+            moveLot={moveLot}
             toggleAthleteWithdrawn={toggleAthleteWithdrawn}
             createNewBlankMeet={createNewBlankMeet}
             pendingPresetId={pendingPresetId}

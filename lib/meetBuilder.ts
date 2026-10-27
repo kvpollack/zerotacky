@@ -728,6 +728,51 @@ export function shuffleLots(
   return { ...state, athletes };
 }
 
+// Drag-and-drop lot order (Kurt 10/27): the division's athletes get lots 1..n in the order given. Ids missing from
+// the list keep their previous relative order after the listed ones; ids from other divisions are ignored. Lots stay
+// dense (no gaps, no duplicates), which is what the roster-order and tie-break paths in the engine rely on.
+export function reorderLots(state: AppState, divisionId: string, orderedAthleteIds: string[]): AppState {
+  const divAthletes = state.athletes
+    .filter((a) => a.divisionId === divisionId)
+    .sort((a, b) => a.lotNumber - b.lotNumber || a.name.localeCompare(b.name));
+  if (divAthletes.length === 0) return state;
+  const byId = new Map(divAthletes.map((a) => [a.id, a]));
+  const seen = new Set<string>();
+  const ordered: Athlete[] = [];
+  for (const id of orderedAthleteIds) {
+    const a = byId.get(id);
+    if (a && !seen.has(id)) {
+      ordered.push(a);
+      seen.add(id);
+    }
+  }
+  for (const a of divAthletes) if (!seen.has(a.id)) ordered.push(a);
+  const lotByAthleteId = new Map(ordered.map((a, idx) => [a.id, idx + 1]));
+  let changed = false;
+  const athletes = state.athletes.map((a) => {
+    const lot = lotByAthleteId.get(a.id);
+    if (lot === undefined || lot === a.lotNumber) return a;
+    changed = true;
+    return { ...a, lotNumber: lot };
+  });
+  return changed ? { ...state, athletes } : state;
+}
+
+// Move one athlete to a new position (0-based) within the division's lot order; the others close ranks.
+export function moveLot(state: AppState, divisionId: string, athleteId: string, toIndex: number): AppState {
+  const ids = state.athletes
+    .filter((a) => a.divisionId === divisionId)
+    .sort((a, b) => a.lotNumber - b.lotNumber || a.name.localeCompare(b.name))
+    .map((a) => a.id);
+  const from = ids.indexOf(athleteId);
+  if (from < 0) return state;
+  const to = Math.max(0, Math.min(ids.length - 1, Math.trunc(toIndex)));
+  if (to === from) return state;
+  ids.splice(from, 1);
+  ids.splice(to, 0, athleteId);
+  return reorderLots(state, divisionId, ids);
+}
+
 // ---------- Validation ----------
 
 export function validateMeet(state: AppState): { ok: boolean; problems: string[] } {

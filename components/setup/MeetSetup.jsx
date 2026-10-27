@@ -44,6 +44,7 @@ export default function MeetSetup({
   removeAthlete,
   moveAthlete,
   shuffleLots,
+  moveLot,
   toggleAthleteWithdrawn,
   createNewBlankMeet,
   pendingPresetId,
@@ -116,6 +117,7 @@ export default function MeetSetup({
         removeAthlete={removeAthlete}
         moveAthlete={moveAthlete}
         shuffleLots={shuffleLots}
+        moveLot={moveLot}
         toggleAthleteWithdrawn={toggleAthleteWithdrawn}
       />
 

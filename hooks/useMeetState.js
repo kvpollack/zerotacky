@@ -21,6 +21,7 @@ import {
   updateAthlete as mbUpdateAthlete,
   removeAthlete as mbRemoveAthlete,
   moveAthlete as mbMoveAthlete,
+  moveLot as mbMoveLot,
   shuffleLots as mbShuffleLots,
 } from '@/lib/meetBuilder';
 
@@ -167,6 +168,7 @@ export function useMeetState() {
   const removeAthlete = (athleteId) => setState((prev) => mbRemoveAthlete(prev, athleteId));
   const moveAthlete = (athleteId, toDivisionId) => setState((prev) => mbMoveAthlete(prev, athleteId, toDivisionId));
   const shuffleLots = (divisionId) => setState((prev) => mbShuffleLots(prev, divisionId));
+  const moveLot = (divisionId, athleteId, toIndex) => setState((prev) => mbMoveLot(prev, divisionId, athleteId, toIndex));
 
   return {
     state,
@@ -197,5 +199,6 @@ export function useMeetState() {
     removeAthlete,
     moveAthlete,
     shuffleLots,
+    moveLot,
   };
 }
