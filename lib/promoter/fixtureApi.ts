@@ -155,6 +155,7 @@ export function createFixturePromoterApi(
           athleteCap: pubShow.registration.athleteCap ?? null,
           promoterContact: pubShow.registration.promoterContact ?? null,
           hostGymId: null,
+          theme: null,
         },
         divisionCount: pubShow.state.divisions.length,
         athleteCount: pubShow.state.athletes.length,

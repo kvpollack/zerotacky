@@ -6,7 +6,9 @@ import { AlertTriangle, CheckCircle2, Eye, EyeOff, Globe, RotateCcw } from 'luci
 import type { MeetListing } from '@/lib/promoter/contract';
 import { isLiveBackend } from '@/lib/promoter/usePromoterApi';
 import HostGymPicker from './HostGymPicker';
+import ThemePicker from '@/components/website/ThemePicker';
 import type { HostGymOption } from '@/lib/website/hostGym';
+import type { ZtTheme } from '@/lib/website/theme';
 import type {
   ResultsFinalizationStatus,
   ShowCompetitionStatus,
@@ -15,6 +17,7 @@ import type {
 
 interface ListingSectionProps {
   meetDate: string;
+  meetName?: string;   // 030: named in the colour preview
   listing: MeetListing;
   onSaveListing: (patch: Partial<MeetListing>) => Promise<{ error: string | null }>;
   // Reports whether the form holds unsaved edits so the parent can show it in the dirty bar.
@@ -39,6 +42,7 @@ interface ListingDraft {
   athleteCapText: string;
   promoterContact: string;
   hostGymId: string; // 026: directory gym id or ''
+  theme: ZtTheme | null; // 030: raw field text; validateListingPatch normalises or refuses at save
 }
 
 function toDraft(listing: MeetListing): ListingDraft {
@@ -60,6 +64,7 @@ function toDraft(listing: MeetListing): ListingDraft {
       listing.athleteCap !== null && listing.athleteCap !== undefined ? String(listing.athleteCap) : '',
     promoterContact: listing.promoterContact ?? '',
     hostGymId: listing.hostGymId ?? '',
+    theme: listing.theme ? { ...listing.theme } : null,
   };
 }
 
@@ -89,6 +94,7 @@ function toPatch(d: ListingDraft): Partial<MeetListing> {
     athleteCap: capText ? Number(capText) : null,
     promoterContact: d.promoterContact.trim() || null,
     hostGymId: d.hostGymId.trim() || null,
+    theme: d.theme,
   };
 }
 
@@ -97,6 +103,7 @@ const LABEL = 'block text-[11px] font-bold uppercase text-zt-muted mb-1';
 
 export default function ListingSection({
   meetDate,
+  meetName = '',
   listing,
   onSaveListing,
   onDirtyChange,
@@ -449,6 +456,19 @@ export default function ListingSection({
             Appears on the registration page and in the waiver. Leave blank to show &quot;contact not provided&quot;.
           </p>
         </div>
+      </div>
+
+      {/* 030: colour ways */}
+      <div className="pt-3 border-t border-zt-border space-y-3">
+        <div className="text-xs font-extrabold uppercase text-zt-primary">Show Colours</div>
+        <ThemePicker
+          subject="show"
+          previewName={meetName}
+          value={draft.theme}
+          onChange={(t) => set('theme', t)}
+          inputClassName={INPUT}
+          labelClassName={LABEL}
+        />
       </div>
 
       {error && (

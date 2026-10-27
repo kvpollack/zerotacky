@@ -35,6 +35,7 @@ import {
   validateListingPatch,
   validateRegistrationInput,
 } from './rules';
+import { parseTheme } from '../website/theme';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -61,6 +62,7 @@ export function rowToMeetListing(row: Partial<MeetListingRow>): MeetListing {
       row.athlete_cap !== null && row.athlete_cap !== undefined ? Number(row.athlete_cap) : null,
     promoterContact: row.promoter_contact ?? null,
     hostGymId: row.host_gym_id ?? null,
+    theme: parseTheme(row.theme),
   };
 }
 
@@ -90,6 +92,9 @@ export function listingPatchToColumns(patch: Partial<MeetListing>): Partial<Meet
   }
   if (patch.hostGymId !== undefined) {
     out.host_gym_id = patch.hostGymId ? patch.hostGymId.trim() || null : null;
+  }
+  if (patch.theme !== undefined) {
+    out.theme = patch.theme ? { ...patch.theme } : null;
   }
   return out;
 }

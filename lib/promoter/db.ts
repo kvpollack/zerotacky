@@ -30,6 +30,7 @@ export interface MeetListingColumns {
   athlete_cap: number | null;
   promoter_contact: string | null;
   host_gym_id: string | null;
+  theme: Record<string, unknown> | null;
 }
 
 export interface MeetListingRow extends MeetRow, MeetListingColumns {

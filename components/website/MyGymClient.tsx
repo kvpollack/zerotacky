@@ -2,10 +2,11 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Clock, Dumbbell, ExternalLink, MapPin, Plus, Save } from 'lucide-react';
+import { ArrowLeft, Clock, Dumbbell, ExternalLink, MapPin, Palette, Plus, Save } from 'lucide-react';
 import { useAuth } from '@/lib/auth/useAuth';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import { GYM_EQUIPMENT } from '@/lib/website/gymEquipment';
+import ThemePicker from './ThemePicker';
 import {
   DAY_PASS_OPTIONS, GYM_LIMITS, GYM_SOCIAL_KEYS, GYM_TYPES, cleanGymPatch, fetchMyClaims, fetchMyGyms, patchFromRow, patchKey,
   geocodeAddress, saveMyGym, addressChanged, type GymPatch, type PinChange, type MyClaimRow, type MyGymRow,
@@ -236,6 +237,12 @@ function GymEditor({ row, onSaved }: { row: MyGymRow; onSaved: (r: MyGymRow) => 
         <p className="text-[11px] text-zt-muted">Tick what you have. A detail line (stone weights, log sizes) is optional and shows on your page.</p>
         {equipmentGroup('Strongman implements', STRONGMAN_IDS)}
         {equipmentGroup('Powerlifting', POWERLIFTING_IDS)}
+      </fieldset>
+
+      {/* 030: colour ways */}
+      <fieldset className="space-y-3">
+        <legend className="text-sm font-black uppercase text-zt-text flex items-center gap-1.5"><Palette className="w-3.5 h-3.5 text-zt-primary" aria-hidden="true" /> Colours</legend>
+        <ThemePicker subject="gym" previewName={draft.name} value={draft.theme} onChange={(theme) => patch({ theme })} inputClassName={inputCls} labelClassName={labelCls} />
       </fieldset>
 
       {notice && <Notice {...notice} />}

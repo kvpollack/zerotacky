@@ -13,6 +13,7 @@ import type {
   ResultsFinalizationStatus,
   ShowVenue,
 } from '../website/types';
+import type { ZtTheme } from '../website/theme';
 
 export interface PromoterUser {
   id: string;             // auth.users.id (uuid)
@@ -35,6 +36,7 @@ export interface MeetListing {
   athleteCap: number | null;            // integer; when accepted roster >= cap, new submissions go to 'waitlist' (status permitting) or are refused
   promoterContact: string | null;       // public: email or phone athletes may use; shown on /register and in the waiver
   hostGymId: string | null;             // 026: directory gym hosting the show (links the show page and the gym page); venue stays the address
+  theme: ZtTheme | null;                // 030: the show's own colours (public show page + board); null = ZeroTacky default
 }
 
 export interface PromoterMeetSummary {
@@ -239,6 +241,7 @@ export function emptyListing(): MeetListing {
     athleteCap: null,
     promoterContact: null,
     hostGymId: null,
+    theme: null,
   };
 }
 

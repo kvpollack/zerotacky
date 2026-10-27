@@ -82,4 +82,24 @@ describe('host gym helpers (026)', () => {
     expect(R.validateListingPatch('2026-11-07', cur, { hostGymId: null })).toBeNull();
     expect(R.validateListingPatch('2026-11-07', cur, { hostGymId: 'northbank' })).toMatch(/directory/);
   });
+
+  test('030: listing contract round-trips theme and refuses a bad hex without blocking a null', async () => {
+    const SA = await import(`${ROOT}/lib/promoter/supabaseApi.ts`);
+    const R = await import(`${ROOT}/lib/promoter/rules.ts`);
+    const C = await import(`${ROOT}/lib/promoter/contract.ts`);
+    const theme = { primary: '#e11d48', background: '#111317', secondary: '#2563eb' };
+    expect(SA.rowToMeetListing({ theme }).theme).toEqual(theme);
+    expect(SA.rowToMeetListing({ theme: { primary: '#E11D48', background: '#111317' } }).theme).toEqual({ primary: '#e11d48', background: '#111317' });
+    expect(SA.rowToMeetListing({ theme: { primary: 'red' } }).theme).toBeNull();
+    expect(SA.rowToMeetListing({}).theme).toBeNull();
+    expect(SA.listingPatchToColumns({ theme })).toEqual({ theme });
+    expect(SA.listingPatchToColumns({ theme: null })).toEqual({ theme: null });
+    expect(SA.listingPatchToColumns({})).toEqual({});
+    expect(C.emptyListing().theme).toBeNull();
+    const cur = C.emptyListing();
+    expect(R.validateListingPatch('2026-11-07', cur, { theme })).toBeNull();
+    expect(R.validateListingPatch('2026-11-07', cur, { theme: null })).toBeNull();
+    expect(R.validateListingPatch('2026-11-07', cur, { theme: { primary: '#e11d48', background: 'dark' } })).toMatch(/six-digit hex/);
+    expect(R.validateListingPatch('2026-11-07', cur, { theme: { primary: '#e11d48', background: '#111317', secondary: 'x' } })).toMatch(/second accent/);
+  });
 });
