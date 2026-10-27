@@ -839,5 +839,7 @@ export function toPublicShowSummary(record: PublicShowRecord): PublicShowSummary
     liveScoreboardPath: record.liveScoreboardPath,
     lastUpdatedIso: record.lastUpdatedIso,
     summaryNote: record.summaryNote,
+    hostGymSlug: record.hostGymSlug,
+    hostGymName: record.hostGymName,
   };
 }

@@ -13,6 +13,7 @@ import type {
 import type { AppState } from '../types';
 
 export const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function clone<T>(val: T): T {
   return JSON.parse(JSON.stringify(val));
@@ -65,6 +66,12 @@ export function validateListingPatch(
     const trimmed = merged.promoterContact.trim();
     if (trimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) && (trimmed.match(/\d/g) ?? []).length < 7) {
       return 'Promoter contact must be an email address or a phone number with at least 7 digits.';
+    }
+  }
+
+  if (merged.hostGymId !== null && merged.hostGymId !== undefined && merged.hostGymId.trim()) {
+    if (!UUID.test(merged.hostGymId.trim())) {
+      return 'Host gym must be chosen from the directory.';
     }
   }
 

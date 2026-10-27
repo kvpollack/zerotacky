@@ -29,6 +29,7 @@ export interface MeetListingColumns {
   registration_deadline: string | null;
   athlete_cap: number | null;
   promoter_contact: string | null;
+  host_gym_id: string | null;
 }
 
 export interface MeetListingRow extends MeetRow, MeetListingColumns {

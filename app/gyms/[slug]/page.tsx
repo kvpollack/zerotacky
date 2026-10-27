@@ -37,7 +37,7 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
   if (!gym) notFound();
 
   const hostedShows = (showsRes.data ?? []).filter((s) =>
-    gym.hostedShowSlugs.includes(s.slug)
+    s.hostGymSlug === gym.slug || gym.hostedShowSlugs.includes(s.slug)
   );
 
   return (

@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { AlertTriangle, CheckCircle2, Eye, EyeOff, Globe, RotateCcw } from 'lucide-react';
 import type { MeetListing } from '@/lib/promoter/contract';
 import { isLiveBackend } from '@/lib/promoter/usePromoterApi';
+import HostGymPicker from './HostGymPicker';
+import type { HostGymOption } from '@/lib/website/hostGym';
 import type {
   ResultsFinalizationStatus,
   ShowCompetitionStatus,
@@ -36,6 +38,7 @@ interface ListingDraft {
   registrationDeadline: string;
   athleteCapText: string;
   promoterContact: string;
+  hostGymId: string; // 026: directory gym id or ''
 }
 
 function toDraft(listing: MeetListing): ListingDraft {
@@ -56,6 +59,7 @@ function toDraft(listing: MeetListing): ListingDraft {
     athleteCapText:
       listing.athleteCap !== null && listing.athleteCap !== undefined ? String(listing.athleteCap) : '',
     promoterContact: listing.promoterContact ?? '',
+    hostGymId: listing.hostGymId ?? '',
   };
 }
 
@@ -84,6 +88,7 @@ function toPatch(d: ListingDraft): Partial<MeetListing> {
     // Non-numeric text becomes NaN on purpose so validateListingPatch rejects it with its own message.
     athleteCap: capText ? Number(capText) : null,
     promoterContact: d.promoterContact.trim() || null,
+    hostGymId: d.hostGymId.trim() || null,
   };
 }
 
@@ -112,6 +117,18 @@ export default function ListingSection({
 
   const set = <K extends keyof ListingDraft>(key: K, value: ListingDraft[K]) =>
     setDraft((prev) => ({ ...prev, [key]: value }));
+
+  // "Use gym address": the directory address becomes the venue; the facility name stays if the promoter typed one.
+  const useGymAddress = (g: HostGymOption) =>
+    setDraft((prev) => ({
+      ...prev,
+      facilityName: prev.facilityName.trim() || g.name,
+      streetAddress: g.streetAddress || prev.streetAddress,
+      city: g.city || prev.city,
+      stateCode: g.state || prev.stateCode,
+      postalCode: g.zip || prev.postalCode,
+      country: prev.country || 'US',
+    }));
 
   const handleReset = () => {
     setDraft(toDraft(listing));
@@ -264,6 +281,11 @@ export default function ListingSection({
       {/* Venue Fields */}
       <div className="pt-3 border-t border-zt-border space-y-3">
         <div className="text-xs font-extrabold uppercase text-zt-primary">Venue &amp; Location</div>
+        <HostGymPicker
+          value={draft.hostGymId}
+          onChange={(g) => set('hostGymId', g ? g.id : '')}
+          onUseAddress={useGymAddress}
+        />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label htmlFor="listing-facility" className={LABEL}>

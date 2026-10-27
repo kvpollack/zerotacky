@@ -89,12 +89,12 @@ export interface PublicShowSummary {
   liveScoreboardPath?: string; // e.g. `/m/${slug}` when published
   lastUpdatedIso?: string;
   summaryNote?: string;
+  hostGymSlug?: string; // 026: directory gym hosting the show; the gym page lists shows by this
+  hostGymName?: string;
 }
 
 export interface PublicShowRecord extends PublicShowSummary {
   promoterName?: string;
-  hostGymSlug?: string;
-  hostGymName?: string;
   scheduleNotes?: string;
   rulesSummary?: string;
   statusBannerNote?: string;

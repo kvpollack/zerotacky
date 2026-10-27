@@ -16,6 +16,11 @@ function createFakeShowsBackend() {
   const events = [];
   const athletes = [];
   const results = [];
+  // 026: directory gyms; the first seed meet is hosted by the listed one, the third by a removed one.
+  const gyms = [
+    { id: 'gym-listed', slug: 'northbank-barbell-erie-pa', name: 'Northbank Barbell', status: 'claimed' },
+    { id: 'gym-removed', slug: 'gone-gym', name: 'Gone Gym', status: 'removed' },
+  ];
 
   seedMeets.forEach((seed, idx) => {
     const rows = M.stateToRows(seed.state, {
@@ -38,6 +43,7 @@ function createFakeShowsBackend() {
       registration_deadline: l.registrationDeadline,
       athlete_cap: l.athleteCap,
       promoter_contact: l.promoterContact,
+      host_gym_id: idx === 0 ? 'gym-listed' : idx === 2 ? 'gym-removed' : null,
       updated_at: seed.summary.updatedAt,
     });
     divisions.push(...rows.divisions);
@@ -67,6 +73,14 @@ function createFakeShowsBackend() {
       if (slugParam?.startsWith('eq.')) {
         const target = slugParam.slice(3).toLowerCase();
         rows = rows.filter((m) => m.slug.toLowerCase() === target);
+      }
+    } else if (table === 'gyms') {
+      const idParam = u.searchParams.get('id');
+      const statusParam = u.searchParams.get('status');
+      rows = gyms.filter((g) => !statusParam?.startsWith('in.(') || statusParam.slice(4, -1).split(',').includes(g.status));
+      if (idParam?.startsWith('in.(')) {
+        const ids = new Set(idParam.slice(4, -1).split(','));
+        rows = rows.filter((g) => ids.has(g.id));
       }
     } else if (table === 'divisions' || table === 'events' || table === 'athletes' || table === 'results') {
       const source =
@@ -188,3 +202,31 @@ describe('website data: listPublicShows & getPublicShowBySlug', () => {
     }
   });
 });
+
+describe('host gym on public shows (026)', () => {
+  test('listPublicShows attaches slug + name for a listed host gym and nothing for a removed or unset one', async () => {
+    const client = createFakeShowsBackend();
+    const res = await D.listPublicShows({ client, includeDemoShows: false });
+    expect(res.error).toBeNull();
+    const bySlug = new Map(res.data.map((s) => [s.slug, s]));
+    const hosted = res.data.filter((s) => s.hostGymSlug);
+    expect(hosted.length).toBe(1);
+    expect(hosted[0].hostGymSlug).toBe('northbank-barbell-erie-pa');
+    expect(hosted[0].hostGymName).toBe('Northbank Barbell');
+    for (const s of res.data) if (s !== hosted[0]) expect(s.hostGymSlug).toBeUndefined();
+    expect(bySlug.size).toBe(res.data.length);
+  });
+
+  test('getPublicShowBySlug carries the host gym so the show page can link /gyms/<slug>', async () => {
+    const client = createFakeShowsBackend();
+    const list = await D.listPublicShows({ client, includeDemoShows: false });
+    const hosted = list.data.find((s) => s.hostGymSlug);
+    const res = await D.getPublicShowBySlug(hosted.slug, { client, includeDemoShows: false });
+    expect(res.data.hostGymSlug).toBe('northbank-barbell-erie-pa');
+    expect(res.data.hostGymName).toBe('Northbank Barbell');
+    const other = list.data.find((s) => !s.hostGymSlug);
+    const res2 = await D.getPublicShowBySlug(other.slug, { client, includeDemoShows: false });
+    expect(res2.data.hostGymSlug).toBeUndefined();
+  });
+});
+
