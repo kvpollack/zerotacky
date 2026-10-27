@@ -8,6 +8,7 @@ export interface AboutDraft {
   favorite_lift_note: string;
   location: string;
   home_gym_name: string;
+  home_gym_id: string | null;
   prs: ProfilePR[];
   is_trainer: boolean;
   trainer_in_person: boolean;
@@ -29,6 +30,7 @@ export function aboutFromProfile(p: Profile): AboutDraft {
     favorite_lift_note: p.favorite_lift_note,
     location: p.location,
     home_gym_name: p.home_gym_name,
+    home_gym_id: p.home_gym_id,
     prs: padPRs(p.prs),
     is_trainer: p.is_trainer,
     trainer_in_person: p.trainer_in_person,
@@ -42,8 +44,8 @@ export function aboutKey(a: AboutDraft): string {
   return JSON.stringify(cleanProfilePatch({ ...a }));
 }
 
-type ScalarKey = 'favorite_lift' | 'favorite_lift_note' | 'location' | 'home_gym_name' | 'is_trainer' | 'trainer_in_person' | 'trainer_online';
-const SCALARS: ScalarKey[] = ['favorite_lift', 'favorite_lift_note', 'location', 'home_gym_name', 'is_trainer', 'trainer_in_person', 'trainer_online'];
+type ScalarKey = 'favorite_lift' | 'favorite_lift_note' | 'location' | 'home_gym_name' | 'home_gym_id' | 'is_trainer' | 'trainer_in_person' | 'trainer_online';
+const SCALARS: ScalarKey[] = ['favorite_lift', 'favorite_lift_note', 'location', 'home_gym_name', 'home_gym_id', 'is_trainer', 'trainer_in_person', 'trainer_online'];
 
 function samePR(a: ProfilePR | undefined, b: ProfilePR | undefined): boolean {
   return (a?.lift ?? '') === (b?.lift ?? '') && (a?.value ?? '') === (b?.value ?? '');
@@ -59,7 +61,7 @@ export function reconcileAbout(cur: AboutDraft | null, prev: Profile, next: Prof
   if (!cur) return b;
   const out: AboutDraft = { ...cur, prs: cur.prs.map((pr) => ({ ...pr })), socials: { ...cur.socials } };
   for (const k of SCALARS) {
-    if (a[k] !== b[k]) (out as unknown as Record<ScalarKey, string | boolean>)[k] = b[k];
+    if (a[k] !== b[k]) (out as unknown as Record<ScalarKey, string | boolean | null>)[k] = b[k];
   }
   out.prs = padPRs(out.prs).map((pr, i) => (samePR(a.prs[i], b.prs[i]) ? pr : { ...b.prs[i] }));
   const socialKeys = new Set<string>([...Object.keys(a.socials), ...Object.keys(b.socials), ...Object.keys(cur.socials)]);

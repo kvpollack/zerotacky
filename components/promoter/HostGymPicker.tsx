@@ -11,13 +11,28 @@ interface HostGymPickerProps {
   onChange: (gym: HostGymOption | null) => void;
   // Copies the chosen gym's address into the venue fields; the parent decides what that means.
   onUseAddress?: (gym: HostGymOption) => void;
+  // 029: the account page reuses the picker for the home gym; these override the listing copy and ids.
+  id?: string;
+  label?: string;
+  help?: string;
+  clearLabel?: string;
+  offlineNote?: string;
 }
 
 const INPUT = 'w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text';
 
 // Links a meet to a directory gym (026). Searches `gyms` by name as the promoter types; the chosen gym shows as a
 // chip with the address and a clear button. Without a backend the field explains itself and stays inert.
-export default function HostGymPicker({ value, onChange, onUseAddress }: HostGymPickerProps) {
+export default function HostGymPicker({
+  value,
+  onChange,
+  onUseAddress,
+  id = 'listing-host-gym',
+  label = 'Host Gym (from the Gym Directory)',
+  help = 'Optional. Links the show page to the gym and lists the show on the gym\u2019s page. The venue fields below stay the address shown to athletes.',
+  clearLabel = 'Clear host gym',
+  offlineNote = 'Host gym: connects a show to a Gym Directory listing when the live backend is on. Preview data has no directory.',
+}: HostGymPickerProps) {
   const sb = getSupabase();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<HostGymOption[]>([]);
@@ -76,9 +91,7 @@ export default function HostGymPicker({ value, onChange, onUseAddress }: HostGym
 
   if (!sb) {
     return (
-      <p className="text-xs text-zt-muted">
-        Host gym: connects a show to a Gym Directory listing when the live backend is on. Preview data has no directory.
-      </p>
+      <p className="text-xs text-zt-muted">{offlineNote}</p>
     );
   }
 
@@ -98,8 +111,8 @@ export default function HostGymPicker({ value, onChange, onUseAddress }: HostGym
 
   return (
     <div className="space-y-2">
-      <label htmlFor="listing-host-gym" className="block text-[11px] font-bold uppercase text-zt-muted">
-        Host Gym (from the Gym Directory)
+      <label htmlFor={id} className="block text-[11px] font-bold uppercase text-zt-muted">
+        {label}
       </label>
       {chosen ? (
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-zt-border-strong bg-zt-inset px-3 py-2">
@@ -128,7 +141,7 @@ export default function HostGymPicker({ value, onChange, onUseAddress }: HostGym
           <button
             type="button"
             onClick={clear}
-            aria-label="Clear host gym"
+            aria-label={clearLabel}
             className="p-1 rounded-lg text-zt-muted hover:text-zt-text hover:bg-zt-surface"
           >
             <X className="w-4 h-4" aria-hidden="true" />
@@ -138,14 +151,14 @@ export default function HostGymPicker({ value, onChange, onUseAddress }: HostGym
         <div className="relative">
           <Search className="w-4 h-4 text-zt-muted absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
           <input
-            id="listing-host-gym"
+            id={id}
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search the directory by gym name"
             autoComplete="off"
             className={`${INPUT} pl-9`}
-            aria-describedby="listing-host-gym-help"
+            aria-describedby={`${id}-help`}
           />
           {(results.length > 0 || searching) && (
             <ul
@@ -172,8 +185,8 @@ export default function HostGymPicker({ value, onChange, onUseAddress }: HostGym
           )}
         </div>
       )}
-      <p id="listing-host-gym-help" className="text-[11px] text-zt-muted">
-        {note ?? 'Optional. Links the show page to the gym and lists the show on the gym\u2019s page. The venue fields below stay the address shown to athletes.'}
+      <p id={`${id}-help`} className="text-[11px] text-zt-muted">
+        {note ?? help}
       </p>
     </div>
   );

@@ -41,6 +41,8 @@ export interface PublicAthlete {
   location: string;           // as entered (Kurt 10/21: no state-level hiding for now)
   state: string;              // 2-letter guess from the end of `location`, '' when none
   homeGymName: string;
+  trainerInPerson: boolean;   // only meaningful when roles has 'trainer'
+  trainerOnline: boolean;
   prs: ProfilePR[];
   socials: ProfileSocials;
   avatarUrl: string;          // public storage URL or ''
@@ -116,6 +118,10 @@ export function cleanStateParam(v: string | string[] | undefined): string {
   const s = (Array.isArray(v) ? v[0] : v ?? '').trim().toUpperCase();
   return US_STATES.has(s) ? s : 'ALL';
 }
+export function cleanModeParam(v: string | string[] | undefined): string {
+  const s = (Array.isArray(v) ? v[0] : v ?? '').trim().toLowerCase().replace(/-/g, '_');
+  return TRAINER_MODE_OPTIONS.some((o) => o.id === s) ? s : 'ALL';
+}
 export function cleanRoleParam(v: string | string[] | undefined): string {
   const s = (Array.isArray(v) ? v[0] : v ?? '').trim().toLowerCase().replace(/-/g, '_');
   return ROLE_OPTIONS.some((o) => o.id === s) ? s : 'ALL';
@@ -160,6 +166,8 @@ export function mapPublicProfileRow(row: PublicProfileRow, supabaseUrl: string |
     location: String(row.location ?? '').trim(),
     state: stateFromLocation(row.location ?? ''),
     homeGymName: String(row.home_gym_name ?? '').trim(),
+    trainerInPerson: !!row.is_trainer && !!row.trainer_in_person,
+    trainerOnline: !!row.is_trainer && !!row.trainer_online,
     prs: cleanPRs(row.prs),
     socials: cleanSocials(row.socials),
     avatarUrl: avatarUrlFromPath(supabaseUrl, row.avatar_path ?? ''),
@@ -171,15 +179,24 @@ export interface AthleteFilterQuery {
   search?: string;
   state?: string;   // 'ALL' or a code
   role?: string;    // 'ALL' or an AthleteRole
+  mode?: string;    // 'ALL' | 'in_person' | 'online' (trainers only; /trainers)
 }
+
+export const TRAINER_MODE_OPTIONS: ReadonlyArray<{ id: string; label: string }> = [
+  { id: 'in_person', label: 'In person' },
+  { id: 'online', label: 'Online' },
+];
 
 export function filterPublicAthletes(list: PublicAthlete[], q: AthleteFilterQuery): PublicAthlete[] {
   const search = (q.search ?? '').trim().toLowerCase().replace(/^@/, '');
   const state = (q.state ?? 'ALL').trim().toUpperCase() || 'ALL';
   const role = (q.role ?? 'ALL').trim().toLowerCase() || 'all';
+  const mode = (q.mode ?? 'ALL').trim().toLowerCase() || 'all';
   return list.filter((a) => {
     if (state !== 'ALL' && a.state !== state) return false;
     if (role !== 'all' && !a.roles.includes(role as AthleteRole)) return false;
+    if (mode === 'in_person' && !a.trainerInPerson) return false;
+    if (mode === 'online' && !a.trainerOnline) return false;
     if (search && !a.displayName.toLowerCase().includes(search) && !a.username.includes(search)) return false;
     return true;
   });
