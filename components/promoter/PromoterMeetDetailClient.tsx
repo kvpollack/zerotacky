@@ -725,6 +725,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
         <div role="tabpanel" id="panel-listing" aria-labelledby="tab-listing" hidden={activeTab !== 'listing'}>
           <ListingSection
             meetDate={workingState.meet.date}
+            meetName={workingState.meet.name}
             listing={summary.listing}
             onSaveListing={handleSaveListing}
             onDirtyChange={setListingDirty}

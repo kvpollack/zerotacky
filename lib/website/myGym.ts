@@ -7,6 +7,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { GYM_EQUIPMENT } from './gymEquipment';
 import type { DayPassAvailability } from './types';
 import type { GymRow } from './supabaseGyms';
+import { cleanTheme, parseTheme, type ZtTheme } from './theme';
 
 export interface MyGymRow extends GymRow {
   owner_id: string | null;
@@ -42,6 +43,7 @@ export interface GymPatch {
   equipment: string[];
   equipment_notes: Record<string, string>;
   socials: Record<string, string>;
+  theme: ZtTheme | null;   // 030: the gym's colours on its public page; null = ZeroTacky default
 }
 
 export const GYM_TYPES: ReadonlyArray<{ id: GymPatch['gym_type']; label: string; hint: string }> = [
@@ -103,6 +105,7 @@ export function patchFromRow(row: MyGymRow): GymPatch {
     equipment: [...(row.equipment ?? [])],
     equipment_notes: { ...(row.equipment_notes ?? {}) },
     socials: { ...(row.socials ?? {}) },
+    theme: parseTheme(row.theme),
   };
 }
 
@@ -131,6 +134,8 @@ export function cleanGymPatch(p: GymPatch): { patch: GymPatch; problem: null } |
     const v = clip(p.socials?.[sk.key], GYM_LIMITS.social);
     if (v) socials[sk.key] = v;
   }
+  const theme = cleanTheme(p.theme);
+  if (theme.problem) return { patch: null, problem: theme.problem };
   return {
     problem: null,
     patch: {
@@ -146,6 +151,7 @@ export function cleanGymPatch(p: GymPatch): { patch: GymPatch; problem: null } |
       drop_in_policy: clip(p.drop_in_policy, GYM_LIMITS.drop_in_policy),
       drop_in_hours: clip(p.drop_in_hours, GYM_LIMITS.drop_in_hours),
       equipment, equipment_notes, socials,
+      theme: theme.theme,
     },
   };
 }

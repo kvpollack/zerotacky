@@ -3,6 +3,7 @@ import type { AppState, Result } from '../types';
 import type { SyncClient } from './client';
 import { stateToRows, rowsToState, rowToResult, rowToAthlete, resultToRow, athleteToRow } from './mapping';
 import type { MeetRow, DivisionRow, EventRow, AthleteRow, ResultRow, PublishExtra } from './mapping';
+import { parseTheme, type ZtTheme } from '../website/theme';
 
 export interface LiveStateRow {
   meet_id: string;
@@ -26,13 +27,14 @@ export interface RemoteMeet {
   resultsStatus: string | null;
   latestServerAt: string | null;   // max results.server_at seen; starting pull watermark
   updatedAt: string | null;        // meets.updated_at; config watermark (see pullChanges / fetchMeetConfig)
+  theme?: ZtTheme | null;          // 030: the show's colours for the public board (not the scorer phones)
 }
 
 // What a linked judge phone needs when the admin republishes: meet settings + divisions + events.
 export interface MeetConfig { meet: AppState['meet']; divisions: AppState['divisions']; events: AppState['events']; updatedAt: string | null }
 
 // Public columns only (join_code and admin_pin are revoked from anon in the schema).
-const MEET_COLS = 'id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,competition_status,results_status,updated_at';
+const MEET_COLS = 'id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,competition_status,results_status,updated_at,theme';
 
 export function latestServerAt(rows: { server_at?: string }[]): string | null {
   let m: string | null = null;
@@ -63,6 +65,7 @@ function toRemoteMeet(meet: MeetRow, kids: Awaited<ReturnType<typeof fetchChildr
     resultsStatus: (meet as { results_status?: string | null }).results_status ?? null,
     latestServerAt: latestServerAt(kids.results),
     updatedAt: meet.updated_at ?? null,
+    theme: parseTheme((meet as { theme?: unknown }).theme),
   };
 }
 

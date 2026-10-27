@@ -41,7 +41,7 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
   );
 
   return (
-    <WebsiteShell activeNav="gyms">
+    <WebsiteShell activeNav="gyms" brand={gym.theme ?? null}>
       {!gym.isDemoListing && <JsonLd data={gymJsonLd(gym)} />}
       <div className="space-y-6">
         <div>

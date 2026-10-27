@@ -68,7 +68,7 @@ export default async function ShowDetailPage({ params }: ShowDetailPageProps) {
   const divisionResults = buildAllDivisionResultsViews(show);
 
   return (
-    <WebsiteShell activeNav="shows">
+    <WebsiteShell activeNav="shows" brand={show.theme ?? null}>
       {!show.isDemoFixture && <JsonLd data={showEventJsonLd(show)} />}
       <ShowDetailClient show={show} divisionResults={divisionResults} />
     </WebsiteShell>

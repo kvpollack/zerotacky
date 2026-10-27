@@ -2,6 +2,7 @@
 // Does not modify lib/types.ts; reuses Meet, Division, EventDef, Athlete, Result, ScoredRow, StandingRow.
 
 import type { AppState, Athlete, Division, EventDef, Meet, Result, ScoredRow } from '../types';
+import type { ZtTheme } from './theme';
 
 export type ShowCompetitionStatus =
   | 'upcoming'
@@ -91,6 +92,7 @@ export interface PublicShowSummary {
   summaryNote?: string;
   hostGymSlug?: string; // 026: directory gym hosting the show; the gym page lists shows by this
   hostGymName?: string;
+  theme?: ZtTheme;      // 030: the show's own colours; the show page and the board paint themselves in these
 }
 
 export interface PublicShowRecord extends PublicShowSummary {
@@ -142,6 +144,7 @@ export interface StrongmanGymListing {
   claimStatus?: 'unclaimed' | 'claimed';
   sourceUrl?: string;
   confidence?: 'high' | 'medium' | 'low';
+  theme?: ZtTheme;      // 030: the gym's own colours (owner-set); the gym page paints itself in these
 }
 
 export type CapabilityArea = 'athlete' | 'promoter' | 'gym_owner';

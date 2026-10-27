@@ -20,8 +20,9 @@ import { getDemoScoreboardState } from '@/lib/website/data';
 const POLL_MS = 4000;
 
 // Public, read-only scoreboard: /m/<slug>. Loads the meet once, then polls results, athletes and
-// live_state. No login, no join code. ?theme=volt (any THEMES id) pins a theme for a TV link; otherwise the shared
-// preference applies and the header controls change it (MS-12). ?layout=tv for the gym TV; the header button
+// live_state. No login, no join code. ?theme=volt (any THEMES id) pins a theme for a TV link; otherwise the show's own
+// colours (030, meets.theme) when the promoter set them, else the shared preference; the header controls change it
+// either way (MS-12). ?layout=tv for the gym TV; the header button
 // toggles phone/TV too and remembers the choice on this device.
 export default function ScoreboardClient({ slug }: { slug: string }) {
   const env = useMemo(() => readSyncEnv(), []);
@@ -116,7 +117,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   }, [client, meetId, demo]);
 
   const shell = (children: React.ReactNode) => (
-    <WebsiteThemeFrame className="pb-10" override={themeOverride} onUserChange={() => setThemeOverride(null)}>
+    <WebsiteThemeFrame className="pb-10" override={themeOverride} onUserChange={() => setThemeOverride(null)} brand={meet?.theme ?? null}>
       <div className={`w-full mx-auto space-y-4 ${tv ? 'max-w-[1800px] p-6' : 'max-w-xl p-3.5'}`}>{children}</div>
     </WebsiteThemeFrame>
   );

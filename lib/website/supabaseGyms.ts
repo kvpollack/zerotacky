@@ -3,11 +3,12 @@
 
 import { GYM_EQUIPMENT } from './gymEquipment';
 import type { DayPassAvailability, GymEquipmentItem, StrongmanGymListing } from './types';
+import { parseTheme } from './theme';
 
 export const PUBLIC_GYM_COLS =
   'id,slug,name,status,gym_type,street_address,city,state,zip,lat,lng,website_url,phone,instagram,contact,' +
   'day_pass_availability,day_pass_price,day_pass_url,drop_in_policy,drop_in_hours,equipment,equipment_notes,' +
-  'source_url,confidence,last_verified,updated_at';
+  'source_url,confidence,last_verified,updated_at,theme';
 
 export interface GymRow {
   id: string;
@@ -36,6 +37,7 @@ export interface GymRow {
   confidence: 'high' | 'medium' | 'low';
   last_verified: string | null;
   updated_at: string | null;
+  theme?: Record<string, unknown> | null;   // 030: owner-set colours; see lib/website/theme.ts
 }
 
 const LABEL_BY_ID = new Map(GYM_EQUIPMENT.map((e) => [e.id, e.label]));
@@ -87,6 +89,7 @@ export function mapGymRowToListing(row: GymRow): StrongmanGymListing {
     claimStatus: row.status === 'claimed' ? 'claimed' : 'unclaimed',
     ...(row.source_url ? { sourceUrl: row.source_url } : {}),
     confidence: row.confidence,
+    ...(parseTheme(row.theme) ? { theme: parseTheme(row.theme)! } : {}),
   };
 }
 

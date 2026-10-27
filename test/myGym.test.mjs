@@ -39,6 +39,16 @@ describe('cleanGymPatch', () => {
     assert.equal(p.gym_type, 'mixed');
     assert.equal(p.day_pass_availability, 'not_provided');
   });
+  test('030: theme passes through normalised, blank is null, a bad hex is a problem', () => {
+    assert.equal(M.cleanGymPatch({ ...base() }).patch.theme, null);
+    assert.equal(M.cleanGymPatch({ ...base(), theme: null }).patch.theme, null);
+    assert.equal(M.cleanGymPatch({ ...base(), theme: { primary: '', background: '', secondary: '' } }).patch.theme, null);
+    assert.deepEqual(M.cleanGymPatch({ ...base(), theme: { primary: 'E11D48', background: '#111317', secondary: '' } }).patch.theme, { primary: '#e11d48', background: '#111317' });
+    assert.match(M.cleanGymPatch({ ...base(), theme: { primary: '#e11d48', background: 'dark' } }).problem, /six-digit hex/);
+    assert.deepEqual(M.patchFromRow({ ...base(), equipment: [], equipment_notes: {}, socials: {}, theme: { primary: '#e11d48', background: '#111317' } }).theme, { primary: '#e11d48', background: '#111317' });
+    assert.equal(M.patchFromRow({ ...base(), equipment: [], equipment_notes: {}, socials: {}, theme: null }).theme, null);
+  });
+
   test('clips to the 015 limits', () => {
     const p = M.cleanGymPatch({ ...base(), drop_in_policy: 'x'.repeat(700), name: 'N'.repeat(200) }).patch;
     assert.equal(p.drop_in_policy.length, M.GYM_LIMITS.drop_in_policy);

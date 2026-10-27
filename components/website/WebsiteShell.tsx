@@ -7,13 +7,15 @@ import WebsiteAccountChip from './WebsiteAccountChip';
 import PromoterNavLink from './PromoterNavLink';
 import NavActiveScroll from './NavActiveScroll';
 import { readSyncEnv } from '@/lib/sync/client';
+import type { ZtTheme } from '@/lib/website/theme';
 
 interface WebsiteShellProps {
   activeNav?: 'home' | 'how' | 'shows' | 'join' | 'gyms' | 'athletes' | 'account' | 'promoter';
+  brand?: ZtTheme | null;   // 030: a gym's or show's own colours on its public page
   children: React.ReactNode;
 }
 
-export default function WebsiteShell({ activeNav, children }: WebsiteShellProps) {
+export default function WebsiteShell({ activeNav, brand = null, children }: WebsiteShellProps) {
   // Astra gate STYLE: the amber "preview" badge belongs to fixture-only builds. With a backend configured the site is
   // showing real listings, so the bar is a plain pointer to the meet-day app.
   const live = readSyncEnv() !== null;
@@ -27,7 +29,7 @@ export default function WebsiteShell({ activeNav, children }: WebsiteShellProps)
   ];
 
   return (
-    <WebsiteThemeFrame>
+    <WebsiteThemeFrame brand={brand}>
       {/* MS-13: keyboard users jump past the header */}
       <a href="#zt-main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:rounded-xl focus:bg-zt-primary focus:text-zt-on-primary focus:text-xs focus:font-extrabold focus:uppercase">
         Skip to content
