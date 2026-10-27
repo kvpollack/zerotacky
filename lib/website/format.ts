@@ -1,3 +1,5 @@
+import type { EventDef } from '@/lib/types';
+
 // Reader-facing formatting for the public site (MS-14, 10/26).
 
 /** Full ISO instant -> the reader's local date and time, e.g. "Oct 26, 2026, 11:42 PM". '' when unparsable.
@@ -24,4 +26,24 @@ export function directionsUrl(v: { facilityName?: string; streetAddress?: string
   if (!street && !(city && state)) return null;
   const parts = [real(v.facilityName), street, city, state, real(v.postalCode)].filter(Boolean);
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(parts.join(', '))}`;
+}
+
+
+/** What an athlete in `divisionId` lifts in `ev`, as the show page prints it. Mirrors the pit-crew callout when the
+ *  promoter wrote one, else the division weight (with unit mode and light tier), else a height-only setup, else the
+ *  fixed implement description. '' when the promoter provided nothing (the caller labels that explicitly). */
+export function eventWeightDisplay(ev: EventDef, divisionId: string): { main: string; setup?: string } {
+  const mainWeight = ev.divisionWeights?.[divisionId];
+  const lightWeight = ev.divisionLightWeights?.[divisionId];
+  const defaultHeight = ev.divisionDefaultHeights?.[divisionId];
+  const callout = ev.pitCrewCallout?.byDivision?.[divisionId]?.headline;
+  let main = '';
+  if (callout) main = callout;
+  else if (typeof mainWeight === 'number' && mainWeight > 0) {
+    main = `${mainWeight} lbs${ev.weightIsAddedPlatesOnly ? ' added' : ev.weightEntryMode === 'per_hand' ? ' / hand' : ''}`;
+    if (ev.hasTrumpWeight && typeof lightWeight === 'number' && lightWeight > 0) main += ` (light ${lightWeight})`;
+  } else if (ev.weightIsAddedPlatesOnly && mainWeight === 0 && defaultHeight) main = defaultHeight;
+  else if (ev.fixedImplementDescription) main = ev.fixedImplementDescription;
+  const setup = defaultHeight && defaultHeight !== main ? `${ev.heightLabel || 'Setup'}: ${defaultHeight}` : undefined;
+  return setup ? { main, setup } : { main };
 }
