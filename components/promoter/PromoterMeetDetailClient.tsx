@@ -32,6 +32,7 @@ import {
   removeStation as mbRemoveStation,
   reorderDivisions as mbReorderDivisions,
   reorderEvents as mbReorderEvents,
+  moveLot as mbMoveLot,
   shuffleLots as mbShuffleLots,
   updateAthlete as mbUpdateAthlete,
   updateDivision as mbUpdateDivision,
@@ -227,6 +228,8 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     setWorkingState((prev) => (prev ? mbMoveAthlete(prev, athleteId, toDivisionId) : prev));
   const shuffleLots = (divisionId: string) =>
     setWorkingState((prev) => (prev ? mbShuffleLots(prev, divisionId) : prev));
+  const moveLot = (divisionId: string, athleteId: string, toIndex: number) =>
+    setWorkingState((prev) => (prev ? mbMoveLot(prev, divisionId, athleteId, toIndex) : prev));
 
   const toggleAthleteWithdrawn = (athlete: Athlete) => {
     const nextStatus = athlete.status === 'active' ? 'withdrawn' : 'active';
@@ -706,6 +709,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             removeAthlete={removeAthlete}
             moveAthlete={moveAthlete}
             shuffleLots={shuffleLots}
+            moveLot={moveLot}
             toggleAthleteWithdrawn={toggleAthleteWithdrawn}
             sectionNumber={7}
           />

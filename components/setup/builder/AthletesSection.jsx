@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Dices, Plus, Trash2, UserCheck, UserMinus } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Dices, GripVertical, Plus, Trash2, UserCheck, UserMinus } from 'lucide-react';
 
 export default function AthletesSection({
   divisions,
@@ -13,6 +13,7 @@ export default function AthletesSection({
   removeAthlete,
   moveAthlete,
   shuffleLots,
+  moveLot, // (divisionId, athleteId, toIndex): drag-and-drop lot order (Kurt 10/27); optional for older callers
   toggleAthleteWithdrawn,
   sectionNumber = 5, // heading number; the promoter editor passes its tab number (build order 10/26)
 }) {
@@ -23,6 +24,63 @@ export default function AthletesSection({
   const [bulkText, setBulkText] = useState('');
   const [armedDeleteId, setArmedDeleteId] = useState(null);
   const [armedDrawDivId, setArmedDrawDivId] = useState(null);
+  // Drag state for the lot handles: which athlete is lifted and where it would land (0-based index in its division).
+  const [drag, setDrag] = useState(null); // { divId, athleteId, fromIndex, overIndex }
+  const dragRef = useRef(null);
+  const [liveMsg, setLiveMsg] = useState('');
+
+  // Pointer events (not HTML5 drag) so the same code works for a mouse and a finger; the handle has touch-action: none
+  // so the page does not scroll while a row is lifted.
+  const rowIndexAt = (divId, clientY) => {
+    const rows = Array.from(document.querySelectorAll(`[data-lot-row][data-div-id="${divId}"]`));
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i].getBoundingClientRect();
+      if (clientY < r.top + r.height / 2) return i;
+    }
+    return Math.max(0, rows.length - 1);
+  };
+  const startDrag = (e, divId, athleteId, fromIndex) => {
+    if (!moveLot) return;
+    e.preventDefault();
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    const next = { divId, athleteId, fromIndex, overIndex: fromIndex };
+    dragRef.current = next;
+    setDrag(next);
+  };
+  const onDragMove = (e) => {
+    const d = dragRef.current;
+    if (!d) return;
+    const overIndex = rowIndexAt(d.divId, e.clientY);
+    if (overIndex !== d.overIndex) {
+      dragRef.current = { ...d, overIndex };
+      setDrag(dragRef.current);
+    }
+  };
+  const endDrag = (e, cancelled = false) => {
+    const d = dragRef.current;
+    if (!d) return;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+    dragRef.current = null;
+    setDrag(null);
+    if (!cancelled && d.overIndex !== d.fromIndex) {
+      moveLot(d.divId, d.athleteId, d.overIndex);
+      setLiveMsg(`Moved to lot ${d.overIndex + 1}.`);
+    }
+  };
+  // Keyboard on the handle: arrows move one lot; Home/End to the ends.
+  const onHandleKey = (e, divId, athleteId, index, count) => {
+    if (!moveLot) return;
+    let to = null;
+    if (e.key === 'ArrowUp') to = index - 1;
+    else if (e.key === 'ArrowDown') to = index + 1;
+    else if (e.key === 'Home') to = 0;
+    else if (e.key === 'End') to = count - 1;
+    if (to === null) return;
+    e.preventDefault();
+    if (to < 0 || to >= count || to === index) return;
+    moveLot(divId, athleteId, to);
+    setLiveMsg(`Moved to lot ${to + 1} of ${count}.`);
+  };
 
   const activeDivId = sortedDivisions.some((d) => d.id === targetDivId)
     ? targetDivId
@@ -147,6 +205,13 @@ export default function AthletesSection({
           )}
 
           {/* Grouped Roster by Division */}
+          {moveLot && athletes.length > 1 && (
+            <p className="text-[11px] font-bold text-zt-muted">
+              Lot order is the Event 1 run order (and every event's order when Run Order is Roster Order). Drag the grip
+              to reorder, or type a lot number.
+            </p>
+          )}
+          <div className="sr-only" role="status" aria-live="polite">{liveMsg}</div>
           <div className="space-y-3 pt-1">
             {sortedDivisions.map((div) => {
               const divAthletes = athletes
@@ -196,15 +261,47 @@ export default function AthletesSection({
                   {divAthletes.length === 0 ? (
                     <p className="text-[11px] font-bold text-zt-muted py-1">No athletes in {div.name}.</p>
                   ) : (
-                    <div className="space-y-1.5">
-                      {divAthletes.map((ath) => {
+                    <div className="space-y-1.5" style={drag?.divId === div.id ? { touchAction: 'none' } : undefined}>
+                      {divAthletes.map((ath, rowIndex) => {
                         const isWithdrawn = ath.status === 'withdrawn';
                         const isArmed = armedDeleteId === ath.id;
                         const athResults = results.filter((r) => r.athleteId === ath.id).length;
+                        const lifting = drag?.divId === div.id;
+                        const isLifted = lifting && drag.athleteId === ath.id;
+                        const isTarget = lifting && !isLifted && drag.overIndex === rowIndex;
+                        const dropAbove = isTarget && drag.overIndex < drag.fromIndex;
 
                         return (
-                          <div key={ath.id} className="bg-zt-surface border border-zt-border rounded-lg p-2 space-y-1.5">
-                            <div className="flex items-center gap-1.5">
+                          <div
+                            key={ath.id}
+                            data-lot-row
+                            data-div-id={div.id}
+                            data-athlete-id={ath.id}
+                            className={`bg-zt-surface border rounded-lg p-2 space-y-1.5 transition-shadow ${
+                              isLifted
+                                ? 'border-zt-primary opacity-60 shadow-lg'
+                                : isTarget
+                                ? `border-zt-border ${dropAbove ? 'shadow-[0_-3px_0_0_var(--zt-primary)]' : 'shadow-[0_3px_0_0_var(--zt-primary)]'}`
+                                : 'border-zt-border'
+                            }`}
+                          >
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {moveLot && divAthletes.length > 1 && (
+                                <button
+                                  type="button"
+                                  aria-label={`Lot ${ath.lotNumber}, ${ath.name}. Drag, or use arrow keys, to change the run order`}
+                                  title="Drag to reorder (arrow keys also work)"
+                                  onPointerDown={(e) => startDrag(e, div.id, ath.id, rowIndex)}
+                                  onPointerMove={onDragMove}
+                                  onPointerUp={(e) => endDrag(e)}
+                                  onPointerCancel={(e) => endDrag(e, true)}
+                                  onKeyDown={(e) => onHandleKey(e, div.id, ath.id, rowIndex, divAthletes.length)}
+                                  className="p-1 -ml-0.5 rounded text-zt-muted hover:text-zt-text cursor-grab active:cursor-grabbing select-none"
+                                  style={{ touchAction: 'none' }}
+                                >
+                                  <GripVertical className="w-4 h-4" aria-hidden="true" />
+                                </button>
+                              )}
                               <input
                                 type="number"
                                 min={1}
@@ -219,7 +316,7 @@ export default function AthletesSection({
                                 value={ath.name}
                                 onChange={(e) => updateAthlete(ath.id, { name: e.target.value })}
                                 aria-label="Athlete name"
-                                className={`flex-1 min-w-0 bg-zt-inset border border-zt-border-strong rounded px-2 py-1 text-xs font-bold ${
+                                className={`flex-1 min-w-[7rem] bg-zt-inset border border-zt-border-strong rounded px-2 py-1 text-xs font-bold ${
                                   isWithdrawn ? 'line-through text-zt-muted' : 'text-zt-text'
                                 }`}
                               />

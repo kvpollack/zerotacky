@@ -411,3 +411,49 @@ describe('validateMeet (all problem types)', () => {
     assert.ok(v.problems.includes("Ev 2 has no light weight for Men's Open 105kg"));
   });
 });
+describe('reorderLots / moveLot (drag-and-drop run order, Kurt 10/27)', () => {
+  const seed = () => {
+    let s = MB.createBlankMeet('Test', '2026-11-01');
+    s = MB.addDivision(s, { id: 'd1', name: 'D1', flight: 'A' });
+    s = MB.addDivision(s, { id: 'd2', name: 'D2', flight: 'B' });
+    for (const id of ['a1', 'a2', 'a3', 'a4']) s = MB.addAthlete(s, { id, divisionId: 'd1', name: id.toUpperCase() });
+    s = MB.addAthlete(s, { id: 'b1', divisionId: 'd2', name: 'B1', lotNumber: 7 });
+    return s;
+  };
+  const lots = (s, div) => s.athletes.filter((a) => a.divisionId === div).sort((a, b) => a.lotNumber - b.lotNumber).map((a) => `${a.id}:${a.lotNumber}`);
+
+  test('reorderLots renumbers 1..n in the given order, appends unlisted ids, ignores foreign ids, leaves other divisions', () => {
+    const s = seed();
+    const r = MB.reorderLots(s, 'd1', ['a3', 'b1', 'a1', 'zzz']);
+    assert.deepEqual(lots(r, 'd1'), ['a3:1', 'a1:2', 'a2:3', 'a4:4']);
+    assert.deepEqual(lots(r, 'd2'), ['b1:7']);
+    assert.notEqual(r, s);
+  });
+
+  test('reorderLots returns the same state object when nothing changes', () => {
+    const s = seed();
+    assert.equal(MB.reorderLots(s, 'd1', ['a1', 'a2', 'a3', 'a4']), s);
+    assert.equal(MB.reorderLots(s, 'nope', ['a1']), s);
+  });
+
+  test('moveLot moves one athlete down or up and clamps the index', () => {
+    const s = seed();
+    assert.deepEqual(lots(MB.moveLot(s, 'd1', 'a1', 2), 'd1'), ['a2:1', 'a3:2', 'a1:3', 'a4:4']);
+    assert.deepEqual(lots(MB.moveLot(s, 'd1', 'a4', 0), 'd1'), ['a4:1', 'a1:2', 'a2:3', 'a3:4']);
+    assert.deepEqual(lots(MB.moveLot(s, 'd1', 'a1', 99), 'd1'), ['a2:1', 'a3:2', 'a4:3', 'a1:4']);
+    assert.equal(MB.moveLot(s, 'd1', 'a2', 1), s);
+    assert.equal(MB.moveLot(s, 'd1', 'ghost', 0), s);
+  });
+
+  test('a drag-and-drop order feeds the roster-order run order for every event', async () => {
+    const E = await import(`${ROOT}/lib/engine/runOrder.ts`);
+    let s = seed();
+    s = MB.addEvent(s, { id: 'e1', name: 'Log', scoringType: 'reps', timeCapSeconds: 60 });
+    s = MB.reorderLots(s, 'd1', ['a4', 'a2', 'a1', 'a3']);
+    const div = s.divisions.find((d) => d.id === 'd1');
+    const ev = s.events[0];
+    const divAthletes = s.athletes.filter((a) => a.divisionId === 'd1');
+    const order = E.generateEventRunOrder(ev, div, divAthletes, s.events, s.results, 'lot_order', s.meet.stations);
+    assert.deepEqual(order.map((o) => o.athlete.id), ['a4', 'a2', 'a1', 'a3']);
+  });
+});
