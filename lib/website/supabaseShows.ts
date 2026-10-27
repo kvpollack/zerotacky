@@ -20,7 +20,7 @@ import type {
 
 export const PUBLIC_SHOW_MEET_COLS =
   'id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,updated_at,' +
-  'competition_status,registration_status,results_status,is_public_listed,venue,federation,entry_fee_display,registration_deadline,athlete_cap,promoter_contact';
+  'competition_status,registration_status,results_status,is_public_listed,venue,federation,entry_fee_display,registration_deadline,athlete_cap,promoter_contact,host_gym_id';
 
 const FALLBACK_VENUE: ShowVenue = {
   city: 'Not provided',
@@ -69,10 +69,18 @@ export function deriveImplementTags(events: EventRow[]): string[] {
   return tags;
 }
 
+// 026: the host gym (slug + name) comes from a second `gyms` read keyed by meets.host_gym_id; undefined when unset or
+// when the gym is no longer in the directory.
+export interface HostGymRef {
+  slug: string;
+  name: string;
+}
+
 export function mapMeetRowToPublicShowSummary(
   meetRow: MeetListingRow,
   divisions: DivisionRow[],
-  events: EventRow[]
+  events: EventRow[],
+  hostGym?: HostGymRef | null
 ): PublicShowSummary {
   const listing = rowToMeetListing(meetRow);
   const sortedDivs = [...divisions].sort((a, b) => a.sort_order - b.sort_order);
@@ -94,6 +102,7 @@ export function mapMeetRowToPublicShowSummary(
     isDemoFixture: Boolean(meetRow.is_demo),
     liveScoreboardPath: `/m/${meetRow.slug}`,
     lastUpdatedIso: meetRow.updated_at ?? undefined,
+    ...(hostGym ? { hostGymSlug: hostGym.slug, hostGymName: hostGym.name } : {}),
   };
 }
 
@@ -104,10 +113,11 @@ export function mapMeetBundleToPublicShowRecord(params: {
   athletes: AthleteRow[];
   results: ResultRow[];
   latestServerAt?: string | null;
+  hostGym?: HostGymRef | null;
 }): PublicShowRecord {
-  const { meet, divisions, events, athletes, results, latestServerAt } = params;
+  const { meet, divisions, events, athletes, results, latestServerAt, hostGym } = params;
   const listing = rowToMeetListing(meet);
-  const summary = mapMeetRowToPublicShowSummary(meet, divisions, events);
+  const summary = mapMeetRowToPublicShowSummary(meet, divisions, events, hostGym);
   const fullState = rowsToState({ meet, divisions, events, athletes, results });
 
   return {

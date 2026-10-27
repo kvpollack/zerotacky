@@ -26,6 +26,7 @@ import {
   mapMeetBundleToPublicShowRecord,
   mapMeetRowToPublicShowSummary,
   PUBLIC_SHOW_MEET_COLS,
+  type HostGymRef,
 } from './supabaseShows';
 import type {
   DemoPersonaProfile,
@@ -60,6 +61,25 @@ export function cleanSlug(slug: string | null | undefined): string {
   let decoded = raw;
   try { decoded = decodeURIComponent(raw); } catch { /* malformed escape: compare as typed */ }
   return decoded.trim().toLowerCase();
+}
+
+// 026: host gyms for a set of meets, keyed by gym id. One read for the whole list; a gym that left the directory
+// (status 'removed') is simply absent, so the show falls back to its typed venue. A failure here must not take the
+// shows down with it, so it returns an empty map on error.
+async function loadHostGyms(client: SyncClient, meets: Pick<MeetListingRow, 'host_gym_id'>[]): Promise<Map<string, HostGymRef>> {
+  const ids = Array.from(new Set(meets.map((m) => m.host_gym_id).filter((id): id is string => Boolean(id))));
+  const out = new Map<string, HostGymRef>();
+  if (ids.length === 0) return out;
+  try {
+    const rows = await client.select<Pick<GymRow, 'id' | 'slug' | 'name'>>(
+      'gyms',
+      `select=id,slug,name&id=in.(${ids.join(',')})&status=in.(unclaimed,claimed)`
+    );
+    for (const g of rows ?? []) out.set(g.id, { slug: g.slug, name: g.name });
+  } catch {
+    /* show pages render without the gym link */
+  }
+  return out;
 }
 
 function resolveClient(opts?: ShowDataOptions): SyncClient | null {
@@ -107,9 +127,10 @@ export async function listPublicShows(
     if (meets.length > 0) {
       const idList = meets.map((m) => m.id).join(',');
       const inFilter = `meet_id=in.(${idList})`;
-      const [divisions, events] = await Promise.all([
+      const [divisions, events, hostGyms] = await Promise.all([
         client.select<DivisionRow>('divisions', `${inFilter}&order=sort_order.asc`),
         client.select<EventRow>('events', `${inFilter}&order=event_number.asc`),
+        loadHostGyms(client, meets),
       ]);
 
       const divsByMeet = new Map<string, DivisionRow[]>();
@@ -127,7 +148,7 @@ export async function listPublicShows(
       }
 
       liveSummaries = meets.map((m) =>
-        mapMeetRowToPublicShowSummary(m, divsByMeet.get(m.id) ?? [], evsByMeet.get(m.id) ?? [])
+        mapMeetRowToPublicShowSummary(m, divsByMeet.get(m.id) ?? [], evsByMeet.get(m.id) ?? [], m.host_gym_id ? hostGyms.get(m.host_gym_id) : null)
       );
     }
 
@@ -202,11 +223,12 @@ export async function getPublicShowBySlug(
 
     const meet = meets[0];
     const q = `meet_id=eq.${meet.id}`;
-    const [divisions, events, athletes, results] = await Promise.all([
+    const [divisions, events, athletes, results, hostGyms] = await Promise.all([
       client.select<DivisionRow>('divisions', `${q}&order=sort_order.asc`),
       client.select<EventRow>('events', `${q}&order=event_number.asc`),
       client.select<AthleteRow>('athletes', q),
       client.select<ResultRow>('results', q),
+      loadHostGyms(client, [meet]),
     ]);
 
     const mapped = mapMeetBundleToPublicShowRecord({
@@ -216,6 +238,7 @@ export async function getPublicShowBySlug(
       athletes: athletes ?? [],
       results: results ?? [],
       latestServerAt: latestServerAt(results ?? []),
+      hostGym: meet.host_gym_id ? hostGyms.get(meet.host_gym_id) : null,
     });
 
     return { source: 'live_supabase', data: mapped, error: null };

@@ -55,3 +55,31 @@ describe('eventWeightDisplay (show page matrix)', () => {
     assert.deepEqual(F.eventWeightDisplay(base, 'd9'), { main: '' });
   });
 });
+
+describe('host gym helpers (026)', () => {
+  test('gymSearchPattern escapes ilike wildcards and PostgREST separators', async () => {
+    const H = await import(`${ROOT}/lib/website/hostGym.ts`);
+    expect(H.gymSearchPattern('iron')).toBe('%iron%');
+    expect(H.gymSearchPattern('100% raw')).toBe('%100\\% raw%');
+    expect(H.gymSearchPattern('a_b,(c)')).toBe('%a\\_b  c %');
+    expect(H.hostGymAddressLine({ id: '1', slug: 's', name: 'n', streetAddress: '1 Main', city: 'Erie', state: 'PA', zip: '16507' })).toBe('1 Main · Erie, PA · 16507');
+    expect(H.hostGymAddressLine({ id: '1', slug: 's', name: 'n', streetAddress: '', city: '', state: '', zip: '' })).toBe('Address not provided');
+  });
+
+  test('listing contract round-trips hostGymId and refuses a non-uuid', async () => {
+    const SA = await import(`${ROOT}/lib/promoter/supabaseApi.ts`);
+    const R = await import(`${ROOT}/lib/promoter/rules.ts`);
+    const C = await import(`${ROOT}/lib/promoter/contract.ts`);
+    const id = '6f1c2b3a-1111-4222-8333-444455556666';
+    expect(SA.rowToMeetListing({ host_gym_id: id }).hostGymId).toBe(id);
+    expect(SA.rowToMeetListing({}).hostGymId).toBeNull();
+    expect(SA.listingPatchToColumns({ hostGymId: id })).toEqual({ host_gym_id: id });
+    expect(SA.listingPatchToColumns({ hostGymId: null })).toEqual({ host_gym_id: null });
+    expect(SA.listingPatchToColumns({ hostGymId: '  ' })).toEqual({ host_gym_id: null });
+    expect(SA.listingPatchToColumns({})).toEqual({});
+    const cur = C.emptyListing();
+    expect(R.validateListingPatch('2026-11-07', cur, { hostGymId: id })).toBeNull();
+    expect(R.validateListingPatch('2026-11-07', cur, { hostGymId: null })).toBeNull();
+    expect(R.validateListingPatch('2026-11-07', cur, { hostGymId: 'northbank' })).toMatch(/directory/);
+  });
+});

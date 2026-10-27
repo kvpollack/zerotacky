@@ -34,6 +34,7 @@ export interface MeetListing {
   registrationDeadline: string | null;  // YYYY-MM-DD; submissions after this date are refused unless the status is 'waitlist'
   athleteCap: number | null;            // integer; when accepted roster >= cap, new submissions go to 'waitlist' (status permitting) or are refused
   promoterContact: string | null;       // public: email or phone athletes may use; shown on /register and in the waiver
+  hostGymId: string | null;             // 026: directory gym hosting the show (links the show page and the gym page); venue stays the address
 }
 
 export interface PromoterMeetSummary {
@@ -237,6 +238,7 @@ export function emptyListing(): MeetListing {
     registrationDeadline: null,
     athleteCap: null,
     promoterContact: null,
+    hostGymId: null,
   };
 }
 

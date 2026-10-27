@@ -60,6 +60,7 @@ export function rowToMeetListing(row: Partial<MeetListingRow>): MeetListing {
     athleteCap:
       row.athlete_cap !== null && row.athlete_cap !== undefined ? Number(row.athlete_cap) : null,
     promoterContact: row.promoter_contact ?? null,
+    hostGymId: row.host_gym_id ?? null,
   };
 }
 
@@ -86,6 +87,9 @@ export function listingPatchToColumns(patch: Partial<MeetListing>): Partial<Meet
   }
   if (patch.promoterContact !== undefined) {
     out.promoter_contact = patch.promoterContact ? patch.promoterContact.trim() || null : null;
+  }
+  if (patch.hostGymId !== undefined) {
+    out.host_gym_id = patch.hostGymId ? patch.hostGymId.trim() || null : null;
   }
   return out;
 }
