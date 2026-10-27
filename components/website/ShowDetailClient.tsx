@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import { formatShowDate } from '@/lib/website/showHistory';
-import { directionsUrl, formatLocalDateTime } from '@/lib/website/format';
+import { directionsUrl, eventWeightDisplay, formatLocalDateTime } from '@/lib/website/format';
 import type { DivisionResultsView, PublicShowRecord } from '@/lib/website/types';
 
 interface ShowDetailClientProps {
@@ -484,101 +484,82 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
         </section>
       )}
 
-      {/* SECTION D: EVENTS, RULES & DIVISION WEIGHT MATRIX (Always available on the persistent URL) */}
+      {/* SECTION D: EVENTS, RULES & DIVISION WEIGHT MATRIX (Always available on the persistent URL).
+          Kurt 10/17 / 10/27: one matrix, events as rows and divisions as columns, so an athlete reads their column
+          top to bottom. Scrolls sideways on phones with the event column pinned. Implement specs and rising-bar
+          progressions are footnotes under the table. */}
       <section aria-labelledby="events-weights-heading" className="space-y-4">
         <div className="space-y-1">
           <h2
             id="events-weights-heading"
             className="text-base font-black uppercase tracking-wider text-zt-primary"
           >
-            Events, Rules &amp; Division Weights ({sortedEvents.length} Events)
+            Events &amp; Weights by Division ({sortedEvents.length} Events)
           </h2>
           <p className="text-xs text-zt-muted">
-            Weights and implement callouts by division or strength group. Unavailable details are
-            labeled explicitly rather than guessed.
+            Find your division across the top and read down. Details the promoter has not entered say so
+            rather than guessing.
           </p>
         </div>
 
-        <div className="space-y-3">
-          {sortedEvents.map((ev) => (
-            <div
-              key={ev.id}
-              className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-3"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-black uppercase px-2 py-0.5 rounded bg-zt-primary text-zt-on-primary">
-                    Event {ev.eventNumber}
-                  </span>
-                  <h3 className="text-base font-black text-zt-text">{ev.name}</h3>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold text-zt-muted">
-                  <span className="px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-text-2">
-                    {SCORING_TYPE_LABELS[ev.scoringType] || ev.scoringType}
-                  </span>
-                  <span>{ev.timeCapSeconds}s Time Cap</span>
-                  <span>• {ev.lanes === 2 ? '2 Lanes (Head-to-Head)' : 'Single Lane'}</span>
-                </div>
-              </div>
-
-              {ev.fixedImplementDescription && (
-                <div className="text-xs font-bold text-zt-text-2 bg-zt-inset border border-zt-border rounded-xl px-3 py-2">
-                  Implement Spec: {ev.fixedImplementDescription}
-                </div>
-              )}
-
-              {ev.maxFormat === 'rising_bar' && ev.risingBarWeights && (
-                <div className="text-xs font-bold text-zt-text-2 bg-zt-inset border border-zt-border rounded-xl px-3 py-2">
-                  Rising Bar Progression: {ev.risingBarWeights.join(' lb → ')} lb
-                </div>
-              )}
-
-              {/* Division Weights Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                {sortedDivisions.map((div) => {
-                  const mainWeight = ev.divisionWeights?.[div.id];
-                  const lightWeight = ev.divisionLightWeights?.[div.id];
-                  const defaultHeight = ev.divisionDefaultHeights?.[div.id];
-                  const calloutHeadline = ev.pitCrewCallout?.byDivision?.[div.id]?.headline;
-
-                  let weightDisplay = 'Not provided';
-                  if (calloutHeadline) {
-                    weightDisplay = calloutHeadline;
-                  } else if (typeof mainWeight === 'number' && mainWeight > 0) {
-                    weightDisplay = `${mainWeight} lbs${
-                      ev.weightIsAddedPlatesOnly
-                        ? ' added plates'
-                        : ev.weightEntryMode === 'per_hand'
-                        ? ' / hand'
-                        : ''
-                    }`;
-                    if (ev.hasTrumpWeight && typeof lightWeight === 'number' && lightWeight > 0) {
-                      weightDisplay += ` (Light tier: ${lightWeight} lbs)`;
-                    }
-                  } else if (ev.weightIsAddedPlatesOnly && mainWeight === 0 && defaultHeight) {
-                    weightDisplay = defaultHeight;
-                  } else if (ev.fixedImplementDescription) {
-                    weightDisplay = ev.fixedImplementDescription;
-                  }
-
-                  return (
-                    <div
-                      key={div.id}
-                      className="bg-zt-inset border border-zt-border rounded-xl p-2.5 space-y-0.5"
-                    >
-                      <div className="text-[11px] font-extrabold text-zt-muted">{div.name}</div>
-                      <div className="text-xs font-black text-zt-text">{weightDisplay}</div>
-                      {defaultHeight && defaultHeight !== weightDisplay && (
-                        <div className="text-[10px] font-bold text-zt-primary-2">
-                          {ev.heightLabel || 'Setup'}: {defaultHeight}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+        <div className="bg-zt-surface border border-zt-border rounded-2xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr className="bg-zt-inset">
+                  <th scope="col" className="sticky left-0 z-10 bg-zt-inset text-left font-black uppercase tracking-wider text-zt-muted px-3 py-2.5 min-w-[11rem] border-b border-zt-border">
+                    Event
+                  </th>
+                  {sortedDivisions.map((div) => (
+                    <th key={div.id} scope="col" className="text-left font-black text-zt-text px-3 py-2.5 min-w-[8.5rem] border-b border-zt-border whitespace-nowrap">
+                      {div.name}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {sortedEvents.map((ev) => (
+                  <tr key={ev.id} className="border-b border-zt-border last:border-b-0 align-top">
+                    <th scope="row" className="sticky left-0 z-10 bg-zt-surface text-left px-3 py-2.5 border-r border-zt-border">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-zt-primary text-zt-on-primary">
+                          Ev {ev.eventNumber}
+                        </span>
+                        <span className="font-black text-zt-text">{ev.name}</span>
+                      </div>
+                      <div className="text-[10px] font-bold text-zt-muted mt-1">
+                        {SCORING_TYPE_LABELS[ev.scoringType] || ev.scoringType} · {ev.timeCapSeconds}s cap
+                        {ev.lanes === 2 ? ' · 2 lanes' : ''}
+                      </div>
+                    </th>
+                    {sortedDivisions.map((div) => {
+                      const w = eventWeightDisplay(ev, div.id);
+                      return (
+                        <td key={div.id} className="px-3 py-2.5">
+                          <div className={`font-black ${w.main ? 'text-zt-text' : 'text-zt-muted'}`}>{w.main || 'Not provided'}</div>
+                          {w.setup && <div className="text-[10px] font-bold text-zt-primary-2 mt-0.5">{w.setup}</div>}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {sortedEvents.some((ev) => ev.fixedImplementDescription || (ev.maxFormat === 'rising_bar' && ev.risingBarWeights)) && (
+            <ul className="border-t border-zt-border px-3 py-2.5 space-y-1 text-[11px] font-bold text-zt-text-2">
+              {sortedEvents.map((ev) => (
+                <React.Fragment key={ev.id}>
+                  {ev.fixedImplementDescription && (
+                    <li><span className="text-zt-muted">Ev {ev.eventNumber} implement:</span> {ev.fixedImplementDescription}</li>
+                  )}
+                  {ev.maxFormat === 'rising_bar' && ev.risingBarWeights && (
+                    <li><span className="text-zt-muted">Ev {ev.eventNumber} rising bar:</span> {ev.risingBarWeights.join(' lb → ')} lb</li>
+                  )}
+                </React.Fragment>
+              ))}
+            </ul>
+          )}
         </div>
       </section>
 
