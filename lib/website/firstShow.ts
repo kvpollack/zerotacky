@@ -10,17 +10,17 @@ export type GuideImage = { src: string; alt: string; caption?: string };
 export const GUIDE_IMAGE_SIZES: Record<string, { width: number; height: number }> = {
   '/guide/01-new-meet.png': { width: 2340, height: 545 },
   '/guide/02-my-meets.png': { width: 2376, height: 1888 },
-  '/guide/03-meet.png': { width: 2304, height: 2066 },
-  '/guide/04-divisions.png': { width: 2304, height: 1375 },
-  '/guide/05-stations.png': { width: 2304, height: 2923 },
-  '/guide/06-events.png': { width: 2304, height: 1280 },
-  '/guide/07-event-form.png': { width: 2178, height: 2835 },
-  '/guide/08-athletes.png': { width: 2304, height: 2853 },
-  '/guide/09-listing.png': { width: 2304, height: 1901 },
-  '/guide/10-registrations.png': { width: 2304, height: 1177 },
-  '/guide/11-meet-day.png': { width: 2304, height: 2813 },
+  '/guide/03-meet.png': { width: 2304, height: 2144 },
+  '/guide/04-divisions.png': { width: 2304, height: 1409 },
+  '/guide/05-stations.png': { width: 2304, height: 2925 },
+  '/guide/06-events.png': { width: 2304, height: 1315 },
+  '/guide/07-event-form.png': { width: 2178, height: 2954 },
+  '/guide/08-athletes.png': { width: 2304, height: 2925 },
+  '/guide/09-listing.png': { width: 2304, height: 2239 },
+  '/guide/10-registrations.png': { width: 2304, height: 1786 },
+  '/guide/11-meet-day.png': { width: 2304, height: 2633 },
   '/guide/12-show-card.png': { width: 2322, height: 556 },
-  '/guide/13-show-page.png': { width: 2376, height: 3150 },
+  '/guide/13-show-page.png': { width: 2376, height: 2342 },
   '/guide/14-register.png': { width: 2376, height: 2165 },
   '/guide/14b-register-form.png': { width: 2376, height: 3150 },
   '/guide/15-scoreboard.png': { width: 2160, height: 1350 },
@@ -123,12 +123,12 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
     where: 'Tab 5, Listing',
     body: [
       'Tick Listed to put the meet in Find a Show. The three status dropdowns are the badges the public sees: competition status (upcoming, live, completed), registration status (open, waitlist, closed, day-of only) and results status.',
-      'Fill in the venue, the federation or format, the entry fee as you want it displayed, the deadline, an athlete cap and a contact. No money moves through the site; the fee line tells athletes how you want to be paid. Save Listing Settings writes it straight to the server.',
+      'Pick the host gym from the gym directory if it is listed there, which links the show page to the gym\'s page, then fill in the venue, the federation or format, the entry fee as you want it displayed, the deadline, an athlete cap and a contact. No money moves through the site; the fee line tells athletes how you want to be paid. Save Listing Settings writes it straight to the server.',
     ],
     publicSide:
       'This tab is the public face of the show. The card in Find a Show, the show page and the top of the registration page are all built from it, and the capacity line counts every athlete on the roster against your cap, including the ones you added by hand.',
     images: [
-      { src: '/guide/09-listing.png', alt: 'The Listing tab with the meet listed, registration open and venue details filled in' },
+      { src: '/guide/09-listing.png', alt: 'The Listing tab with the meet listed, registration open, the host gym picker and venue details filled in' },
       { src: '/guide/12-show-card.png', alt: 'The resulting card in Find a Show with divisions and implements', caption: 'The card athletes see in Find a Show.' },
       { src: '/guide/13-show-page.png', alt: 'The public show page built from the listing', caption: 'The show page at zerotacky.com/shows/your-slug.' },
     ],
@@ -147,7 +147,7 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
     images: [
       { src: '/guide/14-register.png', alt: 'The registration page signed out: step 1 asks the athlete to sign in or create a free account', caption: 'What the athlete sees first: the account step.' },
       { src: '/guide/14b-register-form.png', alt: 'The registration form once signed in, showing divisions with target weights and the athlete fields', caption: 'Then the entry form, with name and email filled from the account.' },
-      { src: '/guide/10-registrations.png', alt: 'The Registrations tab with two pending entries and Accept and Decline buttons', caption: 'What you see.' },
+      { src: '/guide/10-registrations.png', alt: 'The Registrations tab with four pending entries and Accept, Decline and Withdraw buttons', caption: 'What you see.' },
     ],
   },
   {
@@ -156,11 +156,11 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
     where: 'Tab 7, Athletes',
     body: [
       'There are two ways onto the roster. Athletes who register online land here when you accept them in step 7. Paper sign-ups and walk-ins you add yourself: Bulk Add takes one name per line into a division, Single Add takes one at a time.',
-      'Each athlete gets a lot number inside their division. That is the order for the first event, and the fallback order whenever two athletes are level. The one exception is Reverse Previous Event, which breaks a tie on the last event by overall points first and lot number second.',
+      'Each athlete gets a lot number inside their division; drag the grip at the left of a row to reorder, or type a number. That is the order for the first event, and the fallback order whenever two athletes are level. The one exception is Reverse Previous Event, which breaks a tie on the last event by overall points first and lot number second.',
     ],
     publicSide:
       'Roster names appear on the live scoreboard as soon as the meet is listed, with a dash in every event column until scores come in. Add only athletes you expect to show up.',
-    images: [{ src: '/guide/08-athletes.png', alt: 'The Athletes tab with rosters under each division' }],
+    images: [{ src: '/guide/08-athletes.png', alt: 'The Athletes tab with rosters under each division, each row with a drag grip and lot number' }],
   },
   {
     id: 'meetday',

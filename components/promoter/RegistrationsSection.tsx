@@ -65,11 +65,11 @@ export default function RegistrationsSection({
         <div>
           <h2 className="text-sm font-black uppercase tracking-wider text-zt-primary flex items-center gap-2">
             <Users className="w-4 h-4" aria-hidden="true" />
-            <span>7. Athlete Registrations ({registrations.length})</span>
+            <span>6. Athlete Registrations ({registrations.length})</span>
           </h2>
           <p className="text-xs text-zt-muted mt-0.5">
             {pendingCount} pending, {acceptedCount} accepted. Accepting adds the athlete to that division&apos;s roster
-            (tab 5, Athletes) with the next lot number; declining removes the roster row unless it already has results.
+            (tab 7, Athletes) with the next lot number; declining removes the roster row unless it already has results.
             Emergency contacts are visible to you only.
           </p>
         </div>
@@ -197,8 +197,10 @@ export default function RegistrationsSection({
                     <td className="py-3 px-2 text-zt-muted font-semibold whitespace-nowrap">
                       {reg.createdAt.slice(0, 10)}
                     </td>
-                    <td className="py-3 pl-2 text-right whitespace-nowrap">
-                      <div className="inline-flex items-center gap-1.5">
+                    <td className="py-3 pl-2 text-right">
+                      {/* flex-wrap (10/27): three buttons on one line pushed the table past the 1024px editor and hid
+                          Decline behind a horizontal scroll; Withdraw drops to a second line when the row is tight. */}
+                      <div className="inline-flex flex-wrap justify-end items-center gap-1.5">
                         <button
                           type="button"
                           disabled={disabled || reg.status === 'accepted'}
