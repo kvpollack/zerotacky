@@ -34,10 +34,17 @@ export async function requestRegistrationEmail(
 export function describeEmailResult(r: EmailRequestResult, who: 'athlete' | 'promoter'): string | null {
   const athlete = r.sent.find((s) => s.kind === 'received' || s.kind.startsWith('decision'));
   if (athlete) return who === 'athlete' ? `A confirmation is on its way to ${athlete.to}.` : `Emailed ${athlete.to}.`;
-  // only the promoter notice went (athlete had no address): still worth a word to the promoter, not the athlete
-  if (who === 'promoter' && r.sent.length) return 'Saved. The athlete has no email address on file, so only you were notified.';
-  if (r.skipped.some((s) => s.endsWith('already_notified'))) return who === 'athlete' ? null : 'Already emailed earlier.';
-  if (r.skipped.some((s) => s.endsWith('no_address'))) return who === 'athlete' ? null : 'No email address on file for this athlete.';
-  if (r.error) return who === 'athlete' ? null : `Saved, but the email did not go out (${r.error}).`;
+  if (who === 'athlete') return null;   // the athlete only ever hears about their own confirmation
+  // only the promoter notice went (athlete had no address): still worth a word to the promoter
+  if (r.sent.length) return 'Saved. The athlete has no email address on file, so only you were notified.';
+  const athleteSkip = r.skipped.find((s) => s.startsWith('received:') || s.startsWith('decision_'));
+  const reason = athleteSkip?.split(':')[1];
+  if (reason === 'already_notified') return 'Already emailed earlier.';
+  if (reason === 'no_address') return 'No email address on file for this athlete.';
+  if (reason === 'in_flight') return 'An email to this athlete is already on its way.';
+  if (reason === 'wait') return 'Emailed in the last 10 minutes; try again later.';
+  if (reason === 'limit') return 'This athlete has been emailed the maximum number of times for this step.';
+  if (r.skipped.some((s) => s === 'notice:no_address')) return 'Your account has no confirmed email, so you will not get new-entry notices.';
+  if (r.error) return `Saved, but the email did not go out (${r.error}).`;
   return null;
 }
