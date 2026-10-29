@@ -56,6 +56,7 @@ import type { AppState, Athlete, Division, EventDef, Meet } from '@/lib/types';
 import ListingSection from './ListingSection';
 import { useAuth } from '@/lib/auth/useAuth';
 import RegistrationsSection from './RegistrationsSection';
+import { fetchRegistrationCards, openCardInNewTab, type MembershipCard } from '@/lib/website/membershipCards';
 import AthleteAccountsSection from './AthleteAccountsSection';
 import MeetDaySection from './MeetDaySection';
 
@@ -118,6 +119,27 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   }, [navBlockedAt]);
   useEffect(() => { if (!eventFormOpen) setNavBlockedAt(0); }, [eventFormOpen]);
   const [athleteLinks, setAthleteLinks] = useState<AthleteAccountLink[]>([]);
+  // 035: membership cards of live registrants, keyed by registration id. Undefined on the mock backend (column hidden).
+  const [registrationCards, setRegistrationCards] = useState<Record<string, MembershipCard[]> | undefined>(undefined);
+  const loadRegistrationCards = useCallback(async () => {
+    const sb = getSupabase();
+    if (!isLiveBackend() || !sb) return;
+    // Side panel data: a failure here must not block the meet, same as the athlete links.
+    try {
+      setRegistrationCards(await fetchRegistrationCards(sb, serverId));
+    } catch {
+      setRegistrationCards((prev) => prev ?? {});
+    }
+  }, [serverId]);
+  const handleViewCard = useCallback(async (card: MembershipCard) => {
+    const sb = getSupabase();
+    if (!sb) return;
+    try {
+      await openCardInNewTab(sb, card.imagePath);
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : 'Could not open the card.');
+    }
+  }, []);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const loadAll = useCallback(async () => {
@@ -158,8 +180,9 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
       return;
     }
     setRegistrations(regsRes.data);
+    void loadRegistrationCards();
     setLoading(false);
-  }, [api, serverId]);
+  }, [api, serverId, loadRegistrationCards]);
 
   useEffect(() => {
     loadAll();
@@ -342,6 +365,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
       problems.push(`registrations refresh failed: ${regsRes.error ?? 'no data'}`);
     } else {
       setRegistrations(regsRes.data);
+      void loadRegistrationCards();
     }
     // 031: tell the athlete. Best effort; the decision is already saved, so a mail problem is a notice, not an error.
     let notice: string | null = null;
@@ -752,6 +776,8 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             meetDate={workingState.meet.date}
             onSetStatus={handleSetRegistrationStatus}
             blockedReason={registrationsBlockedReason}
+            cards={registrationCards}
+            onViewCard={handleViewCard}
           />
         </div>
 
