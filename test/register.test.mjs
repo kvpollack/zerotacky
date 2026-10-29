@@ -131,7 +131,7 @@ describe('register: pure validation helpers', () => {
     assert.match(FA.validateRegistrationInput({ ...GOOD, slug: closed.slug, divisionId: 'srs-d1' }, closed), /currently closed/);
   });
 
-  test('decideRegistrationOutcome: closed/not_provided error; open past deadline error; open at cap error; waitlist always waitlist', async () => {
+  test('decideRegistrationOutcome: closed/not_provided error; open past deadline error; open at cap waitlists (034); waitlist always waitlist', async () => {
     const api = FA.createFixturePromoterApi();
     const open = (await api.getPublicMeetBySlug('iron-furnace-classic-2026')).data; // deadline 2026-11-07, cap 40, 2 on roster
 
@@ -140,9 +140,8 @@ describe('register: pure validation helpers', () => {
     assert.equal(late.status, null);
     assert.match(late.error, /closed on 2026-11-07/);
 
-    const full = FA.decideRegistrationOutcome({ ...open, acceptedCount: 40 }, '2026-11-01');
-    assert.equal(full.status, null);
-    assert.match(full.error, /is full \(40 of 40 spots taken\)/);
+    // 034: an open meet at its cap waitlists instead of refusing
+    assert.deepEqual(FA.decideRegistrationOutcome({ ...open, acceptedCount: 40 }, '2026-11-01'), { status: 'waitlist', error: null, reason: 'full' });
 
     const wl = { ...open, listing: { ...open.listing, registrationStatus: 'waitlist' } };
     assert.deepEqual(FA.decideRegistrationOutcome(wl, '2026-12-01'), { status: 'waitlist', error: null });
@@ -242,7 +241,7 @@ describe('register: submitRegistration into fixtureApi (M10, M19)', () => {
     assert.match(second.error, /already exists/);
   });
 
-  test('M10: closed meet -> error; open past deadline -> error; open at cap -> error; nothing stored', async () => {
+  test('M10: closed meet -> error; open past deadline -> error; open at cap -> waitlist (034)', async () => {
     const api = FA.createFixturePromoterApi({ today: () => '2026-11-08' });
 
     const closed = await api.submitRegistration({ ...GOOD, slug: 'steel-river-showdown-2026', divisionId: 'srs-d1' });
@@ -256,10 +255,12 @@ describe('register: submitRegistration into fixtureApi (M10, M19)', () => {
     const api2 = FA.createFixturePromoterApi({ today: () => '2026-11-01' });
     const capped = await api2.updateListing('srv-meet-upcoming-1', { athleteCap: 2 }); // roster already has 2
     assert.equal(capped.error, null);
+    // 034: open at cap stores a waitlist request instead of refusing
     const full = await api2.submitRegistration(GOOD);
-    assert.equal(full.data, null);
-    assert.match(full.error, /is full \(2 of 2 spots taken\)/);
-    assert.equal((await api2.getMeet('srv-meet-upcoming-1')).data.summary.pendingCount, 5);
+    assert.equal(full.error, null);
+    assert.equal(full.data.status, 'waitlist');
+    const stored = (await api2.listRegistrations('srv-meet-upcoming-1')).data.find((r) => r.id === full.data.id);
+    assert.equal(stored.waitlisted, true);
   });
 
   test('M10: waitlist status takes the entry past deadline and at cap, returns status waitlist, stores waitlisted=true', async () => {

@@ -1,0 +1,20 @@
+# Disposition: Astra scorer-polish audit (2026-10-26)
+
+Response to `astra-2026-10-26-polish-findings.md`. Every SHIP item is fixed in this change set, plus the DAY-OF item and one LATER item. One LATER item is deferred to the ledger. 396 tests pass (7 new), tsc clean, production compile clean.
+
+| ID | Sev | Disposition | What changed | Verified by |
+|---|---|---|---|---|
+| PS-01 | SHIP | **Fixed.** | `loadingTakesCollars()` in `lib/engine/plates.ts`: collars only for 2 sleeves or 4 sleeves per hand. EventForm hides the field and saves 0 otherwise; the shared sanitizer (`sanitizeEventFields`, `normalizeMeetState`) stores 0 for unsupported modes, so switching 4-point per-hand to total zeroes it. Engine unchanged for yoke (already no collars). | `test/engine.test.mjs` "PS-01/PS-09", `test/meetBuilder.test.mjs` collar case (per_hand 5 kept, total 0, pin 0). |
+| PS-02 | SHIP | **Fixed.** | `resultHasScore(r, event)` judges by the event's own zero rule (finished under cap, or distance/implements > 0; reps > 0; effective max > 0; DNS never). `scoringField(athletes, results, events)` looks each result's event up. `scoreSingleEvent` takes `allEvents` and every caller passes the meet's events (standings, adapter, scoreboard, scorer, export, run order). | `test/engine.test.mjs` "PS-02" x2: 61 s / 0 ft scratch leaves the field (2-1 not 3-2); 12 ft DNF keeps them; implements 0 vs 1; DNS; result in another event judged by that event. |
+| PS-03 | SHIP | **Fixed.** | `calculateDivisionStandings` ranks the scoring field only; no-score scratches are appended at N+1 with 0 points, `isTiedOverall` false, alphabetical. Mid-meet withdrawals stay in the field with earned points. | `test/engine.test.mjs` "calculateDivisionStandings: scratches" x3, both tiebreak rules. |
+| PS-04 | SHIP | **Fixed.** | Sticky-bar "Go to Listing" and "Go to Events" call `requestTab()`. | Browser at 375 (dev, staging data): dirty Listing + dirty Meet + open draft, Go to Listing refused, Events stays selected, lock message shown. Fixture restored (server name/slug unchanged). |
+| PS-05 | SHIP | **Fixed.** | Bar action container is `flex flex-wrap justify-end max-w-full`. | Same run: Discard draft [56,208], Go to Listing [218,341], Discard [63,171], Save Changes [181,341] at 375 px, two rows, all inside the viewport. |
+| PS-06 | DAY-OF | **Fixed.** | `RootLanding` refreshes whenever a link exists (`hasResumeLink`), not only when a card is showing, and re-reads `readResume()` afterwards so the card can return when a meet reopens. | Existing "reopened meet clears a stale completed cache" helper test; component path reviewed. No component test harness in this repo; noted. |
+| PS-07 | SHIP | **Fixed.** | `showHistory.ts` uses `scoringField()` for `fieldSize` (scored withdrawals kept, pre-score scratches excluded). | `test/showHistory.test.mjs` "mid-meet withdrawal ahead of the active athletes": field 4, every active entry formats "of 4"; pre-score scratch gives 3. |
+| PS-08 | LATER | **Deferred, ledger.** | Guide images `public/guide/06-events.png` (and siblings showing the tab strip) still show the old order and no collar field. Recapture with the CDP driver when the promoter editor is next stable. | — |
+| PS-09 | LATER | **Fixed (cheap).** | `normalizeCollarWeight()` at `rowToEvent()` and both builder normalizers: strings coerce, junk/null/NaN become absent (legacy fallback), negatives clamp to 0, key omitted when absent so preset round-trips stay lossless. | `test/sync.test.mjs` ("10" -> 10, "abc" dropped), `test/engine.test.mjs` (string event collar honoured by the engine). |
+
+## Notes for Astra's retest
+- PS-02/03 change the public results adapter too (`lib/website/standingsAdapter.ts` passes `sortedEvents`); the Strongfest prod meet has no withdrawn athletes, so its standings are unchanged.
+- PS-01 means an event saved as 4-point total now stores `collarWeightPerPair: 0`; a promoter switching it back to per-hand sees 0 prefilled and types the value again. Accepted.
+- Scratches appended by PS-03 carry `status: 'withdrawn'`, so every UI that already greys withdrawn rows keeps doing so.
