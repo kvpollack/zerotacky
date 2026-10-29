@@ -2,7 +2,7 @@
 // mail problem interrupt the thing the user actually did (the registration or the decision went through already).
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-export interface EmailRequestResult { ok: boolean; sent: Array<{ kind: string; to: string }>; skipped: string[]; error?: string }
+export interface EmailRequestResult { ok: boolean; sent: Array<{ kind: string; to?: string }>; skipped: string[]; error?: string }
 
 export async function requestRegistrationEmail(
   sb: SupabaseClient | null,
@@ -33,7 +33,7 @@ export async function requestRegistrationEmail(
 // What the UI says after a send attempt. Null when there is nothing worth saying (nothing sent, nothing failed).
 export function describeEmailResult(r: EmailRequestResult, who: 'athlete' | 'promoter'): string | null {
   const athlete = r.sent.find((s) => s.kind === 'received' || s.kind.startsWith('decision'));
-  if (athlete) return who === 'athlete' ? `A confirmation is on its way to ${athlete.to}.` : `Emailed ${athlete.to}.`;
+  if (athlete) return who === 'athlete' ? `A confirmation is on its way to ${athlete.to ?? 'your email address'}.` : `Emailed ${athlete.to ?? 'the athlete'}.`;
   if (who === 'athlete') return null;   // the athlete only ever hears about their own confirmation
   // only the promoter notice went (athlete had no address): still worth a word to the promoter
   if (r.sent.length) return 'Saved. The athlete has no email address on file, so only you were notified.';

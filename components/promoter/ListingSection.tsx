@@ -22,6 +22,8 @@ interface ListingSectionProps {
   onSaveListing: (patch: Partial<MeetListing>) => Promise<{ error: string | null }>;
   // Reports whether the form holds unsaved edits so the parent can show it in the dirty bar.
   onDirtyChange?: (dirty: boolean) => void;
+  // EM-05 (10/29): the new-entry notice goes to the owner's confirmed sign-in email; when there is none, say so here.
+  ownerEmailUnconfirmed?: boolean;
 }
 
 // Flat text form of a listing. Kept as strings so the inputs are controlled and comparison is trivial.
@@ -110,6 +112,7 @@ export default function ListingSection({
   listing,
   onSaveListing,
   onDirtyChange,
+  ownerEmailUnconfirmed = false,
 }: ListingSectionProps) {
   const [draft, setDraft] = useState<ListingDraft>(() => toDraft(listing));
   const [saving, setSaving] = useState(false);
@@ -230,6 +233,16 @@ export default function ListingSection({
             : 'Unlisted meets stay out of the public directory. Keep test meets and drafts unlisted until athletes should find them.'}
         </p>
       </div>
+
+      {ownerEmailUnconfirmed && (
+        <p role="status" className="flex items-start gap-2 text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-2">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+          <span>
+            Your account email is not confirmed, so new-entry notices cannot reach you. Athletes still get their confirmations.
+            Confirm it from the <Link href="/website/account" className="underline">Account page</Link>.
+          </span>
+        </p>
+      )}
 
       {/* Lifecycle Statuses */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
