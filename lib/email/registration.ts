@@ -24,7 +24,8 @@ export interface RegistrationEmailPayload {
   promoter_contact: string | null;
   promoter_email: string | null;
   promoter_name: string;
-  email_log: Record<string, string>;
+  // 031 wrote an ISO string per kind; 033 writes {sent, count, attempt}. The server decides from it, the client never reads it.
+  email_log: Record<string, string | { sent: string | null; count: number; attempt: string | null }>;
 }
 
 export type RegistrationEmailKind = 'received' | 'decision';

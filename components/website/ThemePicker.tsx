@@ -47,7 +47,7 @@ export default function ThemePicker({ value, onChange, subject, previewName, inp
         <button
           type="button"
           onClick={() => onChange(PRESET_THEMES[0].theme)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zt-surface-2 border border-zt-border text-xs font-extrabold uppercase text-zt-text hover:border-zt-border-strong"
+          className={"inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zt-surface-2 border border-zt-border text-xs font-extrabold uppercase text-zt-text hover:border-zt-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zt-primary focus-visible:ring-offset-2 focus-visible:ring-offset-zt-surface"}
         >
           <Palette className="w-3.5 h-3.5 text-zt-primary" aria-hidden="true" /> Use my own colours
         </button>
@@ -71,7 +71,7 @@ export default function ThemePicker({ value, onChange, subject, previewName, inp
               title={p.name}
               aria-label={`Preset ${p.name}`}
               onClick={() => onChange({ ...p.theme })}
-              className="w-9 h-7 rounded-md border border-zt-border-strong overflow-hidden flex hover:ring-2 hover:ring-zt-primary"
+              className={"w-9 h-7 rounded-md border border-zt-border-strong overflow-hidden flex hover:ring-2 hover:ring-zt-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zt-primary focus-visible:ring-offset-2 focus-visible:ring-offset-zt-surface"}
               style={{ background: p.theme.background }}
             >
               <span className="block w-1/2 h-full" style={{ background: p.theme.primary }} />
@@ -156,7 +156,7 @@ export default function ThemePicker({ value, onChange, subject, previewName, inp
       <button
         type="button"
         onClick={() => onChange(null)}
-        className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase text-zt-muted hover:text-zt-text"
+        className={"inline-flex items-center gap-1 text-[11px] font-extrabold uppercase text-zt-muted hover:text-zt-text rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zt-primary focus-visible:ring-offset-2 focus-visible:ring-offset-zt-surface"}
       >
         <X className="w-3 h-3" aria-hidden="true" /> Use the ZeroTacky default instead
       </button>
