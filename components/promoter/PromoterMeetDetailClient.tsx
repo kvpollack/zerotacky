@@ -50,6 +50,8 @@ import type {
 } from '@/lib/promoter/contract';
 import { isMeetStateDirty } from '@/lib/promoter/rules';
 import { isLiveBackend, usePromoterApi } from '@/lib/promoter/usePromoterApi';
+import { getSupabase } from '@/lib/auth/supabaseBrowser';
+import { describeEmailResult, requestRegistrationEmail } from '@/lib/email/client';
 import type { AppState, Athlete, Division, EventDef, Meet } from '@/lib/types';
 import ListingSection from './ListingSection';
 import RegistrationsSection from './RegistrationsSection';
@@ -337,10 +339,15 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     } else {
       setRegistrations(regsRes.data);
     }
-    if (problems.length > 0) {
-      return { error: `Status changed to ${status}, but the page could not refresh (${problems.join('; ')}). Reload to see the current state.` };
+    // 031: tell the athlete. Best effort; the decision is already saved, so a mail problem is a notice, not an error.
+    let notice: string | null = null;
+    if ((status === 'accepted' || status === 'declined') && isLiveBackend()) {
+      notice = describeEmailResult(await requestRegistrationEmail(getSupabase(), regId, 'decision'), 'promoter');
     }
-    return { error: null };
+    if (problems.length > 0) {
+      return { error: `Status changed to ${status}, but the page could not refresh (${problems.join('; ')}). Reload to see the current state.`, notice };
+    }
+    return { error: null, notice };
   };
 
   const handleDeleteMeet = async (confirmName: string | null) => {

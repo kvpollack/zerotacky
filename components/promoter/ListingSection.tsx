@@ -43,6 +43,7 @@ interface ListingDraft {
   promoterContact: string;
   hostGymId: string; // 026: directory gym id or ''
   theme: ZtTheme | null; // 030: raw field text; validateListingPatch normalises or refuses at save
+  autoAccept: boolean;   // 032
 }
 
 function toDraft(listing: MeetListing): ListingDraft {
@@ -65,6 +66,7 @@ function toDraft(listing: MeetListing): ListingDraft {
     promoterContact: listing.promoterContact ?? '',
     hostGymId: listing.hostGymId ?? '',
     theme: listing.theme ? { ...listing.theme } : null,
+    autoAccept: listing.autoAccept ?? true,
   };
 }
 
@@ -95,6 +97,7 @@ function toPatch(d: ListingDraft): Partial<MeetListing> {
     promoterContact: d.promoterContact.trim() || null,
     hostGymId: d.hostGymId.trim() || null,
     theme: d.theme,
+    autoAccept: d.autoAccept,
   };
 }
 
@@ -265,6 +268,28 @@ export default function ListingSection({
             <option value="not_applicable">Not Applicable</option>
             <option value="not_provided">Not Provided</option>
           </select>
+        </div>
+
+        {/* 032: most promoters take every entry; the review queue is the opt-in. */}
+        <div>
+          <label htmlFor="listing-auto-accept" className={LABEL}>
+            New Entries
+          </label>
+          <select
+            id="listing-auto-accept"
+            value={draft.autoAccept ? 'auto' : 'review'}
+            onChange={(e) => set('autoAccept', e.target.value === 'auto')}
+            className={INPUT}
+            aria-describedby="listing-auto-accept-help"
+          >
+            <option value="auto">Accept automatically (go straight to the roster)</option>
+            <option value="review">I review each one</option>
+          </select>
+          <p id="listing-auto-accept-help" className="text-[11px] text-zt-muted mt-1">
+            {draft.autoAccept
+              ? 'Athletes land on the roster the moment they register and get a "you are in" email. You can still decline anyone from the Registrations tab. Waitlist and cap rules still apply.'
+              : 'Entries wait in the Registrations tab until you accept or decline each one. Athletes get a "received" email now and a decision email later.'}
+          </p>
         </div>
 
         <div>

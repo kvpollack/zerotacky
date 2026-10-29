@@ -96,6 +96,11 @@ describe('host gym helpers (026)', () => {
     expect(SA.listingPatchToColumns({ theme: null })).toEqual({ theme: null });
     expect(SA.listingPatchToColumns({})).toEqual({});
     expect(C.emptyListing().theme).toBeNull();
+    // 032: autoAccept defaults on; rows without the column (public reads) read as on; the patch maps to auto_accept
+    expect(C.emptyListing().autoAccept).toBe(true);
+    expect(SA.rowToMeetListing({}).autoAccept).toBe(true);
+    expect(SA.rowToMeetListing({ auto_accept: false }).autoAccept).toBe(false);
+    expect(SA.listingPatchToColumns({ autoAccept: false })).toEqual({ auto_accept: false });
     const cur = C.emptyListing();
     expect(R.validateListingPatch('2026-11-07', cur, { theme })).toBeNull();
     expect(R.validateListingPatch('2026-11-07', cur, { theme: null })).toBeNull();
