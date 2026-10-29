@@ -281,11 +281,12 @@ export function validateRegistrationInput(
 }
 
 // Deadline and capacity gate. 'waitlist' status takes every submission onto the waitlist; 'open' refuses
-// submissions after the deadline or once the roster is at the cap.
+// submissions after the deadline and, once the roster is at the cap, takes them onto the waitlist too (034,
+// reason 'full'). Mirrors zt_submit_registration_body.
 export function decideRegistrationOutcome(
   meet: PublicRegistrationMeet,
   today: string = todayIsoDate()
-): { status: 'pending' | 'waitlist'; error: null } | { status: null; error: string } {
+): { status: 'pending' | 'waitlist'; error: null; reason?: 'full' } | { status: null; error: string } {
   const { registrationStatus, registrationDeadline, athleteCap } = meet.listing;
   if (!isRegistrationOpen(registrationStatus)) {
     return {
@@ -303,10 +304,7 @@ export function decideRegistrationOutcome(
     };
   }
   if (athleteCap !== null && meet.acceptedCount >= athleteCap) {
-    return {
-      status: null,
-      error: `${meet.name} is full (${meet.acceptedCount} of ${athleteCap} spots taken). Contact the promoter to ask about a waitlist.`,
-    };
+    return { status: 'waitlist', error: null, reason: 'full' };
   }
   return { status: 'pending', error: null };
 }

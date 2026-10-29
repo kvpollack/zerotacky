@@ -377,8 +377,9 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
         <>
           {gate.status === 'waitlist' && step < 4 && (
             <p className="text-xs font-bold text-zt-text-2 bg-zt-inset border border-zt-border rounded-xl px-3 py-2">
-              This competition is taking waitlist entries only. Your request will be marked waitlisted and the promoter
-              decides if a spot opens.
+              {gate.reason === 'full'
+                ? `This show is full (${capacityDisplay}). You can still register: your entry goes on the waitlist and the promoter decides if a spot opens.`
+                : 'This competition is taking waitlist entries only. Your request will be marked waitlisted and the promoter decides if a spot opens.'}
             </p>
           )}
 
