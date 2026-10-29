@@ -12,6 +12,7 @@ import { aboutFromProfile, aboutKey, reconcileAbout, type AboutDraft } from '@/l
 import { fetchIsAdmin } from '@/lib/website/myGym';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import HostGymPicker from '@/components/promoter/HostGymPicker';
+import MembershipCardsSection from '@/components/website/MembershipCardsSection';
 
 // Real account page (v2): sign in / create account / magic link, then a profile editor. The three role flags
 // are self-declared and only shape what the site shows; meet access is decided by meets.owner_id / meet_members.
@@ -483,6 +484,8 @@ export default function AccountClient() {
           </form>
         )}
       </section>
+
+      <MembershipCardsSection userId={auth.user.id} />
 
       {p && (
         <section aria-labelledby="public-heading" className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-4">

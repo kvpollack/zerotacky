@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AlertTriangle, Check, LogOut, Mail, PhoneCall, UserCheck, Users, X } from 'lucide-react';
+import { AlertTriangle, Check, Eye, LogOut, Mail, PhoneCall, UserCheck, Users, X } from 'lucide-react';
 import type { RegistrationRequest } from '@/lib/promoter/contract';
-import { ADULT_AGE, ageOnDate, ageReferenceDate } from '@/lib/promoter/rules';
+import { ADULT_AGE, ageOnDate, ageReferenceDate, todayIsoDate } from '@/lib/promoter/rules';
+import { cardStatus, cardStatusLabel, federationLabel, type MembershipCard } from '@/lib/website/membershipCards';
 import type { Athlete, Division } from '@/lib/types';
 
 interface RegistrationsSectionProps {
@@ -17,6 +18,9 @@ interface RegistrationsSectionProps {
   ) => Promise<{ error: string | null; notice?: string | null }>;   // notice (031): what happened with the athlete's email
   // When set, Accept/Decline are disabled and this message is shown (e.g. unsaved builder edits).
   blockedReason?: string | null;
+  // 035: federation membership cards the athlete keeps on their account, keyed by registration id. Live backend only.
+  cards?: Record<string, MembershipCard[]>;
+  onViewCard?: (card: MembershipCard) => Promise<void>;
 }
 
 export default function RegistrationsSection({
@@ -26,8 +30,11 @@ export default function RegistrationsSection({
   meetDate = '',
   onSetStatus,
   blockedReason = null,
+  cards,
+  onViewCard,
 }: RegistrationsSectionProps) {
   const ageReference = ageReferenceDate(meetDate);
+  const today = todayIsoDate();
   const [busyId, setBusyId] = useState<string | null>(null);
   // Errors are kept per request so the message sits next to the row whose action failed.
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
@@ -104,7 +111,7 @@ export default function RegistrationsSection({
                 <th className="py-2.5 px-2">Emergency Contact</th>
                 <th className="py-2.5 px-2">Division</th>
                 <th className="py-2.5 px-2">Status &amp; Roster Link</th>
-                <th className="py-2.5 px-2">Waiver</th>
+                <th className="py-2.5 px-2">Waiver{cards ? ' / Membership' : ''}</th>
                 <th className="py-2.5 px-2">Paid</th>
                 <th className="py-2.5 px-2">Submitted</th>
                 <th className="py-2.5 pl-2 text-right">Actions</th>
@@ -188,6 +195,36 @@ export default function RegistrationsSection({
                         </span>
                       ) : (
                         <span className="text-[11px] font-bold text-amber-400">Unsigned</span>
+                      )}
+                      {cards && (
+                        <div className="mt-1 space-y-0.5">
+                          {(cards[reg.id] ?? []).length === 0 ? (
+                            <div className="text-[10px] text-zt-muted">No membership card on file</div>
+                          ) : (
+                            (cards[reg.id] ?? []).map((card) => {
+                              const status = cardStatus(card.expiresOn, today);
+                              return (
+                                <div key={card.id} className="flex items-center gap-1.5 text-[10px]">
+                                  <span className="font-bold text-zt-text">{federationLabel(card, 'short')}</span>
+                                  {card.memberNumber && <span className="font-mono text-zt-muted">#{card.memberNumber}</span>}
+                                  <span className={status === 'valid' ? 'text-zt-muted' : status === 'expiring' ? 'text-amber-400' : 'text-red-400 font-bold'}>
+                                    {cardStatusLabel(status, card.expiresOn)}
+                                  </span>
+                                  {onViewCard && (
+                                    <button
+                                      type="button"
+                                      onClick={() => { void onViewCard(card); }}
+                                      className="inline-flex items-center gap-1 text-zt-primary hover:underline font-bold"
+                                      aria-label={`View ${federationLabel(card)} card`}
+                                    >
+                                      <Eye className="w-3 h-3" aria-hidden="true" /> View
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
                       )}
                     </td>
                     <td className="py-3 px-2 whitespace-nowrap">

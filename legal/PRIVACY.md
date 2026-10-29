@@ -18,6 +18,7 @@ ZeroTacky is a public directory of strongman competitions, an athlete registrati
 |---|---|---|---|
 | Anyone with an account (athletes, promoters) | Email address, display name, password (stored hashed by our authentication provider), sign-in timestamps | To sign you in, let promoters manage their meets, and send you messages about your registrations | You |
 | Athletes who register for a competition | Name, email, emergency contact (name and phone), the division you chose, optional bodyweight, your date of birth, the date and time you accepted the waiver and an identifier of the exact waiver text you accepted; for an athlete under 18 on competition day, the parent or guardian's name and contact | To send your entry to the promoter, put you on the roster when accepted, and give the promoter your emergency contact on meet day | You, or your parent or guardian |
+| Athletes who add a federation membership card to their account (optional) | A photo of the card, the federation, your member number if you enter it, and the expiry date you enter | To show the promoter of a competition you have registered for that your membership is current, so check-in goes faster | You |
 | Athletes on a meet roster (added by a promoter, with or without an account) | Name, division, lot number, optional bodyweight and rack heights, scores and placings | To run and score the meet and show standings | The promoter and their judges |
 | Everyone who visits | Standard server logs (IP address, browser type, pages requested, timestamps) kept by our hosting provider; the IP address of a device that submits a registration or tries a PIN, kept for about a day to stop abuse | To keep the site running and stop brute-force and spam | Your browser |
 
@@ -31,7 +32,7 @@ We do not run advertising trackers or sell data. We do not collect payment detai
 
 ## 4. Who sees your data
 
-- **Promoters.** When you register for a competition, the promoter of that competition gets your registration (name, email, emergency contact, date of birth, division, bodyweight if given, waiver acceptance, and guardian details for an athlete under 18). Promoters agree to use it only to run that competition.
+- **Promoters.** When you register for a competition, the promoter of that competition gets your registration (name, email, emergency contact, date of birth, division, bodyweight if given, waiver acceptance, and guardian details for an athlete under 18). If you keep a federation membership card on your account, the promoter and their staff can view it while you have a live registration (pending, waitlisted or accepted) on their competition, and not otherwise. Promoters agree to use it only to run that competition.
 - **The public.** For a meet the promoter has listed or published, rosters, athlete names, divisions, scores and placings are public on `/shows/<meet>` and the live scoreboard `/m/<meet>`. Emails, emergency contacts and guardian details are never public.
 - **Our providers.** Vercel (hosting, United States), Supabase (database and authentication, United States) and Resend (transactional email, United States) process data for us under their own terms. We do not share data with anyone else except as the law requires.
 
@@ -39,6 +40,7 @@ We do not run advertising trackers or sell data. We do not collect payment detai
 
 - Account data: while your account exists. Close your account and we delete the profile within 30 days; your name may remain in competition results you took part in (below).
 - Registrations: until the promoter deletes the meet, or until you ask us to remove yours.
+- Membership cards: until you remove the card from your account or close the account; closing the account deletes the photos with it.
 - Results: published competition results are part of the sport's record and stay up unless the promoter removes the meet or you ask for your name to be removed from a past result.
 - Abuse-prevention IP records: about a day. Server logs: per our hosting provider's retention.
 

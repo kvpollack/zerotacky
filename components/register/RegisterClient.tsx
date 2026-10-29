@@ -32,6 +32,7 @@ import { parseMarkdown } from '@/lib/legal/markdown';
 import { useAuth } from '@/lib/auth/useAuth';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import { describeEmailResult, requestRegistrationEmail } from '@/lib/email/client';
+import { listMyCards, showWantsMembershipCard } from '@/lib/website/membershipCards';
 import SignInForm from '@/components/auth/SignInForm';
 
 interface RegisterClientProps {
@@ -74,6 +75,21 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
   const [guardianName, setGuardianName] = useState('');
   const [guardianContact, setGuardianContact] = useState('');
   const [waiverAccepted, setWaiverAccepted] = useState(false);
+
+  // 035: a sanctioned show and no membership card on the account -> one-line nudge on step 1. Never blocks; one cheap
+  // query, errors swallowed (the nudge simply does not show).
+  const [cardNudge, setCardNudge] = useState(false);
+  const userId = auth.user?.id ?? null;
+  const showFederation = meet?.listing.federation ?? '';
+  useEffect(() => {
+    const sb = getSupabase();
+    if (!userId || !sb || !isLiveBackend() || !showWantsMembershipCard(showFederation)) { setCardNudge(false); return; }
+    let cancelled = false;
+    listMyCards(sb, userId)
+      .then((cards) => { if (!cancelled) setCardNudge(cards.length === 0); })
+      .catch(() => { if (!cancelled) setCardNudge(false); });
+    return () => { cancelled = true; };
+  }, [userId, showFederation]);
 
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -452,6 +468,14 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
               <h2 className="text-base font-black uppercase tracking-wider text-zt-primary">
                 Step 1: Choose Division &amp; Athlete Details
               </h2>
+
+              {cardNudge && (
+                <p className="text-xs text-zt-muted bg-zt-inset border border-zt-border rounded-lg px-3 py-2">
+                  This show lists {showFederation}. You have no membership card on your account yet; adding one on your{' '}
+                  <Link href="/website/account" className="underline font-bold text-zt-text">Account page</Link> saves the promoter a
+                  question at check-in. Optional; you can register either way.
+                </p>
+              )}
 
               <div className="space-y-2">
                 <div id="reg-division-label" className="block text-xs font-extrabold uppercase text-zt-muted">
