@@ -30,6 +30,8 @@ import { getPromoterApi, isLiveBackend } from '@/lib/promoter/usePromoterApi';
 import MarkdownBlocks from '@/components/legal/MarkdownBlocks';
 import { parseMarkdown } from '@/lib/legal/markdown';
 import { useAuth } from '@/lib/auth/useAuth';
+import { getSupabase } from '@/lib/auth/supabaseBrowser';
+import { describeEmailResult, requestRegistrationEmail } from '@/lib/email/client';
 import SignInForm from '@/components/auth/SignInForm';
 
 interface RegisterClientProps {
@@ -75,7 +77,8 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
 
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState<{ id: string; status: 'pending' | 'waitlist' } | null>(null);
+  const [submitted, setSubmitted] = useState<{ id: string; status: 'pending' | 'waitlist' | 'accepted' } | null>(null);
+  const [emailNote, setEmailNote] = useState<string | null>(null);   // 031: "A confirmation is on its way to ..." 
 
   const radioRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -243,6 +246,10 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
 
     setSubmitted(res.data);
     setStep(4);
+    // 031: confirmation to the athlete and a notice to the promoter. Best effort: the registration is already in.
+    if (isLiveBackend()) {
+      requestRegistrationEmail(getSupabase(), res.data.id, 'received').then((r) => setEmailNote(describeEmailResult(r, 'athlete')));
+    }
     // Refresh the public shape so the capacity line reflects the new entry.
     const refreshed = await getPromoterApi().getPublicMeetBySlug(meet.slug);
     if (refreshed.data) setMeet(refreshed.data);
@@ -768,7 +775,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                 <div>
                   <div className="text-xs font-black uppercase tracking-widest">Registration Submitted</div>
                   <h2 className="text-xl font-black text-zt-text">
-                    Status: {submitted.status === 'waitlist' ? 'WAITLISTED' : 'PENDING'}
+                    Status: {submitted.status === 'waitlist' ? 'WAITLISTED' : submitted.status === 'accepted' ? 'ACCEPTED' : 'PENDING'}
                   </h2>
                 </div>
               </div>
@@ -776,10 +783,13 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
               <p className="text-xs sm:text-sm text-zt-text-2 leading-relaxed">
                 Your request for <strong>{meet.name}</strong> in{' '}
                 <strong>{selectedDivision?.name ?? divisionId}</strong> has been recorded as{' '}
-                <strong className="text-amber-300">{submitted.status === 'waitlist' ? 'waitlisted' : 'pending'}</strong>.
+                <strong className={submitted.status === 'accepted' ? 'text-emerald-300' : 'text-amber-300'}>{submitted.status === 'waitlist' ? 'waitlisted' : submitted.status}</strong>.
                 {submitted.status === 'waitlist'
                   ? ' The promoter will contact you if a spot opens.'
-                  : ' Once the promoter accepts your entry, your name is added to the meet roster.'}
+                  : submitted.status === 'accepted'
+                    ? ' You are on the roster.'
+                    : ' Once the promoter accepts your entry, your name is added to the meet roster.'}
+                {emailNote ? ` ${emailNote}` : ''}
               </p>
 
               {!isLiveBackend() && (

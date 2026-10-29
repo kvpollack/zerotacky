@@ -37,6 +37,7 @@ export interface MeetListing {
   promoterContact: string | null;       // public: email or phone athletes may use; shown on /register and in the waiver
   hostGymId: string | null;             // 026: directory gym hosting the show (links the show page and the gym page); venue stays the address
   theme: ZtTheme | null;                // 030: the show's own colours (public show page + board); null = ZeroTacky default
+  autoAccept: boolean;                  // 032: entries go straight to the roster (default); false = the promoter reviews each one
 }
 
 export interface PromoterMeetSummary {
@@ -224,7 +225,7 @@ export interface PromoterApi {
   getPublicMeetBySlug(slug: string): Promise<ApiResult<PublicRegistrationMeet | null>>;   // null = unknown slug -> 404
   // 'waitlist' is returned when registrationStatus is 'waitlist' (the request is stored pending with waitlisted=true);
   // closed/not_provided/day_of_only/not_applicable, a passed deadline under 'open', or a full roster under 'open' are errors.
-  submitRegistration(input: RegistrationSubmission): Promise<ApiResult<{ id: string; status: 'pending' | 'waitlist' }>>;
+  submitRegistration(input: RegistrationSubmission): Promise<ApiResult<{ id: string; status: 'pending' | 'waitlist' | 'accepted' }>>;
 }
 
 // Helper every implementation shares.
@@ -242,6 +243,7 @@ export function emptyListing(): MeetListing {
     promoterContact: null,
     hostGymId: null,
     theme: null,
+    autoAccept: true,
   };
 }
 

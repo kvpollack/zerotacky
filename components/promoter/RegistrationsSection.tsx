@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AlertTriangle, Check, LogOut, PhoneCall, UserCheck, Users, X } from 'lucide-react';
+import { AlertTriangle, Check, LogOut, Mail, PhoneCall, UserCheck, Users, X } from 'lucide-react';
 import type { RegistrationRequest } from '@/lib/promoter/contract';
 import { ADULT_AGE, ageOnDate, ageReferenceDate } from '@/lib/promoter/rules';
 import type { Athlete, Division } from '@/lib/types';
@@ -14,7 +14,7 @@ interface RegistrationsSectionProps {
   onSetStatus: (
     id: string,
     status: RegistrationRequest['status']
-  ) => Promise<{ error: string | null }>;
+  ) => Promise<{ error: string | null; notice?: string | null }>;   // notice (031): what happened with the athlete's email
   // When set, Accept/Decline are disabled and this message is shown (e.g. unsaved builder edits).
   blockedReason?: string | null;
 }
@@ -31,6 +31,7 @@ export default function RegistrationsSection({
   const [busyId, setBusyId] = useState<string | null>(null);
   // Errors are kept per request so the message sits next to the row whose action failed.
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
+  const [rowNotices, setRowNotices] = useState<Record<string, string>>({});
 
   const divisionNameById = new Map(divisions.map((d) => [d.id, d.name]));
 
@@ -49,10 +50,14 @@ export default function RegistrationsSection({
       delete next[id];
       return next;
     });
+    setRowNotices((prev) => { const next = { ...prev }; delete next[id]; return next; });
     const res = await onSetStatus(id, nextStatus);
     setBusyId(null);
     if (res.error) {
       setRowErrors((prev) => ({ ...prev, [id]: res.error as string }));
+    }
+    if (res.notice) {
+      setRowNotices((prev) => ({ ...prev, [id]: res.notice as string }));
     }
   };
 
@@ -68,8 +73,9 @@ export default function RegistrationsSection({
             <span>6. Athlete Registrations ({registrations.length})</span>
           </h2>
           <p className="text-xs text-zt-muted mt-0.5">
-            {pendingCount} pending, {acceptedCount} accepted. Accepting adds the athlete to that division&apos;s roster
-            (tab 7, Athletes) with the next lot number; declining removes the roster row unless it already has results.
+            {pendingCount} pending, {acceptedCount} accepted. New entries are accepted automatically unless the Listing tab
+            says you review each one. Accepting adds the athlete to that division&apos;s roster (tab 7, Athletes) with the
+            next lot number; declining removes the roster row unless it already has results and emails the athlete.
             Emergency contacts are visible to you only.
           </p>
         </div>
@@ -110,6 +116,7 @@ export default function RegistrationsSection({
                 const rosterEntry = rosterRowFor(reg);
                 const isBusy = busyId === reg.id;
                 const rowError = rowErrors[reg.id];
+                const rowNotice = rowNotices[reg.id];
                 const disabled = isBusy || Boolean(blockedReason);
 
                 return (
@@ -243,6 +250,19 @@ export default function RegistrationsSection({
                         >
                           <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
                           <span>{reg.athleteName}: {rowError}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  {rowNotice && (
+                    <tr>
+                      <td colSpan={8} className="pb-3">
+                        <div
+                          role="status"
+                          className="p-2.5 rounded-lg bg-zt-inset border border-zt-border text-zt-text-2 text-[11px] font-bold flex items-center gap-2"
+                        >
+                          <Mail className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+                          <span>{reg.athleteName}: {rowNotice}</span>
                         </div>
                       </td>
                     </tr>

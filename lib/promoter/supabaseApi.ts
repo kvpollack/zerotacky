@@ -63,6 +63,7 @@ export function rowToMeetListing(row: Partial<MeetListingRow>): MeetListing {
     promoterContact: row.promoter_contact ?? null,
     hostGymId: row.host_gym_id ?? null,
     theme: parseTheme(row.theme),
+    autoAccept: row.auto_accept === undefined || row.auto_accept === null ? true : Boolean(row.auto_accept),
   };
 }
 
@@ -95,6 +96,9 @@ export function listingPatchToColumns(patch: Partial<MeetListing>): Partial<Meet
   }
   if (patch.theme !== undefined) {
     out.theme = patch.theme ? { ...patch.theme } : null;
+  }
+  if (patch.autoAccept !== undefined) {
+    out.auto_accept = Boolean(patch.autoAccept);
   }
   return out;
 }
@@ -690,7 +694,7 @@ export function createSupabasePromoterApi(
 
     async submitRegistration(
       input: RegistrationSubmission
-    ): Promise<ApiResult<{ id: string; status: 'pending' | 'waitlist' }>> {
+    ): Promise<ApiResult<{ id: string; status: 'pending' | 'waitlist' | 'accepted' }>> {
       try {
         const pubRes = await this.getPublicMeetBySlug(input.slug);
         if (pubRes.error) {
@@ -710,7 +714,7 @@ export function createSupabasePromoterApi(
           return { data: null, error: outcome.error };
         }
 
-        const out = await db.rpc<{ id: string; status: 'pending' | 'waitlist' }>(
+        const out = await db.rpc<{ id: string; status: 'pending' | 'waitlist' | 'accepted' }>(
           'zt_submit_registration',
           {
             p_slug: pubRes.data.slug,
@@ -736,7 +740,7 @@ export function createSupabasePromoterApi(
         return {
           data: {
             id: String(out.id),
-            status: out.status === 'waitlist' ? 'waitlist' : 'pending',
+            status: out.status === 'waitlist' ? 'waitlist' : out.status === 'accepted' ? 'accepted' : 'pending',
           },
           error: null,
         };

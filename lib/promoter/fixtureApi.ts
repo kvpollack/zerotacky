@@ -156,6 +156,7 @@ export function createFixturePromoterApi(
           promoterContact: pubShow.registration.promoterContact ?? null,
           hostGymId: null,
           theme: null,
+          autoAccept: false,   // fixtures keep the review queue so the demo dashboard has pending rows
         },
         divisionCount: pubShow.state.divisions.length,
         athleteCount: pubShow.state.athletes.length,
@@ -688,7 +689,7 @@ export function createFixturePromoterApi(
 
     async submitRegistration(
       input: RegistrationSubmission
-    ): Promise<ApiResult<{ id: string; status: 'pending' | 'waitlist' }>> {
+    ): Promise<ApiResult<{ id: string; status: 'pending' | 'waitlist' | 'accepted' }>> {
       const detail = findMeetBySlugInternal(input.slug);
       if (!detail) {
         return { data: null, error: `No competition found at "${input.slug}".` };

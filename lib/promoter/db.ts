@@ -31,6 +31,7 @@ export interface MeetListingColumns {
   promoter_contact: string | null;
   host_gym_id: string | null;
   theme: Record<string, unknown> | null;
+  auto_accept?: boolean;   // 032; optional so older fixtures and public rows (not granted) still type
 }
 
 export interface MeetListingRow extends MeetRow, MeetListingColumns {
