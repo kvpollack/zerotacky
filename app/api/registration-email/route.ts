@@ -8,7 +8,7 @@ import { siteUrl } from '@/lib/website/siteUrl';
 
 // POST /api/registration-email  { registrationId: string, kind: 'received' | 'decision', force?: boolean }
 //   Authorization: Bearer <caller's Supabase access token>
-// -> { ok: true, sent: [{ kind, to }], skipped: [kind] } | { error }
+// -> { ok: true, sent: [{ kind, to? }], skipped: [kind:reason] } | { error }   (`to` is omitted for the promoter notice)
 //
 // 031 (10/28). 'received' is asked for by the athlete's browser right after zt_submit_registration and sends the
 // athlete's confirmation plus the promoter's notice. 'decision' is asked for by the promoter's browser after
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
     plan.push({ key: emailLogKey('decision', p.status), to: p.athlete_email, build: () => registrationDecisionEmail(p, site) });
   }
 
-  const sent: Array<{ kind: string; to: string }> = [];
+  const sent: Array<{ kind: string; to?: string }> = [];
   const skipped: string[] = [];
   const errors: string[] = [];
   for (const step of plan) {
@@ -95,7 +95,8 @@ export async function POST(req: Request) {
       const m = step.build();
       await sendViaResend(resendKey, { to: step.to, subject: m.subject, text: m.text, html: m.html, tag: `registration_${step.key}` });
       ok = true;
-      sent.push({ kind: step.key, to: step.to });
+      // the registrant's browser asks for 'received'; it has no business learning the promoter's account address (EM-04)
+      sent.push(step.key === 'notice' ? { kind: step.key } : { kind: step.key, to: step.to });
     } catch (e) {
       errors.push(`${step.key}: ${e instanceof Error ? e.message : String(e)}`);
     }

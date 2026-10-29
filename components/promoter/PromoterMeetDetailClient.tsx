@@ -54,6 +54,7 @@ import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import { describeEmailResult, requestRegistrationEmail } from '@/lib/email/client';
 import type { AppState, Athlete, Division, EventDef, Meet } from '@/lib/types';
 import ListingSection from './ListingSection';
+import { useAuth } from '@/lib/auth/useAuth';
 import RegistrationsSection from './RegistrationsSection';
 import AthleteAccountsSection from './AthleteAccountsSection';
 import MeetDaySection from './MeetDaySection';
@@ -93,6 +94,9 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   // Astra M2: an open EventForm holds a draft that reaches workingState only through its own Save button, so the
   // global dirty bar and the registration guard treat it like unsaved work.
   const [eventFormOpen, setEventFormOpen] = useState(false);
+  // EM-05: the owner is the only recipient of new-entry notices (zt_registration_email_payload). joinCode is owner-only.
+  const auth = useAuth();
+  const ownerEmailUnconfirmed = isLiveBackend() && !!auth.user && (detail?.summary.joinCode ?? null) !== null && !auth.user.email_confirmed_at;
   // 10/26 (Kurt 10/21): while that form is open, the tabs refuse to leave Events. A refused click flashes the bar
   // and moves focus to it; the bar's Discard draft closes the form (closeFormSignal) so the promoter can move on.
   const [navBlockedAt, setNavBlockedAt] = useState(0);
@@ -736,6 +740,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             listing={summary.listing}
             onSaveListing={handleSaveListing}
             onDirtyChange={setListingDirty}
+            ownerEmailUnconfirmed={ownerEmailUnconfirmed}
           />
         </div>
 
