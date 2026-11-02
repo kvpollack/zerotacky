@@ -516,3 +516,30 @@ body { font-family: var(--font-sans); }
 /* Ruled blocks: 2 px block edge, 1 px cells drawn as gaps over the rule colour */
 .zt-block { border: 2px solid var(--rule); display: grid; gap: 1px; background: var(--rule); }
 .zt-block > * { background: var(--sheet); min-width: 0; }
+/* a row wrapper with display:contents (role=row) paints no box: its cells take the sheet instead */
+.zt-block > .contents { background: transparent; }
+.zt-block > .contents > * { background: var(--sheet); min-width: 0; }
+
+/* Phase 3 bridge (11/2): inside the website shell ([data-zt-sheet]) the old zt-* theme tokens resolve to the sheet
+   tokens, so every public page draws in ink / pen / rule on the sheet without touching each browser component yet.
+   Rounded corners and shadows go too: the grammar is ruled blocks. Removed surface by surface in Phases 4-6. */
+[data-zt-sheet] {
+  --zt-bg: var(--ground); --zt-surface: var(--sheet); --zt-surface-2: var(--sheet); --zt-inset: var(--sheet);
+  --zt-border: var(--rule); --zt-border-strong: var(--rule);
+  --zt-text: var(--ink); --zt-text-2: var(--ink); --zt-muted: var(--muted); --zt-subtle: var(--muted);
+  --zt-primary: var(--pen); --zt-primary-2: var(--pen); --zt-on-primary: var(--pen-label);
+  --zt-secondary: var(--ink); --zt-secondary-text: var(--ink); --zt-on-secondary: var(--sheet);
+}
+[data-zt-sheet] :is(.rounded, .rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl, .rounded-full, .rounded-t-xl, .rounded-t-2xl, .rounded-b-xl, .rounded-b-2xl, .rounded-l-xl, .rounded-r-xl) { border-radius: 0; }
+[data-zt-sheet] :is(.shadow, .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) { box-shadow: none; }
+[data-zt-sheet] :is(.text-amber-200, .text-amber-300, .text-amber-400) { color: var(--muted); }
+[data-zt-sheet] :is(.bg-amber-500\/20, .bg-amber-500\/15, .bg-amber-500\/10) { background-color: transparent; }
+[data-zt-sheet] :is(.border-amber-500\/40, .border-amber-500\/50) { border-color: var(--rule); }
+[data-zt-sheet] h1, [data-zt-sheet] h2, [data-zt-sheet] h3 { letter-spacing: 0; }
+/* the old emerald "success" paint: pen text, no tint, pen rule; the solid emerald button is an ink key */
+[data-zt-sheet] :is(.text-emerald-200, .text-emerald-300, .text-emerald-400, .text-emerald-200\/80) { color: var(--pen); }
+[data-zt-sheet] :is(.bg-emerald-500\/20, .bg-emerald-500\/15, .bg-emerald-500\/10, .bg-emerald-950\/30) { background-color: transparent; }
+[data-zt-sheet] :is(.border-emerald-500\/40, .border-emerald-500\/50) { border-color: var(--pen); }
+[data-zt-sheet] .bg-emerald-500 { background-color: var(--ink); }
+[data-zt-sheet] .text-emerald-950 { color: var(--sheet); }
+[data-zt-sheet] .bg-emerald-400 { background-color: var(--pen); }

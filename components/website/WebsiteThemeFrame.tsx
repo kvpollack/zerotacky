@@ -5,6 +5,8 @@ import { DEFAULT_THEME_ID, DAYLIGHT_THEME_ID, isLightTheme } from '@/lib/constan
 import { useTheme } from '@/hooks/useTheme';
 import { themeBaseId, themeCssVars, type ZtTheme } from '@/lib/website/theme';
 import WebsiteThemeControls from './WebsiteThemeControls';
+import { SheetModeProvider } from './SheetMode';
+import { resolveAccent } from '@/lib/theme/promoter';
 
 // Client frame around the (server-rendered) website shell, and since MS-12 (10/26) around the root splash, Join
 // and the public board too. Owns the theme: same localStorage prefs as the scorer (useTheme), so a promoter who
@@ -14,8 +16,12 @@ import WebsiteThemeControls from './WebsiteThemeControls';
 // `brand` (030, colour ways): a gym's or a show's own colours. Known on the server, so it paints from the first byte
 // on /gyms/<slug> and /shows/<slug>; on the board it arrives with the meet. ?theme= still beats it (a TV link pins a
 // theme on purpose); touching the controls drops it for this visit, the same as an override.
-export default function WebsiteThemeFrame({ children, className = '', override = null, onUserChange, brand = null }: {
-  children: React.ReactNode; className?: string; override?: string | null; onUserChange?: () => void; brand?: ZtTheme | null;
+// `sheet` (UI transition Phase 3, 11/2): the public website paints with the sheet tokens (grey ground, ink, pen) in
+// its own bright/dark mode (SheetMode), not with the scorer's theme. `data-zt-theme` stays on the frame so legacy
+// zt-* classes inside still resolve, and the globals.css bridge maps them onto the sheet tokens. A brand only reaches
+// the promoter slots here (`--accent`, via resolveAccent), never the whole page.
+export default function WebsiteThemeFrame({ children, className = '', override = null, onUserChange, brand = null, sheet = false }: {
+  children: React.ReactNode; className?: string; override?: string | null; onUserChange?: () => void; brand?: ZtTheme | null; sheet?: boolean;
 }) {
   const { themeId, selectTheme: pick, toggleDaylight: toggle } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -35,9 +41,25 @@ export default function WebsiteThemeFrame({ children, className = '', override =
     if (pinned) pick(isLightTheme(pinned) ? DEFAULT_THEME_ID : DAYLIGHT_THEME_ID); else toggle();
   };
   const style = activeBrand ? (themeCssVars(activeBrand) as React.CSSProperties) : undefined;
+  const controls = { themeId: shown, isDaylight, selectTheme, toggleDaylight, mounted };
+  if (sheet) {
+    return (
+      <SheetModeProvider
+        render={({ mode }) => {
+          const acc = brand ? resolveAccent(brand.primary, mode) : null;
+          const slot = acc ? ({ '--accent': acc.accent, '--accent-label': acc.label } as React.CSSProperties) : undefined;
+          return (
+            <div data-zt-theme={shown} data-zt-mode={mode} data-zt-sheet="" style={slot} className={`min-h-screen bg-ground text-ink font-sans flex flex-col ${className}`}>
+              <WebsiteThemeControls.Provider value={controls}>{children}</WebsiteThemeControls.Provider>
+            </div>
+          );
+        }}
+      />
+    );
+  }
   return (
     <div data-zt-theme={shown} style={style} className={`min-h-screen bg-zt-bg text-zt-text font-sans flex flex-col ${className}`}>
-      <WebsiteThemeControls.Provider value={{ themeId: shown, isDaylight, selectTheme, toggleDaylight, mounted }}>
+      <WebsiteThemeControls.Provider value={controls}>
         {children}
       </WebsiteThemeControls.Provider>
     </div>
