@@ -115,3 +115,40 @@ Mockups approved by Kurt 11/2 (`hybrid/web_home.html`, `web_show.html`, `web.css
 - Left for Phase 6: `og.png` share card, Supabase email templates (`emails/*.html`) and `lib/email/*.ts` still carry
   the rose; the first-show guide screenshots; `ThemePicker` copy mentions #e11d48 as an example hex.
 - Known: a saved dark mode paints after mount (first frame bright), same as the old theme preference did.
+
+## Phase 4: judge pad (11/2 evening, branch v2)
+
+Mockup gate: `pad.html` (approved 2 Nov) + `pad_states.html` (locked / between athletes / sync lost, approved 2 Nov pm).
+
+- `components/judge/JudgePad.tsx` replaces `JudgePad.jsx`, `MasterClock.jsx` and `StopStampButton.jsx`. Same
+  controller and props, plus `mode` (the scorer's daylight toggle maps to the sheet's home/dark), `sync`, `stationFlight`
+  and `eventCount`. The pad is a framed sheet inside the scorer's `<main>`; the zone strips and the ground belong to the
+  Phase 5 shell. It never takes the promoter's colour.
+- `components/judge/padModel.ts` (pure, `test/pad.test.mjs`, 15 tests): the attempt log, clock words, key labels, the
+  SYNC cell, press/undo patches. `Result.attemptLog` is new and optional: one entry per GOOD / NO LIFT press (weight for
+  rising bar). It rides in the results `payload` JSON, so no mapping or migration. The engine never reads it; the scored
+  fields (`reps`, `implementsCompleted`, `splitTimeSeconds`, `risingBarAttempts`) are recomputed from the log on every
+  press, so an old phone without the log and a new one agree. Results written by the old pad (no log) undo by stepping
+  the count down.
+- `components/judge/PadClock.tsx`: the one per-frame component. mm:ss.d, pen once time is on the clock, red pen past
+  the cap, Reset under the cap word when stopped.
+- The two judge keys replace the per-type buttons: stones = good completes the stone and stamps its split (the last
+  stone also stops the clock and stamps the course time), no-lift = a miss on the same stone; reps = good rep / no rep
+  (no reps tallied in the count cap, not scored); rising bar = the keys score the marked weight (lowest pending, or the
+  row the judge tapped), PASS is a line key, exact override stays an input; time/distance = FINISH stamps the clock (and
+  stops it while running), DNF clears the time so the distance decides. Lane 2 keeps its inputs plus "finish at clock"
+  and DNF keys.
+- Run order is a ruled table that shows itself while nothing is on the sheet for the athlete and the clock is idle; a
+  RUN ORDER / HIDE RUN ORDER key pins it either way. Rows: Locked (pen) / Now / Lane 2 / Scored / Up next.
+- SYNC cell (header, right of the meet name): filled square = live, hollow = not; "Live", "Syncing n", "Offline n",
+  "Error", "Not linked", "Local". Tap = sync now. Offline/error adds a ruled notice (Keep scoring. Scores send when the
+  Wi-Fi comes back / Re-join) under the count, and the count numeral is 88 px rather than the mockup's 120 so the
+  notice has room without pushing the keys.
+- Not-live keys: `.zt-key-off` (globals.css): outline, muted label, faint hatch. `.zt-input`: ruled cell, value in pen.
+- `RuledBlock` now passes through div attributes (id, role, aria-*) for the pad's tables and status menu.
+- Status (DNS / scratch) is a line key in the athlete cell; the two-tap confirm arms the key in red pen.
+- Checked: bun test 521, tsc clean; dev server at 390 px (CDP driver `~/.aki/tmp/zt/cdp_shot.py`): between, live,
+  post-lock, rising bar, stones with a miss and an undo, head-to-head lane 2, DNS. Exit test (plan): a two-phone
+  staging run.
+- Known / later: the stone table has no WEIGHT column (events do not carry per-stone weights); the Next 16.4.0 security
+  advisory shows in the dev overlay (not a pad issue; `next upgrade --agent=security`).

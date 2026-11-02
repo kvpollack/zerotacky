@@ -511,6 +511,10 @@ export default function App() {
 
         {activeTab === 'judge' && isMeetReadyToRun && (
           <JudgePad
+            mode={isDaylight ? 'home' : 'dark'}
+            sync={sync}
+            stationFlight={stationFlight}
+            eventCount={events.length}
             currentAthlete={currentAthlete}
             currentDivision={currentDivision}
             currentEvent={currentEvent}
