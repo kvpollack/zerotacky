@@ -131,7 +131,7 @@ describe('website data: listPublicShows & getPublicShowBySlug', () => {
       expect(listRes.error).toBeNull();
       expect(listRes.data.length).toBe(5);
 
-      const detailRes = await D.getPublicShowBySlug('strongfest-2026');
+      const detailRes = await D.getPublicShowBySlug('riverside-iron-fest-2026');
       expect(detailRes.source).toBe('demo');
       expect(detailRes.data.name).toBe('Riverside Iron Fest 2026 (Demo Upcoming)');
     } finally {
