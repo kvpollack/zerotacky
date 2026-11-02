@@ -3,22 +3,18 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import FollowShowButton from './FollowShowButton';
-import {
-  AlertTriangle,
-  ArrowLeft,
-  Calendar,
-  CheckCircle2,
-  ExternalLink,
-  Info,
-  MapPin,
-  Radio,
-  Trophy,
-} from 'lucide-react';
+import { Cap, Key, KeyButton, WebCell, keyClass, textLink } from './sheet';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import { formatShowDate } from '@/lib/website/showHistory';
 import { directionsUrl, eventWeightDisplay, formatLocalDateTime } from '@/lib/website/format';
+import { longIsoDate, shortIsoDate, splitFee, venueLine } from '@/lib/website/sheetFormat';
 import type { DivisionResultsView, PublicShowRecord } from '@/lib/website/types';
 
+// Show sheet (UI transition Phase 3, 11/2; mockup hybrid/web_show.html). Promoter band in the show's accent (the
+// frame resolves it; refused or absent = ink), facts strip, then the sections the 10/26 page had, drawn as ruled
+// blocks: live callout, podiums, event-by-event standings, the events x divisions matrix (events as rows, divisions
+// as columns: Kurt 10/17, 10/27, so an athlete reads their column top to bottom), venue / schedule / rules and the
+// registration block. Copy unchanged.
 interface ShowDetailClientProps {
   show: PublicShowRecord;
   divisionResults: DivisionResultsView[];
@@ -30,6 +26,21 @@ const SCORING_TYPE_LABELS: Record<string, string> = {
   time_or_distance: 'Fastest Time / Distance if Capped',
   time_or_implements: 'Implements + Time / Split Tiebreaker',
 };
+
+const GROUPING_LABELS: Record<PublicShowRecord['divisionGroupingStyle'], string> = {
+  inclusive_strength_groups: 'Inclusive strength groups',
+  traditional_weight_classes: 'Traditional weight classes',
+  mixed: 'Mixed',
+};
+
+// numerals set in pen, like a filled-in value
+const NUM = 'font-sheet text-pen';
+const FACT_V = 'text-[15px] font-bold leading-snug text-ink';
+const FACT_S = 'block text-[13px] font-normal text-ink-muted';
+const TH = 'text-left text-xs tracking-[0.06em] uppercase font-normal text-ink-muted px-3 py-2.5 border border-rule bg-sheet';
+const TD = 'px-3 py-2.5 border border-rule align-top';
+const DT = 'text-xs tracking-[0.06em] uppercase text-ink-muted';
+const DD = 'text-[15px] text-ink leading-snug';
 
 export default function ShowDetailClient({ show, divisionResults }: ShowDetailClientProps) {
   const sortedDivisions = [...show.state.divisions].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -51,237 +62,163 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
       ? divisionResults
       : divisionResults.filter((d) => d.division.id === selectedDivId);
 
+  const athleteCount = show.state.athletes.length;
+  const directions = directionsUrl(show.venue, { demo: show.isDemoFixture });
+  const liveHref = show.liveScoreboardPath || `/m/${show.slug}`;
+  const fee = splitFee(show.registration.entryFeeDisplay);
+
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-7">
       {/* Back Link */}
       <div>
-        <Link
-          href="/shows"
-          className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase text-zt-muted hover:text-zt-text"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+        <Link href="/shows" className="inline-flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-[0.04em] text-ink-muted hover:text-ink no-underline">
+          <span aria-hidden="true">←</span>
           Back to Show Directory
         </Link>
       </div>
 
-      {/* Persistent Show Header */}
-      <section className="bg-zt-surface border border-zt-border rounded-2xl p-5 sm:p-6 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <span
-              className={`text-[10px] font-black uppercase px-2.5 py-1 rounded ${
-                show.competitionStatus === 'live'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                  : show.competitionStatus === 'upcoming'
-                  ? 'bg-zt-primary/20 text-zt-primary-2 border border-zt-primary/40'
-                  : show.competitionStatus === 'completed'
-                  ? 'bg-zt-surface-2 text-zt-text border border-zt-border-strong'
-                  : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-              }`}
-            >
-              Competition: {life.competitionLabel}
-            </span>
-
-            <span className="text-[10px] font-bold uppercase px-2.5 py-1 rounded bg-zt-inset border border-zt-border text-zt-text-2">
-              {life.registrationLabel}
-            </span>
-
-            <span
-              className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded border ${
-                life.canRenderOfficialPodium
-                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'
-                  : 'bg-zt-inset text-zt-muted border-zt-border'
-              }`}
-            >
-              Results: {life.resultsLabel}
-            </span>
+      {/* Promoter band: the one place on this page the show's colour fills */}
+      <div>
+        <div className="bg-slot text-slot-label border-2 border-b-0 border-rule flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-5 sm:px-7 min-h-16 py-3 text-[15px] sm:text-lg leading-snug">
+          <h1 className="font-normal">
+            <span className="font-bold text-xl sm:text-[22px]">{show.name}</span>
+            <span className="opacity-60 mx-3.5" aria-hidden="true">·</span>
+            <span>{show.date ? longIsoDate(show.date) : 'Not provided'}</span>
+            <span className="opacity-60 mx-3.5" aria-hidden="true">·</span>
+            <span>{venueLine(show.venue)}</span>
+          </h1>
+          <div className="text-[13px] sm:text-[15px] uppercase tracking-[0.04em]">
+            <span>Competition: {life.competitionLabel}</span>
+            <span className="opacity-60 mx-3.5" aria-hidden="true">·</span>
+            <span>Results: {life.resultsLabel}</span>
+            {show.isDemoFixture && (
+              <>
+                <span className="opacity-60 mx-3.5" aria-hidden="true">·</span>
+                <span>Demo Fixture (Sample Data)</span>
+              </>
+            )}
           </div>
-
-          {show.isDemoFixture && (
-            <span className="text-[10px] font-black uppercase px-2 py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
-              Demo Fixture (Sample Data)
-            </span>
-          )}
         </div>
 
-        <div className="space-y-1.5">
-          <h1 className="text-2xl sm:text-3xl font-black text-zt-text">{show.name}</h1>
-          <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm font-bold text-zt-text-2">
-            <span className="inline-flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-zt-primary" aria-hidden="true" />
-              {show.date || 'Not provided'}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-zt-secondary" aria-hidden="true" />
-              {show.venue.facilityName ? `${show.venue.facilityName}, ` : ''}
-              {show.venue.city}, {show.venue.state}
-            </span>
-            <span>Federation / Format: {show.federation || 'Not provided'}</span>
-          </div>
-          {show.lastUpdatedIso && (
-            <div className="text-[11px] font-semibold text-zt-muted">
-              Last updated: <UpdatedStamp iso={show.lastUpdatedIso} />
+        {/* Facts strip */}
+        <section aria-label="Show facts" className="zt-block border-t-0 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+            <Cap>Date</Cap>
+            <div className={`${NUM} text-[28px] leading-none`}>{show.date ? shortIsoDate(show.date) : <span className="text-ink-muted text-[15px] font-sans">Not provided</span>}</div>
+          </WebCell>
+          <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+            <Cap>Venue</Cap>
+            <div className={FACT_V}>
+              {show.venue.facilityName || 'Facility not provided'}
+              <span className={FACT_S}>{show.venue.city}, {show.venue.state}</span>
             </div>
-          )}
-        </div>
+          </WebCell>
+          <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+            <Cap>Federation / Format</Cap>
+            <div className={FACT_V}>
+              {show.federation || 'Not provided'}
+              <span className={FACT_S}>{GROUPING_LABELS[show.divisionGroupingStyle]}</span>
+            </div>
+          </WebCell>
+          <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+            <Cap>Athletes</Cap>
+            <div className={`${NUM} text-[28px] leading-none`}>
+              {athleteCount}
+              {show.registration.athleteCap ? <span className="font-sans text-[13px] text-ink-muted"> / {show.registration.athleteCap} cap</span> : null}
+            </div>
+          </WebCell>
+          <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+            <Cap>Registration</Cap>
+            <div className={FACT_V}>{life.registrationLabel}</div>
+          </WebCell>
+          <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+            <Cap>Live board</Cap>
+            {show.liveScoreboardPath ? (
+              <Link href={show.liveScoreboardPath} className="text-[13px] font-bold text-pen underline underline-offset-4 decoration-1 break-all leading-snug">{show.liveScoreboardPath}</Link>
+            ) : (
+              <div className={`${FACT_V} text-ink-muted font-normal`}>Not published</div>
+            )}
+          </WebCell>
+        </section>
 
-        {show.statusBannerNote && (
-          <div className="p-3.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs font-bold flex items-start gap-2.5">
-            <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
-            <span>{show.statusBannerNote}</span>
+        {show.lastUpdatedIso && (
+          <div className="text-[12px] text-ink-muted mt-2">
+            Last updated: <UpdatedStamp iso={show.lastUpdatedIso} />
           </div>
         )}
+      </div>
 
-        {/* Lifecycle Action Bar */}
-        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-zt-border">
-          <FollowShowButton slug={show.slug} isDemoFixture={!!show.isDemoFixture} />
-          {show.liveScoreboardPath && (
-            <Link
-              href={show.liveScoreboardPath}
-              className="px-4 py-2.5 rounded-xl bg-emerald-500 text-emerald-950 font-black text-xs uppercase tracking-wider inline-flex items-center gap-2 underline-offset-2 hover:underline"
-            >
-              <Radio className="w-4 h-4" aria-hidden="true" />
-              Open Public Live Scoreboard
-            </Link>
-          )}
-
-          {show.hostGymSlug && (
-            <Link
-              href={`/gyms/${show.hostGymSlug}`}
-              className="px-3.5 py-2.5 rounded-xl bg-zt-inset border border-zt-border-strong text-zt-text font-extrabold text-xs uppercase inline-flex items-center gap-1.5 hover:border-zt-primary"
-            >
-              Host Gym: {show.hostGymName || show.venue.facilityName} →
-            </Link>
-          )}
-
-          {show.isDemoFixture ? (
-            <button
-              type="button"
-              disabled
-              className="px-3.5 py-2.5 rounded-xl bg-zt-inset border border-zt-border text-zt-muted font-extrabold text-xs uppercase opacity-60 cursor-not-allowed"
-            >
-              Demo show: registration disabled
-            </button>
-          ) : show.registration.externalRegistrationUrl ? (
-            <a
-              href={show.registration.externalRegistrationUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3.5 py-2.5 rounded-xl bg-zt-surface-2 border border-zt-border-strong text-zt-text font-extrabold text-xs uppercase inline-flex items-center gap-1.5 hover:border-zt-primary"
-            >
-              External Registration Page
-              <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
-            </a>
-          ) : canRegisterInApp ? (
-            <Link
-              href={`/register/${show.slug}`}
-              className="px-4 py-2.5 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase tracking-wider inline-flex items-center gap-1.5 shadow"
-            >
-              {show.registrationStatus === 'waitlist' ? 'Join Waitlist →' : 'Register Now →'}
-            </Link>
-          ) : (
-            <button
-              type="button"
-              disabled
-              className="px-3.5 py-2.5 rounded-xl bg-zt-inset border border-zt-border text-zt-muted font-extrabold text-xs uppercase opacity-60 cursor-not-allowed"
-            >
-              {life.registrationLabel}
-            </button>
-          )}
+      {show.statusBannerNote && (
+        <div role="note" className="zt-block grid-cols-1">
+          <WebCell className="gap-1">
+            <Cap>Note</Cap>
+            <p className="text-[15px] font-bold text-ink">{show.statusBannerNote}</p>
+          </WebCell>
         </div>
-      </section>
+      )}
 
       {/* SECTION A: LIVE SHOW CALLOUT */}
       {show.competitionStatus === 'live' && (
-        <section
-          aria-label="Live competition status"
-          className="bg-emerald-950/30 border-2 border-emerald-500/50 rounded-2xl p-5 space-y-3"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-emerald-300">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Live Competition In Progress • Provisional Standings</span>
+        <section aria-label="Live competition status" className="zt-block grid-cols-1">
+          <WebCell className="gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 text-[13px] font-bold uppercase tracking-[0.04em] text-pen">
+                <span className="w-2.5 h-2.5 bg-pen animate-pulse" aria-hidden="true" />
+                <span>Live Competition In Progress • Provisional Standings</span>
+              </div>
+              {show.lastUpdatedIso && (
+                <span className="text-[12px] text-ink-muted">
+                  Snapshot updated: <UpdatedStamp iso={show.lastUpdatedIso} />
+                </span>
+              )}
             </div>
-            {show.lastUpdatedIso && (
-              <span className="text-[11px] font-bold text-emerald-200/80">
-                Snapshot updated: <UpdatedStamp iso={show.lastUpdatedIso} />
-              </span>
-            )}
-          </div>
-          <p className="text-xs sm:text-sm text-zt-text-2">
-            Spectators can view real-time station callouts and auto-refreshing standings at{' '}
-            <Link
-              href={show.liveScoreboardPath || `/m/${show.slug}`}
-              className="font-mono font-bold text-emerald-300 underline"
-            >
-              {show.liveScoreboardPath || `/m/${show.slug}`}
-            </Link>{' '}
-            with no login or volunteer join code required. All live rankings remain provisional
-            until the promoter finalizes results.
-          </p>
+            <p className="text-[15px] leading-[1.55] text-ink max-w-[760px]">
+              Spectators can view real-time station callouts and auto-refreshing standings at{' '}
+              <Link href={liveHref} className={`${textLink} text-pen`}>{liveHref}</Link>{' '}
+              with no login or volunteer join code required. All live rankings remain provisional
+              until the promoter finalizes results.
+            </p>
+          </WebCell>
         </section>
       )}
 
       {/* SECTION B: COMPLETED SHOW — OFFICIAL PODIUMS vs PROVISIONAL WARNING */}
       {show.competitionStatus === 'completed' && (
-        <section aria-labelledby="completed-results-heading" className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2
-              id="completed-results-heading"
-              className="text-lg font-black uppercase tracking-wide text-zt-primary flex items-center gap-2"
-            >
-              <Trophy className="w-5 h-5" aria-hidden="true" />
-              <span>
-                {life.canRenderOfficialPodium
-                  ? `Official Finalized Podiums${show.isDemoFixture ? ' (Demo Results)' : ''}`
-                  : 'Provisional Standings, Pending Official Finalization'}
-              </span>
+        <section aria-labelledby="completed-results-heading">
+          <div className="flex flex-wrap items-end justify-between gap-3 mb-2.5">
+            <h2 id="completed-results-heading" className="text-[22px] font-bold leading-tight text-ink">
+              {life.canRenderOfficialPodium
+                ? `Official Finalized Podiums${show.isDemoFixture ? ' (Demo Results)' : ''}`
+                : 'Provisional Standings, Pending Official Finalization'}
             </h2>
 
             {/* Division Filter */}
             <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter results by division">
-              <button
-                type="button"
-                onClick={() => setSelectedDivId('ALL')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold border ${
-                  selectedDivId === 'ALL'
-                    ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
-                    : 'bg-zt-inset text-zt-muted border-zt-border'
-                }`}
-              >
+              <KeyButton variant={selectedDivId === 'ALL' ? 'ink' : 'line'} className="min-h-9 px-3 text-xs" onClick={() => setSelectedDivId('ALL')} aria-pressed={selectedDivId === 'ALL'}>
                 All Divisions ({sortedDivisions.length})
-              </button>
+              </KeyButton>
               {sortedDivisions.map((div) => (
-                <button
-                  key={div.id}
-                  type="button"
-                  onClick={() => setSelectedDivId(div.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-extrabold border ${
-                    selectedDivId === div.id
-                      ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
-                      : 'bg-zt-inset text-zt-muted border-zt-border'
-                  }`}
-                >
+                <KeyButton key={div.id} variant={selectedDivId === div.id ? 'ink' : 'line'} className="min-h-9 px-3 text-xs" onClick={() => setSelectedDivId(div.id)} aria-pressed={selectedDivId === div.id}>
                   {div.name}
-                </button>
+                </KeyButton>
               ))}
             </div>
           </div>
 
           {!life.canRenderOfficialPodium ? (
-            <div className="bg-amber-500/15 border border-amber-500/40 rounded-2xl p-4 text-xs font-bold text-amber-200 space-y-1">
-              <div className="uppercase tracking-wider font-black text-amber-300">
-                Official Podium Not Yet Certified
-              </div>
-              <p>
-                Although this show&apos;s competition date has passed, its results status is{' '}
-                <strong>{life.resultsLabel}</strong>. Official podium cards are only displayed once
-                the promoter explicitly marks results as finalized. See the provisional event-by-event
-                table below.
-              </p>
+            <div className="zt-block grid-cols-1">
+              <WebCell className="gap-1">
+                <Cap>Official Podium Not Yet Certified</Cap>
+                <p className="text-[15px] leading-[1.55] text-ink max-w-[760px]">
+                  Although this show&apos;s competition date has passed, its results status is{' '}
+                  <strong>{life.resultsLabel}</strong>. Official podium cards are only displayed once
+                  the promoter explicitly marks results as finalized. See the provisional event-by-event
+                  table below.
+                </p>
+              </WebCell>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={`zt-block grid-cols-1 ${visibleDivisionResults.length > 1 ? 'md:grid-cols-2' : ''}`}>
               {visibleDivisionResults.map((divView) => {
                 // Only include finishers with totalPoints > 0 and overallPlace <= 3
                 const podiumFinishers = divView.standings.filter(
@@ -289,81 +226,50 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                 );
 
                 return (
-                  <div
-                    key={divView.division.id}
-                    className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-3"
-                  >
-                    <div className="flex items-center justify-between gap-2 border-b border-zt-border pb-2">
+                  <WebCell key={divView.division.id} pad="none" className="gap-0">
+                    <div className="flex items-center justify-between gap-2 px-5 py-3 border-b border-rule">
                       <div>
-                        <h3 className="text-base font-black text-zt-text">
-                          {divView.division.name}
-                        </h3>
-                        <span className="text-[11px] font-bold text-zt-muted">
+                        <h3 className="text-base font-bold text-ink">{divView.division.name}</h3>
+                        <span className="text-[12px] text-ink-muted">
                           {divView.athletes.length} competitor
                           {divView.athletes.length === 1 ? '' : 's'} • Official Final (Demo)
                         </span>
                       </div>
-                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" aria-hidden="true" />
-                        Finalized
-                      </span>
+                      <span className="text-xs uppercase tracking-[0.04em] font-bold text-ink">Finalized</span>
                     </div>
 
                     {podiumFinishers.length === 0 ? (
-                      <p className="text-xs font-bold text-zt-muted py-2">
+                      <p className="text-[13px] text-ink-muted px-5 py-4">
                         No podium finishers recorded for this division.
                       </p>
                     ) : (
-                      <div className="space-y-2">
+                      <div>
                         {podiumFinishers.map((finisher) => (
-                          <div
-                            key={finisher.athleteId}
-                            className="bg-zt-inset border border-zt-border rounded-xl p-3 flex items-center justify-between gap-2"
-                          >
+                          <div key={finisher.athleteId} className="grid grid-cols-[56px_1fr_auto] items-center gap-3 px-5 py-2.5 border-b border-rule last:border-b-0">
+                            <div className={`${NUM} text-[28px] leading-none`}>
+                              {finisher.isTiedOverall ? `T${finisher.overallPlace}` : finisher.overallPlace}
+                            </div>
                             <div className="min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span
-                                  className={`text-xs font-black px-2 py-0.5 rounded ${
-                                    finisher.overallPlace === 1
-                                      ? 'bg-zt-primary text-zt-on-primary'
-                                      : finisher.overallPlace === 2
-                                      ? 'bg-zt-secondary text-zt-on-secondary'
-                                      : 'bg-zt-surface-2 text-zt-text'
-                                  }`}
-                                >
-                                  {finisher.isTiedOverall
-                                    ? `T-#${finisher.overallPlace}`
-                                    : `#${finisher.overallPlace}`}
-                                </span>
-                                <span className="font-black text-sm text-zt-text truncate">
-                                  {finisher.athleteName}
-                                </span>
+                                <span className="font-bold text-[15px] text-ink truncate">{finisher.athleteName}</span>
                                 {finisher.isTiedOverall && (
-                                  <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-zt-primary/20 text-zt-primary-2">
-                                    Co-Place Tie
-                                  </span>
+                                  <span className="text-[11px] uppercase tracking-[0.04em] text-pen font-bold">Co-Place Tie</span>
                                 )}
                               </div>
-                              <div className="text-[11px] text-zt-muted mt-1">
-                                Event Wins: <strong className="text-zt-text-2">{finisher.eventWins}</strong>{' '}
-                                • Final Ev Pts:{' '}
-                                <strong className="text-zt-text-2">{finisher.finalEventPoints}</strong>
+                              <div className="text-[12px] text-ink-muted mt-0.5">
+                                Event Wins: <strong className="text-ink">{finisher.eventWins}</strong>{' '}
+                                • Final Ev Pts: <strong className="text-ink">{finisher.finalEventPoints}</strong>
                               </div>
                             </div>
-
-                            <div className="text-right flex-shrink-0">
-                              <div className="text-xl font-black text-zt-primary">
-                                {finisher.totalPoints}
-                              </div>
-                              <div className="text-[10px] font-bold uppercase text-zt-muted">
-                                Total Pts
-                              </div>
+                            <div className="text-right">
+                              <div className={`${NUM} text-[22px] leading-none`}>{finisher.totalPoints}</div>
+                              <div className="text-[10px] uppercase tracking-[0.06em] text-ink-muted mt-1">Total Pts</div>
                             </div>
                           </div>
                         ))}
 
                         {divView.athletes.length < 3 && (
-                          <div className="text-[11px] font-semibold text-zt-muted pt-1">
+                          <div className="text-[12px] text-ink-muted px-5 py-2.5">
                             Note: {divView.division.name} had {divView.athletes.length} finisher
                             {divView.athletes.length === 1 ? '' : 's'}; unoccupied podium places are
                             not invented.
@@ -371,7 +277,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                         )}
                       </div>
                     )}
-                  </div>
+                  </WebCell>
                 );
               })}
             </div>
@@ -381,106 +287,88 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
 
       {/* SECTION C: EVENT-BY-EVENT SCOREBOARD & STANDINGS TABLE (For Live or Completed Shows) */}
       {(show.competitionStatus === 'completed' || show.competitionStatus === 'live') && (
-        <section aria-labelledby="scoreboard-breakdown-heading" className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h2
-                id="scoreboard-breakdown-heading"
-                className="text-base font-black uppercase tracking-wider text-zt-text"
-              >
-                Event-by-Event Standings &amp; Breakdown
-              </h2>
-              <p className="text-xs text-zt-muted">
-                Read-only view computed via ZeroTacky&apos;s scoring adapter (
-                {show.state.meet.tiebreakerRule === 'event_wins'
-                  ? 'Tiebreaker: Most Event Wins, then Final Event'
-                  : 'Tiebreaker: Final Event Score, then Event Wins'}
-                ).
-              </p>
-            </div>
+        <section aria-labelledby="scoreboard-breakdown-heading" className="flex flex-col gap-4">
+          <div>
+            <h2 id="scoreboard-breakdown-heading" className="text-[22px] font-bold leading-tight text-ink">
+              Event-by-Event Standings &amp; Breakdown
+            </h2>
+            <p className="text-[13px] text-ink-muted mt-1">
+              Read-only view computed via ZeroTacky&apos;s scoring adapter (
+              {show.state.meet.tiebreakerRule === 'event_wins'
+                ? 'Tiebreaker: Most Event Wins, then Final Event'
+                : 'Tiebreaker: Final Event Score, then Event Wins'}
+              ).
+            </p>
           </div>
 
-          <div className="space-y-4">
-            {visibleDivisionResults.map((divView) => (
-              <div
-                key={divView.division.id}
-                className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-3 overflow-x-auto"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-black uppercase text-zt-primary">
-                    {divView.division.name} ({divView.standings.length} Athletes)
-                  </h3>
-                  <span className="text-[11px] font-bold text-zt-muted">
-                    {divView.isOfficialFinal ? 'Official Final' : 'Provisional'}
-                  </span>
-                </div>
+          {visibleDivisionResults.map((divView) => (
+            <div key={divView.division.id}>
+              <div className="flex items-end justify-between gap-2 mb-2">
+                <h3 className="text-base font-bold text-ink">
+                  {divView.division.name} ({divView.standings.length} Athletes)
+                </h3>
+                <span className="text-xs uppercase tracking-[0.06em] text-ink-muted">
+                  {divView.isOfficialFinal ? 'Official Final' : 'Provisional'}
+                </span>
+              </div>
 
-                {divView.standings.length === 0 ? (
-                  <p className="text-xs font-bold text-zt-muted">
-                    No athletes or scores recorded for this division.
-                  </p>
-                ) : (
-                  <table className="w-full text-left border-collapse text-xs">
+              {divView.standings.length === 0 ? (
+                <p className="text-[13px] text-ink-muted">No athletes or scores recorded for this division.</p>
+              ) : (
+                <div className="overflow-x-auto border-2 border-rule">
+                  <table className="w-full text-left border-collapse text-[13px]">
                     <thead>
-                      <tr className="border-b border-zt-border text-[10px] font-extrabold uppercase text-zt-muted">
-                        <th className="py-2 pr-2">Place</th>
-                        <th className="py-2 pr-3">Athlete</th>
+                      <tr>
+                        <th scope="col" className={TH}>Place</th>
+                        <th scope="col" className={TH}>Athlete</th>
                         {sortedEvents.map((ev) => (
-                          <th key={ev.id} className="py-2 px-2">
+                          <th key={ev.id} scope="col" className={`${TH} whitespace-nowrap`}>
                             Ev {ev.eventNumber}: {ev.name}
                           </th>
                         ))}
-                        <th className="py-2 px-2 text-right">Wins</th>
-                        <th className="py-2 pl-2 text-right">Total Pts</th>
+                        <th scope="col" className={`${TH} text-right`}>Wins</th>
+                        <th scope="col" className={`${TH} text-right`}>Total Pts</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-zt-border">
+                    <tbody>
                       {divView.standings.map((row) => (
-                        <tr key={row.athleteId} className="hover:bg-zt-inset/60">
-                          <td className="py-2.5 pr-2 font-black text-zt-text whitespace-nowrap">
-                            {row.isTiedOverall ? `T-#${row.overallPlace}` : `#${row.overallPlace}`}
+                        <tr key={row.athleteId}>
+                          <td className={`${TD} ${NUM} text-xl leading-none whitespace-nowrap`}>
+                            {row.isTiedOverall ? `T${row.overallPlace}` : row.overallPlace}
                           </td>
-                          <td className="py-2.5 pr-3 font-bold text-zt-text whitespace-nowrap">
+                          <td className={`${TD} font-bold text-ink whitespace-nowrap`}>
                             {row.athleteName}
                             {row.status === 'withdrawn' && (
-                              <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-zt-danger text-white font-black uppercase">
-                                Scratched
-                              </span>
+                              <span className="ml-2 text-[11px] uppercase tracking-[0.04em] text-redpen font-bold">Scratched</span>
                             )}
                           </td>
                           {sortedEvents.map((ev) => {
                             const cell = row.eventBreakdown[ev.id];
                             return (
-                              <td key={ev.id} className="py-2.5 px-2 whitespace-nowrap">
+                              <td key={ev.id} className={`${TD} whitespace-nowrap`}>
                                 {cell ? (
                                   <div>
-                                    <span className="font-mono font-bold text-zt-text">
-                                      {cell.display}
-                                    </span>
-                                    <span className="ml-1.5 text-[10px] font-extrabold text-zt-primary">
+                                    <span className={`${NUM} text-base`}>{cell.display}</span>
+                                    <span className="ml-1.5 text-[11px] text-ink-muted">
                                       ({cell.points} pts{cell.isTied ? ' • Tie' : ''})
                                     </span>
                                   </div>
                                 ) : (
-                                  <span className="text-zt-muted">—</span>
+                                  <span className="text-ink-muted">—</span>
                                 )}
                               </td>
                             );
                           })}
-                          <td className="py-2.5 px-2 text-right font-bold text-zt-text-2">
-                            {row.eventWins}
-                          </td>
-                          <td className="py-2.5 pl-2 text-right font-black text-zt-primary text-sm">
-                            {row.totalPoints}
-                          </td>
+                          <td className={`${TD} text-right ${NUM} text-base`}>{row.eventWins}</td>
+                          <td className={`${TD} text-right ${NUM} text-xl leading-none`}>{row.totalPoints}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                )}
-              </div>
-            ))}
-          </div>
+                </div>
+              )}
+            </div>
+          ))}
         </section>
       )}
 
@@ -488,30 +376,25 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
           Kurt 10/17 / 10/27: one matrix, events as rows and divisions as columns, so an athlete reads their column
           top to bottom. Scrolls sideways on phones with the event column pinned. Implement specs and rising-bar
           progressions are footnotes under the table. */}
-      <section aria-labelledby="events-weights-heading" className="space-y-4">
-        <div className="space-y-1">
-          <h2
-            id="events-weights-heading"
-            className="text-base font-black uppercase tracking-wider text-zt-primary"
-          >
+      <section aria-labelledby="events-weights-heading">
+        <div className="mb-2.5">
+          <h2 id="events-weights-heading" className="text-[22px] font-bold leading-tight text-ink">
             Events &amp; Weights by Division ({sortedEvents.length} Events)
           </h2>
-          <p className="text-xs text-zt-muted">
+          <p className="text-[13px] text-ink-muted mt-1">
             Find your division across the top and read down. Details the promoter has not entered say so
             rather than guessing.
           </p>
         </div>
 
-        <div className="bg-zt-surface border border-zt-border rounded-2xl overflow-hidden">
+        <div className="border-2 border-rule">
           <div className="overflow-x-auto">
-            <table className="w-full text-xs border-collapse">
+            <table className="w-full text-[13px] border-collapse">
               <thead>
-                <tr className="bg-zt-inset">
-                  <th scope="col" className="sticky left-0 z-10 bg-zt-inset text-left font-black uppercase tracking-wider text-zt-muted px-3 py-2.5 min-w-[11rem] border-b border-zt-border">
-                    Event
-                  </th>
+                <tr>
+                  <th scope="col" className={`${TH} sticky left-0 z-10 min-w-[13rem]`}>Event</th>
                   {sortedDivisions.map((div) => (
-                    <th key={div.id} scope="col" className="text-left font-black text-zt-text px-3 py-2.5 min-w-[8.5rem] border-b border-zt-border whitespace-nowrap">
+                    <th key={div.id} scope="col" className={`${TH} text-ink font-bold normal-case tracking-normal text-[15px] min-w-[9rem] whitespace-nowrap`}>
                       {div.name}
                     </th>
                   ))}
@@ -519,15 +402,13 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
               </thead>
               <tbody>
                 {sortedEvents.map((ev) => (
-                  <tr key={ev.id} className="border-b border-zt-border last:border-b-0 align-top">
-                    <th scope="row" className="sticky left-0 z-10 bg-zt-surface text-left px-3 py-2.5 border-r border-zt-border">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-zt-primary text-zt-on-primary">
-                          Ev {ev.eventNumber}
-                        </span>
-                        <span className="font-black text-zt-text">{ev.name}</span>
+                  <tr key={ev.id}>
+                    <th scope="row" className={`${TD} sticky left-0 z-10 bg-sheet text-left font-normal`}>
+                      <div className="flex items-baseline gap-2">
+                        <span className={`${NUM} text-base`}>E{ev.eventNumber}</span>
+                        <span className="font-bold text-[15px] text-ink">{ev.name}</span>
                       </div>
-                      <div className="text-[10px] font-bold text-zt-muted mt-1">
+                      <div className="text-[12px] text-ink-muted mt-1">
                         {SCORING_TYPE_LABELS[ev.scoringType] || ev.scoringType} · {ev.timeCapSeconds}s cap
                         {ev.lanes === 2 ? ' · 2 lanes' : ''}
                       </div>
@@ -535,9 +416,9 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                     {sortedDivisions.map((div) => {
                       const w = eventWeightDisplay(ev, div.id);
                       return (
-                        <td key={div.id} className="px-3 py-2.5">
-                          <div className={`font-black ${w.main ? 'text-zt-text' : 'text-zt-muted'}`}>{w.main || 'Not provided'}</div>
-                          {w.setup && <div className="text-[10px] font-bold text-zt-primary-2 mt-0.5">{w.setup}</div>}
+                        <td key={div.id} className={TD}>
+                          <div className={w.main ? `${NUM} text-[22px] leading-none` : 'text-ink-muted'}>{w.main || 'Not provided'}</div>
+                          {w.setup && <div className="text-[12px] text-ink-muted mt-1">{w.setup}</div>}
                         </td>
                       );
                     })}
@@ -547,14 +428,14 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
             </table>
           </div>
           {sortedEvents.some((ev) => ev.fixedImplementDescription || (ev.maxFormat === 'rising_bar' && ev.risingBarWeights)) && (
-            <ul className="border-t border-zt-border px-3 py-2.5 space-y-1 text-[11px] font-bold text-zt-text-2">
+            <ul className="border-t border-rule px-3 py-2.5 space-y-1 text-[13px] text-ink">
               {sortedEvents.map((ev) => (
                 <React.Fragment key={ev.id}>
                   {ev.fixedImplementDescription && (
-                    <li><span className="text-zt-muted">Ev {ev.eventNumber} implement:</span> {ev.fixedImplementDescription}</li>
+                    <li><span className="text-ink-muted">Ev {ev.eventNumber} implement:</span> {ev.fixedImplementDescription}</li>
                   )}
                   {ev.maxFormat === 'rising_bar' && ev.risingBarWeights && (
-                    <li><span className="text-zt-muted">Ev {ev.eventNumber} rising bar:</span> {ev.risingBarWeights.join(' lb → ')} lb</li>
+                    <li><span className="text-ink-muted">Ev {ev.eventNumber} rising bar:</span> <span className={NUM}>{ev.risingBarWeights.join(' lb → ')}</span> lb</li>
                   )}
                 </React.Fragment>
               ))}
@@ -563,86 +444,98 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
         </div>
       </section>
 
-      {/* SECTION E: VENUE, SCHEDULE & REGISTRATION INFO */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-2.5 text-xs">
-          <h2 className="text-sm font-black uppercase tracking-wider text-zt-primary flex items-center gap-1.5">
-            <Info className="w-4 h-4" aria-hidden="true" />
-            <span>Registration &amp; Weigh-In Details</span>
-          </h2>
-          <dl className="space-y-2">
-            <div className="flex justify-between gap-2 border-b border-zt-border pb-1.5">
-              <dt className="font-bold text-zt-muted">Registration Status</dt>
-              <dd className="font-black text-zt-text">{life.registrationLabel}</dd>
-            </div>
-            <div className="flex justify-between gap-2 border-b border-zt-border pb-1.5">
-              <dt className="font-bold text-zt-muted">Entry Fee</dt>
-              <dd className="font-bold text-zt-text">
-                {show.registration.entryFeeDisplay || 'Not provided'}
-              </dd>
-            </div>
-            <div className="flex justify-between gap-2 border-b border-zt-border pb-1.5">
-              <dt className="font-bold text-zt-muted">Registration Deadline</dt>
-              <dd className="font-bold text-zt-text">
-                {show.registration.registrationDeadline || 'Not provided'}
-              </dd>
-            </div>
-            <div className="flex justify-between gap-2 border-b border-zt-border pb-1.5">
-              <dt className="font-bold text-zt-muted">Promoter Contact</dt>
-              <dd className="font-bold text-zt-text">
-                {show.registration.promoterContact || 'Not provided'}
-              </dd>
-            </div>
-            <div className="pt-1">
-              <dt className="font-bold text-zt-muted mb-0.5">Weigh-In / Grouping Policy</dt>
-              <dd className="font-semibold text-zt-text-2">
-                {show.registration.weighInNotes || 'Not provided'}
-              </dd>
-            </div>
-          </dl>
-        </div>
-
-        <div className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-2.5 text-xs">
-          <h2 className="text-sm font-black uppercase tracking-wider text-zt-primary">
-            Venue, Schedule &amp; Rules Summary
-          </h2>
-          <dl className="space-y-2">
+      {/* SECTION E: VENUE, SCHEDULE & REGISTRATION INFO. Text on the left, the registration block on the right. */}
+      <section className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-7 items-start">
+        <div className="px-1">
+          <h2 className="text-[22px] font-bold leading-tight text-ink mb-3">Venue, Schedule &amp; Rules Summary</h2>
+          <dl className="space-y-4">
             <div>
-              <dt className="font-bold text-zt-muted">Facility &amp; Address</dt>
-              <dd className="font-bold text-zt-text mt-0.5">
-                <div>{show.venue.facilityName || 'Facility not provided'}</div>
-                <div className="font-semibold text-zt-text-2">
+              <dt className={DT}>Facility &amp; Address</dt>
+              <dd className={`${DD} mt-1`}>
+                <div className="font-bold">{show.venue.facilityName || 'Facility not provided'}</div>
+                <div>
                   {show.venue.streetAddress ? `${show.venue.streetAddress}, ` : ''}
                   {show.venue.city}, {show.venue.state} {show.venue.postalCode || ''}
                 </div>
                 {/* MS-14: a map link built from the address on file; nothing is invented when the address is missing or
                     a placeholder, and demo fixtures (made-up venues) get none (Astra LT-05/06) */}
-                {directionsUrl(show.venue, { demo: show.isDemoFixture }) && (
-                  <a
-                    href={directionsUrl(show.venue, { demo: show.isDemoFixture }) ?? '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 mt-1 text-zt-primary hover:underline"
-                  >
-                    <ExternalLink className="w-3 h-3" aria-hidden="true" />
-                    Directions
+                {directions && (
+                  <a href={directions} target="_blank" rel="noopener noreferrer" className={`${textLink} inline-flex items-center gap-1 mt-1 text-[13px]`}>
+                    Directions ↗
                   </a>
                 )}
               </dd>
             </div>
             <div>
-              <dt className="font-bold text-zt-muted">Schedule Notes</dt>
-              <dd className="font-semibold text-zt-text-2 mt-0.5">
-                {show.scheduleNotes || 'Not provided'}
-              </dd>
+              <dt className={DT}>Schedule Notes</dt>
+              <dd className={`${DD} mt-1 leading-[1.55] max-w-[760px]`}>{show.scheduleNotes || 'Not provided'}</dd>
             </div>
             <div>
-              <dt className="font-bold text-zt-muted">Rules &amp; Scoring Format</dt>
-              <dd className="font-semibold text-zt-text-2 mt-0.5">
-                {show.rulesSummary || 'Not provided'}
-              </dd>
+              <dt className={DT}>Rules &amp; Scoring Format</dt>
+              <dd className={`${DD} mt-1 leading-[1.55] max-w-[760px]`}>{show.rulesSummary || 'Not provided'}</dd>
             </div>
           </dl>
+        </div>
+
+        <div className="zt-block grid-cols-1">
+          <WebCell pad="lg" className="gap-3.5">
+            <Cap as="h2">Registration &amp; Weigh-In Details</Cap>
+            <div>
+              {fee.amount ? (
+                <div className={`${NUM} text-[44px] leading-none`}>
+                  {fee.amount}
+                  {fee.note && <span className="block sm:inline font-sans text-[15px] text-ink mt-1.5 sm:mt-0 sm:ml-2.5">{fee.note}</span>}
+                </div>
+              ) : (
+                <div className="text-[15px] font-bold text-ink">{fee.note || <span className="text-ink-muted font-normal">Entry fee not provided</span>}</div>
+              )}
+              <div className="text-[13px] text-ink-muted mt-1.5">
+                {show.registration.entryFeeDisplay ? 'Entry Fee · ' : ''}Registration Deadline: {show.registration.registrationDeadline || 'Not provided'}
+              </div>
+            </div>
+            <dl className="text-[13px] leading-[1.5] space-y-1.5">
+              <div><dt className="inline text-ink-muted">Registration Status: </dt><dd className="inline font-bold text-ink">{life.registrationLabel}</dd></div>
+              <div><dt className="inline text-ink-muted">Promoter Contact: </dt><dd className="inline text-ink">{show.registration.promoterContact || 'Not provided'}</dd></div>
+              <div><dt className="inline text-ink-muted">Weigh-In / Grouping Policy: </dt><dd className="inline text-ink">{show.registration.weighInNotes || 'Not provided'}</dd></div>
+            </dl>
+
+            {/* Lifecycle Action Bar */}
+            <div className="flex flex-wrap gap-2.5 mt-1">
+              {show.isDemoFixture ? (
+                <button type="button" disabled className={keyClass('line', 'opacity-50 cursor-not-allowed')}>
+                  Demo show: registration disabled
+                </button>
+              ) : show.registration.externalRegistrationUrl ? (
+                <a href={show.registration.externalRegistrationUrl} target="_blank" rel="noopener noreferrer" className={keyClass('pen')}>
+                  External Registration Page ↗
+                </a>
+              ) : canRegisterInApp ? (
+                <Key href={`/register/${show.slug}`} variant="pen">
+                  {show.registrationStatus === 'waitlist' ? 'Join Waitlist →' : 'Register Now →'}
+                </Key>
+              ) : (
+                <button type="button" disabled className={keyClass('line', 'opacity-50 cursor-not-allowed')}>
+                  {life.registrationLabel}
+                </button>
+              )}
+              <FollowShowButton slug={show.slug} isDemoFixture={!!show.isDemoFixture} />
+              {show.liveScoreboardPath && (
+                <Key href={show.liveScoreboardPath} variant="ink">Open Public Live Scoreboard</Key>
+              )}
+            </div>
+          </WebCell>
+          <WebCell pad="lg" className="gap-1.5">
+            <Cap>Promoter</Cap>
+            <div className="text-base font-bold text-ink">{show.promoterName || show.hostGymName || 'Not provided'}</div>
+            {show.hostGymSlug && (
+              <Link href={`/gyms/${show.hostGymSlug}`} className={`${textLink} text-[13px]`}>
+                Host Gym: {show.hostGymName || show.venue.facilityName} →
+              </Link>
+            )}
+            {show.lastUpdatedIso && (
+              <div className="text-[13px] text-ink-muted">Last updated: <UpdatedStamp iso={show.lastUpdatedIso} /></div>
+            )}
+          </WebCell>
         </div>
       </section>
     </div>

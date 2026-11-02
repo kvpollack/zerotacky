@@ -1,172 +1,192 @@
 import React from 'react';
-import Wordmark from '@/components/brand/Wordmark';
 import Link from 'next/link';
+import Wordmark from '@/components/brand/Wordmark';
+import StoneMark from '@/components/sheet/StoneMark';
 import WebsiteThemeFrame from './WebsiteThemeFrame';
-import WebsiteThemeControls from './WebsiteThemeControls';
 import WebsiteAccountChip from './WebsiteAccountChip';
 import PromoterNavLink from './PromoterNavLink';
 import NavActiveScroll from './NavActiveScroll';
+import { ModeToggle } from './SheetMode';
+import { Cap, NAV_LINK, navClass } from './sheet';
 import { readSyncEnv } from '@/lib/sync/client';
 import type { ZtTheme } from '@/lib/website/theme';
+import pkg from '@/package.json';
 
+// The public website shell in the sheet grammar (UI transition Phase 3, 11/2; mockups hybrid/web_home.html and
+// web_show.html). One page frame on the grey ground; the header is a ruled strip (wordmark cell, nav as ruled cells
+// with the active one filled in ink, then Mode / Join a Meet / Account); the footer is a title block with the stone
+// in the logo cell. Copy is unchanged from the 10/26 shell; only the drawing changed. Phones (MS-13): the wordmark
+// row keeps the meet-day actions, the nav is one scrolling row underneath (LT-07 scrolls the active item into view).
 interface WebsiteShellProps {
   activeNav?: 'home' | 'how' | 'shows' | 'join' | 'gyms' | 'athletes' | 'account' | 'promoter';
-  brand?: ZtTheme | null;   // 030: a gym's or show's own colours on its public page
+  brand?: ZtTheme | null;   // 030: a gym's or show's own colours; Phase 3: they reach the promoter slots only
+  /** SHEET field of the footer title block, e.g. "Show · all-out-strongfest-2026". Defaults to the active nav label. */
+  sheet?: string;
   children: React.ReactNode;
 }
 
-export default function WebsiteShell({ activeNav, brand = null, children }: WebsiteShellProps) {
+const NAV_ITEMS: Array<{ id: NonNullable<WebsiteShellProps['activeNav']>; label: string; href: string }> = [
+  { id: 'home', label: 'Home', href: '/website' },
+  { id: 'how', label: 'How It Works', href: '/how-it-works' },
+  { id: 'shows', label: 'Find a Show', href: '/shows' },
+  { id: 'gyms', label: 'Gym Directory', href: '/gyms' },
+  { id: 'athletes', label: 'Athletes', href: '/athletes' },
+];
+const SHEET_NAMES: Record<NonNullable<WebsiteShellProps['activeNav']>, string> = {
+  home: 'Home', how: 'How it works', shows: 'Shows', join: 'Join a meet', gyms: 'Gyms', athletes: 'Athletes', account: 'Account', promoter: 'My meets',
+};
+const FOOTER_LINKS: Array<{ label: string; href: string }> = [
+  { label: 'Home', href: '/website' },
+  { label: 'How It Works', href: '/how-it-works' },
+  { label: 'Shows', href: '/shows' },
+  { label: 'Gyms', href: '/gyms' },
+  { label: 'Athletes', href: '/athletes' },
+  { label: 'Trainers', href: '/trainers' },
+  { label: 'Account', href: '/website/account' },
+  { label: 'Live Scoring Demo', href: '/scorer' },
+  { label: 'Terms', href: '/legal/terms' },
+  { label: 'Privacy', href: '/legal/privacy' },
+];
+const TAGLINE = 'Your one stop for strongman: shows, registration, live scoring, and a gym directory.';
+
+// header cells: 56 px tall; nav links from ./sheet (NAV_LINK / navClass)
+const CELL = 'bg-sheet flex items-center h-14 min-w-0';
+
+export default function WebsiteShell({ activeNav, brand = null, sheet, children }: WebsiteShellProps) {
   // Astra gate STYLE: the amber "preview" badge belongs to fixture-only builds. With a backend configured the site is
   // showing real listings, so the bar is a plain pointer to the meet-day app.
   const live = readSyncEnv() !== null;
-  const navItems: Array<{ id: WebsiteShellProps['activeNav']; label: string; href: string }> = [
-    { id: 'home', label: 'Home', href: '/website' },
-    { id: 'how', label: 'How It Works', href: '/how-it-works' },
-    { id: 'shows', label: 'Find a Show', href: '/shows' },
-    { id: 'gyms', label: 'Gym Directory', href: '/gyms' },
-    { id: 'athletes', label: 'Athletes', href: '/athletes' },
-    { id: 'account', label: 'Account', href: '/website/account' },
-  ];
+  const sheetName = sheet ?? (activeNav ? SHEET_NAMES[activeNav] : 'Page');
+  const sha = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7);
+  const rev = `v${pkg.version}${sha ? ` · ${sha}` : ''}`;
+  const year = new Date().getFullYear();
 
   return (
-    <WebsiteThemeFrame brand={brand}>
+    <WebsiteThemeFrame brand={brand} sheet>
       {/* MS-13: keyboard users jump past the header */}
-      <a href="#zt-main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:rounded-xl focus:bg-zt-primary focus:text-zt-on-primary focus:text-xs focus:font-extrabold focus:uppercase">
+      <a href="#zt-main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-ink focus:text-sheet focus:text-xs focus:font-bold focus:uppercase">
         Skip to content
       </a>
-      {/* Primary Website Header. MS-13 (10/26): two rows on phones instead of a 210 px wrap: wordmark + the meet-day
-          actions (account, Join, theme) on the first row, the nav as one horizontally scrolling row below. From sm up
-          the old single-row layout wraps as before. */}
-      <header className="bg-zt-surface/95 backdrop-blur border-b border-zt-border sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto px-4 py-2.5 sm:py-3.5 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <Link
-              href="/website"
-              className="text-base sm:text-lg font-black tracking-wider uppercase text-zt-text flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-zt-primary rounded-lg"
-            >
-              <Wordmark />
-            </Link>
-            <span className="hidden lg:inline-block text-xs font-bold text-zt-muted">
-              Your one stop for strongman: shows, registration, live scoring, and a gym directory.
-            </span>
-            {!live && (
-              <span className="hidden sm:inline text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
-                Website Skeleton Preview
-              </span>
-            )}
-          </div>
 
-          {/* phones: meet-day actions stay on the wordmark row, far right */}
-          <div className="flex items-center gap-2 sm:hidden">
-            <WebsiteAccountChip compact />
-            <Link
-              href="/join"
-              aria-current={activeNav === 'join' ? 'page' : undefined}
-              className={`px-3 min-h-[44px] inline-flex items-center rounded-xl text-xs font-extrabold uppercase tracking-wide transition border ${
-                activeNav === 'join'
-                  ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
-                  : 'bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong'
-              }`}
-            >
-              Join
-            </Link>
-            <WebsiteThemeControls />
-          </div>
-
-          <div className="flex items-center gap-3 flex-wrap w-full sm:w-auto">
-          {/* LT-07: the phone row scrolls; the active item is scrolled into view on load and a right-edge fade says there is more */}
-          <div className="relative w-full sm:w-auto">
-          <nav id="zt-primary-nav" aria-label="Primary website navigation" className="flex items-center gap-1.5 flex-nowrap overflow-x-auto w-full pr-8 sm:pr-0 sm:w-auto sm:flex-wrap sm:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {navItems.map((item) => {
-              const isActive = activeNav === item.id;
-              return (
+      {/* the page frame on the ground */}
+      <div className="flex-1 flex flex-col min-w-0 p-2 sm:p-4 lg:p-6">
+        <div className="flex-1 flex flex-col min-w-0 bg-sheet border-2 border-rule">
+          {/* header strip: a ruled block, 1 px rules drawn as grid gaps over the rule colour */}
+          <header className="sticky top-0 z-20 border-b-2 border-rule">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] lg:grid-cols-[260px_minmax(0,1fr)_auto_auto_auto] gap-px bg-rule">
+              <div className={`${CELL} gap-3 px-3 lg:px-[18px] overflow-hidden`}>
                 <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={`px-3 min-h-[44px] inline-flex items-center whitespace-nowrap flex-shrink-0 rounded-xl text-xs font-extrabold uppercase tracking-wide transition border ${
-                    isActive
-                      ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
-                      : 'bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong'
-                  }`}
+                  href="/website"
+                  className="text-[20px] sm:text-[26px] text-ink no-underline focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
                 >
-                  {item.label}
+                  <Wordmark />
                 </Link>
-              );
-            })}
-            <PromoterNavLink active={activeNav === 'promoter'} />
-          </nav>
-          <div aria-hidden="true" className="sm:hidden pointer-events-none absolute right-0 inset-y-0 w-10 bg-gradient-to-l from-zt-surface to-transparent" />
-          <NavActiveScroll navId="zt-primary-nav" active={activeNav} />
-          </div>
-          {/* sm and up: Kurt 10/21, Join a Meet sits at the far right, next to the theme toggle, as the meet-day action. */}
-          <div className="hidden sm:flex items-center gap-3 flex-wrap">
-            <WebsiteAccountChip />
-            <Link
-              href="/join"
-              aria-current={activeNav === 'join' ? 'page' : undefined}
-              className={`px-3 min-h-[44px] inline-flex items-center rounded-xl text-xs font-extrabold uppercase tracking-wide transition border ${
-                activeNav === 'join'
-                  ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
-                  : 'bg-zt-inset text-zt-text-2 border-zt-border hover:border-zt-border-strong'
-              }`}
-            >
-              Join a Meet
-            </Link>
-            <WebsiteThemeControls />
-          </div>
-          </div>
-        </div>
-      </header>
+                {!live && (
+                  <span className="hidden xl:inline text-[11px] uppercase tracking-[0.06em] text-ink-muted">
+                    Website Skeleton Preview
+                  </span>
+                )}
+              </div>
 
-      {/* Main Content */}
-      <main id="zt-main" tabIndex={-1} className="flex-1 w-full max-w-5xl mx-auto px-4 py-6 sm:py-8 space-y-8 focus:outline-none">
-        {children}
-      </main>
+              {/* nav: full-width scrolling row on phones (order-last), the second cell from lg up */}
+              <div className={`${CELL} relative col-span-full lg:col-span-1 order-last lg:order-none border-t border-rule lg:border-t-0`}>
+                <nav
+                  id="zt-primary-nav"
+                  aria-label="Primary website navigation"
+                  className="flex items-stretch h-14 w-full overflow-x-auto lg:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pr-10 lg:pr-0"
+                >
+                  {NAV_ITEMS.map((item) => {
+                    const isActive = activeNav === item.id;
+                    return (
+                      <Link key={item.href} href={item.href} aria-current={isActive ? 'page' : undefined} className={navClass(isActive)}>
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                  <PromoterNavLink active={activeNav === 'promoter'} />
+                </nav>
+                {/* LT-07: right-edge fade says the row scrolls */}
+                <div aria-hidden="true" className="lg:hidden pointer-events-none absolute right-0 inset-y-0 w-10 bg-gradient-to-l from-sheet to-transparent" />
+                <NavActiveScroll navId="zt-primary-nav" active={activeNav} />
+              </div>
 
-      {/* Footer */}
-      <footer className="border-t border-zt-border bg-zt-surface mt-12 py-6 px-4 text-xs text-zt-muted">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="font-black uppercase tracking-wider text-zt-text"><Wordmark /></div>
-            <p className="text-zt-muted">
-              Your one stop for strongman: shows, registration, live scoring, and a gym directory.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 font-bold text-zt-text-2">
-            <Link href="/website" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
-              Home
-            </Link>
-            <Link href="/how-it-works" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
-              How It Works
-            </Link>
-            <Link href="/shows" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
-              Shows
-            </Link>
-            <Link href="/gyms" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
-              Gyms
-            </Link>
-            <Link href="/athletes" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
-              Athletes
-            </Link>
-            <Link href="/trainers" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
-              Trainers
-            </Link>
-            <Link href="/website/account" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
-              Account
-            </Link>
-            <Link href="/scorer" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
-              Live Scoring Demo
-            </Link>
-            <Link href="/legal/terms" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
-              Terms
-            </Link>
-            <Link href="/legal/privacy" className="inline-flex items-center min-h-[44px] hover:text-zt-primary">
-              Privacy
-            </Link>
-          </div>
+              <div className={CELL}>
+                <ModeToggle />
+              </div>
+              <div className={CELL}>
+                <Link
+                  href="/join"
+                  aria-current={activeNav === 'join' ? 'page' : undefined}
+                  className={`${NAV_LINK} border-r-0 ${activeNav === 'join' ? 'bg-ink text-sheet' : 'text-ink hover:bg-ground'}`}
+                >
+                  <span className="sm:hidden">Join</span>
+                  <span className="hidden sm:inline">Join a Meet</span>
+                </Link>
+              </div>
+              <div className={`${CELL} gap-2 pr-2`}>
+                <WebsiteAccountChip />
+                <Link
+                  href="/website/account"
+                  aria-current={activeNav === 'account' ? 'page' : undefined}
+                  className={`${NAV_LINK} border-r-0 ${activeNav === 'account' ? 'bg-ink text-sheet' : 'text-ink-muted hover:text-ink hover:bg-ground'}`}
+                >
+                  Account
+                </Link>
+              </div>
+            </div>
+          </header>
+
+          {/* Main Content */}
+          <main id="zt-main" tabIndex={-1} className="flex-1 w-full min-w-0 px-3 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7 flex flex-col gap-7 focus:outline-none">
+            {children}
+          </main>
+
+          {/* Footer = title block. Fields: TITLE, SHEET, REV, STATUS; links, OPERATOR, UNITS, COPY. */}
+          <footer className="mt-10 zt-block border-x-0 border-b-0 grid-cols-2 lg:grid-cols-[90px_1fr_220px_220px_160px_120px] lg:grid-rows-2 text-[15px]">
+            <div className="hidden lg:flex items-center justify-center row-span-2 text-ink">
+              <StoneMark size={48} stroke={7} title="ZeroTacky" />
+            </div>
+            <div className="flex flex-col justify-center px-3.5 py-2.5 col-span-2 lg:col-span-2 min-h-[60px]">
+              <Cap className="text-[11px] mb-0.5">Title</Cap>
+              <div className="font-bold leading-snug">
+                <Wordmark className="text-[18px] mr-2" />
+                <span className="font-normal text-[13px] text-ink-muted">{TAGLINE}</span>
+              </div>
+            </div>
+            <div className="flex flex-col justify-center px-3.5 py-2.5 min-h-[60px]">
+              <Cap className="text-[11px] mb-0.5">Sheet</Cap>
+              <div className="font-bold text-[13px] leading-snug break-all">{sheetName}</div>
+            </div>
+            <div className="flex flex-col justify-center px-3.5 py-2.5 min-h-[60px]">
+              <Cap className="text-[11px] mb-0.5">Rev</Cap>
+              <div className="font-bold font-sheet truncate">{rev}</div>
+            </div>
+            <div className="flex flex-col justify-center px-3.5 py-2.5 min-h-[60px] col-span-2 lg:col-span-1">
+              <Cap className="text-[11px] mb-0.5">Status</Cap>
+              <div className="font-bold">Public</div>
+            </div>
+            <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-3.5 gap-y-1 px-3.5 py-2.5 col-span-2 lg:col-span-2 min-h-[60px]">
+              {FOOTER_LINKS.map((l) => (
+                <Link key={l.href} href={l.href} className="inline-flex items-center min-h-[32px] text-xs uppercase tracking-[0.04em] text-ink no-underline border-b border-rule hover:text-pen hover:border-pen">
+                  {l.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="flex flex-col justify-center px-3.5 py-2.5 min-h-[60px]">
+              <Cap className="text-[11px] mb-0.5">Operator</Cap>
+              <a href="mailto:privacy@zerotacky.com" className="font-bold text-[13px] text-ink no-underline hover:text-pen truncate">privacy@zerotacky.com</a>
+            </div>
+            <div className="flex flex-col justify-center px-3.5 py-2.5 min-h-[60px]">
+              <Cap className="text-[11px] mb-0.5">Units</Cap>
+              <div className="font-bold">lb / kg</div>
+            </div>
+            <div className="flex flex-col justify-center px-3.5 py-2.5 min-h-[60px] col-span-2 lg:col-span-1">
+              <Cap className="text-[11px] mb-0.5">Copy</Cap>
+              <div className="font-bold font-sheet">© {year}</div>
+            </div>
+          </footer>
         </div>
-      </footer>
+      </div>
     </WebsiteThemeFrame>
   );
 }

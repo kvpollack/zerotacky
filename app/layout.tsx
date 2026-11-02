@@ -8,7 +8,8 @@ export const metadata: Metadata = {
   metadataBase: siteUrl(),
   title: 'ZeroTacky — Strongman Meet Manager',
   description: 'Offline strongman scoring, run order, and plate loading for meet day.',
-  // Set Stone mark (10/21): flat stone at favicon sizes, the shaded version from 180 px up and on the share card.
+  // Set Stone mark, outline since 11/2 (UI transition Phase 3; make_icons.py): ink stroke, light/dark favicons by colour
+  // scheme, sheet-white app icons. The share card (og.png) is Phase 6.
   icons: {
     icon: [
       { url: '/icon-light-16x16.png', media: '(prefers-color-scheme: light)', sizes: '16x16' },

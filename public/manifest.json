@@ -3,8 +3,8 @@
   "short_name": "ZeroTacky",
   "start_url": "/scorer",
   "display": "standalone",
-  "background_color": "#0a0b0e",
-  "theme_color": "#e11d48",
+  "background_color": "#ffffff",
+  "theme_color": "#111111",
   "orientation": "portrait",
   "icons": [
     {

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Calendar, Dumbbell, Play, Radio, ShieldCheck, Trophy } from 'lucide-react';
 import WebsiteShell from '@/components/website/WebsiteShell';
+import ShowRows from '@/components/website/ShowRows';
+import { Cap, Key, SectionCap, WebCell, textLink } from '@/components/website/sheet';
 import { listPublicGyms, listPublicShows } from '@/lib/website/data';
-import { describeShowLifecycle } from '@/lib/website/filters';
 import { canonical, organizationJsonLd, websiteJsonLd } from '@/lib/website/seo';
 import JsonLd from '@/components/website/JsonLd';
 
@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   ...canonical('/website'),
 };
 
+// Home sheet (UI transition Phase 3, 11/2; mockup hybrid/web_home.html). Copy is the 10/26 landing page's, reworded
+// hero included (Kurt 11/2); only the drawing changed: ruled blocks, ink/line/pen keys, shows as a results table.
 export default async function WebsiteLandingPage() {
   const [showsRes, gymsRes] = await Promise.all([listPublicShows(), listPublicGyms()]);
   const shows = showsRes.data ?? [];
@@ -22,277 +24,138 @@ export default async function WebsiteLandingPage() {
   return (
     <WebsiteShell activeNav="home">
       <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
-      {/* Hero Section */}
-      <section className="bg-zt-surface border border-zt-border rounded-2xl p-6 sm:p-8 space-y-6">
-        <div className="space-y-3 max-w-3xl">
-          <div className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-zt-primary bg-zt-inset border border-zt-border px-3 py-1 rounded-full">
-            <span>Built for Strongman Promoters, Judges, Pit Crew &amp; Athletes</span>
-          </div>
-          <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-zt-text">
-            Find strongman competitions. Run meet day without spreadsheets or Wi-Fi failures.
+
+      {/* Hero block: the pitch on the left, the gym-owner aside on the right (Kurt 10/20: the directory ships unclaimed) */}
+      <section className="zt-block grid-cols-1 lg:grid-cols-[1fr_420px]">
+        <WebCell pad="lg" className="gap-0">
+          <Cap>For strongman promoters, judges, pit crew and athletes</Cap>
+          <h1 className="text-[28px] sm:text-[40px] leading-[1.1] font-bold mt-1.5 mb-3.5 text-ink">
+            Find strongman shows. Run meet day from a phone, no spreadsheet, no Wi-Fi.
           </h1>
-          <p className="text-sm sm:text-base text-zt-text-2 leading-relaxed">
-            ZeroTacky pairs a public competition and strongman gym directory with an offline-first
-            meet-day scoring engine. Judges score reps, times, distances, rising bars, and stone
-            splits on their phones; pit crew gets exact plate stacks and rack pin callouts; spectators
-            watch a live public scoreboard.
+          <p className="text-[15px] sm:text-[17px] leading-[1.55] max-w-[760px] text-ink">
+            ZeroTacky is a show and gym directory with a scorer that keeps working when the venue
+            Wi-Fi dies. Judges put in reps, times, distances, rising bar heights and stone splits on
+            their own phones. Pit crew get the plate stack and the rack pin for every athlete.
+            Spectators follow the live scoreboard from the stands.
           </p>
-          <p className="text-sm font-bold text-zt-text">
-            Everything ZeroTacky offers athletes is free, always: finding shows, following your meets, your profile and
-            the live scoreboard. No premium tier for athletes, now or later.
+          <p className="text-[15px] leading-[1.55] max-w-[760px] font-bold text-ink mt-3">
+            Athletes never pay. Finding shows, following your meets, your profile and the live scoreboard are
+            free, and there is no paid tier coming.
           </p>
-        </div>
 
-        {/* Primary Actions: Find a show + Run a meet */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
-          <Link
-            href="/shows"
-            className="px-6 py-4 rounded-xl bg-zt-primary text-zt-on-primary font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:opacity-95 transition"
-          >
-            <Calendar className="w-4 h-4" aria-hidden="true" />
-            Find a Show
-          </Link>
-
-          <Link
-            href="/demo"
-            className="px-6 py-4 rounded-xl bg-zt-surface-2 border-2 border-zt-border-strong text-zt-text font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 hover:border-zt-primary transition"
-          >
-            <Play className="w-4 h-4 text-zt-primary" aria-hidden="true" />
-            Check Out a Demo Show
-          </Link>
-
-          <Link
-            href="/gyms"
-            className="px-4 py-4 rounded-xl bg-zt-inset border border-zt-border text-zt-text-2 font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:text-zt-text transition sm:ml-auto"
-          >
-            <Dumbbell className="w-4 h-4 text-zt-secondary" aria-hidden="true" />
-            Strongman Gym Directory
-          </Link>
-        </div>
-
-        <p className="text-xs font-semibold text-zt-muted">
-          <strong>Check Out a Demo Show</strong> opens the meet-day scorer on this device loaded with a made-up show,
-          so you can score and edit without touching anything real. To run your own meet, sign in and tap New Meet on{' '}
-          <Link href="/promoter" className="text-zt-primary-2 font-bold underline">My Meets</Link>; the{' '}
-          <Link href="/how-it-works/first-show" className="text-zt-primary-2 font-bold underline">first-show guide</Link> walks every tab.
-        </p>
-      </section>
-
-      {/* Gym owner call-out (Kurt 10/20): the directory ships unclaimed; this is how owners find out and take over. */}
-      <section className="bg-zt-surface border-2 border-zt-secondary/60 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="text-xs font-black uppercase tracking-wider text-zt-secondary flex items-center gap-1.5">
-            <Dumbbell className="w-4 h-4" aria-hidden="true" />
-            <span>Gym owners</span>
+          {/* Primary Actions: Find a show + Run a meet */}
+          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 mt-[18px]">
+            <Key href="/shows" variant="ink">Find a Show</Key>
+            <Key href="/demo" variant="line">Check Out a Demo Show</Key>
+            <Key href="/gyms" variant="line">Strongman Gym Directory</Key>
           </div>
-          <h2 className="text-lg sm:text-xl font-black text-zt-text">See if your gym is listed, then claim it.</h2>
-          <p className="text-xs sm:text-sm text-zt-text-2 max-w-2xl">
+
+          <p className="text-[13px] leading-[1.55] text-ink-muted mt-4 max-w-[760px]">
+            <strong className="text-ink">Check Out a Demo Show</strong> opens the meet-day scorer on this device loaded with a made-up show,
+            so you can score and edit without touching anything real. To run your own meet, sign in and tap New Meet on{' '}
+            <Link href="/promoter" className={textLink}>My Meets</Link>; the{' '}
+            <Link href="/how-it-works/first-show" className={textLink}>first-show guide</Link> walks every tab.
+          </p>
+        </WebCell>
+
+        <WebCell pad="lg" className="gap-3.5">
+          <Cap>Gym owners</Cap>
+          <h2 className="text-[22px] font-bold leading-tight text-ink">See if your gym is listed, then claim it.</h2>
+          <div className="font-sheet text-[56px] leading-none text-pen">{gyms.length}</div>
+          <p className="text-sm leading-[1.5] text-ink">
             We listed {gyms.length} strongman and powerlifting gyms from their own websites. Claiming yours lets you fix the details,
             list your implements, and link the shows you host. It is free.
           </p>
-        </div>
-        <Link
-          href="/gyms"
-          className="px-6 py-4 rounded-xl bg-zt-secondary text-zt-on-secondary font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shrink-0 hover:opacity-95 transition"
-        >
-          Find my gym
-        </Link>
+          <div className="flex mt-1">
+            <Key href="/gyms" variant="pen">Find my gym</Key>
+          </div>
+        </WebCell>
       </section>
 
       {/* Grounded Capabilities Grid */}
-      <section aria-labelledby="how-it-works-heading" className="space-y-3">
-        <h2
-          id="how-it-works-heading"
-          className="text-sm font-black uppercase tracking-wider text-zt-primary"
-        >
-          What ZeroTacky Does Today
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-black uppercase text-zt-primary">
-              <Trophy className="w-4 h-4" aria-hidden="true" />
-              <span>Show Pages &amp; Results</span>
-            </div>
-            <h3 className="text-base font-black text-zt-text">
-              One URL Before, During &amp; After the Meet
-            </h3>
-            <p className="text-xs text-zt-text-2 leading-relaxed">
+      <section aria-labelledby="how-it-works-heading">
+        <SectionCap id="how-it-works-heading">What ZeroTacky Does Today</SectionCap>
+        <div className="zt-block grid-cols-1 md:grid-cols-3">
+          <WebCell>
+            <Cap className="text-ink font-bold text-[15px] tracking-[0.04em]">Show Pages &amp; Results</Cap>
+            <h3 className="text-base font-bold text-ink">One URL Before, During &amp; After the Meet</h3>
+            <p className="text-sm leading-[1.5] text-ink-muted">
               Upcoming shows list divisions, event rules, and target weights, supporting both
               traditional weight classes and inclusive strength-based groups like Strongfest.
               Live shows link directly to the public scoreboard, and completed shows display
               finalized podiums and event-by-event breakdowns.
             </p>
-          </div>
-
-          <div className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-black uppercase text-zt-primary">
-              <Radio className="w-4 h-4" aria-hidden="true" />
-              <span>Offline-First Meet Scoring</span>
-            </div>
-            <h3 className="text-base font-black text-zt-text">
-              Judge Pad, Pit Crew Calculator &amp; Sync
-            </h3>
-            <p className="text-xs text-zt-text-2 leading-relaxed">
+          </WebCell>
+          <WebCell>
+            <Cap className="text-ink font-bold text-[15px] tracking-[0.04em]">Offline-First Meet Scoring</Cap>
+            <h3 className="text-base font-bold text-ink">Judge Pad, Pit Crew Calculator &amp; Sync</h3>
+            <p className="text-sm leading-[1.5] text-ink-muted">
               Every score is saved locally first and queued for sync. Volunteers join a meet via a
-              6-character code on the <Link href="/join" className="text-zt-primary font-bold underline">Join a Meet</Link> page, locking their phone to
+              6-character code on the <Link href="/join" className={textLink}>Join a Meet</Link> page, locking their phone to
               Judge, Pit Crew, or Spectator mode while the promoter manages divisions, events, and
               weights.
             </p>
-          </div>
-
-          <div className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-black uppercase text-zt-secondary">
-              <Dumbbell className="w-4 h-4" aria-hidden="true" />
-              <span>Strongman Equipment Finder</span>
-            </div>
-            <h3 className="text-base font-black text-zt-text">
-              Know What Equipment a Gym Actually Has
-            </h3>
-            <p className="text-xs text-zt-text-2 leading-relaxed">
+          </WebCell>
+          <WebCell>
+            <Cap className="text-ink font-bold text-[15px] tracking-[0.04em]">Strongman Equipment Finder</Cap>
+            <h3 className="text-base font-bold text-ink">Know What Equipment a Gym Actually Has</h3>
+            <p className="text-sm leading-[1.5] text-ink-muted">
               Browse gyms by equipment (logs, axles, yokes, stones, circus dumbbells, kegs), day-pass
               price, and drop-in policy so traveling athletes know where they can train for upcoming
               events.
             </p>
-          </div>
+          </WebCell>
         </div>
       </section>
 
-      {/* Featured Demo Shows Preview */}
-      <section aria-labelledby="sample-shows-heading" className="space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <h2
-              id="sample-shows-heading"
-              className="text-sm font-black uppercase tracking-wider text-zt-primary"
-            >
-              Shows in the Directory
-            </h2>
-            <p className="text-xs text-zt-muted">
-              Includes upcoming inclusive groups, a live show, a completed finalized show with a tied
-              podium, and a completed provisional show.
-            </p>
-          </div>
-          <Link
-            href="/shows"
-            className="text-xs font-extrabold uppercase text-zt-primary hover:underline whitespace-nowrap"
-          >
-            View All ({shows.length}) →
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-          {shows.slice(0, 4).map((show) => {
-            const life = describeShowLifecycle(
-              show.competitionStatus,
-              show.registrationStatus,
-              show.resultsStatus
-            );
-            return (
-              <Link
-                key={show.id}
-                href={`/shows/${show.slug}`}
-                className="bg-zt-surface border border-zt-border hover:border-zt-primary rounded-2xl p-4 space-y-2.5 transition block"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-1.5">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span
-                      className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
-                        show.competitionStatus === 'live'
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                          : show.competitionStatus === 'upcoming'
-                          ? 'bg-zt-primary/20 text-zt-primary-2 border border-zt-primary/40'
-                          : show.competitionStatus === 'completed'
-                          ? 'bg-zt-surface-2 text-zt-text border border-zt-border-strong'
-                          : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                      }`}
-                    >
-                      {life.competitionLabel}
-                    </span>
-                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-text-2">
-                      {life.resultsLabel}
-                    </span>
-                  </div>
-                  {show.isDemoFixture && (
-                    <span className="text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
-                      Demo
-                    </span>
-                  )}
-                </div>
-
-                <div>
-                  <h3 className="text-base font-black text-zt-text">{show.name}</h3>
-                  <div className="text-xs font-bold text-zt-muted mt-0.5">
-                    {show.date} • {show.venue.facilityName ? `${show.venue.facilityName}, ` : ''}
-                    {show.venue.city}, {show.venue.state}
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-1.5">
-                  {show.implementTags.slice(0, 4).map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-[10px] font-bold px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-text-2"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+      {/* Shows as a results table */}
+      <section aria-labelledby="sample-shows-heading">
+        <SectionCap
+          id="sample-shows-heading"
+          aside={
+            <Link href="/shows" className="text-xs font-bold uppercase tracking-[0.04em] text-ink underline underline-offset-4 decoration-1 hover:text-pen whitespace-nowrap">
+              View All ({shows.length}) →
+            </Link>
+          }
+        >
+          Shows in the Directory
+        </SectionCap>
+        <p className="text-[13px] text-ink-muted mb-2.5 -mt-1">
+          Includes upcoming inclusive groups, a live show, a completed finalized show with a tied
+          podium, and a completed provisional show.
+        </p>
+        <ShowRows shows={shows.slice(0, 4)} ariaLabelledby="sample-shows-heading" />
       </section>
 
       {/* Secondary Entry Point: Gym Directory & Account */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-zt-surface border border-zt-border rounded-2xl p-5 flex flex-col justify-between space-y-4">
-          <div className="space-y-1.5">
-            <div className="text-xs font-black uppercase tracking-wider text-zt-secondary flex items-center gap-1.5">
-              <Dumbbell className="w-4 h-4" aria-hidden="true" />
-              <span>Strongman Gym Directory</span>
-            </div>
-            <h2 className="text-lg font-black text-zt-text">
-              Find Gyms With Logs, Stones &amp; Day Passes
-            </h2>
-            <p className="text-xs text-zt-text-2 leading-relaxed">
+      <section className="zt-block grid-cols-1 md:grid-cols-2">
+        <WebCell pad="lg" className="justify-between gap-4">
+          <div className="space-y-2">
+            <Cap>Strongman Gym Directory</Cap>
+            <h2 className="text-[22px] font-bold leading-tight text-ink">Find Gyms With Logs, Stones &amp; Day Passes</h2>
+            <p className="text-sm leading-[1.5] text-ink-muted">
               {gymsRes.source === 'live_supabase'
                 ? `${gyms.length} strongman and powerlifting gyms with equipment, day-pass and drop-in details, filterable by distance from your zip.`
                 : `Explore ${gyms.length} sample strongman gym listings with implement inventories, drop-in hours, and day-pass policies.`}
             </p>
           </div>
-          <div>
-            <Link
-              href="/gyms"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zt-secondary text-zt-on-secondary font-black text-xs uppercase tracking-wider"
-            >
-              Browse the Gym Directory →
-            </Link>
+          <div className="flex">
+            <Key href="/gyms" variant="ink">Browse the Gym Directory →</Key>
           </div>
-        </div>
-
-        <div className="bg-zt-surface border border-zt-border rounded-2xl p-5 flex flex-col justify-between space-y-4">
-          <div className="space-y-1.5">
-            <div className="text-xs font-black uppercase tracking-wider text-zt-primary flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4" aria-hidden="true" />
-              <span>One Account</span>
-            </div>
-            <h2 className="text-lg font-black text-zt-text">
-              Athlete, Promoter &amp; Gym Owner in One Sign-In
-            </h2>
-            <p className="text-xs text-zt-text-2 leading-relaxed">
+        </WebCell>
+        <WebCell pad="lg" className="justify-between gap-4">
+          <div className="space-y-2">
+            <Cap>One Account</Cap>
+            <h2 className="text-[22px] font-bold leading-tight text-ink">Athlete, Promoter &amp; Gym Owner in One Sign-In</h2>
+            <p className="text-sm leading-[1.5] text-ink-muted">
               One person can compete, promote shows, and manage a gym listing. Sign in once to run your
               meets, claim your gym, pick a username and show up in the Athletes list.
             </p>
           </div>
-          <div>
-            <Link
-              href="/website/account"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zt-inset border border-zt-border-strong text-zt-text font-black text-xs uppercase tracking-wider hover:border-zt-primary"
-            >
-              Open your account →
-            </Link>
+          <div className="flex">
+            <Key href="/website/account" variant="line">Open your account →</Key>
           </div>
-        </div>
+        </WebCell>
       </section>
     </WebsiteShell>
   );

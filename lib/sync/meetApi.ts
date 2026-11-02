@@ -16,6 +16,15 @@ export interface LiveStateRow {
   updated_by: string | null;
 }
 
+// 036: one row per meet telling the venue TV which sheet to draw and whether the room is dark.
+export interface TvControlRow {
+  meet_id: string;
+  sheet: 'a' | 'b';
+  mode: 'home' | 'dark';
+  updated_at: string;
+  updated_by: string | null;
+}
+
 export interface RemoteMeet {
   state: AppState;
   slug: string;
@@ -28,13 +37,16 @@ export interface RemoteMeet {
   latestServerAt: string | null;   // max results.server_at seen; starting pull watermark
   updatedAt: string | null;        // meets.updated_at; config watermark (see pullChanges / fetchMeetConfig)
   theme?: ZtTheme | null;          // 030: the show's colours for the public board (not the scorer phones)
+  venue?: { facilityName?: string; city?: string; state?: string } | null;   // listing venue (005); the TV title block
+  federation?: string | null;
+  hostGymId?: string | null;       // the CLIENT cell on the TV reads the gym's name
 }
 
 // What a linked judge phone needs when the admin republishes: meet settings + divisions + events.
 export interface MeetConfig { meet: AppState['meet']; divisions: AppState['divisions']; events: AppState['events']; updatedAt: string | null }
 
 // Public columns only (join_code and admin_pin are revoked from anon in the schema).
-const MEET_COLS = 'id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,competition_status,results_status,updated_at,theme';
+const MEET_COLS = 'id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,competition_status,results_status,updated_at,theme,venue,federation,host_gym_id';
 
 export function latestServerAt(rows: { server_at?: string }[]): string | null {
   let m: string | null = null;
@@ -66,6 +78,9 @@ function toRemoteMeet(meet: MeetRow, kids: Awaited<ReturnType<typeof fetchChildr
     latestServerAt: latestServerAt(kids.results),
     updatedAt: meet.updated_at ?? null,
     theme: parseTheme((meet as { theme?: unknown }).theme),
+    venue: (meet as { venue?: RemoteMeet['venue'] }).venue ?? null,
+    federation: (meet as { federation?: string | null }).federation ?? null,
+    hostGymId: (meet as { host_gym_id?: string | null }).host_gym_id ?? null,
   };
 }
 
@@ -160,4 +175,29 @@ export async function setLiveState(client: SyncClient, row: Omit<LiveStateRow, '
 
 export async function getLiveState(client: SyncClient, meetId: string): Promise<LiveStateRow[]> {
   return client.select<LiveStateRow>('live_state', `meet_id=eq.${meetId}`);
+}
+
+// 036 tv_control: null when the scorer has never set it (the TV then falls back to its link's ?sheet= / ?mode=).
+// A server without the table (main before 036) answers 404; the TV treats that as "no row" too.
+export async function getTvControl(client: SyncClient, meetId: string): Promise<TvControlRow | null> {
+  try {
+    const rows = await client.select<TvControlRow>('tv_control', `meet_id=eq.${meetId}&limit=1`);
+    return rows[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function setTvControl(client: SyncClient, row: Omit<TvControlRow, 'updated_at'>): Promise<void> {
+  await client.upsert('tv_control', [{ ...row, updated_at: new Date().toISOString() } as unknown as Record<string, unknown>], 'meet_id');
+}
+
+/** Public gym name for the TV's CLIENT cell; null when unknown. */
+export async function getGymName(client: SyncClient, gymId: string): Promise<string | null> {
+  try {
+    const rows = await client.select<{ name: string }>('gyms', `id=eq.${gymId}&select=name&limit=1`);
+    return rows[0]?.name ?? null;
+  } catch {
+    return null;
+  }
 }
