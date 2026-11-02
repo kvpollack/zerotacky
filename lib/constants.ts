@@ -12,7 +12,7 @@ export const DEFAULT_THEME_ID = 'steel';
 export const DAYLIGHT_THEME_ID = 'daylight';   // default light theme for the Day toggle
 
 export const THEMES: ThemeDef[] = [
-  { id: 'steel', name: 'Calibrated Steel', tagline: 'Graphite • Comp Red • Calibrated Blue', surface: '#111317', primary: '#E11D48', secondary: '#2563EB' },
+  { id: 'steel', name: 'Calibrated Steel', tagline: 'Graphite • Sky • Calibrated Blue', surface: '#111317', primary: '#60A5FA', secondary: '#2563EB' },
   { id: 'volt', name: 'Power Plant Volt', tagline: 'Midnight • Cyan • Neon Volt', surface: '#0B1120', primary: '#06B6D4', secondary: '#84CC16' },
   { id: 'brass', name: 'Iron & Brass', tagline: 'Charcoal • Brass • Rust Crimson', surface: '#171614', primary: '#D4AF37', secondary: '#B91C1C' },
   { id: 'navy', name: 'Federation Navy', tagline: 'Oxford Navy • Sky • Gold Medal', surface: '#0A1128', primary: '#38BDF8', secondary: '#FACC15' },

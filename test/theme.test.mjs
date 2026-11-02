@@ -84,9 +84,9 @@ test('themeWarnings: every preset is clean; bad pairs warn in plain words with n
 
 test('presets map surface -> background and sameTheme compares by value', () => {
   const steel = T.PRESET_THEMES.find((p) => p.id === 'steel');
-  expect(steel.theme).toEqual({ primary: '#e11d48', background: '#111317', secondary: '#2563eb' });
+  expect(steel.theme).toEqual({ primary: '#60a5fa', background: '#111317', secondary: '#2563eb' });   // rose retired 11/2
   expect(T.sameTheme(null, null)).toBe(true);
   expect(T.sameTheme(steel.theme, { ...steel.theme })).toBe(true);
-  expect(T.sameTheme(steel.theme, { primary: '#e11d48', background: '#111317' })).toBe(false);
+  expect(T.sameTheme(steel.theme, { primary: '#60a5fa', background: '#111317' })).toBe(false);
   expect(T.sameTheme(steel.theme, null)).toBe(false);
 });

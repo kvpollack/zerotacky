@@ -193,9 +193,9 @@
   --zt-inset: #0a0b0e;
   --zt-border: #23262d;
   --zt-border-strong: #343840;
-  --zt-primary: #e11d48;
-  --zt-primary-2: #fb7185;
-  --zt-on-primary: #ffffff;
+  --zt-primary: #60a5fa;   /* was rose #e11d48, 7.8 CAM02-UCS deltaE from the no-lift red (study 10/31); blue since 11/2 */
+  --zt-primary-2: #93c5fd;
+  --zt-on-primary: #0a0b0e;
   --zt-secondary: #2563eb;
   --zt-on-secondary: #ffffff;
 }
@@ -443,3 +443,65 @@
 :is([data-zt-theme='daylight'], [data-zt-theme='sandstone']) :is(.text-red-100, .text-red-200, .text-red-300, .text-red-400) { color: #991b1b; }
 :is([data-zt-theme='daylight'], [data-zt-theme='sandstone']) .text-sky-300 { color: #075985; }
 :is([data-zt-theme='daylight'], [data-zt-theme='sandstone']) .text-emerald-200\/80 { color: #047857; }
+
+/* =====================================================================================================
+   Sheet design system (UI transition Phase 1, 11/2; plan in briefs/ui_transition_plan_2026-11-02.md).
+   Every screen becomes an engineering sheet: frame on a grey ground, title block, Saira Stencil One
+   numerals, Red Hat Mono text. Bright is home; [data-zt-mode='dark'] is the venue toggle.
+   Three colours do three jobs: ink (the printed form), pen (every filled-in value), red pen (NO LIFT
+   and corrections only). Promoter accent fills three slots and is resolved by lib/theme/promoter.ts.
+   ===================================================================================================== */
+@font-face { font-family: 'Red Hat Mono'; src: url('/fonts/red-hat-mono-latin-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Red Hat Mono'; src: url('/fonts/red-hat-mono-latin-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+/* Numerals only in running text (digits, point, colon, slash), like a lettering template */
+@font-face { font-family: 'ZT Numerals'; src: url('/fonts/saira-stencil-one-latin-400.woff2') format('woff2'); font-weight: 100 900; font-display: swap; unicode-range: U+0030-0039, U+002E, U+003A, U+002F; }
+/* The full stencil face: wordmark and display numerals only, never below text-2xl */
+@font-face { font-family: 'Saira Stencil One'; src: url('/fonts/saira-stencil-one-latin-400.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+/* Size-adjusted local fallbacks so the layout does not jump while the files load */
+@font-face { font-family: 'Red Hat Mono Fallback'; src: local('Consolas'), local('Courier New'); size-adjust: 98%; ascent-override: 95%; descent-override: 25%; }
+@font-face { font-family: 'Saira Stencil One Fallback'; src: local('Impact'), local('Arial Black'); size-adjust: 92%; }
+
+@theme inline {
+  --font-sheet: 'ZT Numerals', 'Red Hat Mono', 'Red Hat Mono Fallback', ui-monospace, monospace;
+  --font-wordmark: 'Saira Stencil One', 'Saira Stencil One Fallback', sans-serif;
+  --color-ground: var(--ground);
+  --color-sheet: var(--sheet);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--muted);
+  --color-rule: var(--rule);
+  --color-pen: var(--pen);
+  --color-pen-label: var(--pen-label);
+  --color-redpen: var(--red);
+  --color-redpen-label: var(--red-label);
+  --color-slot: var(--accent);
+  --color-slot-label: var(--accent-label);
+}
+
+:root, [data-zt-mode='home'] {
+  --ground: #d6d6d6; --sheet: #ffffff; --ink: #111111; --muted: #4f4f4f; --rule: #111111;
+  --pen: #1d3aa8; --pen-label: #ffffff;
+  --red: #c8102e; --red-label: #ffffff;
+  --accent: #111111; --accent-label: #ffffff;   /* promoter slots default to ink */
+}
+[data-zt-mode='dark'] {
+  --ground: #2b2b2b; --sheet: #000000; --ink: #f2f2f2; --muted: #bdbdbd; --rule: #f2f2f2;
+  --pen: #8fa8ff; --pen-label: #000000;
+  --red: #ff5a4f; --red-label: #000000;
+  --accent: #f2f2f2; --accent-label: #000000;
+}
+
+/* Phase 1 bridge, removed when each surface is reskinned (Phases 4-6): the old emerald "success" badges and
+   the brand rose are retired as colours now, in one place, without touching forty call sites. Success is
+   ink/white (sport's convention: a white light is good); rose sat 7.8 deltaE from the no-lift red. */
+@theme inline {
+  --color-emerald-200: #f4f4f5;
+  --color-emerald-300: #f4f4f5;
+  --color-emerald-400: #f4f4f5;
+  --color-emerald-500: #a1a1aa;
+  --color-emerald-950: #111111;
+}
+:is([data-zt-theme='daylight'], [data-zt-theme='sandstone']) :is(.text-emerald-200, .text-emerald-300, .text-emerald-400, .text-emerald-200\/80) { color: #111111; }
+
+/* Ruled blocks: 2 px block edge, 1 px cells drawn as gaps over the rule colour */
+.zt-block { border: 2px solid var(--rule); display: grid; gap: 1px; background: var(--rule); }
+.zt-block > * { background: var(--sheet); min-width: 0; }
