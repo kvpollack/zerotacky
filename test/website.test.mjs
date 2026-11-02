@@ -13,7 +13,7 @@ describe('website filters: shows & gyms', () => {
   test('filters shows by competitionStatus, state, implementTag, and inclusive division query', () => {
     const upcoming = F.filterPublicShows(summaries, { competitionStatus: 'upcoming' });
     assert.equal(upcoming.length, 1);
-    assert.equal(upcoming[0].slug, 'strongfest-2026');
+    assert.equal(upcoming[0].slug, 'riverside-iron-fest-2026');
 
     const byImplement = F.filterPublicShows(summaries, { implementTag: 'Circus Dumbbell' });
     assert.equal(byImplement.length, 1);
@@ -21,7 +21,7 @@ describe('website filters: shows & gyms', () => {
 
     const byInclusiveGroup = F.filterPublicShows(summaries, { divisionQuery: 'Group 4' });
     assert.equal(byInclusiveGroup.length, 1);
-    assert.equal(byInclusiveGroup[0].slug, 'strongfest-2026');
+    assert.equal(byInclusiveGroup[0].slug, 'riverside-iron-fest-2026');
 
     const postponed = F.filterPublicShows(summaries, { competitionStatus: 'postponed' });
     assert.equal(postponed.length, 1);

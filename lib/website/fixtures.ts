@@ -17,10 +17,10 @@ import type {
 
 export const DEMO_SHOW_RECORDS: PublicShowRecord[] = [
   // 1. UPCOMING + INCLUSIVE STRENGTH GROUPS (fictional show in the Strongfest format; renamed 10/19 so it is not
-  //    mistaken for the real All Out Strongfest 2026 once that meet is listed)
+  //    mistaken for the real All Out Strongfest 2026 once that meet is listed; slug renamed 11/2 for the same reason)
   {
     id: 'demo-show-strongfest-2026',
-    slug: 'strongfest-2026',
+    slug: 'riverside-iron-fest-2026',
     name: 'Riverside Iron Fest 2026 (Demo Upcoming)',
     date: '2026-11-14',
     venue: {
@@ -45,7 +45,7 @@ export const DEMO_SHOW_RECORDS: PublicShowRecord[] = [
     registrationStatus: 'closed',
     resultsStatus: 'not_started',
     isDemoFixture: true,
-    liveScoreboardPath: '/m/strongfest-2026',
+    liveScoreboardPath: '/m/riverside-iron-fest-2026',
     lastUpdatedIso: '2026-10-16T14:00:00Z',
     summaryNote:
       'Sample inclusive strength-grouped competition (Groups 1–5 by working weight rather than gender or bodyweight). Fictional show with sample data.',
@@ -66,7 +66,7 @@ export const DEMO_SHOW_RECORDS: PublicShowRecord[] = [
     state: {
       meet: {
         id: 'demo-show-strongfest-2026',
-        slug: 'strongfest-2026',
+        slug: 'riverside-iron-fest-2026',
         name: 'Riverside Iron Fest 2026 (Demo Upcoming)',
         date: '2026-11-14',
         runOrderMethod: 'reverse_overall',
@@ -624,7 +624,7 @@ export const DEMO_GYM_LISTINGS: StrongmanGymListing[] = [
     ],
     lat: 39.9168,
     lng: -75.3877,
-    hostedShowSlugs: ['strongfest-2026'],
+    hostedShowSlugs: ['riverside-iron-fest-2026'],
     lastUpdatedDate: '2026-10-14',
     isDemoListing: true,
   },
@@ -696,7 +696,7 @@ export const DEMO_PERSONAS: DemoPersonaProfile[] = [
       registrations: [
         {
           entryId: 'reg-strongfest-g4',
-          showSlug: 'strongfest-2026',
+          showSlug: 'riverside-iron-fest-2026',
           showName: 'Riverside Iron Fest 2026 (Demo Upcoming)',
           showDate: '2026-11-14',
           divisionName: 'Group 4 (Inclusive)',
@@ -728,8 +728,8 @@ export const DEMO_PERSONAS: DemoPersonaProfile[] = [
       managedShows: [
         {
           meetId: 'demo-show-strongfest-2026',
-          slug: 'strongfest-2026',
-          name: 'All Out Strongfest 2026',
+          slug: 'riverside-iron-fest-2026',
+          name: 'Riverside Iron Fest 2026 (Demo Upcoming)',
           date: '2026-10-24',
           competitionStatus: 'upcoming',
           registrationStatus: 'closed',
