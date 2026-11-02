@@ -73,8 +73,8 @@ export default function WebsiteShell({ activeNav, brand = null, sheet, children 
         <div className="flex-1 flex flex-col min-w-0 bg-sheet border-2 border-rule">
           {/* header strip: a ruled block, 1 px rules drawn as grid gaps over the rule colour */}
           <header className="sticky top-0 z-20 border-b-2 border-rule">
-            <div className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] lg:grid-cols-[260px_minmax(0,1fr)_auto_auto_auto] gap-px bg-rule">
-              <div className={`${CELL} gap-3 px-3 lg:px-[18px] overflow-hidden`}>
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] lg:grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] 2xl:grid-cols-[260px_minmax(0,1fr)_auto_auto_auto] gap-px bg-rule">
+              <div className={`${CELL} gap-3 px-3 2xl:px-[18px] overflow-hidden`}>
                 <Link
                   href="/website"
                   className="text-[20px] sm:text-[26px] text-ink no-underline focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
@@ -88,12 +88,13 @@ export default function WebsiteShell({ activeNav, brand = null, sheet, children 
                 )}
               </div>
 
-              {/* nav: full-width scrolling row on phones (order-last), the second cell from lg up */}
+              {/* nav: full-width row on phones (order-last), the second cell from lg up. Scrolls at every width so a
+                  1024-1440 laptop (or a signed-in promoter's extra link) never pushes links under the Mode cell. */}
               <div className={`${CELL} relative col-span-full lg:col-span-1 order-last lg:order-none border-t border-rule lg:border-t-0`}>
                 <nav
                   id="zt-primary-nav"
                   aria-label="Primary website navigation"
-                  className="flex items-stretch h-14 w-full overflow-x-auto lg:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pr-10 lg:pr-0"
+                  className="flex items-stretch h-14 w-full overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pr-10"
                 >
                   {NAV_ITEMS.map((item) => {
                     const isActive = activeNav === item.id;
@@ -105,8 +106,8 @@ export default function WebsiteShell({ activeNav, brand = null, sheet, children 
                   })}
                   <PromoterNavLink active={activeNav === 'promoter'} />
                 </nav>
-                {/* LT-07: right-edge fade says the row scrolls */}
-                <div aria-hidden="true" className="lg:hidden pointer-events-none absolute right-0 inset-y-0 w-10 bg-gradient-to-l from-sheet to-transparent" />
+                {/* LT-07: right-edge fade says the row scrolls (invisible over empty sheet when everything fits) */}
+                <div aria-hidden="true" className="pointer-events-none absolute right-0 inset-y-0 w-10 bg-gradient-to-l from-sheet to-transparent" />
                 <NavActiveScroll navId="zt-primary-nav" active={activeNav} />
               </div>
 
