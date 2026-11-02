@@ -26,20 +26,20 @@ export default async function WebsiteLandingPage() {
       <section className="bg-zt-surface border border-zt-border rounded-2xl p-6 sm:p-8 space-y-6">
         <div className="space-y-3 max-w-3xl">
           <div className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-zt-primary bg-zt-inset border border-zt-border px-3 py-1 rounded-full">
-            <span>Built for Strongman Promoters, Judges, Pit Crew &amp; Athletes</span>
+            <span>For strongman promoters, judges, pit crew and athletes</span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-zt-text">
-            Find strongman competitions. Run meet day without spreadsheets or Wi-Fi failures.
+            Find strongman shows. Run meet day from a phone, no spreadsheet, no Wi-Fi.
           </h1>
           <p className="text-sm sm:text-base text-zt-text-2 leading-relaxed">
-            ZeroTacky pairs a public competition and strongman gym directory with an offline-first
-            meet-day scoring engine. Judges score reps, times, distances, rising bars, and stone
-            splits on their phones; pit crew gets exact plate stacks and rack pin callouts; spectators
-            watch a live public scoreboard.
+            ZeroTacky is a show and gym directory with a scorer that keeps working when the venue
+            Wi-Fi dies. Judges put in reps, times, distances, rising bar heights and stone splits on
+            their own phones. Pit crew get the plate stack and the rack pin for every athlete.
+            Spectators follow the live scoreboard from the stands.
           </p>
           <p className="text-sm font-bold text-zt-text">
-            Everything ZeroTacky offers athletes is free, always: finding shows, following your meets, your profile and
-            the live scoreboard. No premium tier for athletes, now or later.
+            Athletes never pay. Finding shows, following your meets, your profile and the live scoreboard are
+            free, and there is no paid tier coming.
           </p>
         </div>
 

@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createSyncClient, readSyncEnv } from '@/lib/sync/client';
-import { fetchMeetBySlug, pullChanges, getLiveState } from '@/lib/sync/meetApi';
-import type { LiveStateRow, RemoteMeet } from '@/lib/sync/meetApi';
+import { fetchMeetBySlug, pullChanges, getLiveState, getTvControl, getGymName } from '@/lib/sync/meetApi';
+import type { LiveStateRow, RemoteMeet, TvControlRow } from '@/lib/sync/meetApi';
+import TvBoard from '@/components/tv/TvBoard';
 import { mergeResults } from '@/lib/sync/mapping';
 import { mergeAthletes } from '@/lib/sync/controller';
 import { scoreSingleEvent, calculateDivisionStandings } from '@/lib/engine';
@@ -30,6 +31,8 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   const [meet, setMeet] = useState<RemoteMeet | null>(null);
   const [state, setState] = useState<AppState | null>(null);
   const [live, setLive] = useState<LiveStateRow[]>([]);
+  const [control, setControl] = useState<TvControlRow | null>(null);   // 036: the scorer's sheet + venue mode for the TV
+  const [clientName, setClientName] = useState<string | null>(null);   // host gym name for the TV title block
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [demo, setDemo] = useState(false);   // fixture-backed board: no polling, DEMO shown
@@ -54,7 +57,9 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
     const fx = getDemoScoreboardState(slug);
     if (!fx) return false;
     setDemo(true);
-    setMeet({ state: fx.state, slug: fx.slug, stations: fx.state.meet.stations ?? [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }], isDemo: true, competitionStatus: null, resultsStatus: null, latestServerAt: null, updatedAt: null });
+    // the fixture's lifecycle, venue and promoter ride along so the demo board reads like a real one (UI transition Phase 2)
+    setMeet({ state: fx.state, slug: fx.slug, stations: fx.state.meet.stations ?? [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }], isDemo: true, competitionStatus: fx.competitionStatus ?? null, resultsStatus: fx.resultsStatus ?? null, latestServerAt: null, updatedAt: null, venue: fx.venue ?? null });
+    if (fx.promoterName) setClientName(fx.promoterName);
     setState(fx.state);
     setUpdatedAt(Date.now());
     return true;
@@ -72,9 +77,13 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
         setMeet(r);
         setState(r.state);
         since.current = r.latestServerAt;
-        setLive(await getLiveState(client, r.state.meet.id));
+        const [ls, tc] = await Promise.all([getLiveState(client, r.state.meet.id), getTvControl(client, r.state.meet.id)]);
+        if (cancelled) return;
+        setLive(ls);
+        setControl(tc);
         setUpdatedAt(Date.now());
         setError(null);
+        if (r.hostGymId) getGymName(client, r.hostGymId).then((n) => { if (!cancelled) setClientName(n); });
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e));
       }
@@ -91,9 +100,10 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
       if (busy || document.visibilityState !== 'visible') return;
       busy = true;
       try {
-        const [chg, ls] = await Promise.all([pullChanges(client, meetId, since.current), getLiveState(client, meetId)]);
+        const [chg, ls, tc] = await Promise.all([pullChanges(client, meetId, since.current), getLiveState(client, meetId), getTvControl(client, meetId)]);
         since.current = chg.latestIso;
         setLive(ls);
+        setControl(tc);
         setMeet((prev) => prev && (prev.competitionStatus !== chg.competitionStatus || prev.resultsStatus !== chg.resultsStatus)
           ? { ...prev, competitionStatus: chg.competitionStatus, resultsStatus: chg.resultsStatus } : prev);
         setState((prev) => {
@@ -125,6 +135,22 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   if (!env) return shell(<Notice text="Live scoreboard is not configured on this build." />);
   if (notFound) return shell(<Notice text="No meet found for this scoreboard link. Check the link with the promoter." />);
   if (!state || !meet) return shell(<Notice text={error ? `Could not load: ${error}` : 'Loading…'} />);
+
+  // UI transition Phase 2: the TV is the sheet board (components/tv). The phone layout below is untouched until Phase 5.
+  if (tv) {
+    return (
+      <>
+        <TvBoard meet={meet} state={state} live={live} control={control} clientName={clientName} error={error} demo={!!meet.isDemo} updatedAt={updatedAt} />
+        <button
+          type="button"
+          onClick={toggleLayout}
+          className="fixed bottom-1.5 left-1.5 z-10 px-2 py-1 text-[11px] font-sheet uppercase text-ink bg-sheet border border-rule opacity-30 hover:opacity-100 focus:opacity-100"
+        >
+          Phone view
+        </button>
+      </>
+    );
+  }
 
   const stations = meet.stations?.length ? meet.stations : [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }];
   const completed = meet.competitionStatus === 'completed';
