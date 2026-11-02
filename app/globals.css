@@ -462,8 +462,16 @@
 @font-face { font-family: 'Saira Stencil One Fallback'; src: local('Impact'), local('Arial Black'); size-adjust: 92%; }
 
 @theme inline {
+  /* Two families, no third (Kurt 11/2): every word in Red Hat Mono, numerals in the stencil on data surfaces. */
+  --font-sans: 'Red Hat Mono', 'Red Hat Mono Fallback', ui-monospace, monospace;
+  --font-mono: 'Red Hat Mono', 'Red Hat Mono Fallback', ui-monospace, monospace;
   --font-sheet: 'ZT Numerals', 'Red Hat Mono', 'Red Hat Mono Fallback', ui-monospace, monospace;
   --font-wordmark: 'Saira Stencil One', 'Saira Stencil One Fallback', sans-serif;
+  /* Red Hat Mono ships 400 and 700 only: the heavier utilities collapse to 700 instead of synthesised bold */
+  --font-weight-medium: 400;
+  --font-weight-semibold: 700;
+  --font-weight-extrabold: 700;
+  --font-weight-black: 700;
   --color-ground: var(--ground);
   --color-sheet: var(--sheet);
   --color-ink: var(--ink);
@@ -501,6 +509,9 @@
   --color-emerald-950: #111111;
 }
 :is([data-zt-theme='daylight'], [data-zt-theme='sandstone']) :is(.text-emerald-200, .text-emerald-300, .text-emerald-400, .text-emerald-200\/80) { color: #111111; }
+
+html { font-synthesis: none; }
+body { font-family: var(--font-sans); }
 
 /* Ruled blocks: 2 px block edge, 1 px cells drawn as gaps over the rule colour */
 .zt-block { border: 2px solid var(--rule); display: grid; gap: 1px; background: var(--rule); }

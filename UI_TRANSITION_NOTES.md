@@ -30,6 +30,9 @@ Rule: every screen is mocked and approved before its code; one branch per phase;
   (4: REV letters, stone outline, wordmark a11y, keys). `test/theme.test.mjs` (pre-existing, promoter theme) updated for the
   steel primary. 485 pass, tsc clean. Lesson: `test/theme.test.mjs` already existed and I overwrote it before restoring it
   from GitHub; check for a name clash before `cat >`.
+- Type switched site-wide (Kurt 11/2, second push): `--font-sans`/`--font-mono` = Red Hat Mono; `font-medium`..`font-black`
+  collapse to 400/700 via `--font-weight-*` in `@theme`; `font-synthesis: none`. Mono is wider, so some old layouts truncate
+  (scorer header, run-order cards): those surfaces are reskinned in Phases 4-6, not patched.
 - Visual check on :3079 (home, shows, demo board, scorer): wordmark renders in stencil, badges neutral, nothing broken.
 
 ## Next
