@@ -152,3 +152,42 @@ Mockup gate: `pad.html` (approved 2 Nov) + `pad_states.html` (locked / between a
   staging run.
 - Known / later: the stone table has no WEIGHT column (events do not carry per-stone weights); the Next 16.4.0 security
   advisory shows in the dev overlay (not a pad issue; `next upgrade --agent=security`).
+
+## Phase 5: scorer, full reskin (11/2 evening, branch v2)
+
+Mockup gate: `scorer_setup/events/roster/live/results.html` (approved 2 Nov, "good to go, looks great").
+
+- `strongman-app.jsx` keeps every hook, handler and the controller; the chrome and the screens move to TypeScript under
+  `components/scorer/`. Nothing in `lib/` changed except the 036 `tv_control` write/read (below).
+- `ScorerShell.tsx`: `ScorerFrame` (grey ground, zone strips 1-8 / A-F, the 2 px frame, `data-zt-sheet data-zt-mode`),
+  `ScorerHeader` (meet name, Demo, role lock + Unlock with the PIN row, bright/dark toggle, SYNC cell; station chips and
+  Division / Event selects on the floor tabs), `ScorerNav` (title block Title / Sheet / Rev / Division, then the sticky
+  bottom strip of glyph + label keys filtered by role). `scorerModel.ts` (pure, `test/scorer.test.mjs`, 12 tests): nav
+  tabs per role, the SHEET cell per tab ("Setup n of 6"), station chips, division option text, TV control words.
+- `parts.tsx`: the scorer's form grammar. `Key` (line / pen / ink / red / off), `Field` (muted cap over a pen value),
+  `KeyGroup` (radiogroup strip, chosen key filled ink), `LH`/`LR` list cells, `Toast`, `Sec`, `Note`, inputs.
+- Judge Pad tab: `JudgePad chrome={false}`; the shell supplies the meet row, station row, frame and title block.
+- Pit Crew tab: `LiveControl` on top (now lifting, read-only clock mirror, up next, scored count, Volunteer Phone Role
+  Lock, TV Board: Sheet A/B and Venue Bright/Dark drive 036 `tv_control` through `sync.setTv`; read back with
+  `sync.readTv`; keys go off when the phone is not linked), `CloudSync compact` (publish key) for admins, then
+  `PitCrewSheet` (port of PitCrew.jsx, same props and copy; plate stack as ink chips).
+- Standings tab: `StandingsSheet` (Sheet B card at phone width, TV layout toggle, Event n Breakdown ruled list, scratched
+  rows in red pen) with `BackupExport` (Results CSV, Backup JSON, Copy Standings, Restore, Auto-snapshots) for admins.
+- Meet Setup tab: `MeetSetupSheet` behind a six-cell index strip (the open section spells its name, the others show the
+  number; drives the title block's SHEET cell). One section at a time: 1 Meet Details & Rules (+ demo/real key, Cloud
+  Sync, Promoter Theme select, reset keys), 2 Divisions, 3 Events (EventForm.jsx reused as-is inside a ruled block),
+  4 Stations & Floor Plan (per-station event order), 5 Athletes (pointer and keyboard lot drag carried over; the row is
+  handle / Lot / Athlete / ⇄ move / SCR / ✕, the division move opens a one-line row under the athlete), 6 Meets, Demo
+  Presets & Readiness Check. Handlers and strings copied from `components/setup/builder/*`, which stay for the promoter
+  editor. Advanced Settings is gone: role lock lives in Live Control, backup under Standings, sync and reset on Meet Details.
+- Removed: `shell/Header.jsx`, `shell/BottomNav.jsx`, `shell/SyncDot.jsx`, `pitcrew/PitCrew.jsx`, `setup/MeetSetup.jsx`,
+  `setup/SyncPanel.jsx`, `setup/BackupPanel.jsx`, `setup/ResultsCsvCard.jsx`. Kept (the board still uses them):
+  `standings/Standings.jsx`, `standings/LeaderboardTable.jsx`, `shell/LayoutToggle.jsx`.
+- Sync: `controller.ts` `setTvControl` / `readTvControl` (`tv_control` upsert on `meet_id`, in `FLUSH_ORDER`),
+  `useMeetSync` exposes `setTv` / `readTv`. `PadClock.onReset` optional (Live Control mirrors the clock without it).
+- Checked: bun test 533, tsc clean; dev server at 390 px, bright and dark: judge, pit crew (live control + load card),
+  standings + export, all six setup sections, an open EventForm, athlete delete confirm and move row, preset confirm,
+  readiness pass. Exit test (plan): scripted meet-day dry run on staging.
+- Known / later: EventForm.jsx keeps its old rounded styling inside the sheet (legible through the `[data-zt-sheet]`
+  bridge; port when the promoter editor moves in Phase 6). Promoter Theme is a plain select here; the paint picker with
+  the clamp is Phase 6. Long division names clip in the Divisions list input at 390 px (the field scrolls).

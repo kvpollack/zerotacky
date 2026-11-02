@@ -112,6 +112,9 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
   }, []);
 
   const syncNow = useCallback(() => ctlRef.current?.tick(), []);
+  // Phase 5: TV control from the live screen (036). setTv queues, then pushes right away.
+  const setTv = useCallback((row) => { ctlRef.current?.setTvControl(row); return ctlRef.current?.tick(); }, []);
+  const readTv = useCallback(() => ctlRef.current?.readTvControl() ?? Promise.resolve(null), []);
 
   // Outbound: diff on every results/athletes change.
   useEffect(() => {
@@ -214,6 +217,8 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
     joinByCode,
     unlink,
     syncNow,
+    setTv,
+    readTv,
     canPublish,
     account: signedIn ? { email: auth.user?.email ?? null, label: profileLabel(auth.profile, auth.user?.email), loading: auth.loading } : null,
     deviceId: ctlRef.current?.deviceId ?? null,

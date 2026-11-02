@@ -23,6 +23,8 @@ type PadSync = { enabled?: boolean; status?: SyncStatus; link?: { slug: string; 
 
 export type JudgePadProps = {
   mode?: Mode;
+  /** false inside the Phase 5 shell: the meet | SYNC and station | event rows are the shell header's. */
+  chrome?: boolean;
   sync?: PadSync;
   stationFlight?: string;
   eventCount?: number;
@@ -118,7 +120,7 @@ function NumInput({ value, step, placeholder, onChange, disabled, ariaLabel }: {
 
 export default function JudgePad(p: JudgePadProps) {
   const {
-    mode = 'home', sync, stationFlight, eventCount, currentAthlete, currentDivision, currentEvent, currentResult,
+    mode = 'home', chrome = true, sync, stationFlight, eventCount, currentAthlete, currentDivision, currentEvent, currentResult,
     divisionAthletes, getElapsedSeconds, handleStatusAction, isLocked, lane2Athlete, lane2AthleteId, lane2Result,
     lockAndAdvance, goToNextSetup, meet, nextRunItem, nextSetup, pendingStatusAction, resetStopwatch, results,
     runOrder, saveResultPatch, selectRunOrderItem, setLane2AthleteId, setPendingStatusAction, setPitCrewCustomWeight,
@@ -216,10 +218,11 @@ export default function JudgePad(p: JudgePadProps) {
       : 'Last athlete on this station';
 
   return (
-    <div data-zt-sheet data-zt-mode={mode} className="font-sheet uppercase text-ink bg-sheet border-2 border-rule flex flex-col leading-[1.15] antialiased" style={{ fontSynthesis: 'none' }}>
+    <div data-zt-sheet data-zt-mode={mode} className={`font-sheet uppercase text-ink bg-sheet flex flex-col leading-[1.15] antialiased ${chrome ? 'border-2 border-rule' : ''}`} style={{ fontSynthesis: 'none' }}>
       <div className="flex flex-col gap-2 p-2">
         {/* ---------- header block ---------- */}
         <RuledBlock columns="minmax(0,1fr) auto">
+          {chrome && <>
           <div className="px-2 flex items-center text-[12px] font-bold min-h-[22px] whitespace-nowrap overflow-hidden text-ellipsis">{meet.name}</div>
           <button
             type="button"
@@ -234,6 +237,7 @@ export default function JudgePad(p: JudgePadProps) {
           </button>
           <div className="px-2 flex items-center text-[12px] min-h-[22px]">{stationLabel}</div>
           <div className="px-2 flex items-center text-[12px] font-bold min-h-[22px] whitespace-nowrap overflow-hidden text-ellipsis">E{ev.eventNumber} {ev.name}</div>
+          </>}
           <div className="col-span-2 px-2 py-1.5 flex items-start justify-between gap-2 min-h-[46px]">
             <div className="min-w-0">
               <h2 className="text-[19px] font-bold leading-tight text-balance">Lot {currentAthlete.lotNumber} {currentAthlete.name}</h2>
@@ -503,7 +507,7 @@ export default function JudgePad(p: JudgePadProps) {
           <GoodLiftKey label={labels.good} onClick={() => press('good')} disabled={!keysLive} className={`min-h-[112px] text-[22px] ${keysLive ? '' : 'zt-key-off !opacity-100'}`} />
           <NoLiftKey label={labels.no} onClick={() => press('no')} disabled={!keysLive} className={`min-h-[112px] text-[22px] ${keysLive ? '' : 'zt-key-off !opacity-100 !border-2'}`} />
         </div>
-        <TitleBlock
+        {chrome && <TitleBlock
           columns="40px minmax(0,1fr) minmax(0,1fr)"
           rows="30px 30px"
           logoSize={30}
@@ -515,7 +519,7 @@ export default function JudgePad(p: JudgePadProps) {
             { cap: 'Rev', value: <>{rev} {isLocked ? 'Locked' : 'Provisional'}</> },
             { cap: 'Division', value: currentDivision.name },
           ]}
-        />
+        />}
       </div>
     </div>
   );
