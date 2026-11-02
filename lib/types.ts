@@ -111,6 +111,9 @@ export interface Result {
   didNotStart?: boolean;
   locked?: boolean;
   groundTouchWarned?: boolean;
+  // Phase 4 (11/2): the judge pad's tape, one entry per GOOD / NO LIFT press. Rides in the sync payload; the engine
+  // never reads it (components/judge/padModel.ts recomputes the scored fields from it).
+  attemptLog?: { kind: 'good' | 'no'; at: number; split?: number; weight?: number }[];
   updatedAt: number;
 }
 

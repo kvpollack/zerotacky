@@ -1,7 +1,7 @@
 // A ruled block: 2 px edge, 1 px cell rules drawn as grid gaps over the rule colour. Children are the cells.
 import React from 'react';
 
-export type RuledBlockProps = {
+export type RuledBlockProps = React.HTMLAttributes<HTMLDivElement> & {
   /** CSS grid-template-columns, e.g. "72px 72px 1fr 150px". */
   columns: string;
   /** CSS grid-template-rows. */
@@ -11,9 +11,9 @@ export type RuledBlockProps = {
   children: React.ReactNode;
 };
 
-export default function RuledBlock({ columns, rows, className = '', style, children }: RuledBlockProps) {
+export default function RuledBlock({ columns, rows, className = '', style, children, ...rest }: RuledBlockProps) {
   return (
-    <div className={`zt-block ${className}`} style={{ gridTemplateColumns: columns, gridTemplateRows: rows, ...style }}>
+    <div {...rest} className={`zt-block ${className}`} style={{ gridTemplateColumns: columns, gridTemplateRows: rows, ...style }}>
       {children}
     </div>
   );

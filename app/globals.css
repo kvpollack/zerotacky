@@ -543,3 +543,12 @@ body { font-family: var(--font-sans); }
 [data-zt-sheet] .bg-emerald-500 { background-color: var(--ink); }
 [data-zt-sheet] .text-emerald-950 { color: var(--sheet); }
 [data-zt-sheet] .bg-emerald-400 { background-color: var(--pen); }
+
+/* Phase 4 (11/2), the judge pad. A key that is not live right now keeps its outline, drops to the muted ink and
+   takes a faint hatch in the rule colour (approved pad-state mockups): it reads as "not now" without greying
+   the whole pad. Sheet inputs are ruled cells whose value is set in pen. */
+.zt-key-off { background-color: var(--sheet); background-image: repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in srgb, var(--rule) 14%, transparent) 7px 8px); color: var(--muted); border: 2px solid var(--rule); }
+.zt-input { background: var(--sheet); border: 2px solid var(--rule); color: var(--pen); font: inherit; font-weight: 700; padding: 8px 10px; width: 100%; border-radius: 0; min-height: 44px; }
+.zt-input::placeholder { color: var(--muted); font-weight: 400; }
+.zt-input:focus { outline: 2px solid var(--pen); outline-offset: -2px; }
+.zt-input::-webkit-outer-spin-button, .zt-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
