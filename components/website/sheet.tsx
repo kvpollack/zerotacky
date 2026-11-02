@@ -58,7 +58,7 @@ export function SectionCap({ children, aside, id }: { children: React.ReactNode;
 }
 
 /** Header strip cells: 56 px tall, 13 px bold uppercase, 1 px rule on the right; the active one is filled in ink. */
-export const NAV_LINK = 'flex items-center h-14 px-3.5 lg:px-[18px] whitespace-nowrap shrink-0 border-r border-rule text-[13px] font-bold uppercase tracking-[0.04em] no-underline transition focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:-outline-offset-2';
+export const NAV_LINK = 'flex items-center h-14 px-3.5 2xl:px-[18px] whitespace-nowrap shrink-0 border-r border-rule text-[13px] font-bold uppercase tracking-[0.04em] no-underline transition focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:-outline-offset-2';
 export const navClass = (active: boolean) => `${NAV_LINK} ${active ? 'bg-ink text-sheet' : 'text-ink hover:bg-ground'}`;
 
 /** Inline link in running text: ink, underlined, pen on hover. */
