@@ -8,8 +8,8 @@ import { mergeResults, resultToRow, athleteToRow } from './mapping';
 import type { PublishExtra } from './mapping';
 import { enqueue, groupByTable, removeFlushed, readQueue, writeQueue } from './queue';
 import type { QueueItem } from './queue';
-import { publishMeet, fetchMeetByJoinCode, fetchMeetBySlug, pullChanges, fetchMeetConfig, checkAdminPin, revokeGrant, type MeetConfig } from './meetApi';
-import type { RemoteMeet, LiveStateRow } from './meetApi';
+import { publishMeet, fetchMeetByJoinCode, fetchMeetBySlug, pullChanges, fetchMeetConfig, checkAdminPin, revokeGrant, getTvControl, type MeetConfig } from './meetApi';
+import type { RemoteMeet, LiveStateRow, TvControlRow } from './meetApi';
 
 export const LINK_KEY = 'ZEROTACKY_SYNC_LINK_V1';
 export const DEVICE_KEY = 'ZEROTACKY_DEVICE_ID_V1';
@@ -129,7 +129,7 @@ export interface ControllerOpts {
   now?: () => number;
 }
 
-const ON_CONFLICT: Record<string, string> = { results: 'meet_id,id', athletes: 'meet_id,id', live_state: 'meet_id,station' };
+const ON_CONFLICT: Record<string, string> = { results: 'meet_id,id', athletes: 'meet_id,id', live_state: 'meet_id,station', tv_control: 'meet_id' };
 
 export class SyncController {
   link: SyncLink | null;
@@ -396,8 +396,22 @@ export class SyncController {
     this.setStatus({});
   }
 
+  // 036 / Phase 5 (11/2): the scorer's live screen drives the venue TV (which sheet, bright or dark). One row per meet,
+  // queued like live_state so it survives a dropped connection; the same membership or grant authorises the write.
+  setTvControl(row: Pick<TvControlRow, 'sheet' | 'mode'>): void {
+    if (!this.link) return;
+    const full = { ...row, meet_id: this.link.meetId, updated_by: this.o.deviceId, updated_at: new Date(this.now()).toISOString() };
+    this.queue = enqueue(this.queue, { table: 'tv_control', id: this.link.meetId, row: full }, this.now());
+    this.persistQueue();
+    this.setStatus({});
+  }
+  async readTvControl(): Promise<TvControlRow | null> {
+    if (!this.link) return null;
+    return getTvControl(this.o.client, this.link.meetId);
+  }
+
   // Parents before children so FK checks pass (athlete row before its result).
-  private static FLUSH_ORDER = ['athletes', 'results', 'live_state'];
+  private static FLUSH_ORDER = ['athletes', 'results', 'live_state', 'tv_control'];
 
   // 025 (Astra LT-01): the join code alone no longer writes athlete rows. A joined phone without a grant (pit crew, no
   // PIN asked) can still send rack pins through zt_set_rack_heights, which merges only that column. Everything else a

@@ -24,12 +24,14 @@ import { useTheme } from '@/hooks/useTheme';
 import { useStopwatch } from '@/hooks/useStopwatch';
 import { useRoleLock } from '@/hooks/useRoleLock';
 import useLayoutMode from '@/hooks/useLayoutMode';
-import Header from './shell/Header';
-import BottomNav from './shell/BottomNav';
+import { ScorerFrame, ScorerHeader, ScorerNav } from './scorer/ScorerShell';
 import JudgePad from './judge/JudgePad';
-import PitCrew from './pitcrew/PitCrew';
-import Standings from './standings/Standings';
-import MeetSetup from './setup/MeetSetup';
+import PitCrewSheet from './scorer/PitCrewSheet';
+import LiveControl from './scorer/LiveControl';
+import CloudSync from './scorer/CloudSync';
+import StandingsSheet from './scorer/StandingsSheet';
+import BackupExport from './scorer/BackupExport';
+import MeetSetupSheet from './scorer/MeetSetupSheet';
 import EmptyMeetNotice from './setup/builder/EmptyMeetNotice';
 
 export default function App() {
@@ -67,6 +69,8 @@ export default function App() {
   const { meet, divisions, athletes, events, results } = state;
 
   const [activeTab, setActiveTab] = useState('judge');
+  // Phase 5: which Meet Setup section is up (drives the section strip and the SHEET cell of the title block).
+  const [setupSection, setSetupSection] = useState('meet');
   const [layout, toggleLayout] = useLayoutMode();
   const wideTab = layout === 'tv' && (activeTab === 'standings' || activeTab === 'pitcrew');
   const [stationFlight, setStationFlight] = useState(() => meet.stations?.[0]?.id ?? 'A');
@@ -95,6 +99,8 @@ export default function App() {
   } = useRoleLock({ meet, setActiveTab, verifyPin: (pin) => verifyPinRef.current(pin) });
 
   const { themeId, isDaylight, selectTheme, toggleDaylight } = useTheme();
+  // Phase 5: the stored daylight pick maps onto the sheet's two modes (bright is home, dark is the venue toggle).
+  const mode = isDaylight ? 'home' : 'dark';
 
   const [pitCrewUseLightTier, setPitCrewUseLightTier] = useState(false);
   const [pitCrewCustomWeight, setPitCrewCustomWeight] = useState('');
@@ -473,11 +479,11 @@ export default function App() {
     : [];
 
   return (
-    <div
-      data-zt-theme={themeId}
-      className="min-h-screen bg-zt-bg text-zt-text pb-24 font-sans select-none transition-colors"
-    >
-      <Header
+    <ScorerFrame mode={mode}>
+      <ScorerHeader
+        tab={activeTab}
+        mode={mode}
+        toggleMode={toggleDaylight}
         sync={sync}
         athletes={athletes}
         currentDivision={currentDivision}
@@ -486,7 +492,6 @@ export default function App() {
         events={events}
         filteredDivisions={filteredDivisions}
         handleUnlockWithPin={handleUnlockWithPin}
-        isDaylight={isDaylight}
         meet={meet}
         pinError={pinError}
         pinInput={pinInput}
@@ -501,17 +506,17 @@ export default function App() {
         setSelectedEventId={setSelectedEventId}
         setStationFlight={setStationFlight}
         stationFlight={stationFlight}
-        toggleDaylight={toggleDaylight}
       />
 
-      <main className={`p-3.5 mx-auto space-y-4 ${wideTab ? 'max-w-[1600px] px-6' : 'max-w-xl'}`}>
+      <main data-zt-theme={themeId} className={`flex flex-col gap-2 p-2 w-full mx-auto ${wideTab ? 'max-w-[1600px]' : 'max-w-xl'}`}>
         {activeTab !== 'setup' && !isMeetReadyToRun && (
           <EmptyMeetNotice roleLock={roleLock} onGoToSetup={() => setActiveTab('setup')} />
         )}
 
         {activeTab === 'judge' && isMeetReadyToRun && (
           <JudgePad
-            mode={isDaylight ? 'home' : 'dark'}
+            mode={mode}
+            chrome={false}
             sync={sync}
             stationFlight={stationFlight}
             eventCount={events.length}
@@ -554,7 +559,26 @@ export default function App() {
         )}
 
         {activeTab === 'pitcrew' && isMeetReadyToRun && (
-          <PitCrew
+          <>
+          <LiveControl
+            currentAthlete={currentAthlete}
+            currentDivision={currentDivision}
+            currentEvent={currentEvent}
+            eventCount={events.length}
+            divisionAthletes={divisionAthletes}
+            results={results}
+            runOrder={runOrder}
+            nextRunItem={nextRunItem}
+            stationLabel={(stationById(meet, stationFlight) ?? stationForDivision(meet, currentDivision))?.label ?? 'All stations'}
+            subscribeClock={subscribeClock}
+            timerRunning={timerRunning}
+            roleLock={roleLock}
+            lockDeviceToRole={lockDeviceToRole}
+            sync={sync}
+            readOnly={roleLock !== 'admin'}
+            publishKey={roleLock === 'admin' ? <CloudSync sync={syncForPanel} meet={meet} compact /> : null}
+          />
+          <PitCrewSheet
             layout={layout}
             toggleLayout={toggleLayout}
             currentAthlete={currentAthlete}
@@ -574,10 +598,11 @@ export default function App() {
             updateAthleteRackPin={updateAthleteRackPin}
             readOnly={roleLock === 'spectator'}
           />
+          </>
         )}
 
         {activeTab === 'standings' && isMeetReadyToRun && (
-          <Standings
+          <StandingsSheet
             currentDivision={currentDivision}
             currentEvent={currentEvent}
             eventScores={eventScores}
@@ -586,21 +611,23 @@ export default function App() {
             overallStandings={overallStandings}
             layout={layout}
             toggleLayout={toggleLayout}
-          />
+          >
+            {roleLock === 'admin' && (
+              <BackupExport state={state} snapshots={snapshots} importMeetState={importMeetState} restoreSnapshot={restoreSnapshot} />
+            )}
+          </StandingsSheet>
         )}
 
         {activeTab === 'setup' && roleLock === 'admin' && (
-          <MeetSetup
+          <MeetSetupSheet
             state={state}
             meet={meet}
             divisions={divisions}
             events={events}
             athletes={athletes}
             results={results}
-            snapshots={snapshots}
             themeId={themeId}
             selectTheme={selectTheme}
-            lockDeviceToRole={lockDeviceToRole}
             updateMeetConfig={updateMeetConfig}
             toggleGymPlate={toggleGymPlate}
             addStation={addStation}
@@ -627,21 +654,29 @@ export default function App() {
             setPendingPresetId={setPendingPresetId}
             requestMeetPreset={requestMeetPreset}
             loadMeetPreset={loadMeetPreset}
-            importMeetState={importMeetState}
-            restoreSnapshot={restoreSnapshot}
             clearResults={clearResults}
             resetConfirmOpen={resetConfirmOpen}
             setResetConfirmOpen={setResetConfirmOpen}
             sync={syncForPanel}
+            section={setupSection}
+            setSection={setSetupSection}
           />
         )}
       </main>
 
-      <BottomNav
-        activeTab={activeTab}
+      <ScorerNav
+        tab={activeTab}
+        setTab={setActiveTab}
         roleLock={roleLock}
-        setActiveTab={setActiveTab}
+        meet={meet}
+        results={results}
+        currentDivision={currentDivision}
+        currentEvent={currentEvent}
+        eventCount={events.length}
+        setupSection={setupSection}
+        divisionAthletes={divisionAthletes}
+        locked={isLocked}
       />
-    </div>
+    </ScorerFrame>
   );
 }

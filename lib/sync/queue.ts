@@ -1,7 +1,7 @@
 // Outbound sync queue. Pure functions over a plain array so it can live in localStorage.
 // Coalesces by (table,id): a later write to the same row replaces the earlier one.
 export interface QueueItem {
-  table: 'results' | 'live_state' | 'athletes' | 'divisions' | 'events' | 'meets';
+  table: 'results' | 'live_state' | 'athletes' | 'divisions' | 'events' | 'meets' | 'tv_control';
   id: string;             // row id, or `${meet_id}:${station}` for live_state
   row: Record<string, unknown>;
   enqueuedAt: number;
