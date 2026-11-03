@@ -111,9 +111,14 @@ function AdminLink() {
   }, []);
   if (!admin) return null;
   return (
+    <>
     <Link href="/website/admin/claims" className={quietBtn}>
       <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" /> Gym claims queue
     </Link>
+    <Link href="/website/admin/shows" className={quietBtn}>
+      <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" /> Show listings queue
+    </Link>
+    </>
   );
 }
 

@@ -93,6 +93,9 @@ export interface PublicShowSummary {
   hostGymSlug?: string; // 026: directory gym hosting the show; the gym page lists shows by this
   hostGymName?: string;
   theme?: ZtTheme;      // 030: the show's own colours; the show page and the board paint themselves in these
+  // 038 external listing (feature 2 MVP): a show registered elsewhere. No show page; the row links out to externalUrl.
+  externalUrl?: string;
+  externalHost?: string;
   isPublicListed?: boolean;      // 037: false on a show page reached only through the retention rule below
   resultsSubmittedAt?: string;   // 037: ISO; results sent to the federation. The show page stays up when unlisted.
 }

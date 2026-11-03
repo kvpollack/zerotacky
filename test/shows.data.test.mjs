@@ -62,6 +62,17 @@ function createFakeShowsBackend() {
     is_public_listed: true,
   });
 
+  // 038: external listings; one listed future row, one pending, one listed but past
+  const extBase = {
+    city: 'Harrisburg', state: 'PA', facility_name: 'Keystone Barbell', federation: 'USS',
+    divisions_note: 'Novice, Open, Masters', source: 'promoter', updated_at: '2026-11-03T12:00:00Z',
+  };
+  const externalShows = [
+    { ...extBase, id: 'ext-1', name: 'Keystone Classic', date: '2099-05-02', registration_url: 'https://www.ironpodium.com/events/keystone', status: 'listed' },
+    { ...extBase, id: 'ext-2', name: 'Pending Show', date: '2099-06-06', registration_url: 'https://example.com/pending', status: 'pending' },
+    { ...extBase, id: 'ext-3', name: 'Old Show', date: '2020-01-01', registration_url: 'https://example.com/old', status: 'listed' },
+  ];
+
   const fetchImpl = async (url) => {
     const u = new URL(url);
     const table = u.pathname.split('/').pop();
@@ -84,6 +95,15 @@ function createFakeShowsBackend() {
         const ids = new Set(idParam.slice(4, -1).split(','));
         rows = rows.filter((g) => ids.has(g.id));
       }
+    } else if (table === 'external_shows') {
+      // 038: the list asks for status=eq.listed&date=gte.<today>; pending/hidden and past rows must stay out
+      const statusParam = u.searchParams.get('status');
+      const dateParam = u.searchParams.get('date');
+      rows = externalShows.filter(
+        (e) =>
+          (!statusParam?.startsWith('eq.') || e.status === statusParam.slice(3)) &&
+          (!dateParam?.startsWith('gte.') || e.date >= dateParam.slice(4))
+      );
     } else if (table === 'divisions' || table === 'events' || table === 'athletes' || table === 'results') {
       const source =
         table === 'divisions'
@@ -155,19 +175,27 @@ describe('website data: listPublicShows & getPublicShowBySlug', () => {
       const res = await D.listPublicShows({ client });
       expect(res.source).toBe('live_supabase');
       expect(res.error).toBeNull();
-      // 2 listed non-demo meets (iron-furnace-classic-2026 and susquehanna-summer-anvil-2026)
+      // 2 listed non-demo meets (iron-furnace-classic-2026 and susquehanna-summer-anvil-2026), then the one listed
+      // future external show (038); the pending and past external rows stay out
       expect(res.data.map((s) => s.slug)).toEqual([
         'iron-furnace-classic-2026',
         'susquehanna-summer-anvil-2026',
+        'ext-ext-1',
       ]);
+      const ext = res.data[2];
+      expect(ext.externalUrl).toBe('https://www.ironpodium.com/events/keystone');
+      expect(ext.externalHost).toBe('ironpodium.com');
+      expect(ext.competitionStatus).toBe('upcoming');
+      expect(ext.divisionLabels).toEqual(['Novice', 'Open', 'Masters']);
 
-      // Existing filters in lib/website/filters.ts work on mapped rows
+      // Existing filters in lib/website/filters.ts work on mapped rows; the external row passes the upcoming and PA filters
       const upcoming = F.filterPublicShows(res.data, { competitionStatus: 'upcoming' });
-      expect(upcoming.length).toBe(1);
-      expect(upcoming[0].slug).toBe('iron-furnace-classic-2026');
+      expect(upcoming.map((s) => s.slug)).toEqual(['iron-furnace-classic-2026', 'ext-ext-1']);
 
       const byState = F.filterPublicShows(res.data, { state: 'PA' });
-      expect(byState.length).toBe(2);
+      expect(byState.length).toBe(3);
+      // An implement filter drops the external row (no implement tags)
+      expect(F.filterPublicShows(res.data, { implementTag: 'Log' }).some((s) => s.externalUrl)).toBe(false);
 
       // Unlisted meet returns null on getPublicShowBySlug
       const unlisted = await D.getPublicShowBySlug('steel-river-showdown-2026', { client });
@@ -207,7 +235,7 @@ describe('website data: listPublicShows & getPublicShowBySlug', () => {
       process.env.NEXT_PUBLIC_ZT_DEMO_SHOWS = '1';
       const withDemos = await D.listPublicShows({ client });
       expect(withDemos.error).toBeNull();
-      expect(withDemos.data.length).toBe(2 + 5);
+      expect(withDemos.data.length).toBe(2 + 1 + 5);   // 2 meets + 1 listed external show (038) + 5 demo fixtures
       const demoRows = withDemos.data.filter((s) => s.isDemoFixture);
       expect(demoRows.length).toBe(5);
     } finally {

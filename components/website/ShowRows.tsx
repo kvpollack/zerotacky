@@ -30,9 +30,15 @@ export default function ShowRows({ shows, ariaLabelledby, detail = false }: { sh
               <span className="block text-xs text-ink-muted mt-1">{d.rest}</span>
             </div>
             <div role="cell" className="flex flex-col justify-center px-3.5 min-h-[72px] py-2 min-w-0">
-              <Link href={`/shows/${show.slug}`} className="text-base md:text-lg font-bold leading-tight text-ink no-underline hover:text-pen hover:underline underline-offset-4">
-                {show.name}
-              </Link>
+              {show.externalUrl ? (
+                <a href={show.externalUrl} target="_blank" rel="noopener noreferrer" className="text-base md:text-lg font-bold leading-tight text-ink no-underline hover:text-pen hover:underline underline-offset-4">
+                  {show.name}
+                </a>
+              ) : (
+                <Link href={`/shows/${show.slug}`} className="text-base md:text-lg font-bold leading-tight text-ink no-underline hover:text-pen hover:underline underline-offset-4">
+                  {show.name}
+                </Link>
+              )}
               <span className="block text-[13px] text-ink-muted mt-1 truncate">
                 {venueLine(show.venue)}
                 {!detail && show.divisionLabels.length > 0 && ` · ${show.divisionLabels.slice(0, 3).join(', ')}${show.divisionLabels.length > 3 ? ` +${show.divisionLabels.length - 3}` : ''}`}
@@ -53,12 +59,18 @@ export default function ShowRows({ shows, ariaLabelledby, detail = false }: { sh
               {st.text}
             </div>
             <div role="cell" className={`hidden md:flex items-center px-3.5 min-h-[72px] text-[13px] uppercase tracking-[0.04em] ${show.isDemoFixture ? 'text-ink-muted' : 'text-ink'}`}>
-              {show.isDemoFixture ? 'Demo fixture' : 'Published'}
+              {show.externalUrl ? `Listed on ${show.externalHost}` : show.isDemoFixture ? 'Demo fixture' : 'Published'}
             </div>
             <div role="cell" className="flex items-center justify-end px-3.5 min-h-[72px]">
-              <Link href={go.href} className="text-[13px] font-bold uppercase tracking-[0.04em] text-ink underline underline-offset-4 decoration-1 hover:text-pen whitespace-nowrap">
-                {go.label}
-              </Link>
+              {go.external ? (
+                <a href={go.href} target="_blank" rel="noopener noreferrer" className="text-[13px] font-bold uppercase tracking-[0.04em] text-ink underline underline-offset-4 decoration-1 hover:text-pen whitespace-nowrap">
+                  {go.label} ↗
+                </a>
+              ) : (
+                <Link href={go.href} className="text-[13px] font-bold uppercase tracking-[0.04em] text-ink underline underline-offset-4 decoration-1 hover:text-pen whitespace-nowrap">
+                  {go.label}
+                </Link>
+              )}
             </div>
           </div>
         );
