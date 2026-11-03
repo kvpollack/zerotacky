@@ -231,3 +231,11 @@ Report `audits/astra-2026-11-03-dry-run.md`, disposition `audits/astra-2026-11-0
 - **Root splash `/`** (`components/shell/RootLanding.tsx`) was never in the phase plan and still wore the old zt-* skin. Redrawn in the sheet grammar: one max-w-md sheet on the ground with a wordmark / Mode header strip, then a ruled block: title cell ("Strongman, scored.", subline; the ZEROTACKY cap went, the wordmark in the strip says it), Resume key (pen fill, shown only when the phone carries a meet), Enter ZeroTacky (ink key), Join a meet (line key). Other copy unchanged; the old Color Scheme popover is gone here as on the website (the sheet has bright / dark only).
 - **Header rows** (`WebsiteShell.tsx`): from lg up the wordmark and the nav share row one and Mode / Join a Meet / Account sit right-aligned on their own ruled row beneath, so a signed-in promoter's My Meets cell no longer gets cut off by the action cells at ~1870 px. Phones unchanged (wordmark row keeps mode / Join / Account, nav scrolls under it).
 - Checked: tsc clean, bun test 552, dev-server shots at 1870 and 390 px, bright and dark, with and without the Resume card (`~/Downloads/zt_ui_1103/`).
+
+## Next 16.4.4 security patch (11/3, Kurt released the hold)
+- `bun add next@16.4.4` (16.4.0 -> 16.4.4, the advisory the dev overlay showed); one stale nested `next@16.4.0` under
+  `@vercel/analytics` dropped from `bun.lock` so a single copy ships. tsc clean, bun test 552, dev server (webpack) serves
+  `/`, `/website`, `/shows`, `/gyms`, `/scorer`, `/join`, `/m/strongfest-2026`, `/website/account` with zero page errors.
+- A local `next build` cannot be the gate on this laptop: `node` here is Bun 1.3.13 and the page-data workers fail inside
+  Bun's CommonJS wrapper ("this is a bug in Bun"), independent of the Next version. Vercel builds under Node, so the
+  deploy status is the build gate; a failed build leaves the previous deploy serving.
