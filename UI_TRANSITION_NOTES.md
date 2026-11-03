@@ -239,3 +239,20 @@ Report `audits/astra-2026-11-03-dry-run.md`, disposition `audits/astra-2026-11-0
 - A local `next build` cannot be the gate on this laptop: `node` here is Bun 1.3.13 and the page-data workers fail inside
   Bun's CommonJS wrapper ("this is a bug in Bun"), independent of the Next version. Vercel builds under Node, so the
   deploy status is the build gate; a failed build leaves the previous deploy serving.
+
+## Feature 1: federation results pack + retention guard (11/3, Kurt released the hold; feature report #1, Astra FG-02)
+- `supabase/037_results_retention.sql` (staging + prod 11/3): `meets.results_submitted_at`; `zt_mark_results_submitted`
+  (owner, completed + final, stamps once); `zt_delete_meet` refuses a stamped meet whatever its status; `zt_get_my_meet`
+  carries the column. Public select on the column granted; `/shows` still lists `is_public_listed` only.
+- `lib/exportFederation.ts`: `federationResultsCsv` (title block: meet, date, venue, federation, promoter contact, scored
+  on, results link; then Division, Place, Athlete, Bodyweight, Status, per-event score + pts, Total, Event Wins; T- for
+  ties, Scratched for withdrawn), `federationEmailDraft` (to admin@strongmancorporation.com, subject "<meet> results,
+  <date>", body with the link; standings inline while the mailto stays under 1,900 chars, else "in the attached CSV").
+- `components/promoter/ResultsPackSection.tsx` on the Meet Day tab of a completed meet: Results CSV / Copy standings /
+  Email to SC keys, the To / Subject / Link readout, Mark results as submitted (pen key; needs final results). Once
+  stamped: the delete block is gone (MeetDaySection) and the show page resolves while unlisted
+  (`getPublicShowBySlug` sends `or=(is_public_listed.eq.true,results_submitted_at.not.is.null)`).
+- Checked: tsc clean, bun test 559 (6 new pack tests, fixture markResultsSubmitted + delete refusal, loader retention);
+  staging walkthrough on `all-out-strongfest-2026-dryrun2` (unlisted, completed, final): 404 before, pack renders, CSV
+  downloads with the title block, mailto 1,023 chars, mark -> stamped, delete block gone, show page 200 while unlisted.
+  Fixture stamp cleared afterwards. Not built (M scope): PDF, Strongman Results / OpenStrongman layouts.

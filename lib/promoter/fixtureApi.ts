@@ -157,6 +157,7 @@ export function createFixturePromoterApi(
           hostGymId: null,
           theme: null,
           autoAccept: false,   // fixtures keep the review queue so the demo dashboard has pending rows
+          resultsSubmittedAt: pubShow.resultsSubmittedAt ?? null,
         },
         divisionCount: pubShow.state.divisions.length,
         athleteCount: pubShow.state.athletes.length,
@@ -528,6 +529,24 @@ export function createFixturePromoterApi(
       return { data: { slug, following: follow }, error: null };
     },
 
+    async markResultsSubmitted(serverId: string): Promise<ApiResult<{ resultsSubmittedAt: string }>> {
+      if (signedOut) {
+        return { data: null, error: 'Sign in required to mark results as submitted.' };
+      }
+      const found = meets.find((m) => m.summary.serverId === serverId);
+      if (!found) {
+        return { data: null, error: `No meet found with serverId "${serverId}".` };
+      }
+      const l = found.summary.listing;
+      if (l.competitionStatus !== 'completed' || l.resultsStatus !== 'final') {
+        return { data: null, error: 'finalize the results first: the meet must be completed with final results before they can be marked as submitted' };
+      }
+      if (!l.resultsSubmittedAt) {
+        found.summary = { ...found.summary, listing: { ...l, resultsSubmittedAt: new Date().toISOString() } };
+      }
+      return { data: { resultsSubmittedAt: found.summary.listing.resultsSubmittedAt! }, error: null };
+    },
+
     async deleteMeet(serverId: string, opts?: { confirmName?: string }): Promise<ApiResult<DeletedMeet>> {
       if (signedOut) {
         return { data: null, error: 'Sign in required to delete a meet.' };
@@ -537,6 +556,9 @@ export function createFixturePromoterApi(
         return { data: null, error: `No meet found with serverId "${serverId}".` };
       }
       const found = meets[idx];
+      if (found.summary.listing.resultsSubmittedAt) {
+        return { data: null, error: `the results of this meet were submitted to the federation on ${found.summary.listing.resultsSubmittedAt.slice(0, 10)}. It cannot be deleted; unlist it on the Listing tab to hide it.` };
+      }
       const status = found.summary.listing.competitionStatus;
       if (status === 'live' || status === 'completed') {
         return { data: null, error: `a ${status} meet cannot be deleted. Set it to cancelled on the Listing tab first, or leave it as a record.` };

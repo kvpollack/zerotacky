@@ -38,6 +38,7 @@ export interface MeetListing {
   hostGymId: string | null;             // 026: directory gym hosting the show (links the show page and the gym page); venue stays the address
   theme: ZtTheme | null;                // 030: the show's own colours (public show page + board); null = ZeroTacky default
   autoAccept: boolean;                  // 032: entries go straight to the roster (default); false = the promoter reviews each one
+  resultsSubmittedAt: string | null;    // 037: ISO; when the promoter marked the results as sent to the federation. Read-only here.
 }
 
 export interface PromoterMeetSummary {
@@ -205,6 +206,9 @@ export interface PromoterApi {
   // results or registrations the server requires opts.confirmName to equal the meet name (case-insensitive, trimmed);
   // an empty draft deletes without it. Everything under the meet goes with it (cascades). Returns what was removed.
   deleteMeet(serverId: string, opts?: { confirmName?: string }): Promise<ApiResult<DeletedMeet>>;
+  // 037 retention guard (feature 1): owner only, meet completed with final results. Sets listing.resultsSubmittedAt once;
+  // from then on the meet cannot be deleted and its show page stays reachable when unlisted.
+  markResultsSubmitted(serverId: string): Promise<ApiResult<{ resultsSubmittedAt: string }>>;
 
   // athlete side of My Meets (010). followShow(slug, false) unfollows. Demo fixtures cannot be followed (no server row).
   listMyAthleteMeets(): Promise<ApiResult<MyAthleteMeet[]>>;
@@ -244,6 +248,7 @@ export function emptyListing(): MeetListing {
     hostGymId: null,
     theme: null,
     autoAccept: true,
+    resultsSubmittedAt: null,
   };
 }
 

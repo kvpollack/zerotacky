@@ -23,7 +23,8 @@ export default function MeetDaySection({ summary, resultCount, onRotateCode, onD
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const status = summary.listing.competitionStatus;
-  const deletable = status !== 'live' && status !== 'completed';
+  // 037: results marked as submitted to the federation lock the meet against deletion for good (ResultsPackSection says so)
+  const deletable = status !== 'live' && status !== 'completed' && !summary.listing.resultsSubmittedAt;
   const dataCounts = [
     { label: 'divisions', n: summary.divisionCount },
     { label: 'athletes on the roster', n: summary.athleteCount },

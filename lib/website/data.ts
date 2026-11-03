@@ -205,7 +205,9 @@ export async function getPublicShowBySlug(
   try {
     const meets = await client.select<MeetListingRow>(
       'meets',
-      `slug=eq.${encodeURIComponent(slugKey)}&is_public_listed=eq.true&is_demo=eq.false&select=${PUBLIC_SHOW_MEET_COLS}&limit=1`
+      // 037 retention: an unlisted meet whose results were submitted to the federation keeps its show page (the URL
+      // in the federation email must stay viewable for 365 days). /shows itself still lists only is_public_listed.
+      `slug=eq.${encodeURIComponent(slugKey)}&or=(is_public_listed.eq.true,results_submitted_at.not.is.null)&is_demo=eq.false&select=${PUBLIC_SHOW_MEET_COLS}&limit=1`
     );
 
     if (!meets || meets.length === 0) {

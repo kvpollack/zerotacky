@@ -59,6 +59,7 @@ import RegistrationsSection from './RegistrationsSection';
 import { fetchRegistrationCards, openCardInNewTab, type MembershipCard } from '@/lib/website/membershipCards';
 import AthleteAccountsSection from './AthleteAccountsSection';
 import MeetDaySection from './MeetDaySection';
+import ResultsPackSection from './ResultsPackSection';
 
 type SectionId =
   | 'meet'
@@ -385,6 +386,17 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     }
     router.push('/promoter');
     return { error: null, deleted: res.data };
+  };
+
+  // 037 retention guard (feature 1): the server stamps results_submitted_at once; the summary picks it up here.
+  const handleMarkResultsSubmitted = async () => {
+    const res = await api.markResultsSubmitted(serverId);
+    if (res.error || !res.data) {
+      return { error: res.error ?? 'Could not mark the results as submitted.', resultsSubmittedAt: null };
+    }
+    const at = res.data.resultsSubmittedAt;
+    setDetail((prev) => (prev ? { ...prev, summary: { ...prev.summary, listing: { ...prev.summary.listing, resultsSubmittedAt: at } } } : prev));
+    return { error: null, resultsSubmittedAt: at };
   };
 
   const handleRotateJoinCode = async () => {
@@ -781,7 +793,10 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
           />
         </div>
 
-        <div role="tabpanel" id="panel-meetday" aria-labelledby="tab-meetday" hidden={activeTab !== 'meetday'}>
+        <div role="tabpanel" id="panel-meetday" aria-labelledby="tab-meetday" hidden={activeTab !== 'meetday'} className="flex flex-col gap-6">
+          {summary.listing.competitionStatus === 'completed' && (
+            <ResultsPackSection summary={summary} state={workingState} onMarkSubmitted={handleMarkResultsSubmitted} />
+          )}
           <MeetDaySection
             summary={summary}
             resultCount={workingState.results.length}
