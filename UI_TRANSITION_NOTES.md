@@ -270,3 +270,32 @@ Report `audits/astra-2026-11-03-dry-run.md`, disposition `audits/astra-2026-11-0
 - Checked: tsc clean, bun test 559; staging editor on `all-out-strongfest-2026-dryrun2` at 1280 and 390 px: all five
   tabs render with no page errors; Save bar shows "Event form open" while + Add Event is open and clears when closed;
   a name edit shows "Unsaved meet builder changes" and reverting it clears the bar (the slug no longer follows the name).
+
+## Feature 2: external-listing calendar MVP (11/3, roadmap step 4; the first build past Kurt's "three builds" release)
+- `supabase/038_external_shows.sql` (staging 11/3; prod on Kurt's OK): table `external_shows` (name, date, city, state,
+  facility_name, federation, divisions_note, registration_url, source promoter|admin, status pending|listed|hidden,
+  submitted_by, submitter_note, admin_note, reviewed_at). RLS: anon/authenticated read `status = 'listed'` only, on a
+  column grant that leaves submitted_by and the notes out. `zt_submit_external_show(jsonb)`: signed in, http(s) link,
+  name, YYYY-MM-DD not in the past, two-letter state, city, no duplicate link; an admin's own submission lists at once,
+  everyone else lands `pending`. `zt_admin_external_shows()` (admin only, joins `profiles.username`),
+  `zt_review_external_show(id, status, note)` (admin only, stamps reviewed_at).
+- `lib/website/externalShows.ts`: `externalRowToSummary` turns a row into a `PublicShowSummary` (`slug ext-<id>`,
+  `competitionStatus upcoming`, no implement tags, `externalUrl` + `externalHost`), so the existing filters and ShowRows
+  carry it. `listPublicShows` appends `status=eq.listed&date=gte.<today>` after the meets inside a try/catch (an older
+  database without the table still lists meets). No show page exists for an external row: name and Open cells are
+  `<a target=_blank rel=noopener>` to the registration page, status reads "Upcoming · Registers elsewhere", Source
+  "Listed on <host>" (`sheetFormat.showRowStatus / showRowLink`, `ShowRows`).
+- Pages: `/shows/submit` (`SubmitExternalShowClient`, sign-in gate, done states pending / listed, "List another");
+  `/website/admin/shows` (`AdminExternalShowsClient`, admin gate via `fetchIsAdmin`, pending first then the last 7 days
+  and upcoming, List / Hide keys); `/shows` carries a "List it here" line under the intro; the Account admin block
+  links the queue next to the gym claims.
+- Fixed on the walkthrough: Supabase RPC errors are plain objects, not `Error` instances, so both clients' `errText`
+  read `.message` the way the other website clients do (the form had shown "[object Object]").
+- Checked: tsc clean, bun test 567 (+8: `test/externalShows.test.mjs` mapping, host, today, sheetFormat branch;
+  `shows.data` fake backend grew an `external_shows` table with listed / pending / past rows: only the listed future
+  row joins the list, passes the upcoming and PA filters, drops out on an implement filter; the demo-fixture count
+  moved 7 -> 8). Staging walkthrough as `slate_staging` (an admin there): signed-out `/shows/submit` shows the gate;
+  `/shows` entry link present; admin submit lists at once; a SQL-seeded pending row shows first in the queue and
+  List moves it; `/shows` at 1280 and 390 px shows both rows with Listing ↗ links out, no page errors; duplicate link
+  and past date refused with the SQL messages. Test rows deleted afterwards. Not built (MVP scope): promoter claim or
+  edit of a listing, link health checks, expiry beyond the date filter, notification to the submitter on review.

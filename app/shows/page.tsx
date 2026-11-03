@@ -3,7 +3,9 @@ import WebsiteShell from '@/components/website/WebsiteShell';
 import ShowsBrowser from '@/components/website/ShowsBrowser';
 import { listPublicShows } from '@/lib/website/data';
 import { collectDistinctImplementTags, collectDistinctStates } from '@/lib/website/filters';
+import Link from 'next/link';
 import { canonical } from '@/lib/website/seo';
+import { textLink } from '@/components/website/sheet';
 
 export const metadata: Metadata = {
   title: 'Find a Strongman Show | ZeroTacky',
@@ -42,6 +44,13 @@ export default async function ShowsDirectoryPage() {
           Filter competitions by status, state, or specific strongman implements. Supports both
           inclusive strength-based groups (such as Strongfest Groups 1–5) and traditional weight
           classes.
+        </p>
+        <p className="text-xs sm:text-sm text-zt-text-2">
+          Running a show that registers somewhere else?{' '}
+          <Link href="/shows/submit" className={textLink}>
+            List it here
+          </Link>{' '}
+          and the calendar links out to your registration page.
         </p>
       </div>
 

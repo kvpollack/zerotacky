@@ -45,7 +45,8 @@ export function venueLine(v: PublicShowSummary['venue']): string {
 export type ShowRowStatus = { text: string; live: boolean };
 
 /** One status phrase per row, the way the results table reads it. Live rows are set in pen. */
-export function showRowStatus(s: Pick<PublicShowSummary, 'competitionStatus' | 'registrationStatus' | 'resultsStatus'>): ShowRowStatus {
+export function showRowStatus(s: Pick<PublicShowSummary, 'competitionStatus' | 'registrationStatus' | 'resultsStatus' | 'externalUrl'>): ShowRowStatus {
+  if (s.externalUrl) return { text: 'Upcoming · Registers elsewhere', live: false };
   const life = describeShowLifecycle(s.competitionStatus, s.registrationStatus, s.resultsStatus);
   if (s.competitionStatus === 'live') return { text: `${life.competitionLabel} · ${life.resultsLabel}`, live: true };
   if (s.competitionStatus === 'completed') return { text: life.resultsLabel, live: false };
@@ -61,7 +62,8 @@ export function splitFee(display: string | null | undefined): { amount: string; 
 }
 
 /** The row's "Open" link: the live board when there is one, otherwise the show page. */
-export function showRowLink(s: Pick<PublicShowSummary, 'slug' | 'competitionStatus' | 'liveScoreboardPath'>): { href: string; label: string } {
+export function showRowLink(s: Pick<PublicShowSummary, 'slug' | 'competitionStatus' | 'liveScoreboardPath' | 'externalUrl'>): { href: string; label: string; external?: boolean } {
+  if (s.externalUrl) return { href: s.externalUrl, label: 'Listing', external: true };
   if (s.competitionStatus === 'live' && s.liveScoreboardPath) return { href: s.liveScoreboardPath, label: 'Live board' };
   if (s.competitionStatus === 'completed') return { href: `/shows/${s.slug}`, label: 'Results' };
   return { href: `/shows/${s.slug}`, label: 'Show details' };

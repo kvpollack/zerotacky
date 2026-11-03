@@ -22,6 +22,7 @@ import {
   toPublicShowSummary,
 } from './fixtures';
 import { mapGymRowToListing, PUBLIC_GYM_COLS, sortListingsForDisplay, type GymRow } from './supabaseGyms';
+import { EXTERNAL_SHOW_COLS, externalRowToSummary, isoToday, type ExternalShowRow } from './externalShows';
 import { cleanUsernameParam, mapPublicProfileRow, PUBLIC_PROFILE_COLS, sortAthletes, type PublicAthlete, type PublicProfileRow } from './athletes';
 import {
   mapMeetBundleToPublicShowRecord,
@@ -152,6 +153,15 @@ export async function listPublicShows(
         mapMeetRowToPublicShowSummary(m, divsByMeet.get(m.id) ?? [], evsByMeet.get(m.id) ?? [], m.host_gym_id ? hostGyms.get(m.host_gym_id) : null)
       );
     }
+
+    // 038: shows registered elsewhere, curated by admins; upcoming only, after the real meets in date order
+    try {
+      const external = await client.select<ExternalShowRow>(
+        'external_shows',
+        `status=eq.listed&date=gte.${isoToday()}&select=${EXTERNAL_SHOW_COLS}&order=date.asc`
+      );
+      if (external && external.length > 0) liveSummaries = [...liveSummaries, ...external.map(externalRowToSummary)];
+    } catch { /* the table may not exist on an older database; the meets still list */ }
 
     if (shouldIncludeDemoShows(opts)) {
       const liveSlugs = new Set(liveSummaries.map((s) => s.slug.toLowerCase()));
