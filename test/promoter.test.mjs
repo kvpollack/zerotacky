@@ -243,6 +243,25 @@ describe('fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, arch
     const draft = await api.deleteMeet(created.data.summary.serverId);
     assert.equal(draft.error, null);
     assert.deepEqual(draft.data.deleted, { divisions: 0, events: 0, athletes: 0, results: 0, registrations: 0 });
+  });
+
+  test('markResultsSubmitted (037): completed + final only, stamps once, then the meet cannot be deleted even when cancelled', async () => {
+    const api = FA.createFixturePromoterApi();
+    const notFinal = await api.markResultsSubmitted('srv-meet-live-2');
+    assert.equal(notFinal.data, null);
+    assert.match(notFinal.error, /finalize the results first/);
+
+    const first = await api.markResultsSubmitted('srv-meet-completed-3');
+    assert.equal(first.error, null);
+    assert.match(first.data.resultsSubmittedAt, /^\d{4}-\d{2}-\d{2}T/);
+    const again = await api.markResultsSubmitted('srv-meet-completed-3');
+    assert.equal(again.data.resultsSubmittedAt, first.data.resultsSubmittedAt);   // never re-stamped
+    assert.equal((await api.getMeet('srv-meet-completed-3')).data.summary.listing.resultsSubmittedAt, first.data.resultsSubmittedAt);
+
+    await api.updateListing('srv-meet-completed-3', { competitionStatus: 'cancelled' });
+    const del = await api.deleteMeet('srv-meet-completed-3', { confirmName: 'x' });
+    assert.equal(del.data, null);
+    assert.match(del.error, /submitted to the federation/);
 
     const signedOut = FA.createFixturePromoterApi({ signedOut: true });
     assert.equal((await signedOut.deleteMeet('srv-meet-live-2')).error, 'Sign in required to delete a meet.');

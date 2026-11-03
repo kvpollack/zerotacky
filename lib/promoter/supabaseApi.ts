@@ -64,6 +64,7 @@ export function rowToMeetListing(row: Partial<MeetListingRow>): MeetListing {
     hostGymId: row.host_gym_id ?? null,
     theme: parseTheme(row.theme),
     autoAccept: row.auto_accept === undefined || row.auto_accept === null ? true : Boolean(row.auto_accept),
+    resultsSubmittedAt: row.results_submitted_at ?? null,
   };
 }
 
@@ -517,6 +518,22 @@ export function createSupabasePromoterApi(
         }
         await db.updateMeetListing(serverId, { competition_status: 'completed' });
         return { data: { ok: true }, error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    async markResultsSubmitted(serverId: string): Promise<ApiResult<{ resultsSubmittedAt: string }>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) {
+          return { data: null, error: 'Sign in required to mark results as submitted.' };
+        }
+        const out = await db.rpc<{ results_submitted_at?: string }>('zt_mark_results_submitted', { p_meet_id: serverId });
+        if (!out?.results_submitted_at) {
+          return { data: null, error: 'Could not mark the results as submitted.' };
+        }
+        return { data: { resultsSubmittedAt: out.results_submitted_at }, error: null };
       } catch (e) {
         return { data: null, error: errMessage(e) };
       }

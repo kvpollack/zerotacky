@@ -68,7 +68,9 @@ function createFakeShowsBackend() {
     let rows = [];
 
     if (table === 'meets') {
-      rows = meets.filter((m) => m.is_public_listed === true && m.is_demo === false);
+      // 037: the slug lookup sends or=(is_public_listed.eq.true,results_submitted_at.not.is.null); the list sends is_public_listed=eq.true
+      const orParam = u.searchParams.get('or');
+      rows = meets.filter((m) => (orParam ? m.is_public_listed === true || m.results_submitted_at != null : m.is_public_listed === true) && m.is_demo === false);
       const slugParam = u.searchParams.get('slug');
       if (slugParam?.startsWith('eq.')) {
         const target = slugParam.slice(3).toLowerCase();
@@ -111,11 +113,13 @@ function createFakeShowsBackend() {
     };
   };
 
-  return C.createSyncClient({
+  const client = C.createSyncClient({
     url: 'https://fake.supabase.co',
     anonKey: 'ANON',
     fetchImpl,
   });
+  client.__meets = meets;   // 037 test reaches in to stamp results_submitted_at
+  return client;
 }
 
 describe('website data: listPublicShows & getPublicShowBySlug', () => {
@@ -168,6 +172,16 @@ describe('website data: listPublicShows & getPublicShowBySlug', () => {
       // Unlisted meet returns null on getPublicShowBySlug
       const unlisted = await D.getPublicShowBySlug('steel-river-showdown-2026', { client });
       expect(unlisted.data).toBeNull();
+
+      // 037 retention: once results are submitted to the federation, the unlisted show page still resolves
+      const row = client.__meets.find((m) => m.slug === 'steel-river-showdown-2026');
+      row.results_submitted_at = '2026-11-03T15:00:00.000Z';
+      const kept = await D.getPublicShowBySlug('steel-river-showdown-2026', { client });
+      expect(kept.data).not.toBeNull();
+      expect(kept.data.isPublicListed).toBe(false);
+      expect(kept.data.resultsSubmittedAt).toBe('2026-11-03T15:00:00.000Z');
+      expect((await D.listPublicShows({ client })).data.some((s) => s.slug === 'steel-river-showdown-2026')).toBe(false);
+      row.results_submitted_at = null;
 
       // Completed finalized meet maps standings cleanly through buildAllDivisionResultsViews
       const completed = await D.getPublicShowBySlug('susquehanna-summer-anvil-2026', { client });
