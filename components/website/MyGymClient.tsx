@@ -6,7 +6,7 @@ import { ArrowLeft, Clock, Dumbbell, ExternalLink, MapPin, Palette, Plus, Save }
 import { useAuth } from '@/lib/auth/useAuth';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import { GYM_EQUIPMENT } from '@/lib/website/gymEquipment';
-import ThemePicker from './ThemePicker';
+import PaintPicker from './PaintPicker';
 import {
   DAY_PASS_OPTIONS, GYM_LIMITS, GYM_SOCIAL_KEYS, GYM_TYPES, cleanGymPatch, fetchMyClaims, fetchMyGyms, patchFromRow, patchKey,
   geocodeAddress, saveMyGym, addressChanged, type GymPatch, type PinChange, type MyClaimRow, type MyGymRow,
@@ -242,7 +242,7 @@ function GymEditor({ row, onSaved }: { row: MyGymRow; onSaved: (r: MyGymRow) => 
       {/* 030: colour ways */}
       <fieldset className="space-y-3">
         <legend className="text-sm font-black uppercase text-zt-text flex items-center gap-1.5"><Palette className="w-3.5 h-3.5 text-zt-primary" aria-hidden="true" /> Colours</legend>
-        <ThemePicker subject="gym" previewName={draft.name} value={draft.theme} onChange={(theme) => patch({ theme })} inputClassName={inputCls} labelClassName={labelCls} />
+        <PaintPicker subject="gym" previewName={draft.name} value={draft.theme} onChange={(theme) => patch({ theme })} inputClassName={inputCls} labelClassName={labelCls} />
       </fieldset>
 
       {notice && <Notice {...notice} />}

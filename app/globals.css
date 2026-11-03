@@ -543,6 +543,14 @@ body { font-family: var(--font-sans); }
 [data-zt-sheet] .bg-emerald-500 { background-color: var(--ink); }
 [data-zt-sheet] .text-emerald-950 { color: var(--sheet); }
 [data-zt-sheet] .bg-emerald-400 { background-color: var(--pen); }
+/* Phase 6 (11/2): no tinted badges or tinted selected cards. A pen tint becomes the plain sheet with a pen rule; a
+   danger tint becomes the plain sheet with a red-pen rule and red-pen text; the one sky badge is a pen badge. */
+[data-zt-sheet] :is(.bg-zt-primary\/10, .bg-zt-primary\/15, .bg-zt-primary\/20, .bg-sky-500\/20) { background-color: transparent; }
+[data-zt-sheet] :is(.border-zt-primary\/40, .border-zt-primary\/50, .border-zt-primary\/60, .border-sky-500\/40) { border-color: var(--pen); }
+[data-zt-sheet] .text-sky-300 { color: var(--pen); }
+[data-zt-sheet] :is(.bg-zt-danger\/10, .bg-zt-danger\/15, .bg-zt-danger\/20) { background-color: transparent; }
+[data-zt-sheet] :is(.border-zt-danger, .border-zt-danger\/40, .border-zt-danger\/50, .border-zt-danger\/60) { border-color: var(--red); }
+[data-zt-sheet] .text-zt-danger-text { color: var(--red); }
 
 /* Phase 4 (11/2), the judge pad. A key that is not live right now keeps its outline, drops to the muted ink and
    takes a faint hatch in the rule colour (approved pad-state mockups): it reads as "not now" without greying
