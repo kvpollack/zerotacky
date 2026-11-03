@@ -15,10 +15,10 @@ import {
   buildTransitionDeltas,
   nextEventOnStation,
   stationById,
-  stationEvents,
   stationForDivision,
 } from '@/lib/engine';
 import { createBlankMeet, normalizeState } from '@/lib/meetBuilder';
+import { meetKey, readSelection, writeSelection, restoreSelection, stationLanding } from '@/lib/scorerSelection';
 import { useMeetState } from '@/hooks/useMeetState';
 import { useMeetSync } from '@/hooks/useMeetSync';
 import { useTheme } from '@/hooks/useTheme';
@@ -74,12 +74,21 @@ export default function App() {
   const [setupSection, setSetupSection] = useState('meet');
   const [layout, toggleLayout] = useLayoutMode();
   const wideTab = layout === 'tv' && (activeTab === 'standings' || activeTab === 'pitcrew');
-  const [stationFlight, setStationFlight] = useState(() => meet.stations?.[0]?.id ?? 'A');
-  const [selectedDivisionId, setSelectedDivisionId] = useState(() => state.divisions[0]?.id ?? '');
-  const [selectedEventId, setSelectedEventId] = useState(() => state.events[0]?.id ?? '');
-  const [selectedAthleteId, setSelectedAthleteId] = useState(
-    () => state.athletes.find((a) => a.divisionId === state.divisions[0]?.id)?.id ?? ''
-  );
+  // Astra DR3-02 (11/3): station / division / event / athlete survive a reload, saved per meet; anything stale
+  // falls back to the first station, its first division, the first event and lot 1 by run order.
+  const [initialSelection] = useState(() => {
+    const storage = typeof window !== 'undefined' ? window.localStorage : undefined;
+    return restoreSelection(readSelection(storage, meetKey(state.meet)), state);
+  });
+  const [stationFlight, setStationFlight] = useState(initialSelection.station);
+  const [selectedDivisionId, setSelectedDivisionId] = useState(initialSelection.division);
+  const [selectedEventId, setSelectedEventId] = useState(initialSelection.event);
+  const [selectedAthleteId, setSelectedAthleteId] = useState(initialSelection.athlete);
+  useEffect(() => {
+    const key = meetKey(meet);
+    if (!key || typeof window === 'undefined') return;
+    writeSelection(window.localStorage, { meet: key, station: stationFlight, division: selectedDivisionId, event: selectedEventId, athlete: selectedAthleteId });
+  }, [meet.id, meet.slug, stationFlight, selectedDivisionId, selectedEventId, selectedAthleteId]);
   const [lane2AthleteId, setLane2AthleteId] = useState('');
   const [pendingPresetId, setPendingPresetId] = useState(null);
   const [statusMenuOpen, setStatusMenuOpen] = useState(false);
@@ -419,22 +428,17 @@ export default function App() {
       ? { event: nextEventInMeet, division: stationDivisions[0] }
       : null;
 
-  // Station chip (dry run 11/3): a judge switching stations lands on that station's first event that still has
-  // unlocked athletes in its first division (Strongfest's Station B ran keg before basket), not whatever event the
-  // phone happened to be on. Clearing the athlete id lets the new run order pick the lifter.
+  // Station chip (dry run 11/3, Astra DR2-01 + DR3-12): a judge switching stations lands on the earliest unfinished
+  // event in that station's own order, in the first division there that still has an unlocked athlete (Strongfest's
+  // Station B ran keg before basket; Groups 4 and 5 were skipped when only Group 3 was checked). Clearing the
+  // athlete id lets the new run order pick the lifter.
   const pickStation = (id) => {
     setStationFlight(id);
-    const firstDiv = divisions.find((d) => (id === 'ALL' ? true : d.flight === id));
-    if (!firstDiv) return;
-    setSelectedDivisionId(firstDiv.id);
-    const divAthletes = athletes.filter((a) => a.divisionId === firstDiv.id && a.status === 'active');
-    const ordered = stationEvents(stationById(meet, id), events);
-    const open = ordered.find((ev) =>
-      divAthletes.some((a) => !results.find((r) => r.eventId === ev.id && r.athleteId === a.id)?.locked)
-    );
-    const target = open ?? ordered[0];
-    if (target && target.id !== currentEvent?.id) {
-      setSelectedEventId(target.id);
+    const landing = stationLanding(meet, id, divisions, events, athletes, results);
+    if (!landing) return;
+    setSelectedDivisionId(landing.divisionId);
+    if (landing.eventId && landing.eventId !== currentEvent?.id) {
+      setSelectedEventId(landing.eventId);
       setPitCrewCustomWeight('');
     }
     setSelectedAthleteId('');

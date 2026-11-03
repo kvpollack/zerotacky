@@ -29,7 +29,8 @@ export function resultHasScore(r: Result, event?: EventDef): boolean {
   }
 }
 
-function effectiveMaxWeight(r: Result | undefined): number {
+// Exported for the judge pad (Astra DR3-04, 11/3): the pad's BEST and the standings must agree, so both read this.
+export function effectiveMaxWeight(r: Result | undefined): number {
   if (!r || r.didNotStart) return 0;
   if (r.maxWeightLbs && r.maxWeightLbs > 0) return r.maxWeightLbs;
   if (r.risingBarAttempts) {

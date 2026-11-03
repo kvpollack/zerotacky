@@ -48,6 +48,9 @@ export interface SyncStatus {
   // Astra gate LOW (10/17 pm): the last publish/re-publish refusal. Survives successful ticks (which only clear
   // `error`) until the next publish succeeds, so an auto re-publish the server refused stays visible in Setup.
   publishError?: string | null;
+  // Astra DR3-08 (11/3): the server refused this phone's code or PIN (401/403). Nothing was lost; the queue stays
+  // until the judge re-joins. Lets the pad say "re-join" instead of implying a Wi-Fi problem.
+  denied?: boolean;
 }
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
@@ -190,7 +193,7 @@ export class SyncController {
     this.link = link;
     writeLink(this.o.storage, link);
     if (!link) { this.queue = []; this.persistQueue(); this.known.clear(); this.knownAthletes.clear(); this.removedAthletes.clear(); }
-    this.setStatus({ state: link ? 'idle' : 'off', error: null, dropped: 0, publishError: null });
+    this.setStatus({ state: link ? 'idle' : 'off', error: null, dropped: 0, publishError: null, denied: false });
   }
 
   unlink(): void {
@@ -534,7 +537,7 @@ export class SyncController {
           if (flushError && isNetworkError(flushError)) throw flushError;
           await this.pull();                       // a rejected write must not stop us reading
           if (flushError) throw flushError;
-          if (this.link && !this.paused) this.setStatus({ state: 'idle', error: this.status.dropped ? this.status.error : null, lastSyncAt: this.now() });
+          if (this.link && !this.paused) this.setStatus({ state: 'idle', error: this.status.dropped ? this.status.error : null, lastSyncAt: this.now(), denied: false });
         } catch (e) {
           if (this.link && !this.paused) this.fail(e);
         }
@@ -546,6 +549,7 @@ export class SyncController {
 
   private fail(e: unknown): void {
     const msg = e instanceof Error ? e.message : String(e);
-    this.setStatus({ state: isNetworkError(e) ? 'offline' : 'error', error: msg });
+    const denied = e instanceof SyncError && (e.status === 401 || e.status === 403);
+    this.setStatus({ state: isNetworkError(e) ? 'offline' : 'error', error: msg, denied });
   }
 }

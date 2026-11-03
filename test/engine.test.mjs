@@ -452,3 +452,21 @@ describe('run order and standings on ties (R-M5)', () => {
     assert.deepEqual(rows.map((r) => [r.athleteId, r.overallPlace, r.isTiedOverall]), [['a1', 1, true], ['a2', 1, true], ['a3', 3, false]]);
   });
 });
+
+// Astra DR3-06 (11/3): Strongfest's truck pull changed vehicle (Pickup Truck -> Box Truck) while the 50 ft course
+// stayed the same; the numeric-stat branch used to swallow the headline and report "No change".
+describe('buildTransitionDeltas headline with numeric stats (DR3-06)', () => {
+  const ev = (over) => ({ id: 'e1', meetId: 'm', eventNumber: 3, name: 'Truck Pull', scoringType: 'time_or_distance', timeCapSeconds: 60, lanes: 1, loadingPoints: 0, divisionWeights: {}, ...over });
+  const callout = (d1, d2) => ({ title: 'Vehicle', byDivision: { d1: { headline: d1, stats: [{ label: 'Course', value: '50 ft' }] }, d2: { headline: d2, stats: [{ label: 'Course', value: '50 ft' }] } } });
+  test('vehicle swap shows even when the course length is unchanged', () => {
+    const rows = buildTransitionDeltas(ev({ pitCrewCallout: callout('Pickup Truck', 'Box Truck') }), 'd1', ev({ pitCrewCallout: callout('Pickup Truck', 'Box Truck') }), 'd2');
+    assert.deepEqual(rows.map((r) => [r.label, r.from, r.to, r.delta, r.changed]), [
+      ['Vehicle', 'Pickup Truck', 'Box Truck', 'Swap setup', true],
+      ['Course', '50 ft', '50 ft', 'No change', false],
+    ]);
+  });
+  test('same vehicle: only the stat row, no duplicate headline row', () => {
+    const e = ev({ pitCrewCallout: callout('Box Truck', 'Box Truck') });
+    assert.deepEqual(buildTransitionDeltas(e, 'd1', e, 'd2').map((r) => r.label), ['Course']);
+  });
+});

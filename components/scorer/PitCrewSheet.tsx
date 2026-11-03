@@ -12,6 +12,11 @@ type PlateLoad = {
   loadingPoints: number; platesPerPoint: Array<{ weight: number; count: number }>; warningMessage?: string | null;
 };
 type Callout = { headline: string; stats?: Array<{ label: string; value: string }> } | null;
+
+/** "50 ft", "265 lbs", "44\" bar": a number stays on the same line as its unit when the cell wraps (Astra DR3-07). */
+function keepUnits(s: string): string {
+  return String(s).replace(/(\d)\s+(?=(lbs?|lb|kg|ft|in|s|sec|m|cm|mm|"|'|x|reps?)\b)/gi, '$1\u00a0');
+}
 type TransitionRow = { label: string; from: string; to: string; delta: string; changed: boolean };
 
 export type PitCrewSheetProps = {
@@ -50,11 +55,11 @@ export default function PitCrewSheet(p: PitCrewSheetProps) {
           <>
             <Sec right={currentDivision.name}>{e.heightLabel || 'Implement Rack / Pin Height'}</Sec>
             <RuledBlock columns="minmax(0,1fr) minmax(0,1fr)">
-              <Field label={<>Up now &middot; {currentAthlete.name}</>}><Val className="!text-[20px]">{p.upNowPinHeight || '\u2014'}</Val></Field>
-              <Field label={<>On deck &middot; {nextRunItem ? nextRunItem.athlete.name : 'End of Division'}</>}><Val className="!text-[20px] !text-ink">{p.onDeckPinHeight || '\u2014'}</Val></Field>
+              <Field label={<>Up now &middot; {currentAthlete.name}</>}><Val className="!text-[20px] !whitespace-normal">{p.upNowPinHeight || '\u2014'}</Val></Field>
+              <Field label={<>On deck &middot; {nextRunItem ? nextRunItem.athlete.name : 'End of Division'}</>}><Val className="!text-[20px] !text-ink !whitespace-normal">{p.onDeckPinHeight || '\u2014'}</Val></Field>
               <Field wide label={readOnly ? `${currentAthlete.name}'s Personal Pin / Height` : `Update ${currentAthlete.name}'s Personal Pin / Height Override`}>
                 {readOnly ? (
-                  <Val empty={!currentAthlete.rackHeights?.[ev.id]}>{currentAthlete.rackHeights?.[ev.id] || 'not set'}</Val>
+                  <Val className="!whitespace-normal" empty={!currentAthlete.rackHeights?.[ev.id]}>{currentAthlete.rackHeights?.[ev.id] || 'not set'}</Val>
                 ) : (
                   <TextInput type="text" placeholder={'e.g., Pin 14 (6\'4") or 48" Bar...'} value={currentAthlete.rackHeights?.[ev.id] || ''} onChange={(x) => p.updateAthleteRackPin(currentAthlete.id, ev.id, x.target.value)} />
                 )}
@@ -84,7 +89,7 @@ export default function PitCrewSheet(p: PitCrewSheetProps) {
             </div>
             <div className={`col-span-full px-2 py-1.5 font-bold leading-tight text-balance ${tv ? 'text-[28px]' : 'text-[20px]'}`}>{p.pitCrewCallout.headline}</div>
             {p.pitCrewCallout.stats?.map((s) => (
-              <Field key={s.label} label={s.label}><Val className="!text-[18px]">{s.value}</Val></Field>
+              <Field key={s.label} label={s.label}><Val className="!text-[18px] !whitespace-normal">{keepUnits(s.value)}</Val></Field>
             ))}
           </RuledBlock>
         )}
@@ -145,15 +150,16 @@ export default function PitCrewSheet(p: PitCrewSheetProps) {
           </RuledBlock>
         )}
         {nextSetup ? (
-          <RuledBlock columns="minmax(0,1fr) auto" role="list" aria-label={`Setup change for ${nextSetup.division.name}`}>
+          <RuledBlock columns="minmax(0,1fr) minmax(84px,32%)" role="list" aria-label={`Setup change for ${nextSetup.division.name}`}>
             <LH className="col-span-full">{nextSetup.event.id === ev.id ? `When ${nextSetup.division.name} starts` : `When Ev ${nextSetup.event.eventNumber} starts (${nextSetup.division.name})`}</LH>
             {p.transitionRows.map((row) => (
               <div key={row.label} role="listitem" className="contents">
                 <div className="px-1.5 py-1 min-w-0">
                   <div className={`text-[9px] ${CAP}`}>{row.label}</div>
-                  <div className="text-[13px] flex items-center gap-1.5 min-w-0"><span className="text-ink-muted truncate">{row.from}</span><span aria-hidden="true">&rarr;</span><span className={`truncate font-bold ${row.changed ? 'text-pen' : ''}`}>{row.to}</span></div>
+                  {/* Astra DR3-07 (11/3): full setup text, wrapping, numbers kept with their units; no ellipsis a loader has to guess past. */}
+                  <div className="text-[13px] min-w-0 leading-snug"><span className="text-ink-muted">{keepUnits(row.from)}</span> <span aria-hidden="true">&rarr;</span> <span className={`font-bold ${row.changed ? 'text-pen' : ''}`}>{keepUnits(row.to)}</span></div>
                 </div>
-                <LR className={`text-[11px] font-bold ${row.changed ? 'text-pen' : 'text-ink-muted'}`}>{row.delta}</LR>
+                <LR className={`text-[11px] font-bold !whitespace-normal !overflow-visible justify-end text-right leading-snug py-1 ${row.changed ? 'text-pen' : 'text-ink-muted'}`}>{keepUnits(row.delta)}</LR>
               </div>
             ))}
           </RuledBlock>

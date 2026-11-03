@@ -388,8 +388,15 @@ describe('SyncController: resilience (verifier findings)', () => {
     srv.db.meets[0].join_code = 'ROTATED';
     await judge.ctl.tick();
     assert.equal(judge.ctl.status.state, 'error');
+    assert.equal(judge.ctl.status.denied, true);                // Astra DR3-08: the pad names the revoked code/PIN
     assert.equal(judge.ctl.status.pending, 1);
     assert.ok(judge.state.results.some((r) => r.reps === 5));   // public read still works
+    // re-join with the current code: the flag clears and the queue drains
+    srv.db.meets[0].join_code = 'JC0001';
+    judge.ctl.attach(await judge.ctl.lookupJoinCode('JC0001')); await judge.ctl.checkAdminPin('1050');
+    await judge.ctl.tick();
+    assert.equal(judge.ctl.status.denied, false);
+    assert.equal(judge.ctl.status.pending, 0);
   });
   test('tick requested while busy runs once more instead of being dropped', async () => {
     const { srv, judge } = await pair();

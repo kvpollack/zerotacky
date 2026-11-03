@@ -61,6 +61,24 @@ export function buildTransitionDeltas(
   const nextStats = nextCallout?.stats ?? [];
   const isNumericStat = (s: PitCrewStat) => parseMeasure(s.value) !== null;
 
+  // Astra DR3-06 (11/3): the headline is the setup itself (Pickup Truck -> Box Truck). It used to be compared only
+  // when the callout had no numeric stats, so a vehicle swap with an unchanged 50 ft course read "No change".
+  // Now a changed headline is its own row, ahead of the stats, unless a stat already carries the same text (a
+  // headline of 46" next to a Yoke Crossbar 46" stat); an unchanged one is only shown when there are no stats to
+  // carry the "No change" line.
+  const curHead = curCallout?.headline ?? '', nextHead = nextCallout?.headline ?? '';
+  const headlineInStats = nextStats.some((s) => s.value === nextHead) || (curCallout?.stats ?? []).some((s) => s.value === curHead);
+  const headlineChanged = !!curHead && !!nextHead && curHead !== nextHead && !headlineInStats;
+  if (headlineChanged) {
+    rows.push({
+      label: curEvent.pitCrewCallout!.title,
+      from: curHead,
+      to: nextHead,
+      delta: 'Swap setup',
+      changed: true,
+    });
+  }
+
   if (nextStats.some(isNumericStat)) {
     nextStats.forEach((stat) => {
       const prev = curCallout?.stats?.find((s) => s.label === stat.label);
@@ -79,14 +97,13 @@ export function buildTransitionDeltas(
         rows.push({ label: stat.label, from: prev?.value ?? '—', to: stat.value, delta: 'Change', changed: true });
       }
     });
-  } else if (curCallout?.headline && nextCallout?.headline) {
-    const changed = curCallout.headline !== nextCallout.headline;
+  } else if (!headlineChanged && curCallout?.headline && nextCallout?.headline) {
     rows.push({
       label: curEvent.pitCrewCallout!.title,
       from: curCallout.headline,
       to: nextCallout.headline,
-      delta: changed ? 'Swap setup' : 'No change',
-      changed,
+      delta: 'No change',
+      changed: false,
     });
   }
 

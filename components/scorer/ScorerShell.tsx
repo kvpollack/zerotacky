@@ -81,8 +81,7 @@ export function ScorerHeader(p: ScorerHeaderProps) {
     const firstDiv = p.divisions.find((d) => (id === 'ALL' ? true : d.flight === id));
     if (firstDiv) {
       p.setSelectedDivisionId(firstDiv.id);
-      const firstAth = p.athletes.find((a) => a.divisionId === firstDiv.id && a.status === 'active');
-      if (firstAth) p.setSelectedAthleteId(firstAth.id);
+      p.setSelectedAthleteId('');
     }
   };
 
@@ -102,8 +101,8 @@ export function ScorerHeader(p: ScorerHeaderProps) {
           type="button"
           onClick={toggleMode}
           aria-pressed={mode === 'dark'}
-          aria-label={mode === 'dark' ? 'Switch back to dark theme' : 'Switch to Outdoor Daylight theme'}
-          title={mode === 'dark' ? 'Dark mode' : 'Sun / Daylight mode'}
+          aria-label={mode === 'dark' ? 'Switch to Outdoor Daylight theme' : 'Switch back to dark theme'}
+          title={mode === 'dark' ? 'Switch to Outdoor Daylight theme' : 'Switch back to dark theme'}
           className="flex items-center justify-center text-[13px] font-sheet"
         >
           <span aria-hidden="true">{mode === 'dark' ? '\u263D' : '\u2600'}</span>
@@ -157,10 +156,10 @@ export function ScorerHeader(p: ScorerHeaderProps) {
                 value={p.currentDivision?.id ?? ''}
                 disabled={p.filteredDivisions.length === 0}
                 onChange={(e) => {
-                  const id = e.target.value;
-                  p.setSelectedDivisionId(id);
-                  const firstAth = p.athletes.find((a) => a.divisionId === id && a.status === 'active');
-                  if (firstAth) p.setSelectedAthleteId(firstAth.id);
+                  // Astra DR3-01 (11/3): an empty athlete id lets the generated run order pick lot 1; the first
+                  // raw roster row is whatever order the server returned (Group 2 opened on lot 5).
+                  p.setSelectedDivisionId(e.target.value);
+                  p.setSelectedAthleteId('');
                 }}
                 className="font-sheet uppercase font-bold text-[11px] bg-transparent text-ink appearance-none w-full pr-4 disabled:opacity-50 focus:outline-none"
               >

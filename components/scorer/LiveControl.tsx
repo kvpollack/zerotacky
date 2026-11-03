@@ -81,7 +81,7 @@ export default function LiveControl(p: LiveControlProps) {
         <Field label="Up next"><Val className="!text-ink">{nextRunItem ? `Lot ${nextRunItem.athlete.lotNumber} ${nextRunItem.athlete.name}` : 'Last athlete on this station'}</Val></Field>
         <Field label="Scored this event"><Val className="!text-ink"><span className="text-pen">{scored}</span>/{divisionAthletes.length}</Val></Field>
         {!p.readOnly && (
-          <Field wide label="Volunteer Phone Role Lock" className="!py-2">
+          <Field group wide label="Volunteer Phone Role Lock" className="!py-2">
             <KeyGroup ariaLabel="Volunteer Phone Role Lock" options={ROLE_OPTIONS} value={p.roleLock} onChange={(r) => { if (r !== 'admin') p.lockDeviceToRole(r); }} />
           </Field>
         )}
@@ -89,10 +89,10 @@ export default function LiveControl(p: LiveControlProps) {
 
       <Sec right={p.sync?.link ? <span className="normal-case">/m/{p.sync.link.slug}</span> : 'Not linked'}>TV Board</Sec>
       <RuledBlock columns="minmax(0,1fr)">
-        <Field label="Sheet" className="!py-2">
+        <Field group label="Sheet" className="!py-2">
           <KeyGroup ariaLabel="TV sheet" disabled={!linked || p.readOnly} value={tv.sheet} onChange={(s) => driveTv({ ...tv, sheet: s })} options={[{ value: 'a', label: 'A · Live' }, { value: 'b', label: 'B · Standings' }]} />
         </Field>
-        <Field label="Venue" className="!py-2" note={<>Sets the TV board for everyone watching. This phone keeps its own daylight toggle.{tvWord ? <> <span className={tvState === 'error' ? 'text-redpen font-bold' : ''}>{tvWord}.</span></> : ''}</>}>
+        <Field group label="Venue" className="!py-2" note={<>Sets the TV board for everyone watching. This phone keeps its own daylight toggle.{tvWord ? <> <span className={tvState === 'error' ? 'text-redpen font-bold' : ''}>{tvWord}.</span></> : ''}</>}>
           <KeyGroup ariaLabel="TV venue" disabled={!linked || p.readOnly} value={tv.mode} onChange={(m) => driveTv({ ...tv, mode: m })} options={[{ value: 'home', label: 'Bright' }, { value: 'dark', label: 'Dark' }]} />
         </Field>
       </RuledBlock>
