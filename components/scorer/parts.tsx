@@ -39,13 +39,17 @@ export function Note({ children, className = '' }: { children: React.ReactNode; 
 }
 
 /** A form cell. `wide` spans the two-column form block. */
-export function Field({ label, children, wide, className = '', note }: { label?: React.ReactNode; children: React.ReactNode; wide?: boolean; className?: string; note?: React.ReactNode }) {
+export function Field({ label, children, wide, className = '', note, group }: { label?: React.ReactNode; children: React.ReactNode; wide?: boolean; className?: string; note?: React.ReactNode; group?: boolean }) {
+  // `group`: the field holds a KeyGroup (radios), not one input. A <label> around buttons hands its text to the
+  // first button as that radio's accessible name (Astra DR3-11, 11/3), so a group renders as a plain div and the
+  // radiogroup's own aria-label does the naming.
+  const Tag: 'label' | 'div' = group ? 'div' : 'label';
   return (
-    <label className={`flex flex-col justify-center px-2 py-1.5 min-h-[44px] ${wide ? 'col-span-full' : ''} ${className}`}>
+    <Tag className={`flex flex-col justify-center px-2 py-1.5 min-h-[44px] ${wide ? 'col-span-full' : ''} ${className}`}>
       {label !== undefined && <span className={`block text-[9px] mb-0.5 whitespace-nowrap overflow-hidden text-ellipsis ${CAP}`}>{label}</span>}
       {children}
       {note && <Note>{note}</Note>}
-    </label>
+    </Tag>
   );
 }
 

@@ -60,7 +60,9 @@ export default function TvBoard({ meet, state, live, control, clientName, error,
 
   const station = useMemo(() => pickStation(state, live, params.station), [state, live, params.station]);
   const a = useMemo(() => (completed ? null : buildSheetA(state, live, station)), [state, live, station, completed]);
-  const pages = useMemo(() => buildCardPages(state, live, params.division), [state, live, params.division]);
+  // Astra DR3-09 (11/3): a completed meet has no one on the platform, so Sheet B gets no live rows (no ON PLATFORM
+  // header, live-event marker or active-athlete underline on a final board).
+  const pages = useMemo(() => buildCardPages(state, completed ? [] : live, params.division), [state, live, params.division, completed]);
   const anyScores = state.results.length > 0;
   const sheet: TvSheet | 'idle' = wanted === 'a' && a ? 'a' : pages.length && (anyScores || completed || wanted === 'b') ? 'b' : a ? 'a' : 'idle';
 

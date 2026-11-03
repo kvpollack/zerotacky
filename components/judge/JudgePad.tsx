@@ -286,12 +286,14 @@ export default function JudgePad(p: JudgePadProps) {
           <RuledBlock columns="minmax(0,1fr) auto">
             <div className="px-2.5 py-1.5">
               <div className={`text-[10px] ${CAP}`}>
-                {syncStatus?.state === 'error' ? 'Sync error' : `Offline${syncStatus?.lastSyncAt ? ` since ${clockTime(syncStatus.lastSyncAt)}` : ''}`}
+                {syncStatus?.state === 'error' ? (syncStatus?.denied ? 'Code or PIN changed' : 'Sync error') : `Offline${syncStatus?.lastSyncAt ? ` since ${clockTime(syncStatus.lastSyncAt)}` : ''}`}
                 {syncStatus?.pending ? ` · ${syncStatus.pending} waiting` : ''}
               </div>
               <div className="text-[11px] leading-snug normal-case">
                 {syncStatus?.state === 'error'
-                  ? <>This phone cannot reach the meet. Keep scoring; write down anything still waiting, then re-join with the current code and PIN.</>
+                  ? (syncStatus?.denied
+                    ? <>The meet refused this phone&rsquo;s code or PIN; the Wi-Fi is fine. <b>Keep scoring.</b> Waiting scores stay on this phone. Get the current code and PIN from the promoter and re-join; they send on their own.</>
+                    : <>The meet refused a write from this phone. <b>Keep scoring</b>; write down anything still waiting, then re-join with the current code and PIN.</>)
                   : <><b>Keep scoring.</b> Scores send when the Wi-Fi comes back.</>}
               </div>
             </div>

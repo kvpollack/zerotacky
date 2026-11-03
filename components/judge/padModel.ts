@@ -7,12 +7,13 @@
 // stay the scored fields and are recomputed from the log on every press, so an old phone without the log
 // and a new one agree on the score.
 import type { EventDef, Result, RisingBarStatus, ScoringType } from '@/lib/types';
+import { effectiveMaxWeight } from '@/lib/engine/scoring';
 
 export type AttemptKind = 'good' | 'no';
 export type AttemptEntry = { kind: AttemptKind; at: number; split?: number; weight?: number };
 
 export type SyncState = 'off' | 'idle' | 'syncing' | 'offline' | 'error';
-export type SyncStatus = { state: SyncState; pending: number; lastSyncAt: number | null; error: string | null };
+export type SyncStatus = { state: SyncState; pending: number; lastSyncAt: number | null; error: string | null; denied?: boolean };
 
 export const IMPLEMENT_DEFAULT = 5;
 
@@ -69,6 +70,19 @@ export function implementsFromLog(log: AttemptEntry[]): { implementsCompleted: n
   return { implementsCompleted: goods.length, splitTimeSeconds: last?.split };
 }
 
+/** A result written by an older pad has a count but no tape (Astra DR3-03, 11/3). Seed the log with one good entry
+ *  per counted rep / implement (stamped 0 so they read as legacy) so the first new press adds to it instead of
+ *  restarting at 1. Returns the log untouched when it already has entries. */
+export function seedLog(ev: Pick<EventDef, 'scoringType'>, r: Partial<Result>): AttemptEntry[] {
+  const log = logOf(r);
+  if (log.length > 0) return log;
+  const n = ev.scoringType === 'reps' ? (r.reps ?? 0) : ev.scoringType === 'time_or_implements' ? (r.implementsCompleted ?? 0) : 0;
+  if (n <= 0) return log;
+  const seeded: AttemptEntry[] = Array.from({ length: n }, () => ({ kind: 'good' as AttemptKind, at: 0 }));
+  if (ev.scoringType === 'time_or_implements' && r.splitTimeSeconds) seeded[n - 1] = { ...seeded[n - 1], split: r.splitTimeSeconds };
+  return seeded;
+}
+
 /** Reps and no-reps from the log. */
 export function repsFromLog(log: AttemptEntry[]): { reps: number; noReps: number } {
   let reps = 0, noReps = 0;
@@ -83,11 +97,10 @@ export function currentBarWeight(weights: number[], attempts: Record<string, Ris
   return w ?? null;
 }
 
-/** Best good weight on the bar, else the typed override, else 0. */
+/** The weight the standings will score: a typed override wins, else the best good lift on the bar, else 0.
+ *  Same function the engine uses (Astra DR3-04: the pad showed 150 while standings scored a 120 override). */
 export function bestWeight(r: Partial<Result>): number {
-  const goods = Object.entries(r.risingBarAttempts ?? {}).filter(([, st]) => st === 'good').map(([w]) => Number(w));
-  const best = goods.length ? Math.max(...goods) : 0;
-  return Math.max(best, r.maxWeightLbs ?? 0);
+  return effectiveMaxWeight(r as Result);
 }
 
 /** Press GOOD / NO LIFT on a result: returns the patch to save. `split` is the clock at the press. */
@@ -96,14 +109,14 @@ export function pressPatch(ev: Pick<EventDef, 'scoringType' | 'implementCount' |
   switch (ev.scoringType) {
     case 'time_or_implements': {
       const count = ev.implementCount || IMPLEMENT_DEFAULT;
-      const log = logOf(r);
+      const log = seedLog(ev, r);
       const done = implementsFromLog(log).implementsCompleted;
       if (kind === 'good' && done >= count) return {};
       const next = [...log, { kind, at, split }];
       return { attemptLog: next, ...implementsFromLog(next), didNotStart: false } as Partial<Result>;
     }
     case 'reps': {
-      const next = [...logOf(r), { kind, at }];
+      const next = [...seedLog(ev, r), { kind, at }];
       return { attemptLog: next, reps: repsFromLog(next).reps, didNotStart: false } as Partial<Result>;
     }
     case 'max_weight': {
@@ -140,9 +153,14 @@ export function undoPatch(ev: Pick<EventDef, 'scoringType'>, r: Partial<Result>)
     case 'max_weight': {
       const last = log[log.length - 1];
       if (!last || last.weight === undefined) return {};
+      // Astra DR3-05 (11/3): deleting the key lost an earlier good lift at the same weight (good 150, no-lift 150,
+      // undo left 150 pending). Replay the surviving tape for that weight instead.
+      const rest = log.slice(0, -1);
       const attempts = { ...(r.risingBarAttempts ?? {}) };
-      delete attempts[last.weight];
-      return { attemptLog: log.slice(0, -1), risingBarAttempts: attempts } as Partial<Result>;
+      const prior = [...rest].reverse().find((e) => e.weight === last.weight);
+      if (prior) attempts[last.weight] = prior.kind === 'good' ? 'good' : 'fail';
+      else delete attempts[last.weight];
+      return { attemptLog: rest, risingBarAttempts: attempts } as Partial<Result>;
     }
     case 'time_or_distance':
       return { timeSeconds: 0 };

@@ -136,3 +136,51 @@ describe('labels and state', () => {
     assert.equal(P.clockTime(null), '');
   });
 });
+
+// Astra dry run 11/3: DR3-03 legacy counts, DR3-04 pad/standings agreement, DR3-05 undo at a repeated weight.
+describe('Astra DR3 pad fixes', () => {
+  test('DR3-03: a saved reps result without a tape keeps its count on the next press', () => {
+    const ev = { scoringType: 'reps' };
+    const patch = P.pressPatch(ev, { reps: 8 }, 'good', 0);
+    assert.equal(patch.reps, 9);
+    assert.equal(patch.attemptLog.length, 9);
+    assert.ok(patch.attemptLog.slice(0, 8).every((e) => e.kind === 'good' && e.at === 0), 'seeded entries are legacy-stamped');
+    const noRep = P.pressPatch(ev, { reps: 8 }, 'no', 0);
+    assert.equal(noRep.reps, 8);
+    assert.equal(P.repsFromLog(noRep.attemptLog).noReps, 1);
+  });
+  test('DR3-03: a saved stones count without a tape continues from its count', () => {
+    const ev = { scoringType: 'time_or_implements', implementCount: 5 };
+    const patch = P.pressPatch(ev, { implementsCompleted: 3, splitTimeSeconds: 20.5 }, 'good', 25.1);
+    assert.equal(patch.implementsCompleted, 4);
+    assert.equal(patch.splitTimeSeconds, 25.1);
+    assert.equal(P.stoneRows(patch.attemptLog, 5).filter((r) => r.state === 'good').length, 4);
+  });
+  test('DR3-03: seedLog leaves a real tape alone and ignores zero counts', () => {
+    const tape = [{ kind: 'good', at: 5 }];
+    assert.equal(P.seedLog({ scoringType: 'reps' }, { reps: 7, attemptLog: tape }), tape);
+    assert.deepEqual(P.seedLog({ scoringType: 'reps' }, { reps: 0 }), []);
+    assert.deepEqual(P.seedLog({ scoringType: 'max_weight' }, { maxWeightLbs: 200 }), []);
+  });
+  test('DR3-04: BEST follows the engine, so a typed override wins over a heavier good lift', () => {
+    const r = { risingBarAttempts: { 100: 'good', 150: 'good' }, maxWeightLbs: 120 };
+    assert.equal(P.bestWeight(r), 120);
+    assert.equal(P.bestWeight({ risingBarAttempts: { 100: 'good', 150: 'good' } }), 150);
+    assert.equal(P.bestWeight({ risingBarAttempts: { 100: 'good' }, didNotStart: true }), 0);
+  });
+  test('DR3-05: undoing a no-lift at a weight already made restores the good lift', () => {
+    const ev = { scoringType: 'max_weight', risingBarWeights: [100, 150, 200] };
+    let r = {};
+    r = { ...r, ...P.pressPatch(ev, r, 'good', 0, 100) };
+    r = { ...r, ...P.pressPatch(ev, r, 'good', 0, 150) };
+    r = { ...r, ...P.pressPatch(ev, r, 'no', 0, 150) };
+    assert.equal(r.risingBarAttempts[150], 'fail');
+    r = { ...r, ...P.undoPatch(ev, r) };
+    assert.equal(r.risingBarAttempts[150], 'good', 'the earlier good 150 survives the undo');
+    assert.equal(P.bestWeight(r), 150);
+    assert.equal(r.attemptLog.length, 2);
+    r = { ...r, ...P.undoPatch(ev, r) };
+    assert.equal(r.risingBarAttempts[150], undefined, 'no surviving entry: the weight goes back to pending');
+    assert.equal(P.bestWeight(r), 100);
+  });
+});
