@@ -64,3 +64,15 @@ export function resolveAccent(hex: string | null | undefined, mode: Mode): Accen
 export function resolveGround(hex: string | null | undefined, mode: Mode): string {
   return hex ? clampGround(hex, mode) : GROUND[mode];
 }
+
+/** What the paint picker tells the promoter about one colour in one mode: the refusal, or that we toned it, or nothing. */
+export function describePaint(hex: string | null | undefined, mode: Mode): { result: AccentResult; note: string; tone: 'red' | 'muted' | 'none' } {
+  const result = resolveAccent(hex, mode);
+  if (!hex) return { result, note: '', tone: 'none' };
+  if (result.refused) return { result, note: result.reason ?? '', tone: 'red' };
+  const input = hex.trim().toLowerCase();
+  if (result.clamped !== input) {
+    return { result, note: `${mode === 'home' ? 'In daylight' : 'On the dark board'} we set it to ${result.clamped} so the label on it stays readable.`, tone: 'muted' };
+  }
+  return { result, note: '', tone: 'none' };
+}

@@ -73,3 +73,23 @@ describe('promoter paint', () => {
     assert.equal(P.resolveGround(null, 'home'), '#d6d6d6');
   });
 });
+
+describe('describePaint (Phase 6 picker)', () => {
+  test('no paint says nothing', () => {
+    const d = P.describePaint(null, 'home');
+    assert.equal(d.note, ''); assert.equal(d.tone, 'none'); assert.equal(d.result.accent, P.INK.home);
+  });
+  test('a hostile red is refused in red pen, with the plain-English reason', () => {
+    const d = P.describePaint('#c8102e', 'home');
+    assert.equal(d.tone, 'red'); assert.ok(d.result.refused); assert.match(d.note, /too close to the no-lift red/);
+  });
+  test('a bright colour that gets toned says so, with the colour we used', () => {
+    const d = P.describePaint('#7f5cff', 'home'); // L above 0.50 in daylight -> clamped
+    assert.equal(d.tone, 'muted'); assert.equal(d.result.refused, false);
+    assert.match(d.note, new RegExp(`^In daylight we set it to ${d.result.clamped}`));
+  });
+  test('a colour already inside the band passes silently', () => {
+    const d = P.describePaint(P.clampAccent('#2b3a9f', 'dark'), 'dark');
+    assert.equal(d.tone, 'none'); assert.equal(d.note, '');
+  });
+});

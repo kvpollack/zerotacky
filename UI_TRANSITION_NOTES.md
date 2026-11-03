@@ -191,3 +191,29 @@ Mockup gate: `scorer_setup/events/roster/live/results.html` (approved 2 Nov, "go
 - Known / later: EventForm.jsx keeps its old rounded styling inside the sheet (legible through the `[data-zt-sheet]`
   bridge; port when the promoter editor moves in Phase 6). Promoter Theme is a plain select here; the paint picker with
   the clamp is Phase 6. Long division names clip in the Divisions list input at 390 px (the field scrolls).
+
+## Phase 6: promoter and registration (11/2 evening, main + v2)
+
+No mockup gate: Kurt waived it ("move straight into code for phase 6") after Phase 5 landed.
+
+- Scope call: the promoter console (`/promoter`, `/promoter/[id]`) and `/register/[slug]` already sit inside the Phase 3
+  website shell, and the `[data-zt-sheet]` bridge resolves their old `zt-*` tokens, corners and shadows onto the sheet.
+  Screens checked at 390 px before touching anything: the layout was already in the grammar; what remained was the
+  tinted badges and tinted selected cards the design forbids, and the paint picker.
+- `components/website/PaintPicker.tsx` replaces `ThemePicker.tsx` (same props and `value` contract, so the save path in
+  `ListingSection` and `MyGymClient` is untouched; `secondary` is carried through unseen). Preset strip as a key row,
+  two ruled fields (Your colour / Ground), and a live preview per mode: a mini sheet with the three slots (CLIENT cell,
+  card header band, live row) painted through `resolveAccent`, the ground through `resolveGround`. The caption under
+  each preview is `describePaint` (new in `lib/theme/promoter.ts`, 4 tests in `test/paint.test.mjs`): the plain-English
+  refusal in red pen with the slots fallen back to ink, or "we set it to #xxxxxx so the label on it stays readable" when
+  the clamp moved it, or "Your colour as typed". No numbers, no amber warnings; `themeWarnings` stays in the lib for the
+  website tests but nothing renders it.
+- Bridge (globals.css): pen tints (`bg-zt-primary/10|15|20`, the sky badge) go transparent with a pen rule; danger tints
+  go transparent with a red-pen rule and red-pen text. This clears the REGISTERED / UPCOMING / LISTED badges, the
+  selected division card on `/register`, the account toggles and the warning boxes in one place.
+- Not done, by choice: the meet editor still renders `components/setup/builder/*` (the old sections) through the bridge.
+  They read correctly; the scorer's `MeetSetupSheet` sections are the natural replacement when the editor is next
+  touched. Removed: `components/website/ThemePicker.tsx`.
+- Checked: bun test 537, tsc clean; dev server at 390 px: promoter dashboard, meet editor (Meet, Listing with the picker
+  off / on / toned / refused), `/register` step 1. Exit test (plan): a staging pass with a hostile colour, done in the
+  browser with `#c8102e` (refused in both modes, protan in daylight, deutan on the dark board).

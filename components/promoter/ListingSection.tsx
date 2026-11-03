@@ -6,7 +6,7 @@ import { AlertTriangle, CheckCircle2, Eye, EyeOff, Globe, RotateCcw } from 'luci
 import type { MeetListing } from '@/lib/promoter/contract';
 import { isLiveBackend } from '@/lib/promoter/usePromoterApi';
 import HostGymPicker from './HostGymPicker';
-import ThemePicker from '@/components/website/ThemePicker';
+import PaintPicker from '@/components/website/PaintPicker';
 import type { HostGymOption } from '@/lib/website/hostGym';
 import type { ZtTheme } from '@/lib/website/theme';
 import type {
@@ -499,7 +499,7 @@ export default function ListingSection({
       {/* 030: colour ways */}
       <div className="pt-3 border-t border-zt-border space-y-3">
         <div className="text-xs font-extrabold uppercase text-zt-primary">Show Colours</div>
-        <ThemePicker
+        <PaintPicker
           subject="show"
           previewName={meetName}
           value={draft.theme}
