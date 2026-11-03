@@ -217,3 +217,9 @@ No mockup gate: Kurt waived it ("move straight into code for phase 6") after Pha
 - Checked: bun test 537, tsc clean; dev server at 390 px: promoter dashboard, meet editor (Meet, Listing with the picker
   off / on / toned / refused), `/register` step 1. Exit test (plan): a staging pass with a hostile colour, done in the
   browser with `#c8102e` (refused in both modes, protan in daylight, deutan on the dark board).
+
+## Dry run 2 (11/3, staging, all six phases)
+Scripted meet day on `all-out-strongfest-2026-dryrun2` (admin phone, two judge phones, spectator, TV; Python Playwright over CDP, `audits/dry-run-2026-11-03/`). Report `audits/slate-2026-11-03-dry-run-prerun.md`, Astra brief `audits/astra-brief-2026-11-03-dry-run.md`. Two fixes:
+- **DR2-01** station chip: `strongman-app.jsx` `pickStation` (passed to `ScorerHeader` as `onPickStation`) lands on the station's first event, in its own order, that still has unlocked athletes in the station's first division; the header's old handler stays as the fallback when the prop is absent.
+- **DR2-02** TV Sheet A target cell: marks past 16 characters drop to 56 px and wrap to two centred lines instead of running off both edges.
+Sync, offline queue, roles, wrong PIN, spectator read-only and standings all held under the new skin.

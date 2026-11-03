@@ -49,6 +49,7 @@ export type ScorerHeaderProps = {
   currentEvent?: EventDef | null;
   stationFlight: string;
   setStationFlight: (id: string) => void;
+  onPickStation?: (id: string) => void;
   setSelectedDivisionId: (id: string) => void;
   setSelectedAthleteId: (id: string) => void;
   setSelectedEventId: (id: string) => void;
@@ -75,6 +76,7 @@ export function ScorerHeader(p: ScorerHeaderProps) {
   const floor = tab !== 'setup';
 
   const pickStation = (id: string) => {
+    if (p.onPickStation) { p.onPickStation(id); return; }
     p.setStationFlight(id);
     const firstDiv = p.divisions.find((d) => (id === 'ALL' ? true : d.flight === id));
     if (firstDiv) {
