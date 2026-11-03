@@ -2,7 +2,7 @@
 // Phase 5 (11/2): Meet Setup as a sheet (approved mockup scorer_setup.html). Six sections behind an index strip, one
 // shown at a time; every handler and every string is carried over from components/setup/builder/* unchanged. The old
 // builder files stay because the promoter editor still uses them. EventForm is reused as-is inside the events list.
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
 import type { Athlete, Division, EventDef, Meet, Result, Station } from '@/lib/types';
 import { ALL_POSSIBLE_PLATES, THEMES } from '@/lib/constants';
@@ -101,7 +101,20 @@ export type MeetSetupSheetProps = {
   sync: PanelSync | null | undefined;
   section: SetupSectionId;
   setSection: (id: SetupSectionId) => void;
+  // Promoter editor host (meet-editor swap, 11/3): the website's PromoterMeetDetailClient renders the five sections
+  // below one per tab. 'promoter' hides the scorer-only parts of Meet Details (demo toggle, cloud sync, theme, reset:
+  // the Listing tab and the dashboard own those), onEditingChange / closeFormSignal let its dirty bar track an open
+  // EventForm draft, and sectionNumbers overrides the step numbers in the headers (its Athletes tab is 7, not 5).
+  host?: 'scorer' | 'promoter';
+  onEditingChange?: (open: boolean) => void;
+  closeFormSignal?: number;
+  sectionNumbers?: Partial<Record<SetupSectionId, number>>;
 };
+
+const stepNo = (p: MeetSetupSheetProps, id: SetupSectionId) => p.sectionNumbers?.[id] ?? SETUP_SECTIONS.find((s) => s.id === id)!.n;
+
+// The five build sections, for the promoter editor (host='promoter'). The scorer keeps rendering them through the default export.
+export { MeetDetails as SheetMeetDetails, Divisions as SheetDivisions, Events as SheetEvents, Stations as SheetStations, Athletes as SheetAthletes };
 
 export default function MeetSetupSheet(props: MeetSetupSheetProps) {
   const { section, setSection } = props;
@@ -145,9 +158,12 @@ function SectionStrip({ section, setSection }: { section: SetupSectionId; setSec
 }
 
 // 1. Meet Details & Rules (MeetSection + the reset keys and theme pick that used to sit under Advanced Settings)
-function MeetDetails({ meet, updateMeetConfig, toggleGymPlate, sync, clearResults, loadMeetPreset, resetConfirmOpen, setResetConfirmOpen, themeId, selectTheme }: MeetSetupSheetProps) {
+function MeetDetails(props: MeetSetupSheetProps) {
+  const { meet, updateMeetConfig, toggleGymPlate, sync, clearResults, loadMeetPreset, resetConfirmOpen, setResetConfirmOpen, themeId, selectTheme, host = 'scorer' } = props;
   const isDemo = Boolean(meet.isDemo);
-  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+  // promoter host: a published meet's slug is its public URL (QR codes, the federation results link), so typing in the
+  // name never rewrites it there; the slug field itself stays editable. The scorer keeps deriving it from the name.
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(host === 'promoter');
   // Slug is edited as a draft: lowercase + hyphens while typing (so a trailing "-" or an emptied field survive
   // the keystroke), then fully slugified on blur. Slugifying on every keystroke made "-" impossible to type
   // and turned an empty field into "meet" (found 10/16).
@@ -168,7 +184,7 @@ function MeetDetails({ meet, updateMeetConfig, toggleGymPlate, sync, clearResult
 
   return (
     <>
-      <Sec right={isDemo ? 'This is a demo meet' : 'This is a real meet'}>1. Meet Details &amp; Rules</Sec>
+      <Sec right={isDemo ? 'This is a demo meet' : 'This is a real meet'}>{stepNo(props, 'meet')}. Meet Details &amp; Rules</Sec>
       <Form>
         <Field label="Meet Name" wide>
           <TextInput type="text" value={meet.name} onChange={(e) => handleNameChange(e.target.value)} placeholder="e.g. Keystone State Strongman 2026" />
@@ -239,6 +255,7 @@ function MeetDetails({ meet, updateMeetConfig, toggleGymPlate, sync, clearResult
         </div>
       </Form>
 
+      {host === 'promoter' ? null : (<>
       {/* 010: a meet built from a demo preset carries isDemo until the promoter says otherwise. Demo = hidden from /shows,
           DEMO on the scoreboard and app header, registration refused. The server never flips a real meet back to demo. */}
       <Note className="!mt-0">
@@ -280,12 +297,14 @@ function MeetDetails({ meet, updateMeetConfig, toggleGymPlate, sync, clearResult
           <Key onClick={() => setResetConfirmOpen(false)}>Cancel</Key>
         </div>
       )}
+      </>)}
     </>
   );
 }
 
 // 2. Divisions
-function Divisions({ meet, divisions, athletes, results, addDivision, updateDivision, removeDivision, reorderDivisions }: MeetSetupSheetProps) {
+function Divisions(props: MeetSetupSheetProps) {
+  const { meet, divisions, athletes, results, addDivision, updateDivision, removeDivision, reorderDivisions } = props;
   const stations = stationsOf(meet);
   const stationIds = new Set(stations.map((s) => s.id));
   const [newDivName, setNewDivName] = useState('');
@@ -313,7 +332,7 @@ function Divisions({ meet, divisions, athletes, results, addDivision, updateDivi
 
   return (
     <>
-      <Sec right="Stations are assigned in step 4">2. Divisions ({sortedDivisions.length})</Sec>
+      <Sec right={`Stations are assigned in step ${stepNo(props, 'stations')}`}>{stepNo(props, 'divisions')}. Divisions ({sortedDivisions.length})</Sec>
       {sortedDivisions.length === 0 ? (
         <Empty>No divisions yet. Add your first division or weight class below.</Empty>
       ) : (
@@ -359,9 +378,14 @@ function Divisions({ meet, divisions, athletes, results, addDivision, updateDivi
 }
 
 // 3. Events (EventForm reused as-is)
-function Events({ meet, divisions, events, results, addEvent, updateEvent, removeEvent, reorderEvents }: MeetSetupSheetProps) {
+function Events(props: MeetSetupSheetProps) {
+  const { meet, divisions, events, results, addEvent, updateEvent, removeEvent, reorderEvents, onEditingChange, closeFormSignal } = props;
   const defaultCollarWeightPerPair = meet.collarWeightPerPair;
   const [editingId, setEditingId] = useState<string | null>(null); // 'NEW' | event.id | null
+  // promoter host: report an open form (its Save bar warns that a draft is not included) and close on its signal
+  useEffect(() => { onEditingChange?.(editingId !== null); }, [editingId, onEditingChange]);
+  const firstSignal = useRef(closeFormSignal);
+  useEffect(() => { if (closeFormSignal !== firstSignal.current) { firstSignal.current = closeFormSignal; setEditingId(null); } }, [closeFormSignal]);
   const [armedDeleteId, setArmedDeleteId] = useState<string | null>(null);
   const sortedEvents = [...events].sort((a, b) => a.eventNumber - b.eventNumber);
   const sortedDivisions = [...divisions].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -377,7 +401,7 @@ function Events({ meet, divisions, events, results, addEvent, updateEvent, remov
 
   return (
     <>
-      <Sec>3. Events ({sortedEvents.length})</Sec>
+      <Sec>{stepNo(props, 'events')}. Events ({sortedEvents.length})</Sec>
       <Key variant={editingId === 'NEW' ? 'ink' : 'pen'} onClick={() => setEditingId(editingId === 'NEW' ? null : 'NEW')}>+ Add Event</Key>
       {editingId === 'NEW' && (
         <div className="border-2 border-rule p-2">
@@ -440,7 +464,8 @@ function Events({ meet, divisions, events, results, addEvent, updateEvent, remov
 }
 
 // 4. Stations & Floor Plan
-function Stations({ meet, divisions, athletes, events, addStation, updateStation, removeStation, updateDivision }: MeetSetupSheetProps) {
+function Stations(props: MeetSetupSheetProps) {
+  const { meet, divisions, athletes, events, addStation, updateStation, removeStation, updateDivision } = props;
   const [newStationLabel, setNewStationLabel] = useState('');
   const eventList = Array.isArray(events) ? events : [];
   const stations = stationsOf(meet);
@@ -457,7 +482,7 @@ function Stations({ meet, divisions, athletes, events, addStation, updateStation
 
   return (
     <>
-      <Sec right="Min 1 station">4. Stations &amp; Floor Plan ({stations.length})</Sec>
+      <Sec right="Min 1 station">{stepNo(props, 'stations')}. Stations &amp; Floor Plan ({stations.length})</Sec>
       <Note className="!mt-0">
         A station is one set of implements running its own order. Divisions on the same station run back to back; two
         stations run at the same time in different parts of the gym. Most promoters decide this after sign-ups close, and a small meet is fine on one station.
@@ -542,7 +567,8 @@ function StationEventOrder({ station, events, updateStation }: { station: Statio
 
 // 5. Athletes (pointer + keyboard lot reorder carried over unchanged)
 type Drag = { divId: string; athleteId: string; fromIndex: number; overIndex: number };
-function Athletes({ divisions, athletes, results, addAthlete, bulkAddAthletes, updateAthlete, removeAthlete, moveAthlete, shuffleLots, moveLot, toggleAthleteWithdrawn }: MeetSetupSheetProps) {
+function Athletes(props: MeetSetupSheetProps) {
+  const { divisions, athletes, results, addAthlete, bulkAddAthletes, updateAthlete, removeAthlete, moveAthlete, shuffleLots, moveLot, toggleAthleteWithdrawn } = props;
   const sortedDivisions = [...divisions].sort((a, b) => a.sortOrder - b.sortOrder);
   const [targetDivId, setTargetDivId] = useState(sortedDivisions[0]?.id || '');
   const [newName, setNewName] = useState('');
@@ -637,7 +663,7 @@ function Athletes({ divisions, athletes, results, addAthlete, bulkAddAthletes, u
 
   return (
     <>
-      <Sec>5. Athletes ({athletes.length})</Sec>
+      <Sec>{stepNo(props, 'athletes')}. Athletes ({athletes.length})</Sec>
       {sortedDivisions.length === 0 ? (
         <Empty>Add at least one division above before adding athletes.</Empty>
       ) : (

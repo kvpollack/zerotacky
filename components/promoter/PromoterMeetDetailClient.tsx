@@ -14,11 +14,8 @@ import {
   Save,
   ShieldAlert,
 } from 'lucide-react';
-import MeetSection from '@/components/setup/builder/MeetSection';
-import DivisionsSection from '@/components/setup/builder/DivisionsSection';
-import StationsSection from '@/components/setup/builder/StationsSection';
-import EventsSection from '@/components/setup/builder/EventsSection';
-import AthletesSection from '@/components/setup/builder/AthletesSection';
+import { SheetAthletes, SheetDivisions, SheetEvents, SheetMeetDetails, SheetStations, type MeetSetupSheetProps } from '@/components/scorer/MeetSetupSheet';
+import { DEFAULT_THEME_ID } from '@/lib/constants';
 import {
   addAthlete as mbAddAthlete,
   addDivision as mbAddDivision,
@@ -484,6 +481,55 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   }
 
   const { summary } = detail;
+  // Meet-editor swap (11/3): the scorer's sheet sections render the five build tabs. Scorer-only props are inert here
+  // (host='promoter' hides their controls); the working-state hooks above are the same reducers the old sections used.
+  const noop = () => {};
+  const sheetProps: MeetSetupSheetProps = {
+    host: 'promoter',
+    state: workingState,
+    meet: workingState.meet,
+    divisions: workingState.divisions,
+    events: workingState.events,
+    athletes: workingState.athletes,
+    results: workingState.results,
+    themeId: DEFAULT_THEME_ID,
+    selectTheme: noop,
+    updateMeetConfig,
+    toggleGymPlate,
+    addStation,
+    updateStation,
+    removeStation,
+    addDivision,
+    updateDivision,
+    removeDivision,
+    reorderDivisions,
+    addEvent: (payload) => addEvent(payload as Partial<EventDef> & { name: string }),
+    updateEvent: (id, patch) => updateEvent(id, patch as Partial<EventDef>),
+    removeEvent,
+    reorderEvents,
+    addAthlete,
+    bulkAddAthletes,
+    updateAthlete,
+    removeAthlete,
+    moveAthlete,
+    shuffleLots,
+    moveLot,
+    toggleAthleteWithdrawn,
+    createNewBlankMeet: noop,
+    pendingPresetId: null,
+    setPendingPresetId: noop,
+    requestMeetPreset: noop,
+    loadMeetPreset: noop,
+    clearResults: noop,
+    resetConfirmOpen: false,
+    setResetConfirmOpen: noop,
+    sync: null,
+    section: 'meet',
+    setSection: noop,
+    onEditingChange: setEventFormOpen,
+    closeFormSignal,
+    sectionNumbers: { athletes: 7 },
+  };
   const life = describeShowLifecycle(
     summary.listing.competitionStatus,
     summary.listing.registrationStatus,
@@ -694,72 +740,23 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
           survive tab switches; inactive panels are hidden with the HTML hidden attribute (M2). */}
       <div>
         <div role="tabpanel" id="panel-meet" aria-labelledby="tab-meet" hidden={activeTab !== 'meet'}>
-          <MeetSection
-            meet={workingState.meet}
-            updateMeetConfig={updateMeetConfig}
-            toggleGymPlate={toggleGymPlate}
-            allowDemoToggle={false}
-          />
+          <SheetMeetDetails {...sheetProps} />
         </div>
 
         <div role="tabpanel" id="panel-stations" aria-labelledby="tab-stations" hidden={activeTab !== 'stations'}>
-          <StationsSection
-            meet={workingState.meet}
-            divisions={workingState.divisions}
-            athletes={workingState.athletes}
-            events={workingState.events}
-            addStation={addStation}
-            updateStation={updateStation}
-            removeStation={removeStation}
-            updateDivision={updateDivision}
-            sectionNumber={4}
-          />
+          <SheetStations {...sheetProps} />
         </div>
 
         <div role="tabpanel" id="panel-divisions" aria-labelledby="tab-divisions" hidden={activeTab !== 'divisions'}>
-          <DivisionsSection
-            meet={workingState.meet}
-            divisions={workingState.divisions}
-            athletes={workingState.athletes}
-            results={workingState.results}
-            addDivision={addDivision}
-            updateDivision={updateDivision}
-            removeDivision={removeDivision}
-            reorderDivisions={reorderDivisions}
-          />
+          <SheetDivisions {...sheetProps} />
         </div>
 
         <div role="tabpanel" id="panel-events" aria-labelledby="tab-events" hidden={activeTab !== 'events'}>
-          <EventsSection
-            divisions={workingState.divisions}
-            events={workingState.events}
-            results={workingState.results}
-            addEvent={addEvent}
-            updateEvent={updateEvent}
-            removeEvent={removeEvent}
-            reorderEvents={reorderEvents}
-            onEditingChange={setEventFormOpen}
-            closeFormSignal={closeFormSignal}
-            defaultCollarWeightPerPair={workingState.meet.collarWeightPerPair}
-            sectionNumber={3}
-          />
+          <SheetEvents {...sheetProps} />
         </div>
 
-        <div role="tabpanel" id="panel-athletes" aria-labelledby="tab-athletes" hidden={activeTab !== 'athletes'}>
-          <AthletesSection
-            divisions={workingState.divisions}
-            athletes={workingState.athletes}
-            results={workingState.results}
-            addAthlete={addAthlete}
-            bulkAddAthletes={bulkAddAthletes}
-            updateAthlete={updateAthlete}
-            removeAthlete={removeAthlete}
-            moveAthlete={moveAthlete}
-            shuffleLots={shuffleLots}
-            moveLot={moveLot}
-            toggleAthleteWithdrawn={toggleAthleteWithdrawn}
-            sectionNumber={7}
-          />
+        <div role="tabpanel" id="panel-athletes" aria-labelledby="tab-athletes" hidden={activeTab !== 'athletes'} className="flex flex-col gap-6">
+          <SheetAthletes {...sheetProps} />
           <AthleteAccountsSection
             athletes={detail.state.athletes}
             divisions={detail.state.divisions}
