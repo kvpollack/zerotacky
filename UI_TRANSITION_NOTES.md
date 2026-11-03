@@ -211,7 +211,7 @@ No mockup gate: Kurt waived it ("move straight into code for phase 6") after Pha
 - Bridge (globals.css): pen tints (`bg-zt-primary/10|15|20`, the sky badge) go transparent with a pen rule; danger tints
   go transparent with a red-pen rule and red-pen text. This clears the REGISTERED / UPCOMING / LISTED badges, the
   selected division card on `/register`, the account toggles and the warning boxes in one place.
-- Not done, by choice: the meet editor still renders `components/setup/builder/*` (the old sections) through the bridge.
+- Done 11/3 (see "Meet-editor swap" below). Was: the meet editor still rendered `components/setup/builder/*` (the old sections) through the bridge.
   They read correctly; the scorer's `MeetSetupSheet` sections are the natural replacement when the editor is next
   touched. Removed: `components/website/ThemePicker.tsx`.
 - Checked: bun test 537, tsc clean; dev server at 390 px: promoter dashboard, meet editor (Meet, Listing with the picker
@@ -256,3 +256,17 @@ Report `audits/astra-2026-11-03-dry-run.md`, disposition `audits/astra-2026-11-0
   staging walkthrough on `all-out-strongfest-2026-dryrun2` (unlisted, completed, final): 404 before, pack renders, CSV
   downloads with the title block, mailto 1,023 chars, mark -> stamped, delete block gone, show page 200 while unlisted.
   Fixture stamp cleared afterwards. Not built (M scope): PDF, Strongman Results / OpenStrongman layouts.
+
+## Meet-editor swap (11/3, Kurt released the hold; the Phase 6 leftover)
+- `PromoterMeetDetailClient` renders the scorer's sheet sections (`SheetMeetDetails / SheetDivisions / SheetEvents /
+  SheetStations / SheetAthletes`, named exports of `components/scorer/MeetSetupSheet.tsx`) on tabs 1-4 and 7, fed by
+  one `sheetProps` object over the same working-state reducers the old sections used. New optional props on
+  `MeetSetupSheetProps`: `host: 'promoter'` hides the scorer-only tail of Meet Details (demo toggle, cloud sync, theme,
+  reset; the Listing tab and dashboard own those) and stops the name field from rewriting the slug (a published meet's
+  slug is its URL, QR codes and the federation results link; the slug field itself stays editable), `onEditingChange` /
+  `closeFormSignal` keep the editor's Save bar aware of an open EventForm draft, `sectionNumbers` renumbers Athletes to 7.
+- Deleted (no importers left): `components/setup/builder/{Divisions,Stations,Events,Athletes,Meets}Section.jsx`.
+  `MeetSection.jsx` (RUN_ORDER_OPTIONS / TIEBREAK_OPTIONS), `EventForm.jsx` and `EmptyMeetNotice.jsx` stay in use.
+- Checked: tsc clean, bun test 559; staging editor on `all-out-strongfest-2026-dryrun2` at 1280 and 390 px: all five
+  tabs render with no page errors; Save bar shows "Event form open" while + Add Event is open and clears when closed;
+  a name edit shows "Unsaved meet builder changes" and reverting it clears the bar (the slug no longer follows the name).
