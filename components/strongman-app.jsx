@@ -15,6 +15,7 @@ import {
   buildTransitionDeltas,
   nextEventOnStation,
   stationById,
+  stationEvents,
   stationForDivision,
 } from '@/lib/engine';
 import { createBlankMeet, normalizeState } from '@/lib/meetBuilder';
@@ -418,6 +419,28 @@ export default function App() {
       ? { event: nextEventInMeet, division: stationDivisions[0] }
       : null;
 
+  // Station chip (dry run 11/3): a judge switching stations lands on that station's first event that still has
+  // unlocked athletes in its first division (Strongfest's Station B ran keg before basket), not whatever event the
+  // phone happened to be on. Clearing the athlete id lets the new run order pick the lifter.
+  const pickStation = (id) => {
+    setStationFlight(id);
+    const firstDiv = divisions.find((d) => (id === 'ALL' ? true : d.flight === id));
+    if (!firstDiv) return;
+    setSelectedDivisionId(firstDiv.id);
+    const divAthletes = athletes.filter((a) => a.divisionId === firstDiv.id && a.status === 'active');
+    const ordered = stationEvents(stationById(meet, id), events);
+    const open = ordered.find((ev) =>
+      divAthletes.some((a) => !results.find((r) => r.eventId === ev.id && r.athleteId === a.id)?.locked)
+    );
+    const target = open ?? ordered[0];
+    if (target && target.id !== currentEvent?.id) {
+      setSelectedEventId(target.id);
+      setPitCrewCustomWeight('');
+    }
+    setSelectedAthleteId('');
+    setLane2AthleteId('');
+  };
+
   // Last athlete in the group (Kurt, meet day 10/24): the lock button used to land back on the same athlete, so the
   // judge had to pick the next group from the dropdown. Now it follows Pit Crew's nextSetup: next division on this
   // station, or the station's next event from its first division. Clearing the athlete id lets the new run order pick.
@@ -505,6 +528,7 @@ export default function App() {
         setSelectedDivisionId={setSelectedDivisionId}
         setSelectedEventId={setSelectedEventId}
         setStationFlight={setStationFlight}
+        onPickStation={pickStation}
         stationFlight={stationFlight}
       />
 

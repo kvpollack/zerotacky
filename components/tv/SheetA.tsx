@@ -33,7 +33,9 @@ export default function SheetA({ m, title }: { m: SheetAModel; title: TitleData 
           </TvCell>
           <TvCell className={`${CELL} col-span-2 items-center leading-none ${m.mark.pen ? 'text-pen' : ''}`}>
             <span className="text-[13px] text-ink-muted tracking-[0.04em] mb-3">{m.mark.cap}</span>
-            <span className="whitespace-nowrap font-bold" style={{ fontSize: m.mark.value.length > 10 ? 72 : 150 }}>{m.mark.value}</span>
+            {/* Text targets ("8 empty kegs (no added plates)") used to overflow the cell at 72px (dry run 11/3): past 16
+                characters the mark wraps to two centred lines instead of running off both edges. */}
+            <span className={`font-bold text-center ${m.mark.value.length > 16 ? 'line-clamp-2 break-words' : 'whitespace-nowrap'}`} style={{ fontSize: m.mark.value.length > 16 ? 56 : m.mark.value.length > 10 ? 72 : 150, lineHeight: 1 }}>{m.mark.value}</span>
           </TvCell>
           <TvCell className={`${CELL} font-bold leading-none`} style={{ fontSize: 64 }}>
             <span><span className="text-pen">{m.eventIndex}</span> <span className="text-[28px] text-ink-muted">of {m.eventCount}</span></span>
