@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { loadingTakesCollars } from '@/lib/engine/plates';
+import { EQUIPMENT_RULES, IMPLEMENTS, SPEC_LIMITS, normalizeEventSpec, validateEventSpec } from '@/lib/events/spec';
 
 const SCORING_OPTIONS = [
   { id: 'reps', label: 'Reps', help: 'Most reps in time cap; optional Heavy/Light trump bar.' },
@@ -51,6 +52,26 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
     return map;
   });
 
+  // Event spec starter (11/4): what athletes train for. Optional; validated and normalized by lib/events/spec.
+  const [spec, setSpec] = useState(() => ({
+    implement: ev.spec?.implement || '',
+    implementNote: ev.spec?.implementNote || '',
+    courseFeet: ev.spec?.courseFeet ?? '',
+    allowed: [...(ev.spec?.allowed || [])],
+    notAllowed: [...(ev.spec?.notAllowed || [])],
+    videoUrl: ev.spec?.videoUrl || '',
+    notes: ev.spec?.notes || '',
+  }));
+  const setSpecField = (k, v) => setSpec((s) => ({ ...s, [k]: v }));
+  // One rule is allowed, not allowed, or unsaid; clicking the same column again clears it.
+  const setRule = (id, column) => setSpec((s) => {
+    const allowed = s.allowed.filter((r) => r !== id);
+    const notAllowed = s.notAllowed.filter((r) => r !== id);
+    if (column === 'allowed' && !s.allowed.includes(id)) allowed.push(id);
+    if (column === 'notAllowed' && !s.notAllowed.includes(id)) notAllowed.push(id);
+    return { ...s, allowed, notAllowed };
+  });
+
   const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
@@ -63,6 +84,11 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
     const cap = Number(timeCapSeconds);
     if (!(cap > 0)) {
       setError('Time cap must be greater than 0 seconds.');
+      return;
+    }
+    const specError = validateEventSpec(spec);
+    if (specError) {
+      setError(specError);
       return;
     }
 
@@ -134,6 +160,7 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
         calloutTitle.trim() || Object.keys(byDivisionCallout).length > 0
           ? { title: calloutTitle.trim() || 'Setup Callout', byDivision: byDivisionCallout }
           : undefined,
+      spec: normalizeEventSpec(spec),
     };
 
     onSave(payload);
@@ -430,6 +457,105 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
           ))}
         </div>
       )}
+
+      {/* Event spec (athlete-facing): shows on the public show page under the event; the scorer ignores it */}
+      <div className="space-y-2 pt-2 border-t border-zt-border">
+        <div className="text-[10px] font-extrabold uppercase text-zt-primary">Event Spec (What Athletes Train For)</div>
+        <p className="text-[10px] text-zt-muted">
+          Optional. Printed on the public show page under this event, with kilograms beside every weight. Weights stay in the division table above.
+        </p>
+        <div className="grid grid-cols-2 gap-2 items-end">
+          <div>
+            <label htmlFor="ev-spec-implement" className="text-[10px] font-extrabold uppercase text-zt-muted">Implement</label>
+            <select
+              id="ev-spec-implement"
+              value={spec.implement}
+              onChange={(e) => setSpecField('implement', e.target.value)}
+              className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-lg px-2.5 py-1.5 text-xs font-bold"
+            >
+              <option value="">Not stated</option>
+              {IMPLEMENTS.map((i) => <option key={i.id} value={i.id}>{i.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="ev-spec-note" className="text-[10px] font-extrabold uppercase text-zt-muted">Implement Detail</label>
+            <input
+              id="ev-spec-note"
+              type="text"
+              value={spec.implementNote}
+              maxLength={SPEC_LIMITS.implementNote}
+              onChange={(e) => setSpecField('implementNote', e.target.value)}
+              placeholder={spec.implement === 'other' ? 'Describe it (required for Other)' : 'e.g. 12 in log, 1.9 in axle'}
+              className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-lg px-2.5 py-1.5 text-xs font-bold"
+            />
+          </div>
+          <div>
+            <label htmlFor="ev-spec-course" className="text-[10px] font-extrabold uppercase text-zt-muted">Course Distance (ft)</label>
+            <input
+              id="ev-spec-course"
+              type="number"
+              min="1"
+              step="0.5"
+              value={spec.courseFeet}
+              onChange={(e) => setSpecField('courseFeet', e.target.value)}
+              placeholder="Carries, pulls, medleys"
+              className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-lg px-2.5 py-1.5 text-xs font-bold"
+            />
+          </div>
+          <div>
+            <label htmlFor="ev-spec-video" className="text-[10px] font-extrabold uppercase text-zt-muted">Video Link</label>
+            <input
+              id="ev-spec-video"
+              type="url"
+              value={spec.videoUrl}
+              maxLength={SPEC_LIMITS.videoUrl}
+              onChange={(e) => setSpecField('videoUrl', e.target.value)}
+              placeholder="https://…"
+              className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-lg px-2.5 py-1.5 text-xs font-bold"
+            />
+          </div>
+        </div>
+        <div>
+          <div className="text-[10px] font-extrabold uppercase text-zt-muted mb-1">Equipment Rules</div>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-x-4 gap-y-1 text-xs items-center max-w-sm">
+            <span className="text-[10px] text-zt-muted" aria-hidden="true" />
+            <span className="text-[10px] font-bold uppercase text-zt-muted text-center">Allowed</span>
+            <span className="text-[10px] font-bold uppercase text-zt-muted text-center">Not Allowed</span>
+            {EQUIPMENT_RULES.map((r) => (
+              <div key={r.id} className="contents">
+                <span className="font-bold text-zt-text">{r.label}</span>
+                <input
+                  type="checkbox"
+                  aria-label={`${r.label} allowed`}
+                  checked={spec.allowed.includes(r.id)}
+                  onChange={() => setRule(r.id, 'allowed')}
+                  className="mx-auto"
+                />
+                <input
+                  type="checkbox"
+                  aria-label={`${r.label} not allowed`}
+                  checked={spec.notAllowed.includes(r.id)}
+                  onChange={() => setRule(r.id, 'notAllowed')}
+                  className="mx-auto"
+                />
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-zt-muted mt-1">Leave both unchecked when the rule is not stated.</p>
+        </div>
+        <div>
+          <label htmlFor="ev-spec-notes" className="text-[10px] font-extrabold uppercase text-zt-muted">Notes For Athletes</label>
+          <textarea
+            id="ev-spec-notes"
+            value={spec.notes}
+            maxLength={SPEC_LIMITS.notes}
+            onChange={(e) => setSpecField('notes', e.target.value)}
+            rows={2}
+            placeholder="e.g. Stones go over a 48 in bar; one drop allowed"
+            className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-lg px-2.5 py-1.5 text-xs font-bold"
+          />
+        </div>
+      </div>
 
       {error && <p className="text-xs font-bold text-red-400">{error}</p>}
 

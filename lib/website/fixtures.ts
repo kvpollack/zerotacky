@@ -143,6 +143,8 @@ export const DEMO_SHOW_RECORDS: PublicShowRecord[] = [
             'sf-g4': '48" Yoke Bar',
             'sf-g5': '48" Yoke Bar',
           },
+          // Event spec starter (11/4): a demo of the athlete-facing line under the event name
+          spec: { implement: 'keg', allowed: ['tacky', 'belt'], notAllowed: ['straps'], notes: 'Kegs go over the yoke crossbar; a dropped keg may be re-picked.' },
         },
         {
           id: 'sf-ev-3',
@@ -158,6 +160,7 @@ export const DEMO_SHOW_RECORDS: PublicShowRecord[] = [
           divisionWeights: {},
           fixedImplementDescription: '50 ft course • Vehicle scaled by Group 1–5',
           hasTrumpWeight: false,
+          spec: { implement: 'truck_pull', courseFeet: 50, allowed: ['belt', 'chalk'] },
         },
       ],
       results: [],

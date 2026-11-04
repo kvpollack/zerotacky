@@ -7,6 +7,7 @@ import { Cap, Key, KeyButton, WebCell, keyClass, textLink } from './sheet';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import { formatShowDate } from '@/lib/website/showHistory';
 import { directionsUrl, eventWeightDisplay, formatLocalDateTime } from '@/lib/website/format';
+import { specSegments } from '@/lib/events/spec';
 import { longIsoDate, shortIsoDate, splitFee, venueLine } from '@/lib/website/sheetFormat';
 import type { DivisionResultsView, PublicShowRecord } from '@/lib/website/types';
 
@@ -412,12 +413,25 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                         {SCORING_TYPE_LABELS[ev.scoringType] || ev.scoringType} · {ev.timeCapSeconds}s cap
                         {ev.lanes === 2 ? ' · 2 lanes' : ''}
                       </div>
+                      {/* Event spec starter (11/4): implement, course and equipment rules, with a video link when given */}
+                      {(specSegments(ev.spec).length > 0 || ev.spec?.videoUrl) && (
+                        <div className="text-[12px] text-ink mt-1 whitespace-normal">
+                          {specSegments(ev.spec).join(' · ')}
+                          {ev.spec?.videoUrl && (
+                            <>
+                              {specSegments(ev.spec).length > 0 ? ' · ' : ''}
+                              <a href={ev.spec.videoUrl} target="_blank" rel="noopener noreferrer" className={textLink}>Video</a>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </th>
                     {sortedDivisions.map((div) => {
                       const w = eventWeightDisplay(ev, div.id);
                       return (
                         <td key={div.id} className={TD}>
                           <div className={w.main ? `${NUM} text-[22px] leading-none` : 'text-ink-muted'}>{w.main || 'Not provided'}</div>
+                          {w.kg && <div className="text-[12px] text-ink-muted mt-1">{w.kg}</div>}
                           {w.setup && <div className="text-[12px] text-ink-muted mt-1">{w.setup}</div>}
                         </td>
                       );
@@ -427,12 +441,15 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
               </tbody>
             </table>
           </div>
-          {sortedEvents.some((ev) => ev.fixedImplementDescription || (ev.maxFormat === 'rising_bar' && ev.risingBarWeights)) && (
+          {sortedEvents.some((ev) => ev.fixedImplementDescription || ev.spec?.notes || (ev.maxFormat === 'rising_bar' && ev.risingBarWeights)) && (
             <ul className="border-t border-rule px-3 py-2.5 space-y-1 text-[13px] text-ink">
               {sortedEvents.map((ev) => (
                 <React.Fragment key={ev.id}>
                   {ev.fixedImplementDescription && (
                     <li><span className="text-ink-muted">Ev {ev.eventNumber} implement:</span> {ev.fixedImplementDescription}</li>
+                  )}
+                  {ev.spec?.notes && (
+                    <li><span className="text-ink-muted">Ev {ev.eventNumber} notes:</span> {ev.spec.notes}</li>
                   )}
                   {ev.maxFormat === 'rising_bar' && ev.risingBarWeights && (
                     <li><span className="text-ink-muted">Ev {ev.eventNumber} rising bar:</span> <span className={NUM}>{ev.risingBarWeights.join(' lb → ')}</span> lb</li>
