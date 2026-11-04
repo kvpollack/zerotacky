@@ -4,6 +4,10 @@ Supabase Auth sends six account emails. The defaults are unstyled with subjects 
 "You have been invited", which is how the 10/19 test landed in spam. These files replace them. **Installed on prod
 10/19; verified byte-identical on 10/21 through the management API (`config/auth`).** Staging still has the defaults.
 
+**Restyled 11/4 onto the sheet brand (white sheet on the ground, ink rules, pen-blue button, Set Stone wordmark as an image at
+`{{ .SiteURL }}/email/wordmark.png`, which ships in `public/email/`). The dashboard copies are the 10/19 rose versions until
+these six files are pasted again (prod, then staging). Paste after the deploy that carries `public/email/wordmark.png`.**
+
 ## Paste guide (Supabase dashboard, prod `kagitbfthapxmaljsdtz`, then staging `hryiqiopkihkcrkdyllg`)
 
 Authentication -> Emails -> Templates. For each tab: set **Subject**, paste the file into **Message body (HTML)**, Save.
