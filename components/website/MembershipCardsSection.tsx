@@ -2,7 +2,7 @@
 // Federation membership cards on the Account page (035). Photo + expiry per card; promoters of shows you register for
 // can see them on their Registrations tab. Nothing here claims verification: the photo is the evidence.
 import React, { useEffect, useRef, useState } from 'react';
-import { BadgeCheck, Eye, Plus, Trash2 } from 'lucide-react';
+import { Cap, keyClass, textLink } from '@/components/website/sheet';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import { todayIsoDate } from '@/lib/promoter/rules';
 import {
@@ -11,8 +11,9 @@ import {
   type CardDraft, type MembershipCard,
 } from '@/lib/website/membershipCards';
 
-const INPUT = 'w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-sm font-bold text-zt-text';
-const LABEL = 'block text-[10px] font-extrabold uppercase text-zt-muted mb-1';
+const INPUT = 'zt-input w-full';
+const CELL = 'flex flex-col gap-1.5 px-4 py-3 sm:px-5 sm:py-3.5 min-w-0';
+const NOTE = 'text-[13px] leading-snug text-ink-muted';
 const EMPTY: CardDraft = { federation: 'united_states_strongman', federationOther: '', memberNumber: '', expiresOn: '' };
 
 export default function MembershipCardsSection({ userId }: { userId: string }) {
@@ -84,101 +85,94 @@ export default function MembershipCardsSection({ userId }: { userId: string }) {
   const atMax = list.length >= MAX_CARDS;
 
   return (
-    <section aria-labelledby="cards-heading" className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-4">
-      <div>
-        <h2 id="cards-heading" className="text-base font-black uppercase text-zt-text flex items-center gap-2">
-          <BadgeCheck className="w-4 h-4 text-zt-primary" aria-hidden="true" /> Federation memberships
-        </h2>
-        <p className="text-xs font-bold text-zt-text-2 mt-1">
+    <section aria-labelledby="cards-heading" className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1">
+        <Cap as="span">Federation cards · up to {MAX_CARDS}</Cap>
+        <h2 id="cards-heading" className="text-[22px] font-bold leading-tight text-ink">Federation memberships</h2>
+        <p className={`${NOTE} max-w-2xl`}>
           Keep a photo of each membership card here with its expiry date. Promoters of shows you register for see the
           federation, the date and the photo on their registration list, so nobody checks paper at weigh-in. The date is
           what you type; ZeroTacky does not verify cards with the federation.
         </p>
       </div>
 
-      {loadError && <p role="alert" className="text-xs font-bold text-red-400">Could not load your cards ({loadError}).</p>}
-      {notice && <p role="status" className="text-xs font-bold text-emerald-400">{notice}</p>}
-      {error && <p role="alert" className="text-xs font-bold text-red-400">{error}</p>}
+      {loadError && <p role="alert" className="text-[15px] font-bold text-ink">Could not load your cards ({loadError}).</p>}
+      {notice && <p role="status" className="text-[15px] font-bold text-ink">{notice}</p>}
+      {error && <p role="alert" className="text-[15px] font-bold text-ink">{error}</p>}
 
-      {cards === null ? (
-        <p className="text-xs font-bold text-zt-muted">Loading…</p>
-      ) : list.length === 0 && !adding ? (
-        <p className="text-xs font-bold text-zt-muted">No cards on file.</p>
-      ) : (
-        <ul className="space-y-2">
-          {list.map((card) => {
+      <div className="zt-block grid-cols-1">
+        {cards === null ? (
+          <p className={`${CELL} ${NOTE}`}>Loading…</p>
+        ) : list.length === 0 && !adding ? (
+          <p className={`${CELL} ${NOTE}`}>No cards on file.</p>
+        ) : (
+          list.map((card) => {
             const status = cardStatus(card.expiresOn, today);
             return (
-              <li key={card.id} className="flex flex-wrap items-center justify-between gap-2 bg-zt-inset border border-zt-border rounded-xl px-3 py-2">
-                <div className="min-w-0">
-                  <div className="text-sm font-black text-zt-text">{federationLabel(card)}</div>
-                  <div className={`text-[11px] font-bold ${status === 'expired' ? 'text-red-400' : status === 'expiring' ? 'text-amber-300' : 'text-zt-text-2'}`}>
+              <div key={card.id} className="flex flex-wrap items-center justify-between gap-x-5 gap-y-2 px-4 py-3 sm:px-5">
+                <div className="min-w-0 flex flex-col gap-0.5">
+                  <div className="text-[17px] font-bold leading-tight text-ink">{federationLabel(card)}</div>
+                  <Cap as="span" className={status === 'expired' || status === 'expiring' ? 'text-pen' : undefined}>
                     {cardStatusLabel(status, card.expiresOn)}{card.memberNumber ? ` · #${card.memberNumber}` : ''}
-                  </div>
+                  </Cap>
                 </div>
-                <div className="inline-flex items-center gap-1.5">
-                  <button type="button" onClick={() => void onView(card)} disabled={busy}
-                    className="px-2.5 py-1.5 rounded-lg bg-zt-surface-2 border border-zt-border text-[11px] font-extrabold uppercase text-zt-text inline-flex items-center gap-1 disabled:opacity-40">
-                    <Eye className="w-3 h-3" aria-hidden="true" /> View
-                  </button>
-                  <button type="button" onClick={() => void onDelete(card)} disabled={busy} aria-label={`Remove ${federationLabel(card)} card`}
-                    className="px-2.5 py-1.5 rounded-lg bg-zt-surface-2 border border-zt-border text-[11px] font-extrabold uppercase text-red-400 inline-flex items-center gap-1 disabled:opacity-40">
-                    <Trash2 className="w-3 h-3" aria-hidden="true" /> Remove
-                  </button>
+                <div className="flex items-center gap-4 text-[13px]">
+                  <button type="button" onClick={() => void onView(card)} disabled={busy} className={`${textLink} disabled:opacity-40`}>View</button>
+                  <button type="button" onClick={() => void onDelete(card)} disabled={busy} aria-label={`Remove ${federationLabel(card)} card`} className={`${textLink} disabled:opacity-40`}>Remove</button>
                 </div>
-              </li>
+              </div>
             );
-          })}
-        </ul>
-      )}
+          })
+        )}
+      </div>
 
       {!adding ? (
         <button type="button" onClick={() => { setAdding(true); setNotice(null); }} disabled={busy || atMax || cards === null}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zt-primary text-zt-on-primary text-xs font-black uppercase disabled:opacity-40">
-          <Plus className="w-3.5 h-3.5" aria-hidden="true" /> Add a card
+          className={keyClass('line', 'self-start disabled:opacity-40')}>
+          + Add a card
         </button>
       ) : (
-        <form onSubmit={(e) => void onSave(e)} className="space-y-3 border-t border-zt-border pt-3" aria-label="Add a membership card">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="card-federation" className={LABEL}>Federation</label>
+        <form onSubmit={(e) => void onSave(e)} className="flex flex-col gap-4" aria-label="Add a membership card">
+          <div className="zt-block grid-cols-1 sm:grid-cols-2">
+            <div className={CELL}>
+              <label htmlFor="card-federation"><Cap as="span">Federation</Cap></label>
               <select id="card-federation" value={draft.federation} onChange={(e) => setDraft({ ...draft, federation: e.target.value as CardDraft['federation'] })} className={INPUT} disabled={busy}>
                 {FEDERATIONS.map((f) => <option key={f.id} value={f.id}>{f.label}</option>)}
               </select>
             </div>
             {draft.federation === 'other' && (
-              <div>
-                <label htmlFor="card-federation-other" className={LABEL}>Federation name</label>
+              <div className={CELL}>
+                <label htmlFor="card-federation-other"><Cap as="span">Federation name</Cap></label>
                 <input id="card-federation-other" value={draft.federationOther} maxLength={FEDERATION_OTHER_MAX} onChange={(e) => setDraft({ ...draft, federationOther: e.target.value })} className={INPUT} disabled={busy} />
               </div>
             )}
-            <div>
-              <label htmlFor="card-expires" className={LABEL}>Expiry date on the card</label>
+            <div className={CELL}>
+              <label htmlFor="card-expires"><Cap as="span">Expiry date on the card</Cap></label>
               <input id="card-expires" type="date" value={draft.expiresOn} min={today} onChange={(e) => setDraft({ ...draft, expiresOn: e.target.value })} className={INPUT} disabled={busy} required />
             </div>
-            <div>
-              <label htmlFor="card-number" className={LABEL}>Member number (optional)</label>
+            <div className={CELL}>
+              <label htmlFor="card-number"><Cap as="span">Member number (optional)</Cap></label>
               <input id="card-number" value={draft.memberNumber} maxLength={MEMBER_NUMBER_MAX} onChange={(e) => setDraft({ ...draft, memberNumber: e.target.value })} className={INPUT} disabled={busy} autoComplete="off" />
             </div>
-            <div className="sm:col-span-2">
-              <label htmlFor="card-photo" className={LABEL}>Photo of the card</label>
+            <div className={`${CELL} sm:col-span-2`}>
+              <label htmlFor="card-photo"><Cap as="span">Photo of the card</Cap></label>
               <input ref={fileRef} id="card-photo" type="file" accept="image/jpeg,image/png,image/webp" disabled={busy}
                 onChange={(e) => { const f = e.target.files?.[0] ?? null; setFile(f); setError(f ? cardFileProblem(f) : null); }}
-                className="block w-full text-xs font-bold text-zt-text-2 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-zt-surface-2 file:text-zt-text file:text-[11px] file:font-extrabold file:uppercase" />
-              <p className="text-[10px] text-zt-muted mt-1">JPG, PNG or WebP under {Math.round(CARD_MAX_BYTES / 1024 / 1024)} MB. Only you and the promoters of shows you register for can open it.</p>
+                className="block w-full text-[13px] font-bold text-ink file:mr-3 file:px-3 file:py-2 file:border-2 file:border-rule file:bg-sheet file:text-ink file:text-[12px] file:font-bold file:uppercase file:tracking-[0.04em]" />
+              <p className={NOTE}>JPG, PNG or WebP under {Math.round(CARD_MAX_BYTES / 1024 / 1024)} MB. Only you and the promoters of shows you register for can open it.</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button type="submit" disabled={busy} className="px-4 py-2 rounded-xl bg-zt-primary text-zt-on-primary text-xs font-black uppercase disabled:opacity-40">
+          <div className="flex flex-wrap items-center gap-4">
+            <button type="submit" disabled={busy} className={keyClass('pen', 'disabled:opacity-40')}>
               {busy ? 'Saving…' : 'Save card'}
             </button>
-            <button type="button" onClick={reset} disabled={busy} className="px-3 py-2 rounded-xl bg-zt-surface-2 border border-zt-border text-xs font-extrabold uppercase text-zt-text disabled:opacity-40">
+            <button type="button" onClick={reset} disabled={busy} className={`text-[13px] ${textLink} disabled:opacity-40`}>
               Cancel
             </button>
           </div>
         </form>
       )}
-      {atMax && <p className="text-[10px] text-zt-muted">Up to {MAX_CARDS} cards. Remove an expired one to add another.</p>}
+      {atMax && <p className={NOTE}>Up to {MAX_CARDS} cards. Remove an expired one to add another.</p>}
     </section>
   );
 }
