@@ -10,11 +10,13 @@ import { mergeAthletes } from '@/lib/sync/controller';
 import { scoreSingleEvent, calculateDivisionStandings } from '@/lib/engine';
 import { THEMES } from '@/lib/constants';
 import WebsiteThemeFrame from '@/components/website/WebsiteThemeFrame';
-import WebsiteThemeControls from '@/components/website/WebsiteThemeControls';
+import Wordmark from '@/components/brand/Wordmark';
+import { ModeToggle } from '@/components/website/SheetMode';
+import { Cap, keyClass, textLink } from '@/components/website/sheet';
+import { RuledBlock } from '@/components/sheet';
+import { CAP, LH, LR, Sec } from '@/components/scorer/parts';
+import StandingsSheet from '@/components/scorer/StandingsSheet';
 import type { AppState, Division, EventDef } from '@/lib/types';
-import Standings from '@/components/standings/Standings';
-import LeaderboardTable from '@/components/standings/LeaderboardTable';
-import LayoutToggle from '@/components/shell/LayoutToggle';
 import useLayoutMode from '@/hooks/useLayoutMode';
 import { getDemoScoreboardState } from '@/lib/website/data';
 
@@ -126,9 +128,18 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
     return () => { clearInterval(id); document.removeEventListener('visibilitychange', tick); };
   }, [client, meetId, demo]);
 
+  // UI transition, phone board (11/4; Kurt: "/m still shows the old UI"). One ruled sheet like the root splash and
+  // /join: wordmark / Mode strip, title block (status cap, meet name, updated time), Up Now as a ruled block, the
+  // division filter as a key row, then the scorer's StandingsSheet per division. The TV layout (Phase 2) is unchanged.
   const shell = (children: React.ReactNode) => (
-    <WebsiteThemeFrame className="pb-10" override={themeOverride} onUserChange={() => setThemeOverride(null)} brand={meet?.theme ?? null}>
-      <div className={`w-full mx-auto space-y-4 ${tv ? 'max-w-[1800px] p-6' : 'max-w-xl p-3.5'}`}>{children}</div>
+    <WebsiteThemeFrame sheet className="p-2 sm:p-4 lg:p-6 items-center" override={themeOverride} onUserChange={() => setThemeOverride(null)} brand={meet?.theme ?? null}>
+      <main className="w-full max-w-xl bg-sheet border-2 border-rule">
+        <header className="grid grid-cols-[minmax(0,1fr)_auto] gap-px bg-rule border-b-2 border-rule">
+          <div className="bg-sheet flex items-center h-14 px-4 text-[22px] text-ink"><Wordmark /></div>
+          <div className="bg-sheet flex items-center h-14"><ModeToggle /></div>
+        </header>
+        {children}
+      </main>
     </WebsiteThemeFrame>
   );
 
@@ -136,7 +147,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   if (notFound) return shell(<Notice text="No meet found for this scoreboard link. Check the link with the promoter." />);
   if (!state || !meet) return shell(<Notice text={error ? `Could not load: ${error}` : 'Loading…'} />);
 
-  // UI transition Phase 2: the TV is the sheet board (components/tv). The phone layout below is untouched until Phase 5.
+  // UI transition Phase 2: the TV is the sheet board (components/tv).
   if (tv) {
     return (
       <>
@@ -165,129 +176,110 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
     return scored[scored.length - 1] ?? state.events[0];
   };
   const name = (id: string | null) => state.athletes.find((a) => a.id === id)?.name;
+  const statusCap = completed
+    ? (meet.resultsStatus === 'final' ? 'Final results' : 'Completed · results provisional')
+    : cancelled ? 'Cancelled' : error ? 'Live scoreboard · retrying' : 'Live scoreboard';
+  const updated = updatedAt ? new Date(updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' }) : '';
 
   return shell(
-    <>
-      {/* MS-12: theme controls joined the right cluster; on phones that cluster wraps under the title instead of
-          squeezing the meet name to one word per line */}
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1 basis-56">
-          <div className="text-xs font-black uppercase tracking-widest text-zt-primary flex items-center gap-1.5">
-            {completed
-              ? <span className="inline-block w-2 h-2 rounded-full bg-zt-muted" aria-hidden="true" />
-              : <span className={`inline-block w-2 h-2 rounded-full ${error ? 'bg-amber-500' : 'bg-emerald-400 animate-pulse'}`} aria-hidden="true" />}
-            {completed ? (meet.resultsStatus === 'final' ? 'Final results' : 'Completed · results provisional') : cancelled ? 'Cancelled' : 'Live scoreboard'}
-            {meet.isDemo && (
-              <span className={`font-black uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500 text-black ${tv ? 'text-2xl' : 'text-sm'}`}>
-                DEMO
-              </span>
-            )}
-          </div>
-          <h1 className={`font-black break-words ${tv ? 'text-3xl' : 'text-xl leading-tight'}`}>{state.meet.name}</h1>
+    <div className="zt-block border-0">
+      <div className="px-4 py-5 sm:px-5 flex flex-col gap-1.5">
+        <div className="flex items-center gap-2">
+          {!completed && !cancelled && (
+            <span aria-hidden="true" className={`inline-block w-2 h-2 border-[1.5px] ${error ? 'border-redpen' : 'border-pen bg-pen'}`} />
+          )}
+          <Cap as="h2">{statusCap}</Cap>
+          {meet.isDemo && <span className="text-[9px] font-bold border border-rule px-1 leading-[14px] font-sheet uppercase text-ink">Demo</span>}
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
-        <WebsiteThemeControls />
-        <LayoutToggle layout={layout} onToggle={toggleLayout} />
-        <div className="text-right text-xs font-bold text-zt-muted flex-shrink-0">
-          {updatedAt ? `updated ${new Date(updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })}` : ''}
-          {error && <div className="text-zt-danger-text">retrying…</div>}
-        </div>
-        </div>
-      </header>
+        <h1 className="text-[26px] font-bold leading-none tracking-tight text-ink break-words">{state.meet.name}</h1>
+        <p className={`text-[12px] ${CAP}`}>
+          {updated ? `Updated ${updated} · ` : ''}refreshes every {POLL_MS / 1000}s
+          {' · '}
+          <button type="button" onClick={toggleLayout} className={`${textLink} font-normal`}>TV layout</button>
+        </p>
+      </div>
 
-      {/* Up now per station. Hidden once the meet is completed: the last live_state rows would otherwise show stale
-          names as if someone were still lifting (Astra DR-02). Stacked on phones so names and events can wrap (MS-06). */}
-      {!completed && <div className={`grid gap-2 ${stations.length > 1 ? (tv ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2') : 'grid-cols-1'}`}>
-        {stations.map((s) => {
-          const l = live.find((x) => x.station === s.id);
-          const ev = state.events.find((e) => e.id === l?.current_event_id);
-          const dv = state.divisions.find((d) => d.id === l?.current_division_id);
-          return (
-            <div key={s.id} className="bg-zt-surface border border-zt-border rounded-2xl p-3">
-              <div className="text-xs font-extrabold uppercase text-zt-muted">{s.label} · up now</div>
-              {l && ev ? (
-                <>
-                  <div className={`font-black text-zt-text break-words ${tv ? 'text-2xl truncate' : 'text-base leading-tight'}`}>{name(l.current_athlete_id) ?? '—'}</div>
-                  {l.lane2_athlete_id && <div className={`text-sm font-bold text-zt-text-2 ${tv ? 'truncate' : 'break-words'}`}>+ {name(l.lane2_athlete_id)}</div>}
-                  <div className={`text-xs text-zt-muted ${tv ? 'truncate' : ''}`}>Ev {ev.eventNumber} {ev.name}{dv ? ` · ${dv.name}` : ''}</div>
-                </>
-              ) : (
-                <div className="text-sm font-bold text-zt-muted">idle</div>
-              )}
-            </div>
-          );
-        })}
-      </div>}
+      {/* Up now per station. Hidden once the meet is completed (Astra DR-02). */}
+      {!completed && (
+        <div className="px-4 py-4 sm:px-5 flex flex-col gap-2">
+          <Sec>Up now</Sec>
+          <RuledBlock columns="minmax(88px,auto) minmax(0,1fr)" role="table" aria-label="Up now per station">
+            <LH>Station</LH><LH>Athlete · event</LH>
+            {stations.map((s) => {
+              const l = live.find((x) => x.station === s.id);
+              const ev = state.events.find((e) => e.id === l?.current_event_id);
+              const dv = state.divisions.find((d) => d.id === l?.current_division_id);
+              return (
+                <div key={s.id} role="row" className="contents">
+                  <LR className="font-bold text-[12px]">{s.label}</LR>
+                  <LR className="flex-col !items-start gap-0.5 py-1.5">
+                    {l && ev ? (
+                      <>
+                        <span className="font-bold text-[14px] leading-tight text-pen break-words">{name(l.current_athlete_id) ?? '—'}{l.lane2_athlete_id ? ` + ${name(l.lane2_athlete_id) ?? '—'}` : ''}</span>
+                        <span className={`text-[11px] ${CAP}`}>Ev {ev.eventNumber} {ev.name}{dv ? ` · ${dv.name}` : ''}</span>
+                      </>
+                    ) : (
+                      <span className={`text-[12px] ${CAP}`}>Idle</span>
+                    )}
+                  </LR>
+                </div>
+              );
+            })}
+          </RuledBlock>
+        </div>
+      )}
 
       {completed && (
-        <div role="status" className="bg-zt-surface border border-zt-border rounded-2xl p-3 text-sm font-bold text-zt-text-2">
+        <div role="status" className="px-4 py-4 sm:px-5 text-[13px] text-ink">
           {meet.resultsStatus === 'final'
             ? 'This show is complete and the standings below are final.'
             : 'This show is complete. Standings are provisional until the promoter marks them final.'}
         </div>
       )}
 
-      {/* Division filter */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
+      {/* Division filter: a key row, pen for the chosen one */}
+      <div className="px-4 py-3 sm:px-5 flex gap-1.5 overflow-x-auto" role="group" aria-label="Division">
         {[{ id: 'ALL', name: 'All' }, ...state.divisions].map((d) => (
           <button
             key={d.id}
             type="button"
             onClick={() => setDivision(d.id)}
-            className={`px-3 min-h-[44px] rounded-lg text-xs font-extrabold whitespace-nowrap border ${division === d.id ? 'bg-zt-primary text-zt-on-primary border-zt-primary' : 'bg-zt-inset text-zt-muted border-zt-border'}`}
+            aria-pressed={division === d.id}
+            className={keyClass(division === d.id ? 'pen' : 'line', 'min-h-10 px-3 text-xs whitespace-nowrap shrink-0')}
           >
             {d.name}
           </button>
         ))}
       </div>
 
-      {tv ? (
-        <div className={`grid gap-4 items-start ${divisions.length > 1 ? 'grid-cols-1 2xl:grid-cols-2' : 'grid-cols-1'}`}>
-          {divisions.map((d) => {
-            const divAth = state.athletes.filter((a) => a.divisionId === d.id);
-            if (divAth.length === 0) return null;
-            return (
-              <LeaderboardTable
-                key={d.id}
-                division={d}
-                events={state.events}
-                standings={calculateDivisionStandings(d, divAth, state.events, state.results, state.meet.tiebreakerRule)}
-                meet={state.meet}
-                highlightEventId={eventFor(d)?.id ?? null}
-              />
-            );
-          })}
-        </div>
-      ) : divisions.map((d) => {
+      {divisions.map((d) => {
         const ev = eventFor(d);
         const divAth = state.athletes.filter((a) => a.divisionId === d.id);
         if (!ev || divAth.length === 0) return null;
         return (
-          <Standings
-            key={d.id}
-            currentDivision={d}
-            currentEvent={ev}
-            eventScores={scoreSingleEvent(ev, divAth, state.results, state.events)}
-            meet={state.meet}
-            overallStandings={calculateDivisionStandings(d, divAth, state.events, state.results, state.meet.tiebreakerRule)}
-          />
+          <div key={d.id} className="px-4 py-4 sm:px-5 flex flex-col gap-2">
+            {/* the sheet's own caption truncates long division names at phone width; the name gets its own line */}
+            <h2 className="text-[16px] font-bold leading-tight text-ink">{d.name}</h2>
+            <StandingsSheet
+              currentDivision={d}
+              currentEvent={ev}
+              eventScores={scoreSingleEvent(ev, divAth, state.results, state.events)}
+              events={state.events}
+              meet={state.meet}
+              overallStandings={calculateDivisionStandings(d, divAth, state.events, state.results, state.meet.tiebreakerRule)}
+            />
+          </div>
         );
       })}
-      <div className="text-center text-xs text-zt-muted pt-2">
-        ZEROTACKY · refreshes every {POLL_MS / 1000}s
-        {!tv && (
-          <>
-            {' · '}
-            <a href="/website" className="underline hover:text-zt-text">Home</a>
-            {' · '}
-            <a href="/website/account" className="underline hover:text-zt-text">Account</a>
-          </>
-        )}
+
+      <div className="px-4 py-4 sm:px-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
+        <a href="/website" className={textLink}>ZeroTacky home</a>
+        <a href="/website/account" className={textLink}>Account</a>
       </div>
-    </>
+    </div>
   );
 }
 
 function Notice({ text }: { text: string }) {
-  return <div className="bg-zt-surface border border-zt-border rounded-2xl p-5 text-center text-sm font-bold text-zt-text-2 mt-10">{text}</div>;
+  return <div className="px-5 py-8 text-center text-[14px] font-bold text-ink">{text}</div>;
 }
