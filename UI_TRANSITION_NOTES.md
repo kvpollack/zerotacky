@@ -342,3 +342,29 @@ Report: `audits/astra-2026-11-03-builds.md`. Every finding fixed; dispositions:
   links for home / account / different code); the lookup, PIN and attach logic is untouched. Checked at 390 and 1280:
   code -> roles -> PIN with no page errors.
 - Checked: tsc clean, bun test 577 (+10). 039 on staging; prod on Kurt's OK. Staging rows and the fixture stamp cleared.
+
+## Phone scoreboard + not-found sheets (11/4), and the route sweep
+
+Kurt found two pages the UI transition had missed (/join above, and the phone scoreboard). The question was whether
+there were more. Two things closed it: a redraw of the surfaces that render outside the WebsiteShell, and a scripted
+screenshot sweep of every route so the answer is a table rather than a guess.
+
+- **Phone scoreboard `/m/<slug>` (`app/m/[slug]/ScoreboardClient.tsx`):** the phone layout now uses the sheet grammar:
+  `WebsiteThemeFrame sheet`, wordmark / Mode strip, a `.zt-block` title block (status cap, meet name, updated line,
+  "TV layout" as a text link), Up Now as a `RuledBlock` table, the division filter as `keyClass('pen' | 'line')` keys,
+  one `<h2>` per division over the scorer's `StandingsSheet`, text-link footer. `WebsiteThemeControls`, `Standings`,
+  `LeaderboardTable` and `LayoutToggle` are no longer imported here. The TV layout is untouched (it still auto-selects at
+  1280). Data flow and polling unchanged. Checked at 390 (10 tables, 6 division headings on the dry-run fixture) and
+  1280, no page errors.
+- **Not-found sheets:** new `components/website/NotFoundSheet.tsx` (cap / title / note / text-link keys in a
+  `.zt-block`). New root `app/not-found.tsx` (an unknown URL used to get Next's default page, which was the last surface
+  outside any shell). `app/shows/[slug]`, `app/gyms/[slug]`, `app/athletes/[username]` and `app/register/[slug]`
+  not-found pages rewritten on it with their own copy and links. Checked: unknown root URL returns 404 with the sheet.
+- **Route sweep (`~/.aki/tmp/zt/shots/sweep.py`):** 31 routes at 390 and 1280 on staging (62 loads, all 200, the 404
+  probe 404, zero page errors) into `~/Downloads/zt_ui_sweep_1104/` with `index.json` and a `README.md` table (route,
+  both screenshots, skin note) plus a ranked hand-redraw list. Finding: only `/join`, the phone board and the root 404
+  were outside the grammar; every other route renders inside WebsiteShell on the `[data-zt-sheet]` bridge and reads as
+  the sheet. The ranked list is by old-class hits, which is where the bridge still does the work: `/register`
+  RegisterClient (119), `/promoter` (63) and `/website/account` (59), athlete profile (51) and gym page (40),
+  how-it-works (58), then small ones.
+- Checked: tsc clean, bun test 577. No migration.
