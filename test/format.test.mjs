@@ -43,14 +43,14 @@ describe('directions: placeholders and demo venues (LT-05/06)', () => {
 describe('eventWeightDisplay (show page matrix)', () => {
   const base = { id: 'e1', eventNumber: 1, name: 'Log', scoringType: 'reps', timeCapSeconds: 60, lanes: 1, weightEntryMode: 'total', implementEmptyWeight: 0, divisionWeights: {} };
   test('weight with unit mode and light tier', () => {
-    assert.deepEqual(F.eventWeightDisplay({ ...base, divisionWeights: { d1: 160 } }, 'd1'), { main: '160 lbs' });
-    assert.deepEqual(F.eventWeightDisplay({ ...base, weightEntryMode: 'per_hand', divisionWeights: { d1: 100 } }, 'd1'), { main: '100 lbs / hand' });
-    assert.deepEqual(F.eventWeightDisplay({ ...base, hasTrumpWeight: true, divisionWeights: { d1: 200 }, divisionLightWeights: { d1: 160 } }, 'd1'), { main: '200 lbs (light 160)' });
+    assert.deepEqual(F.eventWeightDisplay({ ...base, divisionWeights: { d1: 160 } }, 'd1'), { main: '160 lbs', kg: '73 kg' });
+    assert.deepEqual(F.eventWeightDisplay({ ...base, weightEntryMode: 'per_hand', divisionWeights: { d1: 100 } }, 'd1'), { main: '100 lbs / hand', kg: '45 kg' });
+    assert.deepEqual(F.eventWeightDisplay({ ...base, hasTrumpWeight: true, divisionWeights: { d1: 200 }, divisionLightWeights: { d1: 160 } }, 'd1'), { main: '200 lbs (light 160)', kg: '91 kg (light 73)' });
   });
   test('callout wins; height-only setup; fixed implement; nothing', () => {
     assert.equal(F.eventWeightDisplay({ ...base, divisionWeights: { d1: 160 }, pitCrewCallout: { byDivision: { d1: { headline: '2 plates + 25s' } } } }, 'd1').main, '2 plates + 25s');
     assert.deepEqual(F.eventWeightDisplay({ ...base, weightIsAddedPlatesOnly: true, divisionWeights: { d1: 0 }, divisionDefaultHeights: { d1: '48 in' }, heightLabel: 'Bar height' }, 'd1'), { main: '48 in' });
-    assert.deepEqual(F.eventWeightDisplay({ ...base, divisionWeights: { d1: 230 }, divisionDefaultHeights: { d1: 'Pin 7' } }, 'd1'), { main: '230 lbs', setup: 'Setup: Pin 7' });
+    assert.deepEqual(F.eventWeightDisplay({ ...base, divisionWeights: { d1: 230 }, divisionDefaultHeights: { d1: 'Pin 7' } }, 'd1'), { main: '230 lbs', setup: 'Setup: Pin 7', kg: '104 kg' });
     assert.deepEqual(F.eventWeightDisplay({ ...base, fixedImplementDescription: '275 lb stone' }, 'd1'), { main: '275 lb stone' });
     assert.deepEqual(F.eventWeightDisplay(base, 'd9'), { main: '' });
   });

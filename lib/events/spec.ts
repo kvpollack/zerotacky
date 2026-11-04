@@ -1,0 +1,148 @@
+// Structured event spec helpers (11/4, starter). Pure: the promoter's event form validates and normalizes with these,
+// the show page describes with them, tests cover them. The implement list carries the gym-directory equipment ids it
+// maps to, so the later "train for this show" filter can join a show's events to gyms without a second vocabulary.
+import type { EquipmentRule, EventSpec, ImplementKind } from '@/lib/types';
+
+export const IMPLEMENTS: ReadonlyArray<{ id: ImplementKind; label: string; gymEquipment: string[] }> = [
+  { id: 'log', label: 'Log', gymEquipment: ['log'] },
+  { id: 'axle', label: 'Axle', gymEquipment: ['axle'] },
+  { id: 'barbell', label: 'Barbell', gymEquipment: [] },
+  { id: 'circus_dumbbell', label: 'Circus dumbbell', gymEquipment: ['circus_db'] },
+  { id: 'viking_press', label: 'Viking press', gymEquipment: ['viking_press'] },
+  { id: 'yoke', label: 'Yoke', gymEquipment: ['yoke'] },
+  { id: 'farmers', label: "Farmer's handles", gymEquipment: ['farmers'] },
+  { id: 'frame', label: 'Frame', gymEquipment: ['frame'] },
+  { id: 'husafell', label: 'Husafell stone', gymEquipment: ['husafell'] },
+  { id: 'sandbag', label: 'Sandbag', gymEquipment: ['sandbags'] },
+  { id: 'keg', label: 'Keg', gymEquipment: ['kegs'] },
+  { id: 'atlas_stones', label: 'Atlas stones', gymEquipment: ['stones'] },
+  { id: 'natural_stone', label: 'Natural stone', gymEquipment: ['natural_stones'] },
+  { id: 'loading_medley', label: 'Loading medley', gymEquipment: ['loading_platform'] },
+  { id: 'car_deadlift', label: 'Car deadlift', gymEquipment: ['car_deadlift'] },
+  { id: 'truck_pull', label: 'Truck / sled pull', gymEquipment: ['pull_harness'] },
+  { id: 'arm_over_arm', label: 'Arm-over-arm', gymEquipment: ['arm_over_arm'] },
+  { id: 'tire', label: 'Tire flip', gymEquipment: ['tire'] },
+  { id: 'power_stairs', label: 'Power stairs', gymEquipment: ['power_stairs'] },
+  { id: 'conans_wheel', label: "Conan's wheel", gymEquipment: ['conans_wheel'] },
+  { id: 'duck_walk', label: 'Duck walk', gymEquipment: [] },
+  { id: 'other', label: 'Other (describe)', gymEquipment: [] },
+];
+
+export const EQUIPMENT_RULES: ReadonlyArray<{ id: EquipmentRule; label: string }> = [
+  { id: 'tacky', label: 'Tacky' },
+  { id: 'straps', label: 'Straps' },
+  { id: 'belt', label: 'Belt' },
+  { id: 'sleeves', label: 'Sleeves' },
+  { id: 'wraps', label: 'Wraps' },
+  { id: 'chalk', label: 'Chalk' },
+  { id: 'suit', label: 'Suit' },
+];
+
+export const SPEC_LIMITS = { implementNote: 80, notes: 280, videoUrl: 500, courseFeetMax: 5280 } as const;
+
+const IMPLEMENT_IDS = new Set<string>(IMPLEMENTS.map((i) => i.id));
+const RULE_IDS = new Set<string>(EQUIPMENT_RULES.map((r) => r.id));
+
+export function implementLabel(id: ImplementKind | undefined): string {
+  return IMPLEMENTS.find((i) => i.id === id)?.label ?? '';
+}
+
+export function ruleLabel(id: EquipmentRule): string {
+  return EQUIPMENT_RULES.find((r) => r.id === id)?.label ?? id;
+}
+
+/** Raw form values (strings / arrays as typed). `normalizeEventSpec` cleans; `validateEventSpec` explains a refusal. */
+export interface EventSpecInput {
+  implement?: string;
+  implementNote?: string;
+  courseFeet?: string | number;
+  allowed?: string[];
+  notAllowed?: string[];
+  videoUrl?: string;
+  notes?: string;
+}
+
+function cleanRules(list: string[] | undefined): EquipmentRule[] {
+  const out: EquipmentRule[] = [];
+  for (const r of list ?? []) {
+    const k = String(r).trim().toLowerCase();
+    if (RULE_IDS.has(k) && !out.includes(k as EquipmentRule)) out.push(k as EquipmentRule);
+  }
+  return out;
+}
+
+/** Returns a spec with only the filled fields, or undefined when nothing is filled. Does not refuse; validate first. */
+export function normalizeEventSpec(input: EventSpecInput | EventSpec | null | undefined): EventSpec | undefined {
+  if (!input) return undefined;
+  const out: EventSpec = {};
+  const impl = String(input.implement ?? '').trim();
+  if (IMPLEMENT_IDS.has(impl)) out.implement = impl as ImplementKind;
+  const note = String(input.implementNote ?? '').trim();
+  if (note) out.implementNote = note.slice(0, SPEC_LIMITS.implementNote);
+  const feet = Number(input.courseFeet);
+  if (input.courseFeet !== '' && input.courseFeet !== undefined && input.courseFeet !== null && Number.isFinite(feet) && feet > 0) out.courseFeet = Math.round(feet * 10) / 10;
+  const allowed = cleanRules(input.allowed as string[] | undefined);
+  const notAllowed = cleanRules(input.notAllowed as string[] | undefined).filter((r) => !allowed.includes(r));
+  if (allowed.length) out.allowed = allowed;
+  if (notAllowed.length) out.notAllowed = notAllowed;
+  const url = String(input.videoUrl ?? '').trim();
+  if (url) out.videoUrl = url;
+  const notes = String(input.notes ?? '').trim();
+  if (notes) out.notes = notes.slice(0, SPEC_LIMITS.notes);
+  return Object.keys(out).length ? out : undefined;
+}
+
+/** Null when the input is acceptable, else the message the form shows. Checked on the raw input, before normalize. */
+export function validateEventSpec(input: EventSpecInput | null | undefined): string | null {
+  if (!input) return null;
+  const impl = String(input.implement ?? '').trim();
+  if (impl && !IMPLEMENT_IDS.has(impl)) return 'Pick an implement from the list.';
+  if (impl === 'other' && !String(input.implementNote ?? '').trim()) return 'Describe the implement when you pick "Other".';
+  if (String(input.implementNote ?? '').trim().length > SPEC_LIMITS.implementNote) return `Implement note is limited to ${SPEC_LIMITS.implementNote} characters.`;
+  const rawFeet = input.courseFeet;
+  if (rawFeet !== '' && rawFeet !== undefined && rawFeet !== null) {
+    const feet = Number(rawFeet);
+    if (!Number.isFinite(feet) || feet <= 0 || feet > SPEC_LIMITS.courseFeetMax) return `Course distance is in feet, between 1 and ${SPEC_LIMITS.courseFeetMax}.`;
+  }
+  const allowed = cleanRules(input.allowed);
+  const both = cleanRules(input.notAllowed).filter((r) => allowed.includes(r));
+  if (both.length) return `${ruleLabel(both[0])} cannot be both allowed and not allowed.`;
+  const url = String(input.videoUrl ?? '').trim();
+  if (url) {
+    if (url.length > SPEC_LIMITS.videoUrl) return `Video link is limited to ${SPEC_LIMITS.videoUrl} characters.`;
+    let u: URL | null = null;
+    try { u = new URL(url); } catch { u = null; }
+    if (!u || (u.protocol !== 'http:' && u.protocol !== 'https:')) return 'Video link must start with http:// or https://.';
+  }
+  if (String(input.notes ?? '').trim().length > SPEC_LIMITS.notes) return `Notes are limited to ${SPEC_LIMITS.notes} characters.`;
+  return null;
+}
+
+/** 230 -> 104 (whole kilograms; the exact conversion is 104.33). */
+export function lbToKg(lb: number): number {
+  return Math.round(lb * 0.45359237);
+}
+
+/** "104 kg" for a positive pound value, '' otherwise. */
+export function kgLabel(lb: number | null | undefined): string {
+  return typeof lb === 'number' && Number.isFinite(lb) && lb > 0 ? `${lbToKg(lb)} kg` : '';
+}
+
+/** Short segments for one line under the event name: implement, course, equipment. The video link is separate. */
+export function specSegments(spec: EventSpec | undefined): string[] {
+  if (!spec) return [];
+  const out: string[] = [];
+  if (spec.implement) {
+    const label = spec.implement === 'other' ? (spec.implementNote || 'Other implement') : implementLabel(spec.implement);
+    out.push(spec.implement !== 'other' && spec.implementNote ? `${label} (${spec.implementNote})` : label);
+  } else if (spec.implementNote) out.push(spec.implementNote);
+  if (spec.courseFeet) out.push(`${spec.courseFeet} ft course`);
+  if (spec.allowed?.length) out.push(`${spec.allowed.map(ruleLabel).join(', ')} allowed`);
+  if (spec.notAllowed?.length) out.push(`No ${spec.notAllowed.map((r) => ruleLabel(r).toLowerCase()).join(', ')}`);
+  return out;
+}
+
+/** True when the spec has anything an athlete would read (used to decide whether to render a line at all). */
+export function specHasContent(spec: EventSpec | undefined): boolean {
+  return !!spec && (specSegments(spec).length > 0 || !!spec.videoUrl || !!spec.notes);
+}

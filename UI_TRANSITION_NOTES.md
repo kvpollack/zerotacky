@@ -392,3 +392,33 @@ The four-step flow, every id, role, aria wiring, validation and submit path are 
   real submit (ACCEPTED, auto-accept meet; the row and an older 10/21 test row for the same account were deleted
   afterwards). Closed-registration state checked on the dry-run meet. Zero page errors. Screenshots
   `~/Downloads/zt_ui_1104/register_*.png`. tsc clean, bun test 577. No migration.
+
+## Feature 3: structured event spec starter (11/4, research brief build 3; roadmap "next build")
+
+The brief's line: "implement, in-hand weight, pick height, course, time cap, equipment, video, lb and kg". Weights, time
+cap and heights already live on the event (divisionWeights, timeCapSeconds, divisionDefaultHeights), so the starter adds
+what was missing and shows kilograms beside every pound figure. No migration: the spec rides in `events.config` like
+the other EventDef extras (round-trip test on the mappers).
+
+- **Model (`lib/types.ts`):** `EventDef.spec?: EventSpec` = `implement` (22 kinds, `ImplementKind`), `implementNote`
+  (80), `courseFeet`, `allowed` / `notAllowed` (`EquipmentRule`: tacky, straps, belt, sleeves, wraps, chalk, suit),
+  `videoUrl` (http(s), 500), `notes` (280). All optional.
+- **Helpers (`lib/events/spec.ts`):** `IMPLEMENTS` (each with the gym-directory equipment ids it maps to, checked by
+  test against `GYM_EQUIPMENT`, so the later "train for this show" filter has one vocabulary), `EQUIPMENT_RULES`,
+  `validateEventSpec` (messages the form shows: Other needs a description, course 1 to 5280 ft, a rule cannot be in
+  both columns, video must be http(s)), `normalizeEventSpec` (filled fields only, undefined for an empty form),
+  `lbToKg` (whole kg), `kgLabel`, `specSegments`, `specHasContent`.
+- **Promoter form (`components/setup/builder/EventForm.jsx`):** new "Event spec (what athletes train for)" block at
+  the end: implement select + detail, course distance, video link, equipment rules as an allowed / not-allowed grid (a
+  rule is one or the other or unsaid; clicking the same column again clears it), notes. Validated before save.
+- **Show page (`ShowDetailClient`):** one line under the event name (implement · course · equipment, `Video` text
+  link, `rel="noopener noreferrer"`), kilograms under every weight cell (`eventWeightDisplay().kg`, light tier
+  included; not for callouts or heights), notes in the footnote list.
+- **Demo:** Riverside Iron Fest fixture events 2 and 3 carry a spec. Staging Iron Harbor "Yoke Carry 50 ft" has one set
+  through the real editor (yoke · 50 ft · belt allowed · no straps · video · notes).
+- Checked end to end on staging through the promoter editor: Save Event, Save Changes, the show page shows the line,
+  26 kg cells and the Video link; `events.config.spec` holds the saved object. Zero page errors. Screenshots
+  `~/Downloads/zt_ui_1104/spec_form_1280.png`, `spec_show_1280.png`. tsc clean, bun test 583 (+6; four
+  `eventWeightDisplay` exact-shape assertions updated for the kg key).
+- Left for later builds on purpose: per-division pick heights as numbers (the free-text heights already print), the
+  register page's target-weight line in kg, the "train for this show" filter (build 4) that joins `IMPLEMENTS` to gyms.
