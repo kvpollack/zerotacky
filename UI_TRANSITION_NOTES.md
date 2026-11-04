@@ -368,3 +368,27 @@ screenshot sweep of every route so the answer is a table rather than a guess.
   RegisterClient (119), `/promoter` (63) and `/website/account` (59), athlete profile (51) and gym page (40),
   how-it-works (58), then small ones.
 - Checked: tsc clean, bun test 577. No migration.
+
+## /register hand redraw (11/4, first from the sweep's ranked list)
+
+`components/register/RegisterClient.tsx` no longer leans on the `[data-zt-sheet]` bridge (0 old-class hits, was 119).
+The four-step flow, every id, role, aria wiring, validation and submit path are untouched; only the render changed.
+
+- **Header:** the show page's band (promoter slot, ink by default here: name · long date · venue; competition /
+  registration / federation on the right) over a 2 x 2 (sm: 1 x 4) facts strip: entry fee, deadline (long date),
+  capacity, promoter + contact (`break-words`, the email used to overflow its cell).
+- **Steps:** one `.zt-block` strip of four cells; the active cell is filled ink (inline `var(--ink)` so it beats the
+  block's cell fill), finished cells read "Step n · done" in pen, upcoming ones muted.
+- **Forms:** each step is a ruled block of label-over-input cells (`Cap` + `.zt-input`); divisions are left-aligned
+  keys (chosen = ink, others = line) in a radiogroup; the DOB group is `role=group` labelled by its cap (was a
+  fieldset/legend, which fights flex layout); guardian fields appear inside it for minors. Primary action is a pen key
+  on the right, back is a text link on the left.
+- **Review / confirmation:** `ReviewRow` (cap left, bold value right; pen for the athlete's choice and the waiver line)
+  inside `<dl class="contents">` so the block's rules run between rows. Confirmation keeps Status in pen, the ID in mono.
+- **Closed / missing / error / waiver-missing states:** one ruled block each with cap, heading, note and an ink key.
+- Icons (lucide) dropped; no colour outside ink / pen / muted (the age warnings are bold ink, not amber).
+- Checked on staging (Iron Harbor Classic, registration open) at 390 and 1280, bright and dark: signed-out gate, step 1
+  (5 radios, 1 checked), minor path (guardian fields appear at DOB 2012), step 2, step 3 (8 review rows), step 4 after a
+  real submit (ACCEPTED, auto-accept meet; the row and an older 10/21 test row for the same account were deleted
+  afterwards). Closed-registration state checked on the dry-run meet. Zero page errors. Screenshots
+  `~/Downloads/zt_ui_1104/register_*.png`. tsc clean, bun test 577. No migration.

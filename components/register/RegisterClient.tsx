@@ -2,17 +2,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import {
-  AlertTriangle,
-  ArrowLeft,
-  Calendar,
-  CheckCircle2,
-  ClipboardCheck,
-  FileText,
-  Lock,
-  MapPin,
-  UserCheck,
-} from 'lucide-react';
+import { Cap, WebCell, keyClass, textLink } from '@/components/website/sheet';
+import { longIsoDate } from '@/lib/website/sheetFormat';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import type { PublicRegistrationMeet } from '@/lib/promoter/contract';
 import {
@@ -44,6 +35,24 @@ interface RegisterClientProps {
 
 type Step = 1 | 2 | 3 | 4;
 type LoadState = 'loading' | 'ready' | 'missing' | 'error';
+
+// UI transition (11/4, hand redraw after the route sweep): the page is drawn in the sheet grammar instead of leaning on
+// the [data-zt-sheet] bridge. Band + facts strip as on the show page, the four steps as one ruled strip (active cell
+// filled ink, finished cells in pen), every form as a ruled block of label-over-input cells, keys for the actions
+// (pen for the one that moves the athlete forward), text links for back. The flow, ids, roles and copy are unchanged.
+const INPUT = 'zt-input w-full';
+const BODY = 'text-[15px] leading-snug text-ink';
+const NOTE = 'text-[13px] leading-snug text-ink-muted';
+const CELL_PAD = 'px-4 py-3 sm:px-5 sm:py-3.5 min-w-0';
+const CELL = `flex flex-col gap-1.5 ${CELL_PAD}`;
+const FACT_V = 'text-[15px] font-bold leading-snug text-ink';
+const FACT_S = 'block text-[13px] font-normal text-ink-muted break-words';
+const STEPS: Array<{ s: Step; label: string }> = [
+  { s: 1, label: 'Division & info' },
+  { s: 2, label: 'Waiver' },
+  { s: 3, label: 'Review' },
+  { s: 4, label: 'Confirmation' },
+];
 
 const PREVIEW_NOTICE =
   'Preview: this entry is stored in this browser tab only, resets when the page reloads, and is not a real registration. Real entries open when the live backend lands in a later milestone.';
@@ -131,9 +140,10 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
 
   if (loadState === 'loading') {
     return (
-      <div className="max-w-3xl mx-auto">
-        <section className="bg-zt-surface border border-zt-border rounded-2xl p-8 text-center text-xs font-bold text-zt-muted" aria-busy="true">
-          Loading competition…
+      <div className="max-w-3xl flex flex-col gap-6">
+        <BackToShows />
+        <section className="zt-block" aria-busy="true">
+          <div className={`${CELL} py-6`}><p className={NOTE}>Loading competition…</p></div>
         </section>
       </div>
     );
@@ -141,11 +151,14 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
 
   if (loadState === 'error') {
     return (
-      <div className="max-w-3xl mx-auto space-y-4">
+      <div className="max-w-3xl flex flex-col gap-6">
         <BackToShows />
-        <section role="alert" className="bg-zt-surface border border-zt-danger rounded-2xl p-6 space-y-2">
-          <h1 className="text-xl font-black text-zt-text">Could not load this competition</h1>
-          <p className="text-xs font-bold text-zt-danger-text">{loadError}</p>
+        <section role="alert" className="zt-block">
+          <div className={`${CELL} py-6`}>
+            <Cap as="h2">Registration</Cap>
+            <h1 className="text-[28px] font-bold leading-tight text-ink">Could not load this competition</h1>
+            <p className={`${BODY} font-bold`}>{loadError}</p>
+          </div>
         </section>
       </div>
     );
@@ -153,20 +166,18 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
 
   if (loadState === 'missing' || !meet) {
     return (
-      <div className="max-w-3xl mx-auto space-y-4">
+      <div className="max-w-3xl flex flex-col gap-6">
         <BackToShows />
-        <section className="bg-zt-surface border border-zt-border rounded-2xl p-8 text-center space-y-3">
-          <h1 className="text-xl font-black text-zt-text">No competition found for this registration link</h1>
-          <p className="text-xs sm:text-sm text-zt-text-2 max-w-md mx-auto">
-            Check the link from the promoter, or browse the shows list.
-            {!isLiveBackend() && ' Meets created in the preview dashboard exist only in the browser tab that created them.'}
-          </p>
-          <Link
-            href="/shows"
-            className="inline-block px-5 py-2.5 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase"
-          >
-            Browse Shows
-          </Link>
+        <section className="zt-block">
+          <div className={`${CELL} py-6 gap-3`}>
+            <Cap as="h2">Registration</Cap>
+            <h1 className="text-[28px] font-bold leading-tight text-ink">No competition found for this registration link</h1>
+            <p className={BODY}>
+              Check the link from the promoter, or browse the shows list.
+              {!isLiveBackend() && ' Meets created in the preview dashboard exist only in the browser tab that created them.'}
+            </p>
+            <Link href="/shows" className={keyClass('ink', 'self-start')}>Browse Shows</Link>
+          </div>
         </section>
       </div>
     );
@@ -285,248 +296,192 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl flex flex-col gap-6">
       <BackToShows />
 
-      {/* Show Header Banner */}
-      <section className="bg-zt-surface border border-zt-border rounded-2xl p-5 sm:p-6 space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-black uppercase px-2.5 py-0.5 rounded bg-zt-primary/20 text-zt-primary-2 border border-zt-primary/40">
-            {life.competitionLabel}
-          </span>
-          <span
-            className={`text-xs font-black uppercase px-2.5 py-0.5 rounded border ${
-              regOpen
-                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                : 'bg-zt-danger/15 text-zt-danger-text border-zt-danger/40'
-            }`}
-          >
-            {life.registrationLabel}
-          </span>
-          {meet.listing.federation && (
-            <span className="text-xs font-bold uppercase px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-text-2">
-              {meet.listing.federation}
-            </span>
-          )}
+      {/* Band + facts strip, as on the show page (the slot colour defaults to ink here) */}
+      <section aria-label="Competition">
+        <div className="bg-slot text-slot-label border-2 border-b-0 border-rule flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-5 sm:px-6 min-h-16 py-3 text-[15px] leading-snug">
+          <h1 className="font-normal">
+            <span className="font-bold text-xl sm:text-[22px]">{meet.name}</span>
+            <span className="opacity-60 mx-3" aria-hidden="true">·</span>
+            <span>{meet.date ? longIsoDate(meet.date) : 'Date TBD'}</span>
+            <span className="opacity-60 mx-3" aria-hidden="true">·</span>
+            <span>{venueDisplay}</span>
+          </h1>
+          <div className="text-[13px] uppercase tracking-[0.04em]">
+            <span>Competition: {life.competitionLabel}</span>
+            <span className="opacity-60 mx-3" aria-hidden="true">·</span>
+            <span>Registration: {life.registrationLabel}</span>
+            {meet.listing.federation && (
+              <>
+                <span className="opacity-60 mx-3" aria-hidden="true">·</span>
+                <span>{meet.listing.federation}</span>
+              </>
+            )}
+          </div>
         </div>
-
-        <h1 className="text-2xl sm:text-3xl font-black text-zt-text">{meet.name}</h1>
-
-        <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-zt-text-2">
-          <span className="inline-flex items-center gap-1.5">
-            <Calendar className="w-4 h-4 text-zt-primary" aria-hidden="true" />
-            {meet.date || 'Date TBD'}
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <MapPin className="w-4 h-4 text-zt-secondary" aria-hidden="true" />
-            {venueDisplay}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 pt-2 border-t border-zt-border text-xs">
-          <div className="bg-zt-inset border border-zt-border rounded-xl p-2.5">
-            <div className="text-xs font-extrabold uppercase text-zt-muted">Entry Fee</div>
-            <div className="font-black text-zt-text mt-0.5">
-              {meet.listing.entryFeeDisplay || 'Collected by promoter'}
-            </div>
-          </div>
-          <div className="bg-zt-inset border border-zt-border rounded-xl p-2.5">
-            <div className="text-xs font-extrabold uppercase text-zt-muted">Registration Deadline</div>
-            <div className="font-black text-zt-text mt-0.5">
-              {meet.listing.registrationDeadline || (regOpen ? 'Open until filled' : 'Closed')}
-            </div>
-          </div>
-          <div className="bg-zt-inset border border-zt-border rounded-xl p-2.5">
-            <div className="text-xs font-extrabold uppercase text-zt-muted">Capacity</div>
-            <div className="font-black text-zt-text mt-0.5">{capacityDisplay}</div>
-          </div>
-          <div className="bg-zt-inset border border-zt-border rounded-xl p-2.5">
-            <div className="text-xs font-extrabold uppercase text-zt-muted">Promoter</div>
-            <div className="font-black text-zt-text mt-0.5">
+        <div className="zt-block border-t-0 grid-cols-2 sm:grid-cols-4">
+          <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+            <Cap>Entry fee</Cap>
+            <div className={FACT_V}>{meet.listing.entryFeeDisplay || 'Collected by promoter'}</div>
+          </WebCell>
+          <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+            <Cap>Registration deadline</Cap>
+            <div className={FACT_V}>{meet.listing.registrationDeadline ? longIsoDate(meet.listing.registrationDeadline) : regOpen ? 'Open until filled' : 'Closed'}</div>
+          </WebCell>
+          <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+            <Cap>Capacity</Cap>
+            <div className={FACT_V}>{capacityDisplay}</div>
+          </WebCell>
+          <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+            <Cap>Promoter</Cap>
+            <div className={FACT_V}>
               {meet.promoterDisplayName}
-              <span className="block font-bold text-zt-text-2">{promoterContactDisplay}</span>
+              <span className={FACT_S}>{promoterContactDisplay}</span>
             </div>
-          </div>
+          </WebCell>
         </div>
       </section>
 
-      {!isLiveBackend() && (
-        <p className="text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-2">
-          {PREVIEW_NOTICE}
-        </p>
-      )}
+      {!isLiveBackend() && <p className={`${NOTE} font-bold`}>{PREVIEW_NOTICE}</p>}
 
       {waiverError ? (
-        <section role="alert" className="bg-zt-surface border-2 border-zt-danger rounded-2xl p-8 text-center space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-zt-danger/15 border border-zt-danger text-zt-danger-text mx-auto flex items-center justify-center">
-            <AlertTriangle className="w-6 h-6" aria-hidden="true" />
+        <section role="alert" className="zt-block">
+          <div className={`${CELL} py-6 gap-3`}>
+            <Cap as="h2">Registration unavailable</Cap>
+            <p className={`${BODY} font-bold`}>{waiverError}</p>
+            <p className={NOTE}>
+              Athletes must accept the waiver to register, so the form is hidden until the waiver text is available.
+              Contact the promoter ({promoterContactDisplay}) in the meantime.
+            </p>
           </div>
-          <h2 className="text-xl font-black text-zt-text">Registration unavailable</h2>
-          <p className="text-xs sm:text-sm text-zt-danger-text max-w-md mx-auto">{waiverError}</p>
-          <p className="text-xs text-zt-text-2 max-w-md mx-auto">
-            Athletes must accept the waiver to register, so the form is hidden until the waiver text is available.
-            Contact the promoter ({promoterContactDisplay}) in the meantime.
-          </p>
         </section>
       ) : gate.status === null ? (
-        <section className="bg-zt-surface border-2 border-zt-border rounded-2xl p-8 text-center space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-zt-inset border border-zt-border text-zt-muted mx-auto flex items-center justify-center">
-            <Lock className="w-6 h-6" aria-hidden="true" />
-          </div>
-          <h2 className="text-xl font-black text-zt-text">
-            {regOpen ? 'Registration is not taking entries' : life.registrationLabel}
-          </h2>
-          <p className="text-xs sm:text-sm text-zt-text-2 max-w-md mx-auto">{gate.error}</p>
-          <p className="text-xs text-zt-text-2 max-w-md mx-auto">
-            Promoter: {meet.promoterDisplayName} ({promoterContactDisplay}).
-          </p>
-          <div className="pt-2">
-            <Link
-              href="/shows"
-              className="inline-block px-5 py-2.5 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase"
-            >
-              Browse Other Shows
-            </Link>
+        <section className="zt-block">
+          <div className={`${CELL} py-6 gap-3`}>
+            <Cap as="span">Registration</Cap>
+            <h2 className="text-[28px] font-bold leading-tight text-ink">
+              {regOpen ? 'Registration is not taking entries' : life.registrationLabel}
+            </h2>
+            <p className={BODY}>{gate.error}</p>
+            <p className={NOTE}>Promoter: {meet.promoterDisplayName} ({promoterContactDisplay}).</p>
+            <Link href="/shows" className={keyClass('ink', 'self-start mt-1')}>Browse Other Shows</Link>
           </div>
         </section>
       ) : (
         <>
           {gate.status === 'waitlist' && step < 4 && (
-            <p className="text-xs font-bold text-zt-text-2 bg-zt-inset border border-zt-border rounded-xl px-3 py-2">
+            <p className={`${BODY} font-bold`}>
               {gate.reason === 'full'
                 ? `This show is full (${capacityDisplay}). You can still register: your entry goes on the waitlist and the promoter decides if a spot opens.`
                 : 'This competition is taking waitlist entries only. Your request will be marked waitlisted and the promoter decides if a spot opens.'}
             </p>
           )}
 
-          {/* Step Indicator */}
-          <ol className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-            {[
-              { s: 1, label: '1. Division & Info' },
-              { s: 2, label: '2. Waiver' },
-              { s: 3, label: '3. Review' },
-              { s: 4, label: '4. Confirmation' },
-            ].map((item) => {
+          {/* Step strip */}
+          <ol className="zt-block grid-cols-2 sm:grid-cols-4" aria-label="Registration steps">
+            {STEPS.map((item) => {
               const active = step === item.s;
               const done = step > item.s;
+              const tone = active ? 'text-sheet' : done ? 'text-pen' : 'text-ink-muted';
               return (
                 <li
                   key={item.s}
                   aria-current={active ? 'step' : undefined}
-                  className={`rounded-xl px-2 py-2 font-black uppercase text-xs leading-tight text-center border min-h-[44px] flex items-center justify-center ${
-                    active
-                      ? 'bg-zt-primary text-zt-on-primary border-zt-primary'
-                      : done
-                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'
-                      : 'bg-zt-surface text-zt-muted border-zt-border'
-                  }`}
+                  style={active ? { background: 'var(--ink)' } : undefined}
+                  className={`flex flex-col justify-center gap-0.5 px-4 py-3 min-h-14 ${tone}`}
                 >
-                  {item.label}
+                  <span className={`text-xs uppercase tracking-[0.06em] ${active ? 'opacity-70' : ''}`}>
+                    Step {item.s}{done ? ' · done' : ''}
+                  </span>
+                  <span className="text-[13px] font-bold uppercase tracking-[0.04em] leading-tight">{item.label}</span>
                 </li>
               );
             })}
           </ol>
 
           {error && (
-            <div
-              role="alert"
-              className="p-4 rounded-2xl bg-zt-danger/15 border border-zt-danger text-zt-danger-text text-xs font-bold flex items-center gap-2"
-            >
-              <AlertTriangle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-              <span>{error}</span>
-            </div>
+            <div role="alert" className={`${BODY} font-bold`}>{error}</div>
           )}
 
           {/* STEP 0: ACCOUNT. Registration is tied to a ZeroTacky account. */}
           {step === 1 && isLiveBackend() && auth.loading && (
-            <section className="bg-zt-surface border border-zt-border rounded-2xl p-5 sm:p-6">
-              <div className="text-xs font-bold uppercase text-zt-muted">Checking your session…</div>
+            <section className="zt-block">
+              <div className={CELL}><p className="text-[13px] uppercase tracking-[0.04em] text-ink-muted">Checking your session…</p></div>
             </section>
           )}
           {step === 1 && needsAccount && !auth.loading && (
-            <section aria-labelledby="reg-account-heading" className="bg-zt-surface border border-zt-border rounded-2xl p-5 sm:p-6 space-y-4">
-              <h2 id="reg-account-heading" className="text-base font-black uppercase tracking-wider text-zt-primary flex items-center gap-2">
-                <UserCheck className="w-4 h-4" aria-hidden="true" /> Step 1: Your ZeroTacky account
-              </h2>
-              <p className="text-xs sm:text-sm text-zt-text-2 leading-relaxed max-w-2xl">
-                Registering takes a free account. Your entry is tied to it, so you can follow its status on My Meets and
-                every show you compete in builds your record. Create one here, or sign in if you already have one; you
-                stay on this page. Under 18? A parent or guardian creates the account and registers you.
-              </p>
-              <div className="max-w-xl">
-                <SignInForm auth={auth} defaultMode="signup" returnTo={`/register/${slug}`} idPrefix="reg-acct" />
+            <section aria-labelledby="reg-account-heading" className="zt-block">
+              <div className={`${CELL} py-5 gap-3`}>
+                <Cap as="span">Step 1</Cap>
+                <h2 id="reg-account-heading" className="text-[22px] font-bold leading-tight text-ink">Your ZeroTacky account</h2>
+                <p className={`${BODY} max-w-2xl`}>
+                  Registering takes a free account. Your entry is tied to it, so you can follow its status on My Meets and
+                  every show you compete in builds your record. Create one here, or sign in if you already have one; you
+                  stay on this page. Under 18? A parent or guardian creates the account and registers you.
+                </p>
+              </div>
+              <div className={`${CELL} py-5`}>
+                <div className="max-w-xl">
+                  <SignInForm auth={auth} defaultMode="signup" returnTo={`/register/${slug}`} idPrefix="reg-acct" />
+                </div>
               </div>
             </section>
           )}
 
           {/* STEP 1: DIVISION & ATHLETE DETAILS */}
           {step === 1 && !needsAccount && !(isLiveBackend() && auth.loading) && (
-            <form
-              onSubmit={goToStep2}
-              className="bg-zt-surface border border-zt-border rounded-2xl p-5 sm:p-6 space-y-5"
-            >
-              <h2 className="text-base font-black uppercase tracking-wider text-zt-primary">
-                Step 1: Choose Division &amp; Athlete Details
-              </h2>
-
-              {cardNudge && (
-                <p className="text-xs text-zt-muted bg-zt-inset border border-zt-border rounded-lg px-3 py-2">
-                  This show lists {showFederation}. You have no membership card on your account yet; adding one on your{' '}
-                  <Link href="/website/account" className="underline font-bold text-zt-text">Account page</Link> saves the promoter a
-                  question at check-in. Optional; you can register either way.
-                </p>
-              )}
-
-              <div className="space-y-2">
-                <div id="reg-division-label" className="block text-xs font-extrabold uppercase text-zt-muted">
-                  Select Division / Strength Group *
+            <form onSubmit={goToStep2} className="flex flex-col gap-4">
+              <div className="zt-block grid-cols-1 sm:grid-cols-2">
+                <div className={`${CELL} col-span-full py-4 gap-1`}>
+                  <Cap as="span">Step 1</Cap>
+                  <h2 className="text-[22px] font-bold leading-tight text-ink">Choose division &amp; athlete details</h2>
+                  {cardNudge && (
+                    <p className={`${NOTE} mt-1`}>
+                      This show lists {showFederation}. You have no membership card on your account yet; adding one on your{' '}
+                      <Link href="/website/account" className={textLink}>Account page</Link> saves the promoter a
+                      question at check-in. Optional; you can register either way.
+                    </p>
+                  )}
                 </div>
-                <div role="radiogroup" aria-labelledby="reg-division-label" className="grid grid-cols-1 gap-2.5">
-                  {meet.divisions.map((div, index) => {
-                    const selected = div.id === divisionId;
-                    const weightSummary = div.targetWeights
-                      .filter((t) => t.weight !== null)
-                      .map((t) => `${t.eventName}: ${t.weight} lb`)
-                      .join(' • ');
 
-                    return (
-                      <button
-                        key={div.id}
-                        ref={(el) => {
-                          radioRefs.current[index] = el;
-                        }}
-                        type="button"
-                        role="radio"
-                        aria-checked={selected}
-                        tabIndex={selected || (!divisionId && index === 0) ? 0 : -1}
-                        onClick={() => setDivisionId(div.id)}
-                        onKeyDown={(e) => onRadioKeyDown(e, index)}
-                        className={`p-3.5 rounded-xl border-2 text-left transition ${
-                          selected
-                            ? 'bg-zt-primary/15 border-zt-primary text-zt-text'
-                            : 'bg-zt-inset border-zt-border text-zt-text-2 hover:border-zt-border-strong'
-                        }`}
-                      >
-                        <span className="block text-sm font-black text-zt-text">{div.name}</span>
-                        {weightSummary && (
-                          <span className="block text-xs font-semibold text-zt-muted mt-1">
-                            Target Weights: {weightSummary}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
+                <div className={`${CELL} col-span-full`}>
+                  <Cap id="reg-division-label" as="span">Select division / strength group *</Cap>
+                  <div role="radiogroup" aria-labelledby="reg-division-label" className="flex flex-col gap-2 mt-0.5">
+                    {meet.divisions.map((div, index) => {
+                      const selected = div.id === divisionId;
+                      const weightSummary = div.targetWeights
+                        .filter((t) => t.weight !== null)
+                        .map((t) => `${t.eventName}: ${t.weight} lb`)
+                        .join(' · ');
+
+                      return (
+                        <button
+                          key={div.id}
+                          ref={(el) => {
+                            radioRefs.current[index] = el;
+                          }}
+                          type="button"
+                          role="radio"
+                          aria-checked={selected}
+                          tabIndex={selected || (!divisionId && index === 0) ? 0 : -1}
+                          onClick={() => setDivisionId(div.id)}
+                          onKeyDown={(e) => onRadioKeyDown(e, index)}
+                          className={keyClass(selected ? 'ink' : 'line', 'w-full min-h-12 flex-col items-start gap-0 leading-tight py-2 text-left')}
+                        >
+                          <span>{div.name}</span>
+                          {weightSummary && (
+                            <span className="text-[12px] normal-case font-normal tracking-normal opacity-80">Target weights: {weightSummary}</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2 border-t border-zt-border">
-                <div>
-                  <label
-                    htmlFor="reg-athlete-name"
-                    className="block text-xs font-extrabold uppercase text-zt-muted mb-1"
-                  >
-                    Athlete Full Name *
-                  </label>
+                <div className={CELL}>
+                  <label htmlFor="reg-athlete-name"><Cap as="span">Athlete full name *</Cap></label>
                   <input
                     id="reg-athlete-name"
                     type="text"
@@ -534,17 +489,12 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                     value={athleteName}
                     onChange={(e) => setAthleteName(e.target.value)}
                     placeholder="e.g. Jordan Demo"
-                    className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2.5 text-sm font-bold text-zt-text"
+                    className={INPUT}
                   />
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="reg-athlete-email"
-                    className="block text-xs font-extrabold uppercase text-zt-muted mb-1"
-                  >
-                    Email Address *
-                  </label>
+                <div className={CELL}>
+                  <label htmlFor="reg-athlete-email"><Cap as="span">Email address *</Cap></label>
                   <input
                     id="reg-athlete-email"
                     type="email"
@@ -552,221 +502,174 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="athlete@example.com"
-                    className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2.5 text-sm font-bold text-zt-text"
+                    className={INPUT}
                   />
+                </div>
+
+                <div className={`${CELL} col-span-full`}>
+                  <label htmlFor="reg-emergency-contact"><Cap as="span">Emergency contact (name, relationship &amp; phone) *</Cap></label>
+                  <input
+                    id="reg-emergency-contact"
+                    type="text"
+                    required
+                    value={emergencyContact}
+                    onChange={(e) => setEmergencyContact(e.target.value)}
+                    placeholder="e.g. Taylor Demo (Spouse) 717-555-0199"
+                    aria-describedby="reg-emergency-help"
+                    className={INPUT}
+                  />
+                  <p id="reg-emergency-help" className={NOTE}>
+                    A name and a phone number with at least 7 digits. Only the promoter sees this.
+                  </p>
+                </div>
+
+                <div role="group" aria-labelledby="reg-dob-label" className={`${CELL} col-span-full`}>
+                  <label htmlFor="reg-date-of-birth"><Cap id="reg-dob-label" as="span">Athlete date of birth *</Cap></label>
+                  <input
+                    id="reg-date-of-birth"
+                    type="date"
+                    required
+                    value={dateOfBirth}
+                    max={todayIsoDate()}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    aria-label="Athlete date of birth"
+                    aria-describedby="reg-dob-help"
+                    className={`${INPUT} sm:w-64`}
+                  />
+                  <p id="reg-dob-help" className={NOTE}>
+                    {ageOnMeetDay === null && 'Only the promoter sees this. Athletes under 18 on competition day are registered by a parent or legal guardian.'}
+                    {ageOnMeetDay !== null && ageOnMeetDay < MIN_ATHLETE_AGE && (
+                      <span className="text-ink font-bold">
+                        Age {Math.max(ageOnMeetDay, 0)} on competition day. Athletes must be at least {MIN_ATHLETE_AGE}. Contact the promoter about younger athletes.
+                      </span>
+                    )}
+                    {isMinor && (
+                      <span className="text-ink font-bold">
+                        Age {ageOnMeetDay} on competition day. A parent or legal guardian must register the athlete and sign the waiver at check-in.
+                      </span>
+                    )}
+                    {ageOnMeetDay !== null && ageOnMeetDay >= ADULT_AGE && `Age ${ageOnMeetDay} on competition day.`}
+                  </p>
+                  {isMinor && (
+                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="reg-guardian-name"><Cap as="span">Parent / guardian full name *</Cap></label>
+                        <input
+                          id="reg-guardian-name"
+                          type="text"
+                          value={guardianName}
+                          onChange={(e) => setGuardianName(e.target.value)}
+                          placeholder="e.g. Jordan Demo"
+                          className={INPUT}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="reg-guardian-contact"><Cap as="span">Parent / guardian phone or email *</Cap></label>
+                        <input
+                          id="reg-guardian-contact"
+                          type="text"
+                          value={guardianContact}
+                          onChange={(e) => setGuardianContact(e.target.value)}
+                          placeholder="717-555-0100 or guardian@example.com"
+                          className={INPUT}
+                        />
+                      </div>
+                      <p className={`sm:col-span-2 ${NOTE}`}>
+                        By continuing you confirm you are the athlete&apos;s parent or legal guardian. You will accept the waiver on the
+                        athlete&apos;s behalf in the next step and sign it on paper at check-in. The promoter sets the minimum age for
+                        this competition. Only the promoter sees these details.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className={`${CELL} col-span-full`}>
+                  <Cap as="span">Entry fee &amp; payment notice</Cap>
+                  <p className={BODY}>
+                    Entry fee is <strong>{meet.listing.entryFeeDisplay || 'set by the promoter'}</strong>. No
+                    online payment is collected on this form; the promoter will collect payment directly.
+                  </p>
                 </div>
               </div>
 
-              <div>
-                <label
-                  htmlFor="reg-emergency-contact"
-                  className="block text-xs font-extrabold uppercase text-zt-muted mb-1"
-                >
-                  Emergency Contact (Name, Relationship &amp; Phone) *
-                </label>
-                <input
-                  id="reg-emergency-contact"
-                  type="text"
-                  required
-                  value={emergencyContact}
-                  onChange={(e) => setEmergencyContact(e.target.value)}
-                  placeholder="e.g. Taylor Demo (Spouse) 717-555-0199"
-                  aria-describedby="reg-emergency-help"
-                  className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2.5 text-sm font-bold text-zt-text"
-                />
-                <p id="reg-emergency-help" className="text-xs text-zt-muted mt-1">
-                  A name and a phone number with at least 7 digits. Only the promoter sees this.
-                </p>
-              </div>
-
-              <fieldset className="bg-zt-inset border border-zt-border rounded-xl p-3.5">
-                <legend className="text-xs font-extrabold uppercase text-zt-muted px-1">Athlete date of birth *</legend>
-                <input
-                  id="reg-date-of-birth"
-                  type="date"
-                  required
-                  value={dateOfBirth}
-                  max={todayIsoDate()}
-                  onChange={(e) => setDateOfBirth(e.target.value)}
-                  aria-label="Athlete date of birth"
-                  aria-describedby="reg-dob-help"
-                  className="w-full sm:w-64 bg-zt-panel border border-zt-border-strong rounded-xl px-3 py-2.5 text-sm font-bold text-zt-text"
-                />
-                <p id="reg-dob-help" className="text-xs text-zt-muted mt-1">
-                  {ageOnMeetDay === null && 'Only the promoter sees this. Athletes under 18 on competition day are registered by a parent or legal guardian.'}
-                  {ageOnMeetDay !== null && ageOnMeetDay < MIN_ATHLETE_AGE && (
-                    <span className="text-amber-300 font-bold">
-                      Age {Math.max(ageOnMeetDay, 0)} on competition day. Athletes must be at least {MIN_ATHLETE_AGE}. Contact the promoter about younger athletes.
-                    </span>
-                  )}
-                  {isMinor && (
-                    <span className="text-zt-text font-bold">
-                      Age {ageOnMeetDay} on competition day. A parent or legal guardian must register the athlete and sign the waiver at check-in.
-                    </span>
-                  )}
-                  {ageOnMeetDay !== null && ageOnMeetDay >= ADULT_AGE && `Age ${ageOnMeetDay} on competition day.`}
-                </p>
-                {isMinor && (
-                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label htmlFor="reg-guardian-name" className="block text-xs font-extrabold uppercase text-zt-muted mb-1">
-                        Parent / guardian full name *
-                      </label>
-                      <input
-                        id="reg-guardian-name"
-                        type="text"
-                        value={guardianName}
-                        onChange={(e) => setGuardianName(e.target.value)}
-                        placeholder="e.g. Jordan Demo"
-                        className="w-full bg-zt-panel border border-zt-border-strong rounded-xl px-3 py-2.5 text-sm font-bold text-zt-text"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="reg-guardian-contact" className="block text-xs font-extrabold uppercase text-zt-muted mb-1">
-                        Parent / guardian phone or email *
-                      </label>
-                      <input
-                        id="reg-guardian-contact"
-                        type="text"
-                        value={guardianContact}
-                        onChange={(e) => setGuardianContact(e.target.value)}
-                        placeholder="717-555-0100 or guardian@example.com"
-                        className="w-full bg-zt-panel border border-zt-border-strong rounded-xl px-3 py-2.5 text-sm font-bold text-zt-text"
-                      />
-                    </div>
-                    <p className="sm:col-span-2 text-xs text-zt-muted">
-                      By continuing you confirm you are the athlete&apos;s parent or legal guardian. You will accept the waiver on the
-                      athlete&apos;s behalf in the next step and sign it on paper at check-in. The promoter sets the minimum age for
-                      this competition. Only the promoter sees these details.
-                    </p>
-                  </div>
-                )}
-              </fieldset>
-
-              <div className="bg-zt-inset border border-zt-border rounded-xl p-3.5 text-xs font-semibold text-zt-text-2">
-                <strong className="text-zt-text uppercase">Entry Fee &amp; Payment Notice:</strong>{' '}
-                Entry fee is{' '}
-                <strong>{meet.listing.entryFeeDisplay || 'set by the promoter'}</strong>. No
-                online payment is collected on this form; the promoter will collect payment directly.
-              </div>
-
               <div className="flex justify-end">
-                <button
-                  type="submit"
-                  className="px-6 py-3 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase tracking-wider shadow"
-                >
-                  Continue to Waiver →
-                </button>
+                <button type="submit" className={keyClass('pen')}>Continue to waiver →</button>
               </div>
             </form>
           )}
 
           {/* STEP 2: FULL WAIVER TEXT & ACCEPTANCE */}
           {step === 2 && (
-            <form
-              onSubmit={goToStep3}
-              className="bg-zt-surface border border-zt-border rounded-2xl p-5 sm:p-6 space-y-4"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="text-base font-black uppercase tracking-wider text-zt-primary flex items-center gap-2">
-                  <FileText className="w-4 h-4" aria-hidden="true" />
-                  <span>Step 2: Assumption of Risk &amp; Liability Waiver</span>
-                </h2>
-                <span className="text-xs font-bold uppercase px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-muted">
-                  Organizer: {meet.promoterDisplayName}
-                </span>
+            <form onSubmit={goToStep3} className="flex flex-col gap-4">
+              <div className="zt-block">
+                <div className={`${CELL} py-4 gap-1`}>
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                    <Cap as="span">Step 2</Cap>
+                    <Cap as="span">Organizer: {meet.promoterDisplayName}</Cap>
+                  </div>
+                  <h2 className="text-[22px] font-bold leading-tight text-ink">Assumption of risk &amp; liability waiver</h2>
+                </div>
+
+                <div className={`${CELL} py-4 max-h-80 overflow-y-auto`}>
+                  {/* same renderer as /legal/waiver; the hash stored with the registration is of the raw file, not of this rendering */}
+                  <MarkdownBlocks blocks={parseMarkdown(renderedWaiver)} compact />
+                </div>
+
+                <label className={`${CELL_PAD} flex items-start gap-3 cursor-pointer`}>
+                  <input
+                    type="checkbox"
+                    checked={waiverAccepted}
+                    onChange={(e) => setWaiverAccepted(e.target.checked)}
+                    className="mt-1 w-5 h-5 shrink-0"
+                    style={{ accentColor: 'var(--pen)' }}
+                  />
+                  <span className={`${BODY} font-bold`}>
+                    I have read the full Assumption of Risk and Release of Liability Waiver above,
+                    understand that competing in strongman involves heavy implements and inherent risk
+                    of injury, and agree to its terms for <strong>{meet.name}</strong>.
+                  </span>
+                </label>
               </div>
 
-              <div className="bg-zt-inset border border-zt-border-strong rounded-xl p-4 max-h-80 overflow-y-auto space-y-2">
-                {/* same renderer as /legal/waiver; the hash stored with the registration is of the raw file, not of this rendering */}
-                <MarkdownBlocks blocks={parseMarkdown(renderedWaiver)} compact />
-              </div>
-
-              <label className="flex items-start gap-2.5 p-3.5 rounded-xl bg-zt-inset border border-zt-border-strong cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={waiverAccepted}
-                  onChange={(e) => setWaiverAccepted(e.target.checked)}
-                  className="mt-0.5 w-4 h-4"
-                />
-                <span className="text-xs font-bold text-zt-text leading-snug">
-                  I have read the full Assumption of Risk and Release of Liability Waiver above,
-                  understand that competing in strongman involves heavy implements and inherent risk
-                  of injury, and agree to its terms for <strong>{meet.name}</strong>.
-                </span>
-              </label>
-
-              <div className="flex items-center justify-between gap-3 pt-2">
+              <div className="flex items-center justify-between gap-3">
                 <button
                   type="button"
                   onClick={() => {
                     setError(null);
                     setStep(1);
                   }}
-                  className="px-4 py-2.5 rounded-xl bg-zt-surface-2 text-zt-text-2 font-bold text-xs uppercase"
+                  className={`${textLink} text-[13px]`}
                 >
                   ← Back
                 </button>
-                <button
-                  type="submit"
-                  className="px-6 py-3 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase tracking-wider shadow"
-                >
-                  Review Registration →
-                </button>
+                <button type="submit" className={keyClass('pen')}>Review registration →</button>
               </div>
             </form>
           )}
 
           {/* STEP 3: REVIEW & SUBMIT */}
           {step === 3 && (
-            <section className="bg-zt-surface border border-zt-border rounded-2xl p-5 sm:p-6 space-y-5">
-              <h2 className="text-base font-black uppercase tracking-wider text-zt-primary flex items-center gap-2">
-                <ClipboardCheck className="w-4 h-4" aria-hidden="true" />
-                <span>Step 3: Review &amp; Submit Registration</span>
-              </h2>
-
-              <dl className="bg-zt-inset border border-zt-border rounded-xl p-4 space-y-2.5 text-xs">
-                <div className="flex justify-between gap-2 border-b border-zt-border pb-2">
-                  <dt className="font-bold text-zt-muted">Competition</dt>
-                  <dd className="font-black text-zt-text">
-                    {meet.name} ({meet.date || 'date TBD'})
-                  </dd>
+            <section className="flex flex-col gap-4">
+              <div className="zt-block">
+                <div className={`${CELL} py-4 gap-1`}>
+                  <Cap as="span">Step 3</Cap>
+                  <h2 className="text-[22px] font-bold leading-tight text-ink">Review &amp; submit registration</h2>
                 </div>
-                <div className="flex justify-between gap-2 border-b border-zt-border pb-2">
-                  <dt className="font-bold text-zt-muted">Selected Division</dt>
-                  <dd className="font-black text-zt-primary">{selectedDivision?.name ?? divisionId}</dd>
-                </div>
-                <div className="flex justify-between gap-2 border-b border-zt-border pb-2">
-                  <dt className="font-bold text-zt-muted">Athlete Name</dt>
-                  <dd className="font-bold text-zt-text">{athleteName}</dd>
-                </div>
-                <div className="flex justify-between gap-2 border-b border-zt-border pb-2">
-                  <dt className="font-bold text-zt-muted">Email</dt>
-                  <dd className="font-bold text-zt-text">{email}</dd>
-                </div>
-                <div className="flex justify-between gap-2 border-b border-zt-border pb-2">
-                  <dt className="font-bold text-zt-muted">Emergency Contact</dt>
-                  <dd className="font-bold text-zt-text">{emergencyContact}</dd>
-                </div>
-                <div className="flex justify-between gap-2 border-b border-zt-border pb-2">
-                  <dt className="font-bold text-zt-muted">Date of birth</dt>
-                  <dd className="font-bold text-zt-text">
+                <dl className="contents">
+                  <ReviewRow label="Competition">{meet.name} ({meet.date ? longIsoDate(meet.date) : 'date TBD'})</ReviewRow>
+                  <ReviewRow label="Selected division" pen>{selectedDivision?.name ?? divisionId}</ReviewRow>
+                  <ReviewRow label="Athlete name">{athleteName}</ReviewRow>
+                  <ReviewRow label="Email">{email}</ReviewRow>
+                  <ReviewRow label="Emergency contact">{emergencyContact}</ReviewRow>
+                  <ReviewRow label="Date of birth">
                     {dateOfBirth}
                     {ageOnMeetDay !== null && ` (${ageOnMeetDay} on competition day)`}
                     {isMinor && `, registered by ${guardianName} (${guardianContact}); guardian signs at check-in`}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-2 border-b border-zt-border pb-2">
-                  <dt className="font-bold text-zt-muted">Waiver Acceptance</dt>
-                  <dd className="font-black text-emerald-400">Accepted (timestamped on submit)</dd>
-                </div>
-                <div className="flex justify-between gap-2 pt-1">
-                  <dt className="font-bold text-zt-muted">Entry Fee</dt>
-                  <dd className="font-bold text-zt-text">
-                    {meet.listing.entryFeeDisplay || 'Not provided'}; the promoter collects payment
-                  </dd>
-                </div>
-              </dl>
+                  </ReviewRow>
+                  <ReviewRow label="Waiver acceptance" pen>Accepted (timestamped on submit)</ReviewRow>
+                  <ReviewRow label="Entry fee">{meet.listing.entryFeeDisplay || 'Not provided'}; the promoter collects payment</ReviewRow>
+                </dl>
+              </div>
 
               <div className="flex items-center justify-between gap-3">
                 <button
@@ -776,17 +679,17 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                     setError(null);
                     setStep(2);
                   }}
-                  className="px-4 py-2.5 rounded-xl bg-zt-surface-2 text-zt-text-2 font-bold text-xs uppercase"
+                  className={`${textLink} text-[13px] disabled:opacity-40`}
                 >
-                  ← Back to Waiver
+                  ← Back to waiver
                 </button>
                 <button
                   type="button"
                   disabled={submitting}
                   onClick={handleFinalSubmit}
-                  className="px-6 py-3 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase tracking-wider shadow disabled:opacity-40"
+                  className={keyClass('pen', 'disabled:opacity-40 disabled:cursor-not-allowed')}
                 >
-                  {submitting ? 'Submitting…' : 'Submit Registration'}
+                  {submitting ? 'Submitting…' : 'Submit registration'}
                 </button>
               </div>
             </section>
@@ -794,69 +697,37 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
 
           {/* STEP 4: CONFIRMATION */}
           {step === 4 && submitted && (
-            <section className="bg-zt-surface border-2 border-emerald-500/60 rounded-2xl p-6 space-y-4">
-              <div className="flex items-center gap-2.5 text-emerald-400">
-                <CheckCircle2 className="w-6 h-6 flex-shrink-0" aria-hidden="true" />
-                <div>
-                  <div className="text-xs font-black uppercase tracking-widest">Registration Submitted</div>
-                  <h2 className="text-xl font-black text-zt-text">
-                    Status: {submitted.status === 'waitlist' ? 'WAITLISTED' : submitted.status === 'accepted' ? 'ACCEPTED' : 'PENDING'}
-                  </h2>
-                </div>
-              </div>
-
-              <p className="text-xs sm:text-sm text-zt-text-2 leading-relaxed">
-                Your request for <strong>{meet.name}</strong> in{' '}
-                <strong>{selectedDivision?.name ?? divisionId}</strong> has been recorded as{' '}
-                <strong className={submitted.status === 'accepted' ? 'text-emerald-300' : 'text-amber-300'}>{submitted.status === 'waitlist' ? 'waitlisted' : submitted.status}</strong>.
-                {submitted.status === 'waitlist'
-                  ? ' The promoter will contact you if a spot opens.'
-                  : submitted.status === 'accepted'
-                    ? ' You are on the roster.'
-                    : ' Once the promoter accepts your entry, your name is added to the meet roster.'}
-                {emailNote ? ` ${emailNote}` : ''}
-              </p>
-
-              {!isLiveBackend() && (
-                <p className="text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-2">
-                  {PREVIEW_NOTICE}
+            <section className="zt-block">
+              <div className={`${CELL} py-5 gap-1`}>
+                <Cap as="span">Registration submitted</Cap>
+                <h2 className="text-[28px] font-bold leading-tight text-ink">
+                  Status: <span className="text-pen">{submitted.status === 'waitlist' ? 'WAITLISTED' : submitted.status === 'accepted' ? 'ACCEPTED' : 'PENDING'}</span>
+                </h2>
+                <p className={`${BODY} mt-1`}>
+                  Your request for <strong>{meet.name}</strong> in{' '}
+                  <strong>{selectedDivision?.name ?? divisionId}</strong> has been recorded as{' '}
+                  <strong className="text-pen">{submitted.status === 'waitlist' ? 'waitlisted' : submitted.status}</strong>.
+                  {submitted.status === 'waitlist'
+                    ? ' The promoter will contact you if a spot opens.'
+                    : submitted.status === 'accepted'
+                      ? ' You are on the roster.'
+                      : ' Once the promoter accepts your entry, your name is added to the meet roster.'}
+                  {emailNote ? ` ${emailNote}` : ''}
                 </p>
-              )}
-
-              <div className="bg-zt-inset border border-zt-border rounded-xl p-4 space-y-1.5 text-xs">
-                <div>
-                  <strong className="text-zt-muted uppercase">Registration ID:</strong>{' '}
-                  <code className="font-mono text-zt-text">{submitted.id}</code>
-                </div>
-                <div>
-                  <strong className="text-zt-muted uppercase">Entry Fee &amp; Payment:</strong>{' '}
-                  <span className="font-bold text-zt-text">
-                    {meet.listing.entryFeeDisplay || 'Standard entry fee'}; the promoter will collect payment directly.
-                  </span>
-                </div>
-                <div>
-                  <strong className="text-zt-muted uppercase">Promoter Contact:</strong>{' '}
-                  <span className="font-bold text-zt-primary">
-                    {meet.promoterDisplayName} ({promoterContactDisplay})
-                  </span>
-                </div>
+                {!isLiveBackend() && <p className={`${NOTE} font-bold`}>{PREVIEW_NOTICE}</p>}
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 pt-2">
+              <dl className="contents">
+                <ReviewRow label="Registration ID"><code className="font-mono text-[14px]">{submitted.id}</code></ReviewRow>
+                <ReviewRow label="Entry fee &amp; payment">{meet.listing.entryFeeDisplay || 'Standard entry fee'}; the promoter will collect payment directly.</ReviewRow>
+                <ReviewRow label="Promoter contact">{meet.promoterDisplayName} ({promoterContactDisplay})</ReviewRow>
+              </dl>
+
+              <div className={`${CELL_PAD} flex flex-wrap items-center gap-3 py-4`}>
+                <Link href="/shows" className={keyClass('ink')}>Back to Shows</Link>
                 {!isLiveBackend() && (
-                  <Link
-                    href="/promoter"
-                    className="px-4 py-2.5 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase"
-                  >
-                    Open the preview dashboard (same tab)
-                  </Link>
+                  <Link href="/promoter" className={keyClass('line')}>Open the preview dashboard (same tab)</Link>
                 )}
-                <Link
-                  href="/shows"
-                  className="px-4 py-2.5 rounded-xl bg-zt-inset border border-zt-border-strong text-zt-text font-extrabold text-xs uppercase"
-                >
-                  Back to Shows
-                </Link>
               </div>
             </section>
           )}
@@ -866,14 +737,21 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
   );
 }
 
+/** One ruled row of the review list: cap on the left, value on the right (pen when it is the athlete's choice). */
+function ReviewRow({ label, children, pen }: { label: React.ReactNode; children: React.ReactNode; pen?: boolean }) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-[180px_minmax(0,1fr)] gap-x-4 gap-y-0.5 px-4 py-2.5 sm:px-5">
+      <dt className="text-xs tracking-[0.06em] uppercase text-ink-muted self-center">{label}</dt>
+      <dd className={`text-[15px] font-bold leading-snug break-words ${pen ? 'text-pen' : 'text-ink'}`}>{children}</dd>
+    </div>
+  );
+}
+
 function BackToShows() {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2">
-      <Link
-        href="/shows"
-        className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase text-zt-muted hover:text-zt-text"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+    <div>
+      <Link href="/shows" className="inline-flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-[0.04em] text-ink-muted hover:text-ink no-underline">
+        <span aria-hidden="true">←</span>
         Back to Strongman Shows
       </Link>
     </div>
