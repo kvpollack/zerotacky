@@ -80,7 +80,7 @@ export default function WebsiteShell({ activeNav, brand = null, sheet, children 
                   href="/website"
                   className="text-[20px] sm:text-[26px] text-ink no-underline focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
                 >
-                  <Wordmark />
+                  <Wordmark cut="small" />
                 </Link>
                 {!live && (
                   <span className="hidden xl:inline text-[11px] uppercase tracking-[0.06em] text-ink-muted">
@@ -155,7 +155,7 @@ export default function WebsiteShell({ activeNav, brand = null, sheet, children 
             <div className="flex flex-col justify-center px-3.5 py-2.5 col-span-2 lg:col-span-2 min-h-[60px]">
               <Cap className="text-[11px] mb-0.5">Title</Cap>
               <div className="font-bold leading-snug">
-                <Wordmark className="text-[18px] mr-2" />
+                <Wordmark cut="small" className="text-[18px] mr-2" />
                 <span className="font-normal text-[13px] text-ink-muted">{TAGLINE}</span>
               </div>
             </div>
