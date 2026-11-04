@@ -29,9 +29,16 @@ export function externalHost(url: string): string {
   }
 }
 
-/** Today's date as YYYY-MM-DD in UTC; the listing query drops shows before it. */
+/**
+ * The US show day as YYYY-MM-DD (BLD-09). The calendar is US-only for now, and midnight in Los Angeles is the last
+ * moment any US show on that date can still be running, so a listing stays up through its whole show day everywhere
+ * and comes down the day after. The same clock lives in SQL as `zt_us_show_day()` (039) for the past-date check.
+ */
+export const SHOW_DAY_TIME_ZONE = 'America/Los_Angeles';
 export function isoToday(now: Date = new Date()): string {
-  return now.toISOString().slice(0, 10);
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: SHOW_DAY_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now);
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? '';
+  return `${get('year')}-${get('month')}-${get('day')}`;
 }
 
 export function externalRowToSummary(row: ExternalShowRow): PublicShowSummary {

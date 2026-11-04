@@ -46,8 +46,17 @@ export function parseImportedState(text: string): AppState {
   };
 }
 
+// BLD-05: a text cell that starts like a spreadsheet formula (=, +, @, tab, CR, or - when it is not a plain number) is
+// prefixed with an apostrophe so Excel and Sheets keep it as text. Numbers arrive as numbers and are left alone, so
+// negative scores and bodyweights still sort as numbers.
+export function neutralizeFormula(str: string): string {
+  if (/^[=+@\t\r]/.test(str)) return `'${str}`;
+  if (str.startsWith('-') && !/^-?\d+(\.\d+)?$/.test(str)) return `'${str}`;
+  return str;
+}
+
 function csvCell(v: unknown): string {
-  const str = v === undefined || v === null ? '' : String(v);
+  const str = v === undefined || v === null ? '' : typeof v === 'string' ? neutralizeFormula(v) : String(v);
   return /[",\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
 }
 

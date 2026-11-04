@@ -106,6 +106,8 @@ export type MeetSetupSheetProps = {
   // the Listing tab and the dashboard own those), onEditingChange / closeFormSignal let its dirty bar track an open
   // EventForm draft, and sectionNumbers overrides the step numbers in the headers (its Athletes tab is 7, not 5).
   host?: 'scorer' | 'promoter';
+  /** BLD-01: true once results are submitted; the slug field is read-only (the server trigger refuses the change too). */
+  slugLocked?: boolean;
   onEditingChange?: (open: boolean) => void;
   closeFormSignal?: number;
   sectionNumbers?: Partial<Record<SetupSectionId, number>>;
@@ -159,7 +161,7 @@ function SectionStrip({ section, setSection }: { section: SetupSectionId; setSec
 
 // 1. Meet Details & Rules (MeetSection + the reset keys and theme pick that used to sit under Advanced Settings)
 function MeetDetails(props: MeetSetupSheetProps) {
-  const { meet, updateMeetConfig, toggleGymPlate, sync, clearResults, loadMeetPreset, resetConfirmOpen, setResetConfirmOpen, themeId, selectTheme, host = 'scorer' } = props;
+  const { meet, updateMeetConfig, toggleGymPlate, sync, clearResults, loadMeetPreset, resetConfirmOpen, setResetConfirmOpen, themeId, selectTheme, host = 'scorer', slugLocked = false } = props;
   const isDemo = Boolean(meet.isDemo);
   // promoter host: a published meet's slug is its public URL (QR codes, the federation results link), so typing in the
   // name never rewrites it there; the slug field itself stays editable. The scorer keeps deriving it from the name.
@@ -207,10 +209,12 @@ function MeetDetails(props: MeetSetupSheetProps) {
             }}
           />
         </Field>
-        <Field label="URL Slug (Cloud Sync)" wide>
+        <Field label="URL Slug (Cloud Sync)" wide note={slugLocked ? 'Frozen: results were submitted to the federation with this address, and the board QR codes point at it.' : undefined}>
           <TextInput
             type="text"
             value={slugShown}
+            disabled={slugLocked}
+            aria-disabled={slugLocked || undefined}
             onChange={(e) => setSlugDraft(e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, '-').slice(0, 60))}
             onBlur={commitSlug}
             onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}

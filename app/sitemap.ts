@@ -15,6 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const [shows, gyms, athletes] = await Promise.all([listPublicShows(), listPublicGyms(), listPublicAthletes()]);
   for (const s of shows.data ?? []) {
+    if (s.externalUrl) continue;   // BLD-08: an external listing has no page here, it links out from the list
     entries.push({ url: `${base}/shows/${encodeURIComponent(s.slug)}`, lastModified: now });
   }
   for (const g of gyms.data ?? []) {

@@ -50,6 +50,28 @@ describe('export/import', () => {
     assert.equal(txt, ['ALL OUT STRONGFEST 2026 (THE POWER PLANT GYM)', '2026-10-24', '', 'Group 1',
       '1. Jessica Rucci - 4 pts', '2. Emily Shaff - 3 pts', 'T-3. Amber Simcox - 0 pts', 'T-3. Grace Gullo - 0 pts'].join('\n'));   // R-M5: full ties share the place
   });
+  test('neutralizeFormula: formula prefixes get an apostrophe, plain numbers and words do not (BLD-05)', () => {
+    assert.equal(X.neutralizeFormula('=SUM(A1)'), "'=SUM(A1)");
+    assert.equal(X.neutralizeFormula('+1+1'), "'+1+1");
+    assert.equal(X.neutralizeFormula('@cmd'), "'@cmd");
+    assert.equal(X.neutralizeFormula('-1+1'), "'-1+1");
+    assert.equal(X.neutralizeFormula('\tx'), "'\tx");
+    assert.equal(X.neutralizeFormula('-5'), '-5');
+    assert.equal(X.neutralizeFormula('-72.5'), '-72.5');
+    assert.equal(X.neutralizeFormula('T-1'), 'T-1');
+    assert.equal(X.neutralizeFormula('—'), '—');
+    assert.equal(X.neutralizeFormula('Émile'), 'Émile');
+    // numbers in rows are not strings, so they pass through csv untouched
+    const csv = X.toCsv([['a', -5, '=x']]);
+    assert.equal(csv, "a,-5,'=x\r\n");
+  });
+
+  test('withCsvBom prepends the UTF-8 BOM once (BLD-04)', async () => {
+    const D = await import(`${ROOT}/lib/download.js`);
+    assert.equal(D.withCsvBom('a,b'), '\uFEFFa,b');
+    assert.equal(D.withCsvBom('\uFEFFa,b'), '\uFEFFa,b');
+  });
+
   test('backup filename is slug + timestamp', () => {
     assert.equal(X.backupFilename(withResults(), new Date('2026-10-24T13:05:00Z')), 'zerotacky-all-out-strongfest-2026-the-power-plant-2026-10-24-13-05');
   });
