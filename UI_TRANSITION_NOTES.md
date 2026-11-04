@@ -422,3 +422,37 @@ the other EventDef extras (round-trip test on the mappers).
   `eventWeightDisplay` exact-shape assertions updated for the kg key).
 - Left for later builds on purpose: per-division pick heights as numbers (the free-text heights already print), the
   register page's target-weight line in kg, the "train for this show" filter (build 4) that joins `IMPLEMENTS` to gyms.
+
+## /promoter and /website/account hand redraws (11/4, sweep ranks 1 and 2 after /register)
+
+Render-only rewrites; every id, aria attribute, test id and handler is unchanged, logic blocks were spliced through
+untouched. The bridge still resolves what these files used to use, so nothing downstream moved.
+
+- **`components/promoter/PromoterDashboardClient.tsx`:** heading row with the `+ New Meet` pen key (ink + "Close" while
+  open, `aria-expanded`); the create form is one `.zt-block` of label-over-input cells (`new-meet-name/-date/-slug`),
+  Cancel text link + pen submit; the meets list is one ruled block of `<article aria-label={name}>` rows: cap status
+  line (competition · listed · registration · results), name link, long date · /slug · venue, four `font-sheet` counts
+  (`Count`, pen when pending > 0), `Reg form` line key + `Open →` ink key. At 390 the counts are a four-column grid and
+  the name wraps (`lg:truncate` only). `AthleteMeetsSection.tsx`: three ruled columns (Registered / Following /
+  Completed) with the count in the cap cell, text-link names, status as a cap, Results / Unfollow as text links.
+  lucide gone from both.
+- **`components/website/AccountClient.tsx`:** identity strip (cap "Signed in · roles", name, email; Change password /
+  Sign out as line keys, Change password reads Close in ink while open), `PasswordPanel` and the profile editor as
+  ruled blocks: photo (square, `border-rule`) + display name; Roles as three checkbox cells (`accent-color: var(--pen)`,
+  label in pen when ticked); About you as Favorite lift / More / Location / Home gym + the directory picker cell; PRs as
+  a two-column block (results in `font-sheet`); Coaching; Social handles with a cap per field (new ids
+  `about-social-<key>`, the `aria-label`s stay). Public profile: username + Change username in one block with the
+  visibility checkbox as the full-width last cell; cap shows Listed in pen / Private. Where to next: My Meets and
+  Meet-day scorer as ink keys, the rest line keys, `AdminLink` line keys. `Notice` is plain bold ink (`role=status`);
+  no icons, no tinted boxes, no emerald badge.
+- **`components/auth/SignInForm.tsx`:** method switch as a three-cell `.zt-block` (active cell filled ink, still
+  `aria-pressed` buttons), fields as cells, Forgot password as a text link, submit as a pen key. Same ids (`acct-*`,
+  `reg-*` through `idPrefix`), so `/register`'s inline sign-in picks this up too.
+- **`components/website/MembershipCardsSection.tsx`:** cap + heading, cards as ruled rows (federation, status cap in pen
+  when expiring or expired, View / Remove text links), `+ Add a card` line key, add form as a two-column block, Save card
+  pen key. **`components/promoter/HostGymPicker.tsx`** (shared with the Listing tab): cap label, chosen gym as a ruled
+  box with View / Use gym address / Clear text links, results list as a ruled dropdown on the sheet.
+- Checked: tsc clean, bun test 583; staging at 390 and 1280 px with zero page errors: `/promoter` signed out and in,
+  `+ New Meet` open; `/website/account` signed out (Sign in, Create account), signed in, Change password and Add a card
+  open. Screenshots `~/Downloads/zt_ui_1104/promoter_*.png`, `account_*.png`. Left on purpose: `/promoter/[id]`'s
+  Listing tab and the public athlete / gym pages are still bridge-rendered (sweep ranks 3-4).

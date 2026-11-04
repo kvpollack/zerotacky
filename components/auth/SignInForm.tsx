@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Mail, ShieldCheck } from 'lucide-react';
+import { Cap, keyClass, textLink } from '@/components/website/sheet';
 import type { AuthState } from '@/lib/auth/useAuth';
 
 // Sign in / create account / magic link, lifted out of AccountClient (10/21) so the registration page can ask for an
@@ -48,16 +48,13 @@ export function takeReturnTo(): string | null {
   } catch { return null; }
 }
 
-const inputCls = 'w-full bg-zt-inset border border-zt-border-strong rounded-lg px-3 py-2 text-sm text-zt-text';
-const labelCls = 'block text-[10px] font-extrabold uppercase text-zt-muted mb-1';
-const primaryBtn = 'px-4 py-2 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase tracking-wider inline-flex items-center gap-1.5 disabled:opacity-40';
+const INPUT = 'zt-input w-full';
+const CELL = 'flex flex-col gap-1.5 px-4 py-3 sm:px-5 sm:py-3.5 min-w-0';
+const NOTE = 'text-[13px] leading-snug text-ink-muted';
 
-function Notice({ text, tone }: { text: string; tone: 'ok' | 'warn' }) {
-  return (
-    <div role="status" className={`text-xs font-bold rounded-lg px-3 py-2 ${tone === 'warn' ? 'bg-zt-danger/10 text-zt-danger-text border border-zt-danger/50' : 'bg-zt-inset text-zt-text-2 border border-zt-border'}`}>
-      {text}
-    </div>
-  );
+// Notices are plain bold ink: the sheet has no tinted boxes. Warnings read the same as confirmations; the words carry it.
+function Notice({ text }: { text: string; tone: 'ok' | 'warn' }) {
+  return <div role="status" className="text-[15px] font-bold text-ink">{text}</div>;
 }
 function errText(e: unknown): string {
   if (e && typeof e === 'object' && 'message' in e) return String((e as { message: unknown }).message);
@@ -107,73 +104,79 @@ export default function SignInForm({ auth, defaultMode = 'signin', returnTo, idP
   const tabs: Array<[SignInMode, string]> = [['signin', 'Sign in'], ['signup', 'Create account'], ['magic', 'Email me a link']];
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       {/* Mode switch. Plain toggle buttons (aria-pressed), not a tablist: one form changes shape below, there are no
-          separate panels to associate, and tab roles without arrow-key handling misled assistive tech (Astra B1). */}
-      <div role="group" aria-label="Sign-in method" className="grid grid-cols-3 gap-2">
-        {tabs.map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            aria-pressed={mode === id}
-            onClick={() => { setMode(id); setNotice(null); }}
-            className={`py-2 rounded-xl border text-[11px] font-black uppercase ${mode === id ? 'bg-zt-primary/15 border-zt-primary text-zt-text' : 'bg-zt-inset border-zt-border text-zt-text-2'}`}
-          >
-            {label}
-          </button>
-        ))}
+          separate panels to associate, and tab roles without arrow-key handling misled assistive tech (Astra B1).
+          Three ruled cells; the active one is filled ink like the nav. */}
+      <div role="group" aria-label="Sign-in method" className="zt-block grid-cols-3">
+        {tabs.map(([id, label]) => {
+          const on = mode === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={on}
+              onClick={() => { setMode(id); setNotice(null); }}
+              style={on ? { background: 'var(--ink)' } : undefined}
+              className={`min-h-[44px] px-2 py-2 text-[12px] sm:text-[13px] font-bold uppercase tracking-[0.04em] leading-tight ${on ? 'text-sheet' : 'text-ink hover:text-pen'}`}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
-      <form onSubmit={submit} className="space-y-3">
-        {mode === 'signup' && (
-          <div>
-            <label htmlFor={`${idPrefix}-name`} className={labelCls}>Display name</label>
-            <input id={`${idPrefix}-name`} value={name} onChange={(e) => setName(e.target.value)} className={inputCls} maxLength={80} autoComplete="name" />
+      <form onSubmit={submit} className="flex flex-col gap-4">
+        <div className="zt-block grid-cols-1">
+          {mode === 'signup' && (
+            <div className={CELL}>
+              <label htmlFor={`${idPrefix}-name`}><Cap as="span">Display name</Cap></label>
+              <input id={`${idPrefix}-name`} value={name} onChange={(e) => setName(e.target.value)} className={INPUT} maxLength={80} autoComplete="name" />
+            </div>
+          )}
+          <div className={CELL}>
+            <label htmlFor={`${idPrefix}-email`}><Cap as="span">Email</Cap></label>
+            <input id={`${idPrefix}-email`} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={INPUT} autoComplete="email" />
           </div>
-        )}
-        <div>
-          <label htmlFor={`${idPrefix}-email`} className={labelCls}>Email</label>
-          <input id={`${idPrefix}-email`} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} autoComplete="email" />
+          {mode !== 'magic' && (
+            <div className={CELL}>
+              <label htmlFor={`${idPrefix}-password`}><Cap as="span">Password{mode === 'signup' ? ' (8+ characters)' : ''}</Cap></label>
+              <input
+                id={`${idPrefix}-password`}
+                type="password"
+                required
+                minLength={mode === 'signup' ? 8 : undefined}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={INPUT}
+                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+              />
+              {mode === 'signin' && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => run(async () => {
+                    if (!email.trim()) throw new Error('Enter your email above first, then tap Forgot password.');
+                    rememberReturnTo(returnTo);
+                    await auth.sendPasswordReset(email);
+                    return `Reset link sent to ${email.trim()}. It opens the Account page to set a new password${returnTo ? ', then brings you back here' : ''}.`;
+                  })}
+                  className={`self-start text-[13px] ${textLink}`}
+                >
+                  Forgot password?
+                </button>
+              )}
+            </div>
+          )}
         </div>
-        {mode !== 'magic' && (
-          <div>
-            <label htmlFor={`${idPrefix}-password`} className={labelCls}>Password{mode === 'signup' ? ' (8+ characters)' : ''}</label>
-            <input
-              id={`${idPrefix}-password`}
-              type="password"
-              required
-              minLength={mode === 'signup' ? 8 : undefined}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={inputCls}
-              autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-            />
-            {mode === 'signin' && (
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => run(async () => {
-                  if (!email.trim()) throw new Error('Enter your email above first, then tap Forgot password.');
-                  rememberReturnTo(returnTo);
-                  await auth.sendPasswordReset(email);
-                  return `Reset link sent to ${email.trim()}. It opens the Account page to set a new password${returnTo ? ', then brings you back here' : ''}.`;
-                })}
-                className="mt-1.5 text-[11px] font-bold text-zt-primary underline underline-offset-2"
-              >
-                Forgot password?
-              </button>
-            )}
-          </div>
-        )}
         {mode === 'signup' && (
-          <p className="text-[11px] text-zt-muted">
-            By creating an account you agree to the <Link href="/legal/terms" className="text-zt-primary font-bold">Terms of Use</Link> and{' '}
-            <Link href="/legal/privacy" className="text-zt-primary font-bold">Privacy Policy</Link>. You must be 13 or older; under 18 needs a
+          <p className={NOTE}>
+            By creating an account you agree to the <Link href="/legal/terms" className={textLink}>Terms of Use</Link> and{' '}
+            <Link href="/legal/privacy" className={textLink}>Privacy Policy</Link>. You must be 13 or older; under 18 needs a
             parent or guardian&apos;s agreement.
           </p>
         )}
         {notice && <Notice {...notice} />}
-        <button type="submit" disabled={busy} className={primaryBtn}>
-          {mode === 'magic' ? <Mail className="w-3.5 h-3.5" aria-hidden="true" /> : <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />}
+        <button type="submit" disabled={busy} className={keyClass('pen', 'self-start disabled:opacity-40')}>
           {mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create account' : 'Send link'}
         </button>
       </form>

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Building2, Search, X } from 'lucide-react';
+import { Cap, textLink } from '@/components/website/sheet';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import { fetchHostGym, hostGymAddressLine, searchHostGyms, type HostGymOption } from '@/lib/website/hostGym';
 
@@ -19,7 +19,8 @@ interface HostGymPickerProps {
   offlineNote?: string;
 }
 
-const INPUT = 'w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text';
+const INPUT = 'zt-input w-full';
+const NOTE = 'text-[13px] leading-snug text-ink-muted';
 
 // Links a meet to a directory gym (026). Searches `gyms` by name as the promoter types; the chosen gym shows as a
 // chip with the address and a clear button. Without a backend the field explains itself and stays inert.
@@ -91,7 +92,7 @@ export default function HostGymPicker({
 
   if (!sb) {
     return (
-      <p className="text-xs text-zt-muted">{offlineNote}</p>
+      <p className={NOTE}>{offlineNote}</p>
     );
   }
 
@@ -110,46 +111,28 @@ export default function HostGymPicker({
   };
 
   return (
-    <div className="space-y-2">
-      <label htmlFor={id} className="block text-[11px] font-bold uppercase text-zt-muted">
-        {label}
-      </label>
+    <div className="flex flex-col gap-1.5 min-w-0">
+      <label htmlFor={id}><Cap as="span">{label}</Cap></label>
       {chosen ? (
-        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-zt-border-strong bg-zt-inset px-3 py-2">
-          <Building2 className="w-4 h-4 text-zt-primary shrink-0" aria-hidden="true" />
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-2 border-rule px-3 py-2 min-h-[44px]">
           <div className="min-w-0 flex-1">
-            <div className="text-xs font-black text-zt-text truncate">{chosen.name}</div>
-            <div className="text-[11px] text-zt-muted truncate">{hostGymAddressLine(chosen)}</div>
+            <div className="text-[15px] font-bold text-ink truncate">{chosen.name}</div>
+            <div className={`${NOTE} truncate`}>{hostGymAddressLine(chosen)}</div>
           </div>
-          <Link
-            href={`/gyms/${chosen.slug}`}
-            target="_blank"
-            rel="noreferrer"
-            className="text-[11px] font-bold text-zt-primary underline"
-          >
+          <Link href={`/gyms/${chosen.slug}`} target="_blank" rel="noreferrer" className={`text-[13px] ${textLink}`}>
             View
           </Link>
           {onUseAddress && (chosen.city || chosen.streetAddress) && (
-            <button
-              type="button"
-              onClick={() => onUseAddress(chosen)}
-              className="text-[11px] font-bold px-2 py-1 rounded-lg border border-zt-border-strong text-zt-text hover:border-zt-primary"
-            >
+            <button type="button" onClick={() => onUseAddress(chosen)} className={`text-[13px] ${textLink}`}>
               Use gym address
             </button>
           )}
-          <button
-            type="button"
-            onClick={clear}
-            aria-label={clearLabel}
-            className="p-1 rounded-lg text-zt-muted hover:text-zt-text hover:bg-zt-surface"
-          >
-            <X className="w-4 h-4" aria-hidden="true" />
+          <button type="button" onClick={clear} aria-label={clearLabel} className={`text-[13px] ${textLink}`}>
+            Clear
           </button>
         </div>
       ) : (
         <div className="relative">
-          <Search className="w-4 h-4 text-zt-muted absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
           <input
             id={id}
             type="search"
@@ -157,27 +140,27 @@ export default function HostGymPicker({
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search the directory by gym name"
             autoComplete="off"
-            className={`${INPUT} pl-9`}
+            className={INPUT}
             aria-describedby={`${id}-help`}
           />
           {(results.length > 0 || searching) && (
             <ul
               role="listbox"
               aria-label="Matching gyms"
-              className="absolute z-20 mt-1 w-full max-h-64 overflow-y-auto rounded-xl border border-zt-border-strong bg-zt-surface shadow-xl"
+              className="absolute z-20 mt-1 w-full max-h-64 overflow-y-auto border-2 border-rule bg-sheet"
             >
               {searching && results.length === 0 && (
-                <li className="px-3 py-2 text-xs text-zt-muted">Searching…</li>
+                <li className={`px-3 py-2 ${NOTE}`}>Searching…</li>
               )}
               {results.map((g) => (
-                <li key={g.id} role="option" aria-selected={false}>
+                <li key={g.id} role="option" aria-selected={false} className="border-b border-rule last:border-b-0">
                   <button
                     type="button"
                     onClick={() => pick(g)}
-                    className="w-full text-left px-3 py-2 hover:bg-zt-inset focus:bg-zt-inset focus:outline-none"
+                    className="w-full text-left px-3 py-2 hover:bg-ground focus:bg-ground focus:outline-none"
                   >
-                    <div className="text-xs font-black text-zt-text">{g.name}</div>
-                    <div className="text-[11px] text-zt-muted">{hostGymAddressLine(g)}</div>
+                    <div className="text-[15px] font-bold text-ink">{g.name}</div>
+                    <div className={NOTE}>{hostGymAddressLine(g)}</div>
                   </button>
                 </li>
               ))}
@@ -185,7 +168,7 @@ export default function HostGymPicker({
           )}
         </div>
       )}
-      <p id={`${id}-help`} className="text-[11px] text-zt-muted">
+      <p id={`${id}-help`} className={NOTE}>
         {note ?? help}
       </p>
     </div>
