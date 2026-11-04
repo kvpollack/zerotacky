@@ -8,23 +8,23 @@ export type GuideImage = { src: string; alt: string; caption?: string };
  *  loads (Astra HI-L4, 10/21). A test checks every referenced image has an entry. Recompute from the PNG headers
  *  after recapturing a screenshot. */
 export const GUIDE_IMAGE_SIZES: Record<string, { width: number; height: number }> = {
-  '/guide/01-new-meet.png': { width: 2340, height: 545 },
-  '/guide/02-my-meets.png': { width: 2376, height: 1888 },
-  '/guide/03-meet.png': { width: 2304, height: 2144 },
-  '/guide/04-divisions.png': { width: 2304, height: 1409 },
-  '/guide/05-stations.png': { width: 2304, height: 2925 },
-  '/guide/06-events.png': { width: 2304, height: 1315 },
-  '/guide/07-event-form.png': { width: 2178, height: 2954 },
-  '/guide/08-athletes.png': { width: 2304, height: 2925 },
-  '/guide/09-listing.png': { width: 2304, height: 2239 },
-  '/guide/10-registrations.png': { width: 2304, height: 1786 },
-  '/guide/11-meet-day.png': { width: 2304, height: 2633 },
-  '/guide/12-show-card.png': { width: 2322, height: 556 },
-  '/guide/13-show-page.png': { width: 2376, height: 2342 },
-  '/guide/14-register.png': { width: 2376, height: 2165 },
-  '/guide/14b-register-form.png': { width: 2376, height: 3150 },
+  '/guide/01-new-meet.png': { width: 2012, height: 457 },
+  '/guide/02-my-meets.png': { width: 2012, height: 848 },
+  '/guide/03-meet.png': { width: 2012, height: 1180 },
+  '/guide/04-divisions.png': { width: 2012, height: 554 },
+  '/guide/05-stations.png': { width: 2012, height: 1668 },
+  '/guide/06-events.png': { width: 2012, height: 614 },
+  '/guide/07-event-form.png': { width: 1982, height: 2250 },
+  '/guide/08-athletes.png': { width: 2012, height: 1950 },
+  '/guide/09-listing.png': { width: 2012, height: 2100 },
+  '/guide/10-registrations.png': { width: 2012, height: 840 },
+  '/guide/11-meet-day.png': { width: 2012, height: 1875 },
+  '/guide/12-show-card.png': { width: 2006, height: 314 },
+  '/guide/13-show-page.png': { width: 2108, height: 2100 },
+  '/guide/14-register.png': { width: 2108, height: 1754 },
+  '/guide/14b-register-form.png': { width: 2108, height: 2290 },
   '/guide/15-scoreboard.png': { width: 2160, height: 1350 },
-  '/guide/16-join.png': { width: 1080, height: 864 },
+  '/guide/16-join.png': { width: 1080, height: 930 },
 };
 export type GuideLink = { label: string; href: string };
 export type FirstShowStep = {
@@ -147,7 +147,7 @@ export const FIRST_SHOW_STEPS: FirstShowStep[] = [
     images: [
       { src: '/guide/14-register.png', alt: 'The registration page signed out: step 1 asks the athlete to sign in or create a free account', caption: 'What the athlete sees first: the account step.' },
       { src: '/guide/14b-register-form.png', alt: 'The registration form once signed in, showing divisions with target weights and the athlete fields', caption: 'Then the entry form, with name and email filled from the account.' },
-      { src: '/guide/10-registrations.png', alt: 'The Registrations tab with four pending entries and Accept, Decline and Withdraw buttons', caption: 'What you see.' },
+      { src: '/guide/10-registrations.png', alt: 'The Registrations tab with pending entries and Accept, Decline and Withdraw buttons', caption: 'What you see.' },
     ],
   },
   {
