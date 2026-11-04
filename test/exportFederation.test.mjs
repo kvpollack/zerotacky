@@ -73,6 +73,36 @@ describe('federation results pack', () => {
     assert.ok(d.mailto.length <= 1900);
   });
 
+  test('email draft: the CSV fallback obeys the limit too, dropping contact, federation, then venue (BLD-06)', () => {
+    const s = withResults();
+    s.meet.name = 'Ü'.repeat(120);                              // 120-char multibyte name: 720 chars once URL-encoded, twice (subject + body)
+    const big = {
+      venue: { facilityName: 'F'.repeat(120), city: 'C'.repeat(80), state: 'PA' },
+      federation: 'G'.repeat(80),
+      promoterContact: 'H'.repeat(160),
+      resultsUrl: 'https://www.zerotacky.com/shows/' + 'x'.repeat(60),
+    };
+    const d = F.federationEmailDraft(s, big);
+    assert.equal(d.standingsIncluded, false);
+    assert.ok(d.mailto.length <= 1900, `mailto ${d.mailto.length} over the limit`);
+    assert.equal(d.trimmed, true);
+    assert.ok(d.body.includes(big.resultsUrl));                // the link always survives
+    assert.ok(!d.body.includes('Promoter contact'));
+    // a short meet is not trimmed
+    assert.equal(F.federationEmailDraft(withResults(), meta).trimmed, false);
+  });
+
+  test('CSV: names that look like formulas are kept as text (BLD-05)', () => {
+    const s = withResults();
+    const g1 = s.athletes.filter((a) => a.divisionId === 'sf-g1');
+    g1[0].name = '=1+1';
+    g1[1].name = '-Dash First';
+    const csv = F.federationResultsCsv(s, meta);
+    assert.ok(csv.includes(",'=1+1,"), 'formula prefix neutralized');
+    assert.ok(csv.includes(",'-Dash First,"));
+    assert.ok(!csv.includes(",=1+1,"));
+  });
+
   test('venueLine tolerates a missing venue', () => {
     assert.equal(F.venueLine(null), '');
     assert.equal(F.venueLine({ city: 'Erie', state: 'PA' }), 'Erie, PA');

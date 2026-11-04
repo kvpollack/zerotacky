@@ -88,6 +88,7 @@ export default function ResultsPackSection({ summary, state, onMarkSubmitted }: 
         <p>
           The email opens in your mail app with the link{draft.standingsIncluded ? ' and the standings' : ''} filled in. Attach the CSV you saved before sending
           {draft.standingsIncluded ? '.' : '; this meet is too large for the standings to ride in the email body.'}
+          {draft.trimmed ? ' The venue, federation and contact lines were left out to keep the link short; they are in the CSV title block.' : ''}
         </p>
       </div>
 

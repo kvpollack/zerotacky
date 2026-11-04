@@ -44,7 +44,7 @@ export default function ShowRows({ shows, ariaLabelledby, detail = false }: { sh
                 {!detail && show.divisionLabels.length > 0 && ` · ${show.divisionLabels.slice(0, 3).join(', ')}${show.divisionLabels.length > 3 ? ` +${show.divisionLabels.length - 3}` : ''}`}
               </span>
               <span className={`md:hidden block text-xs uppercase tracking-[0.04em] mt-1.5 ${st.live ? 'text-pen font-bold' : 'text-ink-muted'}`}>
-                {st.text}{show.isDemoFixture ? ' · Demo fixture' : ''}
+                {st.text}{show.externalUrl ? ` · ${show.externalHost}` : ''}{show.isDemoFixture ? ' · Demo fixture' : ''}
               </span>
               {detail && (
                 <div className="mt-2.5 text-[13px] leading-[1.5] text-ink space-y-1 whitespace-normal">

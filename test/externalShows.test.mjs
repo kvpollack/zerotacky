@@ -31,9 +31,17 @@ describe('externalHost', () => {
   });
 });
 
-describe('isoToday', () => {
-  test('is YYYY-MM-DD in UTC', () => {
-    assert.equal(X.isoToday(new Date('2026-11-03T23:30:00-05:00')), '2026-11-04');
+describe('isoToday (US show day, BLD-09)', () => {
+  test('a show still running at 19:01 ET on 11/3 is still on 11/3', () => {
+    assert.equal(X.isoToday(new Date('2026-11-03T19:01:00-05:00')), '2026-11-03');
+  });
+  test('rolls over at midnight Pacific, not UTC', () => {
+    assert.equal(X.isoToday(new Date('2026-11-03T23:30:00-05:00')), '2026-11-03');   // 20:30 PT
+    assert.equal(X.isoToday(new Date('2026-11-04T02:59:00-05:00')), '2026-11-03');   // 23:59 PT
+    assert.equal(X.isoToday(new Date('2026-11-04T03:00:00-05:00')), '2026-11-04');   // 00:00 PT
+  });
+  test('summer time too (PDT)', () => {
+    assert.equal(X.isoToday(new Date('2026-07-05T02:59:00-04:00')), '2026-07-04');
   });
 });
 

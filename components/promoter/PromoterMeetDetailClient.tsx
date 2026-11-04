@@ -46,6 +46,7 @@ import type {
   RegistrationRequest,
 } from '@/lib/promoter/contract';
 import { isMeetStateDirty } from '@/lib/promoter/rules';
+import { useUnsavedGuard } from '@/lib/promoter/unsavedGuard';
 import { isLiveBackend, usePromoterApi } from '@/lib/promoter/usePromoterApi';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import { describeEmailResult, requestRegistrationEmail } from '@/lib/email/client';
@@ -194,6 +195,8 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     if (!detail || !workingState) return false;
     return isMeetStateDirty(detail.state, workingState);
   }, [detail, workingState]);
+  // BLD-03: reload, tab close and in-app links ask before a draft is lost (the tab strip has its own guard).
+  useUnsavedGuard(isDirty || listingDirty || eventFormOpen);
 
   const readiness = useMemo(() => {
     if (!workingState) return { ok: true, problems: [] };
@@ -486,6 +489,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   const noop = () => {};
   const sheetProps: MeetSetupSheetProps = {
     host: 'promoter',
+    slugLocked: !!detail.summary.listing.resultsSubmittedAt,
     state: workingState,
     meet: workingState.meet,
     divisions: workingState.divisions,

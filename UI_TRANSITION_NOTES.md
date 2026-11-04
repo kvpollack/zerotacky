@@ -299,3 +299,46 @@ Report `audits/astra-2026-11-03-dry-run.md`, disposition `audits/astra-2026-11-0
   List moves it; `/shows` at 1280 and 390 px shows both rows with Listing ↗ links out, no page errors; duplicate link
   and past date refused with the SQL messages. Test rows deleted afterwards. Not built (MVP scope): promoter claim or
   edit of a listing, link health checks, expiry beyond the date filter, notification to the submitter on review.
+
+## Astra builds audit (11/4) fixes, BLD-01 to BLD-12, and the /join reskin
+Report: `audits/astra-2026-11-03-builds.md`. Every finding fixed; dispositions:
+- **BLD-01 slug after stamping (High):** `supabase/039_builds_audit_fixes.sql` adds a `before update of slug` trigger
+  on `meets` that refuses the change once `results_submitted_at` is set, so every write path (zt_save_meet_config,
+  zt_publish_meet, raw SQL) is covered. `MeetSetupSheet` takes `slugLocked` (promoter passes the stamp) and renders the
+  slug field disabled with a note. Checked on staging: SQL update refused with the message, field disabled in the editor.
+  Other published meets keep an editable slug on purpose (a promoter fixing a typo before the show); the QR/board link
+  risk for those is the leave-it-alone note on the field, not a lock.
+- **BLD-02 form typing (High):** `Field` moved to module level with value/onChange props; sequential typing in the input
+  and the textarea keeps focus (checked with keystroke delays at 1280).
+- **BLD-03 drafts lost on leave (High, pre-existing):** `lib/promoter/unsavedGuard.ts` + `useUnsavedGuard` in
+  `PromoterMeetDetailClient`: `beforeunload` while dirty / listing dirty / EventForm open, and a capture-phase click guard
+  that asks before any in-app link leaves the page (Next's Link honours `defaultPrevented`). Browser back is not
+  intercepted (no cancellable popstate in the App Router). Checked: Back to My Meets with a dirty name shows the dialog
+  and dismiss keeps the editor; reload raises `beforeunload`. 4 unit tests on the pure decision.
+- **BLD-04 Excel encoding (Med):** `shareOrDownloadText` prepends a UTF-8 BOM and sets `text/csv;charset=utf-8` for any
+  CSV; the pure builders stay BOM-free (tests, Copy standings). Not re-tested in real Excel here; Astra's next pass.
+- **BLD-05 formula cells (Med):** `neutralizeFormula` in `lib/export.ts`: string cells starting `= + @ \t \r`, or `-`
+  when not a plain number, get a leading apostrophe; numbers pass untouched. Applies to both CSVs. Tests.
+- **BLD-06 fallback mailto (Med):** `federationEmailDraft` builds the CSV fallback at four detail levels (drop contact,
+  then federation, then venue) until it fits 1,900; `EmailDraft.trimmed` tells the pack UI to say so. Test with a
+  120-char multibyte name and maximum metadata.
+- **BLD-07 validation (Med):** 039 checks the date text against `^\d{4}-\d{2}-\d{2}$` before the cast (null and
+  `11/14/2099` now get the YYYY-MM-DD message), refuses links over 500 chars instead of truncating, and checks the state
+  against the 50 states + DC. Hint on the form reads "US two-letter code".
+- **BLD-08 sitemap (Med):** external rows skipped in `app/sitemap.ts`.
+- **BLD-09 expiry clock (Med):** one policy, documented in `externalShows.ts`: the US show day is the date in
+  America/Los_Angeles, so a listing stays through its show day anywhere in the US and comes down the day after (the
+  form's promise). `isoToday` uses it; SQL `zt_us_show_day()` (039) uses it for the past-date check and the queue window.
+  Tests at the 19:01 ET, 23:59 PT, 00:00 PT and PDT boundaries.
+- **BLD-10 duplicate links (Low):** 039 `zt_external_url_key` folds scheme, `www.`, host case and trailing path slashes
+  (query and fragment untouched), stored as a generated column with a unique partial index on pending/listed rows; the
+  submit RPC checks the key and maps `unique_violation` to the same message. Checked: `http://example.com/Events/zt-fix`
+  refused after `https://www.Example.com/Events/zt-fix/` listed.
+- **BLD-11 queue RPC (Low):** `zt_admin_external_shows` raises 42501 for non-admins (checked with a non-admin JWT claim).
+- **BLD-12 mobile source (Low):** the mobile status line reads "Upcoming · Registers elsewhere · <host>".
+- Brief correction for Astra's record: the second stamp is idempotent by design (same timestamp back), not refused.
+- **/join (Kurt 11/4, outside the audit):** the page still wore the old rounded skin. `app/join/JoinClient.tsx` render
+  redrawn like the root splash (wordmark / Mode strip, ruled block, `.zt-input` code and PIN fields, roles as keys, text
+  links for home / account / different code); the lookup, PIN and attach logic is untouched. Checked at 390 and 1280:
+  code -> roles -> PIN with no page errors.
+- Checked: tsc clean, bun test 577 (+10). 039 on staging; prod on Kurt's OK. Staging rows and the fixture stamp cleared.
