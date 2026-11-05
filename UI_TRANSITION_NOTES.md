@@ -611,3 +611,8 @@ Report `audits/astra-2026-11-05-builds-and-redraws.md`, disposition per finding 
 - **BR-08 small values:** `kgLabel` says "<1 kg" instead of "0 kg"; course distance is 1 to 5280 ft in half-foot steps in
   validation, normalization and 040 alike.
 - Left as notes: card removal UI (Astra retest), OG function headroom (Vercel summary), the 1 px radio gap (product call).
+- **Recheck (same evening):** BR-05 residual, `{"notAllowed":[null]}` saved through 040 (SQL NULL from `jsonb_array_elements_text`
+  made `r = any(rules)` NULL, not false) and crashed the show page on `.toLowerCase()`. 041 types every field strictly; the
+  renderer normalizes before it reads (`specSegments`, `specNotes`, `specHasContent`). BR-03 residual, a 99-char unbroken
+  token painted past the border: `ogTitleLines()` greedy wrap with long-token breaking + `wordBreak: 'break-word'`.
+  604 tests. Lesson for the SQL guards: check `jsonb_typeof` per element before any text coercion.
