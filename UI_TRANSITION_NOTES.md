@@ -585,3 +585,29 @@ The rest of the public bridge, render only. Data loaders, server actions, query 
   (`components/promoter/*Section.tsx`, `PromoterMeetDetailClient.tsx`) are console, not website, and were never in the sweep.
 - Checked on staging :3079 at 1280 and 390, signed out and signed in (`shots/athlete.py --login <paths>`), zero page
   errors; tsc clean, 588 tests. Screenshots `~/Downloads/zt_ui_1105/`.
+
+## Astra audit of the 11/4-11/5 builds and redraws: fixes BR-01 to BR-09 (11/5 evening)
+
+Report `audits/astra-2026-11-05-builds-and-redraws.md`, disposition per finding in
+`audits/astra-2026-11-05-builds-and-redraws-disposition.md`. 598 tests (+10), tsc clean, migration 040 new.
+
+- **BR-01 (High) unlisted meet through `/gyms?show=`:** `getPublicShowBySlug` resolves an unlisted meet once its results are
+  stamped (037, the federation link). That is right for the show page and wrong for the directory. `trainForEligible()` in
+  `lib/website/trainFor.ts` gates both the `/gyms` block and the show-page link on `isPublicListed !== false`.
+- **BR-02 (High) generic share card:** `openGraph.images: ['/og.png']` in the show and board `generateMetadata` overrode the
+  `opengraph-image.tsx` file convention, so crawlers were told to use the static card. Removed; Next emits the route's card.
+- **BR-03 long titles:** `fitOgTitle()` picks the size from the character count (monospace makes it exact): 66 / 60-42 / 40-36
+  px for one / two / three lines, ellipsis beyond, `lineClamp` as backstop. Renders in `~/Downloads/zt_ui_1105/og_*.png`.
+- **BR-04 invisible focus ring:** Tailwind v4 gotcha. `focus:outline-none` sets `--tw-outline-style: none`, and `outline-2`
+  takes its style from that variable, so `focus-visible:outline-2` drew nothing. Pattern is now
+  `outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-<colour>`; applied to KEY_BASE,
+  NAV_LINK, the wordmark link and the mode toggle. Verified in the browser with `shots/focus_check.py` (wait out the 150 ms
+  `transition` before reading the computed colour, or it reads as the base ring grey).
+- **BR-05 server accepted what the editor refused:** `040_event_spec_guard.sql` adds `zt_check_event_spec()` and a trigger
+  on `events` (insert / update of config), mirroring `validateEventSpec` plus "no unknown keys". The show page renders the
+  video link through `safeVideoUrl()` as a second lock. Existing specs pass the guard.
+- **BR-06, BR-07, BR-09 form semantics:** picker label only while its input exists; event-form error is a focused
+  `role=alert`; register step 3 is a real form with a submit key.
+- **BR-08 small values:** `kgLabel` says "<1 kg" instead of "0 kg"; course distance is 1 to 5280 ft in half-foot steps in
+  validation, normalization and 040 alike.
+- Left as notes: card removal UI (Astra retest), OG function headroom (Vercel summary), the 1 px radio gap (product call).

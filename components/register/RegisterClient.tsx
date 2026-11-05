@@ -649,7 +649,15 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
 
           {/* STEP 3: REVIEW & SUBMIT */}
           {step === 3 && (
-            <section className="flex flex-col gap-4">
+            // A real form like steps 1 and 2 (Astra BR-09): Enter anywhere in the review submits, the key is type=submit.
+            <form
+              className="flex flex-col gap-4"
+              aria-label="Review and submit registration"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!submitting) void handleFinalSubmit();
+              }}
+            >
               <div className="zt-block">
                 <div className={`${CELL} py-4 gap-1`}>
                   <Cap as="span">Step 3</Cap>
@@ -684,15 +692,14 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                   ← Back to waiver
                 </button>
                 <button
-                  type="button"
+                  type="submit"
                   disabled={submitting}
-                  onClick={handleFinalSubmit}
                   className={keyClass('pen', 'disabled:opacity-40 disabled:cursor-not-allowed')}
                 >
                   {submitting ? 'Submitting…' : 'Submit registration'}
                 </button>
               </div>
-            </section>
+            </form>
           )}
 
           {/* STEP 4: CONFIRMATION */}

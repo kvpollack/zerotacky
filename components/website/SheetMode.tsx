@@ -56,7 +56,7 @@ export function ModeToggle({ className = '' }: { className?: string }) {
       aria-pressed={dark}
       aria-label={dark ? 'Switch to bright mode' : 'Switch to dark mode'}
       title={dark ? 'Switch to bright mode' : 'Switch to dark mode'}
-      className={`inline-flex items-center gap-2.5 h-14 px-3.5 2xl:px-[18px] text-[13px] uppercase tracking-[0.04em] text-ink-muted hover:text-ink focus:outline-none focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-2 ${className}`}
+      className={`inline-flex items-center gap-2.5 h-14 px-3.5 2xl:px-[18px] text-[13px] uppercase tracking-[0.04em] text-ink-muted hover:text-ink outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-2 ${className}`}
     >
       {/* phones: the icon of the mode you would switch to; sm and up: "Mode  Bright / Dark" with the current one in ink */}
       <span className="sm:hidden text-ink" aria-hidden="true">{dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}</span>

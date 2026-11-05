@@ -64,3 +64,33 @@ describe('event spec starter (11/4)', () => {
     assert.equal(M.rowToEvent(M.eventToRow({ ...ev, spec: undefined }, 'm')).spec, undefined);
   });
 });
+
+describe('Astra 11/5 fixes (BR-05 safe video URL, BR-08 course step and small weights)', () => {
+  test('safeVideoUrl keeps http(s) only', () => {
+    assert.equal(S.safeVideoUrl('https://youtu.be/x'), 'https://youtu.be/x');
+    assert.equal(S.safeVideoUrl(' http://example.com/v '), 'http://example.com/v');
+    assert.equal(S.safeVideoUrl('javascript:void(0)'), null);
+    assert.equal(S.safeVideoUrl('data:text/plain,x'), null);
+    assert.equal(S.safeVideoUrl('youtube.com/watch?v=x'), null);
+    assert.equal(S.safeVideoUrl(''), null);
+    assert.equal(S.safeVideoUrl(undefined), null);
+    assert.equal(S.safeVideoUrl(`https://example.com/${'a'.repeat(500)}`), null);
+  });
+  test('course distance: 1 ft minimum, half-foot steps, normalize keeps what validate accepts', () => {
+    assert.match(S.validateEventSpec({ courseFeet: '0.01' }), /between 1 and/);
+    assert.match(S.validateEventSpec({ courseFeet: '0.9' }), /between 1 and/);
+    assert.match(S.validateEventSpec({ courseFeet: '1.25' }), /half-foot/);
+    assert.equal(S.validateEventSpec({ courseFeet: '1' }), null);
+    assert.equal(S.validateEventSpec({ courseFeet: '50.5' }), null);
+    assert.equal(S.normalizeEventSpec({ courseFeet: '50.5' }).courseFeet, 50.5);
+    assert.equal(S.normalizeEventSpec({ courseFeet: '1' }).courseFeet, 1);
+    assert.equal(S.normalizeEventSpec({ courseFeet: '0.01' }), undefined);
+  });
+  test('kgLabel: 1 lb reads "<1 kg", never "0 kg"', () => {
+    assert.equal(S.kgLabel(1), '<1 kg');
+    assert.equal(S.kgLabel(2), '1 kg');
+    assert.equal(S.kgLabel(225), '102 kg');
+    assert.equal(S.kgLabel(226), '103 kg');
+    assert.equal(S.kgLabel(0), '');
+  });
+});

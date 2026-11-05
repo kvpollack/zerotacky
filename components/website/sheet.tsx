@@ -9,7 +9,7 @@ export function Cap({ children, className = '', as: Tag = 'div', id }: { childre
 }
 
 export type KeyVariant = 'ink' | 'line' | 'pen';
-const KEY_BASE = 'inline-flex items-center justify-center gap-2.5 min-h-12 px-5 font-bold text-sm uppercase tracking-[0.04em] no-underline text-center transition focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2';
+const KEY_BASE = 'inline-flex items-center justify-center gap-2.5 min-h-12 px-5 font-bold text-sm uppercase tracking-[0.04em] no-underline text-center transition outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2';
 const KEY_VARIANT: Record<KeyVariant, string> = {
   ink: 'bg-ink text-sheet hover:bg-pen hover:text-pen-label',
   line: 'border-2 border-rule text-ink hover:bg-ink hover:text-sheet',
@@ -58,7 +58,7 @@ export function SectionCap({ children, aside, id }: { children: React.ReactNode;
 }
 
 /** Header strip cells: 56 px tall, 13 px bold uppercase, 1 px rule on the right; the active one is filled in ink. */
-export const NAV_LINK = 'flex items-center h-14 px-3.5 2xl:px-[18px] whitespace-nowrap shrink-0 border-r border-rule text-[13px] font-bold uppercase tracking-[0.04em] no-underline transition focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:-outline-offset-2';
+export const NAV_LINK = 'flex items-center h-14 px-3.5 2xl:px-[18px] whitespace-nowrap shrink-0 border-r border-rule text-[13px] font-bold uppercase tracking-[0.04em] no-underline transition outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-pen focus-visible:-outline-offset-2';
 export const navClass = (active: boolean) => `${NAV_LINK} ${active ? 'bg-ink text-sheet' : 'text-ink hover:bg-ground'}`;
 
 /** Inline link in running text: ink, underlined, pen on hover. */

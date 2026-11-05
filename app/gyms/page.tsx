@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import WebsiteShell from '@/components/website/WebsiteShell';
 import GymsBrowser from '@/components/website/GymsBrowser';
 import { getPublicShowBySlug, listPublicGyms } from '@/lib/website/data';
-import { showTrainingNeeds } from '@/lib/website/trainFor';
+import { showTrainingNeeds, trainForEligible } from '@/lib/website/trainFor';
 import { collectDistinctImplementTags, collectDistinctStates } from '@/lib/website/filters';
 import { sortEquipmentTags } from '@/lib/website/gymEquipment';
 import { canonical } from '@/lib/website/seo';
@@ -30,7 +30,8 @@ export default async function GymsDirectoryPage({ searchParams }: { searchParams
   // Train for this show (build 4, 11/5): /gyms?show=<slug> ranks gyms by the show's event implements.
   const showSlug = cleanSearchParam(sp.show);
   const showRes = showSlug ? await getPublicShowBySlug(showSlug) : null;
-  const trainFor = showRes?.data
+  // Unlisted meets resolve here through the results-retention rule; they never drive the directory (Astra BR-01).
+  const trainFor = showRes?.data && trainForEligible(showRes.data)
     ? { slug: showRes.data.slug, name: showRes.data.name, date: showRes.data.date, needs: showTrainingNeeds(showRes.data.state.events) }
     : null;
 

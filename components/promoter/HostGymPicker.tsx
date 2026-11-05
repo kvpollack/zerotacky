@@ -112,7 +112,9 @@ export default function HostGymPicker({
 
   return (
     <div className="flex flex-col gap-1.5 min-w-0">
-      <label htmlFor={id}><Cap as="span">{label}</Cap></label>
+      {/* The label pairs with the search input; once a gym is picked that input is gone, so the caption is plain text
+          (Astra BR-06: no <label for> pointing at nothing). */}
+      {chosen ? <Cap as="span">{label}</Cap> : <label htmlFor={id}><Cap as="span">{label}</Cap></label>}
       {chosen ? (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-2 border-rule px-3 py-2 min-h-[44px]">
           <div className="min-w-0 flex-1">
