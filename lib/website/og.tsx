@@ -3,9 +3,12 @@
 // meet name, date and venue instead of a blank card.
 // Sheet card (Phase 6 leftover, 11/4): white sheet on the ground with an ink rule, the Set Stone V9 as the 0 in
 // ZER0TACKY, Red Hat Mono text, pen only for the LIVE key. Fonts are the site's own woff2 files converted to TTF in
-// lib/website/fonts (Satori reads TTF/OTF/WOFF, not WOFF2), loaded once per lambda.
+// lib/website/fonts (Satori reads TTF/OTF/WOFF, not WOFF2), loaded once per lambda. Read through process.cwd(), not
+// import.meta.url: on Vercel (11/4) the URL form came back 200 with Satori's fallback mono, so the bundle had rewritten the
+// asset path. next.config outputFileTracingIncludes ships the three files with both opengraph-image routes.
 import { ImageResponse } from 'next/og';
 import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 
 export { siteUrl } from './siteUrl';
 
@@ -24,7 +27,7 @@ let fontsPromise: Promise<Array<{ name: string; data: ArrayBuffer; weight: 400 |
 function loadFonts() {
   if (!fontsPromise) {
     const read = async (file: string) => {
-      const buf = await readFile(new URL(`./fonts/${file}`, import.meta.url));
+      const buf = await readFile(path.join(process.cwd(), 'lib', 'website', 'fonts', file));
       return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
     };
     fontsPromise = Promise.all([
