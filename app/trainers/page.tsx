@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import WebsiteShell from '@/components/website/WebsiteShell';
+import { textLink } from '@/components/website/sheet';
 import AthletesBrowser from '@/components/website/AthletesBrowser';
 import { listPublicAthletes } from '@/lib/website/data';
 import { cleanModeParam, cleanSearchParam, cleanStateParam, collectAthleteStates, filterPublicAthletes } from '@/lib/website/athletes';
@@ -26,23 +27,23 @@ export default async function TrainersDirectoryPage({ searchParams }: { searchPa
 
   return (
     <WebsiteShell activeNav="athletes">
-      <div className="space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-2xl sm:text-3xl font-black text-zt-text">Trainers</h1>
-          <span className="text-[11px] font-black uppercase px-2.5 py-1 rounded-lg bg-zt-inset text-zt-text-2 border border-zt-border">
-            {trainers.length} listed{states.length ? ` • ${states.length} state${states.length === 1 ? '' : 's'}` : ''}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-[28px] sm:text-[34px] font-bold leading-[1.05] text-ink">Trainers</h1>
+          <span className="inline-flex items-center border-2 border-rule px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.04em] text-ink whitespace-nowrap">
+            {trainers.length} listed{states.length ? ` · ${states.length} state${states.length === 1 ? '' : 's'}` : ''}
           </span>
         </div>
-        <p className="text-xs sm:text-sm text-zt-text-2 max-w-3xl">
+        <p className="text-[15px] leading-relaxed text-ink max-w-3xl">
           Coaches who marked themselves as trainers on their ZeroTacky account and chose a public profile. Each card says
           whether they take in-person clients, online clients or both; contact details are whatever they put on their
           profile. ZeroTacky does not vet trainers or handle bookings.{' '}
-          <Link href="/website/account" className="font-bold text-zt-primary hover:underline">Coach?</Link> Tick
+          <Link href="/website/account" className={textLink}>Coach?</Link> Tick
           &ldquo;I coach&rdquo; on your account page and turn on your public profile to be listed.{' '}
-          <Link href="/athletes" className="font-bold text-zt-primary hover:underline">Everyone listed</Link>.
+          <Link href="/athletes" className={textLink}>Everyone listed</Link>.
         </p>
         {res.error && (
-          <p className="text-xs font-bold text-red-400" role="alert">The directory could not be loaded right now. {res.error}</p>
+          <p className="text-[13px] font-bold text-redpen" role="alert">The directory could not be loaded right now. {res.error}</p>
         )}
       </div>
 

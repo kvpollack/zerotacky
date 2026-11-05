@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/useAuth';
 import { createSyncClient, readSyncEnv } from '@/lib/sync/client';
+import { Cap, KeyButton, keyClass, textLink } from '@/components/website/sheet';
 
 // "Gym owner? Claim it" and "Not right? Report it" share one form (015 gym_claims). Nothing changes on the listing when
 // a claim is filed; Kurt reviews and the owner flow comes after the meet (ROADMAP 6). Signed-in users get their email
@@ -56,77 +56,77 @@ export default function GymClaimClient({ gymId, gymName, gymSlug }: { gymId: str
     }
   }
 
-  const field = 'w-full rounded-xl bg-zt-inset border border-zt-border px-3 py-2.5 text-sm text-zt-text focus:outline-none focus:border-zt-primary';
-  const label = 'text-[10px] font-extrabold uppercase text-zt-muted block mb-1';
+  // Hand redraw in the sheet grammar (11/5, sweep item 5): claim / report as two keys, the form as one ruled block
+  // with a cap over each input; the receipt is the same block with a pen heading.
+  const NOTE = 'text-[13px] leading-snug text-ink-muted';
 
   return (
-    <div className="space-y-5 max-w-xl">
-      <Link href={`/gyms/${gymSlug}`} className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase text-zt-muted hover:text-zt-text">
-        <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" /> Back to {gymName}
+    <div className="flex flex-col gap-5 max-w-xl">
+      <Link href={`/gyms/${gymSlug}`} className="inline-flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-[0.04em] text-ink-muted hover:text-ink no-underline self-start">
+        <span aria-hidden="true">←</span> Back to {gymName}
       </Link>
 
-      <div className="flex gap-2" role="tablist" aria-label="What would you like to do">
+      <div className="flex flex-wrap gap-2" role="tablist" aria-label="What would you like to do">
         {(['claim', 'report'] as Kind[]).map((k) => (
-          <button key={k} type="button" role="tab" aria-selected={kind === k} onClick={() => setKind(k)}
-            className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase border ${kind === k ? 'bg-zt-primary text-zt-on-primary border-zt-primary' : 'bg-zt-inset text-zt-text-2 border-zt-border'}`}>
+          <button key={k} type="button" role="tab" aria-selected={kind === k} onClick={() => setKind(k)} className={keyClass(kind === k ? 'pen' : 'line')}>
             {k === 'claim' ? 'Claim this gym' : 'Report a problem'}
           </button>
         ))}
       </div>
 
       {done ? (
-        <section className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-2">
-          <div className="flex items-center gap-2 text-emerald-400 font-black"><CheckCircle2 className="w-5 h-5" aria-hidden="true" /> Received</div>
-          <p className="text-sm text-zt-text-2">
-            {kind === 'claim'
-              ? `Thanks. We check each claim by hand and will email ${email.trim()} when the listing for ${gymName} is yours to edit.`
-              : `Thanks. We will look at the listing for ${gymName} and fix what is wrong.`}
-          </p>
-          <Link href="/gyms" className="inline-block text-xs font-extrabold uppercase text-zt-primary hover:underline">Back to the Gym Directory</Link>
+        <section className="zt-block grid-cols-1">
+          <div className="flex flex-col gap-2 px-5 py-5 sm:px-6">
+            <Cap as="span" className="text-pen">Received</Cap>
+            <p className="text-[15px] leading-relaxed text-ink">
+              {kind === 'claim'
+                ? `Thanks. We check each claim by hand and will email ${email.trim()} when the listing for ${gymName} is yours to edit.`
+                : `Thanks. We will look at the listing for ${gymName} and fix what is wrong.`}
+            </p>
+            <Link href="/gyms" className={`text-[13px] ${textLink} self-start`}>Back to the Gym Directory</Link>
+          </div>
         </section>
       ) : (
-        <form onSubmit={submit} className="bg-zt-surface border border-zt-border rounded-2xl p-5 space-y-4">
-          <div className="space-y-1">
-            <h1 className="text-xl font-black text-zt-text">{kind === 'claim' ? `Claim ${gymName}` : `Report a problem with ${gymName}`}</h1>
-            <p className="text-xs text-zt-text-2">
+        <form onSubmit={submit} className="zt-block grid-cols-1">
+          <div className="flex flex-col gap-1.5 px-5 py-5 sm:px-6">
+            <h1 className="text-[22px] font-bold leading-tight text-ink">{kind === 'claim' ? `Claim ${gymName}` : `Report a problem with ${gymName}`}</h1>
+            <p className={NOTE}>
               {kind === 'claim'
                 ? 'This listing was built from the gym\u2019s own website. Claiming it lets you correct the details, list your equipment, and link your shows. We confirm each claim by hand.'
                 : 'Closed, moved, wrong equipment, wrong hours: tell us and we will fix or remove the listing.'}
             </p>
           </div>
-          <div>
-            <label className={label} htmlFor="claim-name">Your name</label>
-            <input id="claim-name" className={field} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} required autoComplete="name" />
-            {auth.user && (
-              <p className="text-[11px] text-zt-muted mt-1">Filled from your account. Change it if you are filing this for someone else.</p>
-            )}
+          <div className="flex flex-col gap-1.5 px-5 py-4 sm:px-6">
+            <label htmlFor="claim-name"><Cap as="span">Your name</Cap></label>
+            <input id="claim-name" className="zt-input" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} required autoComplete="name" />
+            {auth.user && <p className={NOTE}>Filled from your account. Change it if you are filing this for someone else.</p>}
           </div>
-          <div>
-            <label className={label} htmlFor="claim-email">Email</label>
-            <input id="claim-email" className={field} type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={120} required autoComplete="email" />
-            {kind === 'claim' && (
-              <p className="text-[11px] text-zt-muted mt-1">An address at the gym&rsquo;s own domain is the fastest way to confirm a claim.</p>
-            )}
+          <div className="flex flex-col gap-1.5 px-5 py-4 sm:px-6">
+            <label htmlFor="claim-email"><Cap as="span">Email</Cap></label>
+            <input id="claim-email" className="zt-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={120} required autoComplete="email" />
+            {kind === 'claim' && <p className={NOTE}>An address at the gym&rsquo;s own domain is the fastest way to confirm a claim.</p>}
           </div>
           {kind === 'claim' && (
-            <div>
-              <label className={label} htmlFor="claim-role">Your role</label>
-              <select id="claim-role" className={field} value={role} onChange={(e) => setRole(e.target.value)}>
+            <div className="flex flex-col gap-1.5 px-5 py-4 sm:px-6">
+              <label htmlFor="claim-role"><Cap as="span">Your role</Cap></label>
+              <select id="claim-role" className="zt-input" value={role} onChange={(e) => setRole(e.target.value)}>
                 {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
           )}
-          <div>
-            <label className={label} htmlFor="claim-message">{kind === 'claim' ? 'Anything we should know (optional)' : 'What is wrong?'}</label>
-            <textarea id="claim-message" className={`${field} min-h-[96px]`} value={message} onChange={(e) => setMessage(e.target.value)} maxLength={1000} />
+          <div className="flex flex-col gap-1.5 px-5 py-4 sm:px-6">
+            <label htmlFor="claim-message"><Cap as="span">{kind === 'claim' ? 'Anything we should know (optional)' : 'What is wrong?'}</Cap></label>
+            <textarea id="claim-message" className="zt-input min-h-[96px]" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={1000} />
           </div>
-          {error && <p className="text-xs font-bold text-red-400" role="alert">{error}</p>}
-          <button type="submit" disabled={busy} className="px-5 py-3 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase disabled:opacity-60">
-            {busy ? 'Sending…' : kind === 'claim' ? 'Send claim' : 'Send report'}
-          </button>
-          <p className="text-[11px] text-zt-muted">
-            We use your name and email only to follow up on this {kind}. See our <Link href="/legal/privacy" className="underline">privacy notice</Link>.
-          </p>
+          <div className="flex flex-col gap-3 px-5 py-5 sm:px-6">
+            {error && <p className="text-[13px] font-bold text-redpen" role="alert">{error}</p>}
+            <KeyButton type="submit" variant="pen" disabled={busy} className="self-start">
+              {busy ? 'Sending…' : kind === 'claim' ? 'Send claim' : 'Send report'}
+            </KeyButton>
+            <p className={NOTE}>
+              We use your name and email only to follow up on this {kind}. See our <Link href="/legal/privacy" className={textLink}>privacy notice</Link>.
+            </p>
+          </div>
         </form>
       )}
     </div>

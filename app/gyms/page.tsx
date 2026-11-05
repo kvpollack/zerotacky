@@ -36,22 +36,22 @@ export default async function GymsDirectoryPage({ searchParams }: { searchParams
 
   return (
     <WebsiteShell activeNav="gyms">
-      <div className="space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-2xl sm:text-3xl font-black text-zt-text">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-[28px] sm:text-[34px] font-bold leading-[1.05] text-ink">
             Gym Directory
           </h1>
           {live ? (
-            <span className="text-[11px] font-black uppercase px-2.5 py-1 rounded-lg bg-zt-inset text-zt-text-2 border border-zt-border">
-              {gyms.length} gyms • {states.filter((s) => s !== 'DC').length} states{states.includes('DC') ? ' + DC' : ''}
+            <span className="inline-flex items-center border-2 border-rule px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.04em] text-ink whitespace-nowrap">
+              {gyms.length} gyms · {states.filter((s) => s !== 'DC').length} states{states.includes('DC') ? ' + DC' : ''}
             </span>
           ) : (
-            <span className="text-[11px] font-black uppercase px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40">
-              Demo Listings ({gyms.length} Gyms)
+            <span className="inline-flex items-center border-2 border-rule px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.04em] text-ink whitespace-nowrap border-dashed">
+              Demo listings ({gyms.length} gyms)
             </span>
           )}
         </div>
-        <p className="text-xs sm:text-sm text-zt-text-2 max-w-3xl">
+        <p className="text-[15px] leading-relaxed text-ink max-w-3xl">
           Strongman and powerlifting gyms you can actually train at. Filter by distance from your zip, equipment, and day-pass policy.
           Missing details are marked <strong>Not provided</strong>.{' '}
           {live
@@ -59,7 +59,7 @@ export default async function GymsDirectoryPage({ searchParams }: { searchParams
             : 'These listings are fictional demos; gym owners adding their own gym is next on the roadmap.'}
         </p>
         {res.error && (
-          <p className="text-xs font-bold text-red-400" role="alert">The directory could not be loaded right now. {res.error}</p>
+          <p className="text-[13px] font-bold text-redpen" role="alert">The directory could not be loaded right now. {res.error}</p>
         )}
       </div>
 

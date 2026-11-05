@@ -33,16 +33,16 @@ export default async function LegalPage({ params }: Params) {
   return (
     <WebsiteShell>
       <article className="max-w-3xl mx-auto space-y-4 print:text-black">
-        <nav className="flex flex-wrap gap-3 text-[11px] font-extrabold uppercase tracking-wider text-zt-muted">
+        <nav className="flex flex-wrap gap-x-5 gap-y-1 text-[13px] font-bold uppercase tracking-[0.04em] text-ink-muted">
           {(Object.keys(LEGAL_DOCS) as Array<keyof typeof LEGAL_DOCS>).map((id) => (
-            <Link key={id} href={`/legal/${id}`} className={id === doc ? 'text-zt-primary' : 'hover:text-zt-primary'}>
+            <Link key={id} href={`/legal/${id}`} className={id === doc ? 'text-ink underline underline-offset-4 decoration-2' : 'no-underline hover:text-ink'}>
               {LEGAL_DOCS[id].title}
             </Link>
           ))}
         </nav>
         <MarkdownBlocks blocks={blocks} />
         {doc === 'waiver' && (
-          <p className="text-[11px] text-zt-muted">
+          <p className="text-[13px] leading-snug text-ink-muted">
             This is the template. The copy you accept when registering has the competition, date, promoter and venue filled in, and
             its version id is stored with your registration.
           </p>

@@ -27,25 +27,25 @@ export default async function ShowsDirectoryPage() {
 
   return (
     <WebsiteShell activeNav="shows">
-      <div className="space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-2xl sm:text-3xl font-black text-zt-text">Strongman Shows</h1>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-[28px] sm:text-[34px] font-bold leading-[1.05] text-ink">Strongman Shows</h1>
           {live ? (
-            <span className="text-[11px] font-black uppercase px-2.5 py-1 rounded-lg bg-zt-inset text-zt-text-2 border border-zt-border">
-              {shows.length} Listed {shows.length === 1 ? 'Show' : 'Shows'}
+            <span className="inline-flex items-center border-2 border-rule px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.04em] text-ink whitespace-nowrap">
+              {shows.length} listed {shows.length === 1 ? 'show' : 'shows'}
             </span>
           ) : (
-            <span className="text-[11px] font-black uppercase px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40">
-              Demo Directory Fixtures ({shows.length} Shows)
+            <span className="inline-flex items-center border-2 border-rule px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.04em] text-ink whitespace-nowrap border-dashed">
+              Demo directory fixtures ({shows.length} shows)
             </span>
           )}
         </div>
-        <p className="text-xs sm:text-sm text-zt-text-2 max-w-3xl">
+        <p className="text-[15px] leading-relaxed text-ink max-w-3xl">
           Filter competitions by status, state, or specific strongman implements. Supports both
           inclusive strength-based groups (such as Strongfest Groups 1–5) and traditional weight
           classes.
         </p>
-        <p className="text-xs sm:text-sm text-zt-text-2">
+        <p className="text-[15px] leading-relaxed text-ink">
           Running a show that registers somewhere else?{' '}
           <Link href="/shows/submit" className={textLink}>
             List it here
@@ -57,7 +57,7 @@ export default async function ShowsDirectoryPage() {
       {result.error ? (
         <div
           role="alert"
-          className="bg-zt-danger/15 border border-zt-danger text-zt-danger-text rounded-2xl p-5 text-sm font-bold"
+          className="border-2 border-redpen text-redpen px-5 py-4 text-[15px] font-bold"
         >
           Could not load shows: {result.error}
         </div>

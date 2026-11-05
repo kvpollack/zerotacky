@@ -2,9 +2,9 @@
 
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { MapPin, RotateCcw, Search, User } from 'lucide-react';
 import { filterPublicAthletes, ROLE_OPTIONS, TRAINER_MODE_OPTIONS, type PublicAthlete } from '@/lib/website/athletes';
 import { athleteProfilePath } from '@/lib/auth/profile';
+import { Cap, textLink } from './sheet';
 
 interface AthletesBrowserProps {
   initialAthletes: PublicAthlete[];
@@ -18,7 +18,13 @@ interface AthletesBrowserProps {
   initialMode?: string;
 }
 
-const inputCls = 'w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text focus:outline-none focus:border-zt-primary';
+// Hand redraw in the sheet grammar (11/5, sweep item 5): one ruled filter block, people as cells of a ruled grid
+// (square avatar with initials when there is no photo, name, @handle, role chips, location, favorite lift).
+const CHIP = 'inline-flex items-center border border-rule px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em] text-ink whitespace-nowrap';
+function initials(name: string): string {
+  const parts = name.replace(/^@/, '').split(/[\s_.-]+/).filter(Boolean);
+  return (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : (parts[0] ?? '?').slice(0, 2)).toUpperCase();
+}
 
 export default function AthletesBrowser({ initialAthletes, availableStates, initialState = 'ALL', initialRole = 'ALL', initialSearch = '', fixedRole, initialMode = 'ALL' }: AthletesBrowserProps) {
   const [search, setSearch] = useState(initialSearch);
@@ -36,86 +42,88 @@ export default function AthletesBrowser({ initialAthletes, availableStates, init
   const reset = () => { setSearch(''); setStateFilter('ALL'); setRole(fixedRole ?? 'ALL'); setMode('ALL'); };
 
   return (
-    <div className="space-y-4">
-      <div className="bg-zt-surface border border-zt-border rounded-2xl p-3.5 grid grid-cols-1 sm:grid-cols-[1fr_8rem_10rem_auto] gap-2 items-end">
-        <label className="block">
-          <span className="text-[10px] font-extrabold uppercase text-zt-muted">Search</span>
-          <span className="relative block">
-            <Search className="w-3.5 h-3.5 text-zt-muted absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Name or @username" className={`${inputCls} pl-8`} />
+    <div className="flex flex-col gap-4">
+      <section aria-label="Filter people" className="zt-block grid-cols-1">
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_8rem_12rem] gap-x-6 gap-y-4 px-4 py-4 sm:px-5 items-end">
+          <label className="flex flex-col gap-1.5">
+            <Cap as="span">Search</Cap>
+            <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Name or @username" className="zt-input" />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <Cap as="span">State</Cap>
+            <select value={stateFilter} onChange={(e) => setStateFilter(e.target.value)} className="zt-input">
+              <option value="ALL">All</option>
+              {stateOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </label>
+          {fixedRole ? (
+            <label className="flex flex-col gap-1.5">
+              <Cap as="span">Coaching</Cap>
+              <select value={mode} onChange={(e) => setMode(e.target.value)} className="zt-input">
+                <option value="ALL">In person or online</option>
+                {TRAINER_MODE_OPTIONS.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+              </select>
+            </label>
+          ) : (
+            <label className="flex flex-col gap-1.5">
+              <Cap as="span">Role</Cap>
+              <select value={role} onChange={(e) => setRole(e.target.value)} className="zt-input">
+                <option value="ALL">Everyone</option>
+                {ROLE_OPTIONS.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
+              </select>
+            </label>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 sm:px-5 text-[13px]">
+          <span className="text-ink-muted">
+            {filtered.length === initialAthletes.length ? `${filtered.length} listed` : <>{<strong className="text-ink">{filtered.length}</strong>} of {initialAthletes.length} match</>}
           </span>
-        </label>
-        <label className="block">
-          <span className="text-[10px] font-extrabold uppercase text-zt-muted">State</span>
-          <select value={stateFilter} onChange={(e) => setStateFilter(e.target.value)} className={inputCls}>
-            <option value="ALL">All</option>
-            {stateOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </label>
-        {fixedRole ? (
-          <label className="block">
-            <span className="text-[10px] font-extrabold uppercase text-zt-muted">Coaching</span>
-            <select value={mode} onChange={(e) => setMode(e.target.value)} className={inputCls}>
-              <option value="ALL">In person or online</option>
-              {TRAINER_MODE_OPTIONS.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
-            </select>
-          </label>
-        ) : (
-          <label className="block">
-            <span className="text-[10px] font-extrabold uppercase text-zt-muted">Role</span>
-            <select value={role} onChange={(e) => setRole(e.target.value)} className={inputCls}>
-              <option value="ALL">Everyone</option>
-              {ROLE_OPTIONS.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
-            </select>
-          </label>
-        )}
-        <button type="button" onClick={reset} disabled={!active} className="px-3 py-2 rounded-xl bg-zt-inset border border-zt-border text-zt-text-2 font-bold text-xs inline-flex items-center gap-1.5 disabled:opacity-40">
-          <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" /> Reset
-        </button>
-      </div>
-
-      <p className="text-[11px] font-bold text-zt-muted">
-        {filtered.length === initialAthletes.length ? `${filtered.length} listed` : `${filtered.length} of ${initialAthletes.length} match`}
-      </p>
+          {active && <button type="button" onClick={reset} className={textLink}>Reset filters</button>}
+        </div>
+      </section>
 
       {filtered.length === 0 ? (
-        <p className="text-xs font-bold text-zt-muted bg-zt-surface border border-zt-border rounded-2xl p-4">
-          {initialAthletes.length === 0
-            ? (fixedRole ? 'No trainers are listed yet. Tick "I coach" on your account page and turn on your public profile to be first.' : 'Nobody is listed yet. Turn on your public profile from the account page and you will be first.')
-            : 'No one matches those filters.'}
-        </p>
+        <div className="zt-block grid-cols-1">
+          <p className="px-5 py-5 text-[15px] leading-relaxed text-ink-muted">
+            {initialAthletes.length === 0
+              ? (fixedRole ? 'No trainers are listed yet. Tick "I coach" on your account page and turn on your public profile to be first.' : 'Nobody is listed yet. Turn on your public profile from the account page and you will be first.')
+              : 'No one matches those filters.'}
+          </p>
+        </div>
       ) : (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <ul className="zt-block grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((a) => (
-            <li key={a.id}>
-              <Link href={athleteProfilePath(a.username)} className="block bg-zt-surface border border-zt-border hover:border-zt-primary rounded-2xl p-4 transition h-full">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-zt-inset border border-zt-border-strong flex items-center justify-center shrink-0">
-                    {a.avatarUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={a.avatarUrl} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <User className="w-5 h-5 text-zt-muted" aria-hidden="true" />
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-sm font-black text-zt-text truncate">{a.displayName}</div>
-                    <div className="text-[11px] font-bold text-zt-muted truncate">@{a.username}</div>
-                  </div>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-1">
-                  {a.badges.map((b) => (
-                    <span key={b} className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-primary">{b}</span>
-                  ))}
-                </div>
-                <div className="mt-2 space-y-0.5 text-[11px] font-semibold text-zt-text-2">
-                  {a.location && (
-                    <div className="flex items-center gap-1.5 truncate"><MapPin className="w-3 h-3 text-zt-primary shrink-0" aria-hidden="true" />{a.location}</div>
+            <li key={a.id} className="min-w-0">
+              <Link href={athleteProfilePath(a.username)} className="flex gap-4 px-4 py-4 sm:px-5 h-full no-underline hover:bg-ground group">
+                <div className="w-14 h-14 shrink-0 border-2 border-rule bg-ground flex items-center justify-center overflow-hidden">
+                  {a.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={a.avatarUrl} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span aria-hidden="true" className="font-sheet text-pen text-[22px] leading-none">{initials(a.displayName)}</span>
                   )}
-                  {a.favoriteLift && <div className="truncate">Favorite lift: {a.favoriteLift}</div>}
+                </div>
+                <div className="min-w-0 flex flex-col gap-1">
+                  <div className="text-[17px] font-bold leading-tight text-ink truncate group-hover:text-pen">{a.displayName}</div>
+                  <Cap as="span" className="truncate">@{a.username}</Cap>
+                  {a.badges.length > 0 && (
+                    <div className="flex flex-wrap gap-1 pt-0.5">
+                      {a.badges.map((b) => <span key={b} className={CHIP}>{b}</span>)}
+                    </div>
+                  )}
+                  {(a.location || a.favoriteLift) && (
+                    <div className="text-[13px] leading-snug text-ink-muted pt-0.5">
+                      {a.location && <div className="truncate">{a.location}</div>}
+                      {a.favoriteLift && <div className="truncate">Favorite lift: <span className="text-ink">{a.favoriteLift}</span></div>}
+                    </div>
+                  )}
                 </div>
               </Link>
             </li>
+          ))}
+          {/* fill the last row so the ruled grid shows no dark holes */}
+          {Array.from({ length: (6 - (filtered.length % 6)) % 6 }).map((_, i) => (
+            <li key={`fill-${i}`} aria-hidden="true" className={`hidden ${i < (2 - (filtered.length % 2)) % 2 ? 'sm:block' : ''} ${i < (3 - (filtered.length % 3)) % 3 ? 'lg:block' : 'lg:hidden'}`} />
           ))}
         </ul>
       )}
