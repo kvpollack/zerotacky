@@ -654,3 +654,43 @@ exports PDF only, so the target is the spreadsheet a promoter already keeps. 615
 - **Left on purpose:** no email column (athletes have no email field; registrations carry accounts), no update of existing
   athletes (an import only adds; a re-import skips names already there), the strike-through on skipped rows is on the text
   spans only (text-decoration propagates to children, so a struck container would strike the red note too).
+
+## Feature gaps #15: comp-prep sheet (11/5 night)
+
+Second of Kurt's three picks. The show's events as a training sheet an athlete or coach programs from, printable, with a
+CSV. 620 tests (+5), tsc clean, no migration. Hevy imports Strong's CSV, but a strongman event is not a Strong exercise
+row (load + distance + time, custom implements), so the first cut is a generic CSV and a print view, as the report said.
+
+- **Route `app/shows/[slug]/prep`** (`?division=<id>`, else every division): same `getPublicShowBySlug` path, freshness
+  and reach as the show page; `robots: noindex, follow` (a view of the show, not a second page about it). Unknown
+  division id = all divisions. Bad slug = the show's 404.
+- **`lib/website/prepSheet.ts` (pure):** `buildPrepSheet(show, divisionId)` -> `PrepSheet` (sorted divisions, sorted
+  events, one `PrepRow` each: scoring label, time cap, implement text, course, allowed / not allowed, rising-bar
+  progression, notes (spec notes, then the fixed-implement description when the spec names no implement), http(s)-only
+  video, and `weights[]` from `eventWeightDisplay`: one entry or one per division). `prepSheetCsv` (one division: Weight /
+  kg / Setup trio; all: a `Weight (<division>)` column per division, kg in parentheses), `prepSheetFilename`,
+  `prepSheetHref`, `timeCapLabel` (`60s`, `1:15`).
+- **`components/website/PrepSheetClient.tsx`:** cap + show name + date, venue, division; Download CSV (pen key, through
+  `shareOrDownloadText`, BOM added there) and Print (line key); division keys (All + each, `aria-current="page"`); one
+  ruled table (Event | Scoring & cap | Implement & rules | Weight or one column per division | Notes). Rules and Notes
+  columns only render when any row has content. Video is a link on screen and `Video: <host> (link on the show page)` on
+  paper: a long URL is not typeable and blew the notes column up to a page.
+- **Show page:** a `Prep sheet` line key beside the Events & Weights heading, carrying the division picked in the
+  standings strip (`ALL` -> no query).
+- **Print (globals.css `@media print`):** sheet tokens forced to the bright set on `:root` and every `[data-zt-mode]`
+  (the frame sets the mode on its own div, so `:root` alone left the grey ground); `.zt-print-hide` on the shell header
+  and footer (unlayered class with `!important`: `.zt-block`'s `display:grid` is unlayered too and beat Tailwind's
+  `print:hidden`, which is why the footer kept printing); `@page { margin: 12mm }`; rows `break-inside: avoid`. The
+  table goes `table-fixed` with percentage widths in print so nine columns fit a Letter portrait page (one page each
+  for Iron Harbor's one-division and all-divisions sheets, `~/Downloads/zt_ui_1105/prep_*.pdf`). Tried a named
+  landscape page (`page: wide`) for the all-divisions view: the frame's ancestor box printed as a blank framed page
+  first, so dropped.
+- **Verified on staging** Iron Harbor at 1280 and 390: link from the show page, division and all views, `thead th` 5 / 9,
+  CSV download `iron-harbor-classic-2026-prep.csv` (6 lines, header as tested), print emulation hides header, footer and
+  keys, dark mode + print reads ink `rgb(17,17,17)` on white, `/shows/no-such-show-xyz/prep` = 404. Shots
+  `prep_*.png`, script `~/.aki/tmp/zt/shots/prep_sheet.py`, `prep_print.py`. No page errors.
+- **Dev-server gotcha (11/5):** the webpack watcher missed two of this build's Python-written edits (ShowDetailClient,
+  WebsiteShell) while picking up others; the server bundle kept the old component until a shell `printf '' >> file`
+  nudged it. Check the served HTML for the new string before screenshotting.
+- **Left on purpose:** no Strong / Hevy-format CSV yet (would need one row per exercise with fixed columns; add when a
+  user asks), no per-athlete rack heights (the sheet is the show's spec, not a registration), no landscape.

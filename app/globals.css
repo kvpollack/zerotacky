@@ -560,3 +560,18 @@ body { font-family: var(--font-sans); }
 .zt-input::placeholder { color: var(--muted); font-weight: 400; }
 .zt-input:focus { outline: 2px solid var(--pen); outline-offset: -2px; }
 .zt-input::-webkit-outer-spin-button, .zt-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* Print (11/5, comp-prep sheet): paper is the bright sheet whatever the venue toggle says; the shell's header and
+   footer hide (.zt-print-hide: unlayered, so it beats .zt-block's display:grid, which Tailwind's print:hidden cannot)
+   and the frame's grey ground goes white. No named landscape page: a named page on the sheet forces a page break
+   after the frame's ancestor box, which printed as a blank framed page (tried 11/5). */
+@media print {
+  :root, [data-zt-mode] {
+    --ground: #ffffff; --sheet: #ffffff; --ink: #111111; --muted: #4f4f4f; --rule: #111111;
+    --pen: #1d3aa8; --pen-label: #ffffff; --red: #c8102e; --red-label: #ffffff; --accent: #111111; --accent-label: #ffffff;
+    color-scheme: light;
+  }
+  @page { margin: 12mm; }
+  .zt-print-hide { display: none !important; }
+  tr { break-inside: avoid; }
+}
