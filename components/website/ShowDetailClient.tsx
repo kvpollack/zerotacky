@@ -9,6 +9,7 @@ import { formatShowDate } from '@/lib/website/showHistory';
 import { directionsUrl, eventWeightDisplay, formatLocalDateTime } from '@/lib/website/format';
 import { specSegments } from '@/lib/events/spec';
 import { showTrainingNeeds, trainForShowHref } from '@/lib/website/trainFor';
+import { safeVideoUrl } from '@/lib/events/spec';
 import { longIsoDate, shortIsoDate, splitFee, venueLine } from '@/lib/website/sheetFormat';
 import type { DivisionResultsView, PublicShowRecord } from '@/lib/website/types';
 
@@ -416,13 +417,13 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                         {ev.lanes === 2 ? ' · 2 lanes' : ''}
                       </div>
                       {/* Event spec starter (11/4): implement, course and equipment rules, with a video link when given */}
-                      {(specSegments(ev.spec).length > 0 || ev.spec?.videoUrl) && (
+                      {(specSegments(ev.spec).length > 0 || safeVideoUrl(ev.spec?.videoUrl)) && (
                         <div className="text-[12px] text-ink mt-1 whitespace-normal">
                           {specSegments(ev.spec).join(' · ')}
-                          {ev.spec?.videoUrl && (
+                          {safeVideoUrl(ev.spec?.videoUrl) && (
                             <>
                               {specSegments(ev.spec).length > 0 ? ' · ' : ''}
-                              <a href={ev.spec.videoUrl} target="_blank" rel="noopener noreferrer" className={textLink}>Video</a>
+                              <a href={safeVideoUrl(ev.spec?.videoUrl) ?? undefined} target="_blank" rel="noopener noreferrer" className={textLink}>Video</a>
                             </>
                           )}
                         </div>

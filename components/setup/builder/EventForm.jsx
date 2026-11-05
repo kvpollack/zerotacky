@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { loadingTakesCollars } from '@/lib/engine/plates';
 import { EQUIPMENT_RULES, IMPLEMENTS, SPEC_LIMITS, normalizeEventSpec, validateEventSpec } from '@/lib/events/spec';
 
@@ -73,6 +73,10 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
   });
 
   const [error, setError] = useState('');
+  // A refused save announces itself (Astra BR-07): the message is a live region and takes focus, so a screen reader
+  // hears it and a keyboard user lands on it instead of staying on the inert Save key.
+  const errorRef = useRef(null);
+  useEffect(() => { if (error) errorRef.current?.focus(); }, [error]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -557,7 +561,7 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
         </div>
       </div>
 
-      {error && <p className="text-xs font-bold text-red-400">{error}</p>}
+      {error && <p ref={errorRef} role="alert" tabIndex={-1} className="text-xs font-bold text-red-400 outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-red-400">{error}</p>}
 
       <div className="flex gap-2 pt-1">
         <button

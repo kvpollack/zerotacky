@@ -78,7 +78,7 @@ export default function WebsiteShell({ activeNav, brand = null, sheet, children 
               <div className={`${CELL} gap-3 px-3 2xl:px-[18px] overflow-hidden`}>
                 <Link
                   href="/website"
-                  className="text-[20px] sm:text-[26px] text-ink no-underline focus:outline-none focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
+                  className="text-[20px] sm:text-[26px] text-ink no-underline outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2"
                 >
                   <Wordmark cut="small" />
                 </Link>

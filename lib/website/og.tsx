@@ -51,8 +51,28 @@ function Stone({ size }: { size: number }) {
   );
 }
 
+/** Title sizing (Astra BR-03, 11/5). The body column is 1040 px wide and Red Hat Mono advances 0.6 em, so the fit is
+ *  arithmetic: one line at 66 px when it fits, otherwise the largest size (60 down to 42) that holds the title in two
+ *  lines, then three lines at 40 to 36 px, each with a 10% margin for word wrap; anything longer is cut with an ellipsis.
+ *  The body column has about 135 px for the title (three lines at 40 px = 130), and the title box is capped at the line
+ *  count used and clipped, so a bad wrap can never run into the date line below it. */
+const TITLE_W = 1040, MONO_ADV = 0.6, WRAP_MARGIN = 0.9, TITLE_LH = 1.08;
+export function fitOgTitle(raw: string): { text: string; fontSize: number; lines: number } {
+  const text0 = raw.replace(/\s+/g, ' ').trim();
+  const perLine = (px: number) => Math.floor((TITLE_W / (MONO_ADV * px)) * WRAP_MARGIN);
+  if (text0.length <= perLine(66)) return { text: text0, fontSize: 66, lines: 1 };
+  for (let px = 60; px >= 42; px -= 2) {
+    if (text0.length <= 2 * perLine(px)) return { text: text0, fontSize: px, lines: 2 };
+  }
+  for (let px = 40; px >= 36; px -= 2) {
+    if (text0.length <= 3 * perLine(px)) return { text: text0, fontSize: px, lines: 3 };
+  }
+  const max = 3 * perLine(36);
+  return { text: `${text0.slice(0, max - 3).trimEnd()}...`, fontSize: 36, lines: 3 };
+}
+
 export async function renderOgCard(card: OgCard): Promise<ImageResponse> {
-  const title = card.title.length > 70 ? `${card.title.slice(0, 67)}...` : card.title;
+  const { text: title, fontSize: titlePx, lines: titleLines } = fitOgTitle(card.title);
   const fonts = await loadFonts();
   const fs = 54; // wordmark size; stone box .76em, bottom .05em below the baseline (Wordmark.tsx)
   const live = card.badge === 'LIVE';
@@ -76,7 +96,7 @@ export async function renderOgCard(card: OgCard): Promise<ImageResponse> {
           {/* body */}
           <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center', padding: '28px 40px', gap: 18 }}>
             <div style={{ fontSize: 22, letterSpacing: 2, color: MUTED, textTransform: 'uppercase' }}>{card.kicker}</div>
-            <div style={{ fontSize: title.length > 40 ? 52 : 66, fontWeight: 700, lineHeight: 1.08 }}>{title}</div>
+            <div style={{ fontSize: titlePx, fontWeight: 700, lineHeight: TITLE_LH, lineClamp: titleLines }}>{title}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {card.lines.slice(0, 3).map((l, i) => (
                 <div key={i} style={{ fontSize: 28, fontWeight: i === 0 ? 700 : 400, color: INK }}>{l}</div>

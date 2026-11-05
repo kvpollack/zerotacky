@@ -13,7 +13,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title,
     description,
-    openGraph: { title, description, type: 'website', siteName: 'ZeroTacky', url: `/m/${slug}` , images: ['/og.png'] },
+    // No `images`: ./opengraph-image.tsx supplies og:image and twitter:image (Astra BR-02).
+    openGraph: { title, description, type: 'website', siteName: 'ZeroTacky', url: `/m/${slug}` },
     twitter: { card: 'summary_large_image', title, description },
     ...canonical(`/m/${slug}`),
   };

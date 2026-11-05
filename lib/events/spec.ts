@@ -80,7 +80,8 @@ export function normalizeEventSpec(input: EventSpecInput | EventSpec | null | un
   const note = String(input.implementNote ?? '').trim();
   if (note) out.implementNote = note.slice(0, SPEC_LIMITS.implementNote);
   const feet = Number(input.courseFeet);
-  if (input.courseFeet !== '' && input.courseFeet !== undefined && input.courseFeet !== null && Number.isFinite(feet) && feet > 0) out.courseFeet = Math.round(feet * 10) / 10;
+  // Half-foot steps, the form's own step (Astra BR-08): what validation accepts is what normalization keeps.
+  if (input.courseFeet !== '' && input.courseFeet !== undefined && input.courseFeet !== null && Number.isFinite(feet) && feet >= 1) out.courseFeet = Math.round(feet * 2) / 2;
   const allowed = cleanRules(input.allowed as string[] | undefined);
   const notAllowed = cleanRules(input.notAllowed as string[] | undefined).filter((r) => !allowed.includes(r));
   if (allowed.length) out.allowed = allowed;
@@ -102,7 +103,8 @@ export function validateEventSpec(input: EventSpecInput | null | undefined): str
   const rawFeet = input.courseFeet;
   if (rawFeet !== '' && rawFeet !== undefined && rawFeet !== null) {
     const feet = Number(rawFeet);
-    if (!Number.isFinite(feet) || feet <= 0 || feet > SPEC_LIMITS.courseFeetMax) return `Course distance is in feet, between 1 and ${SPEC_LIMITS.courseFeetMax}.`;
+    if (!Number.isFinite(feet) || feet < 1 || feet > SPEC_LIMITS.courseFeetMax) return `Course distance is in feet, between 1 and ${SPEC_LIMITS.courseFeetMax}.`;
+    if (Math.abs(feet * 2 - Math.round(feet * 2)) > 1e-9) return 'Course distance is in half-foot steps (50 or 50.5).';
   }
   const allowed = cleanRules(input.allowed);
   const both = cleanRules(input.notAllowed).filter((r) => allowed.includes(r));
@@ -110,12 +112,21 @@ export function validateEventSpec(input: EventSpecInput | null | undefined): str
   const url = String(input.videoUrl ?? '').trim();
   if (url) {
     if (url.length > SPEC_LIMITS.videoUrl) return `Video link is limited to ${SPEC_LIMITS.videoUrl} characters.`;
-    let u: URL | null = null;
-    try { u = new URL(url); } catch { u = null; }
-    if (!u || (u.protocol !== 'http:' && u.protocol !== 'https:')) return 'Video link must start with http:// or https://.';
+    if (!safeVideoUrl(url)) return 'Video link must start with http:// or https://.';
   }
   if (String(input.notes ?? '').trim().length > SPEC_LIMITS.notes) return `Notes are limited to ${SPEC_LIMITS.notes} characters.`;
   return null;
+}
+
+/** The video link, only when it is a real http(s) URL; null for anything else (javascript:, data:, bare hosts). The show
+ *  page renders the link through this, so a spec that reached the database by some other path cannot plant a bad href
+ *  (Astra BR-05). The server trigger in 040 refuses such a spec as well; this is the second lock. */
+export function safeVideoUrl(url: string | null | undefined): string | null {
+  const s = String(url ?? '').trim();
+  if (!s || s.length > SPEC_LIMITS.videoUrl) return null;
+  let u: URL | null = null;
+  try { u = new URL(s); } catch { u = null; }
+  return u && (u.protocol === 'http:' || u.protocol === 'https:') ? s : null;
 }
 
 /** 230 -> 104 (whole kilograms; the exact conversion is 104.33). */
@@ -123,9 +134,12 @@ export function lbToKg(lb: number): number {
   return Math.round(lb * 0.45359237);
 }
 
-/** "104 kg" for a positive pound value, '' otherwise. */
+/** "104 kg" for a positive pound value, "<1 kg" under half a kilogram (a positive load never reads as zero mass,
+ *  Astra BR-08), '' otherwise. */
 export function kgLabel(lb: number | null | undefined): string {
-  return typeof lb === 'number' && Number.isFinite(lb) && lb > 0 ? `${lbToKg(lb)} kg` : '';
+  if (typeof lb !== 'number' || !Number.isFinite(lb) || lb <= 0) return '';
+  const kg = lbToKg(lb);
+  return kg === 0 ? '<1 kg' : `${kg} kg`;
 }
 
 /** Short segments for one line under the event name: implement, course, equipment. The video link is separate. */

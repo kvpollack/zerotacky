@@ -73,10 +73,17 @@ export function coverageLabel(c: GymCoverage, total: number): string {
   return `${c.have.length} of ${total} implements`;
 }
 
+/** Only a listed show may drive the directory (Astra BR-01, 11/5). `getPublicShowBySlug` also resolves an unlisted meet
+ *  whose results were sent to the federation (037: the results link must stay up), but that exception is for the show page;
+ *  it must not put the meet's name and events on /gyms. Demo fixtures carry no flag and stay eligible. */
+export function trainForEligible(show: { isPublicListed?: boolean }): boolean {
+  return show.isPublicListed !== false;
+}
+
 /** The /gyms link a show page offers, state pre-set so the first results are local. Null when the show has no mapped
- *  implements (nothing to filter on). */
-export function trainForShowHref(show: { slug: string; venue: { state?: string } }, needs: ReadonlyArray<TrainingNeed>): string | null {
-  if (needs.length === 0) return null;
+ *  implements (nothing to filter on) or the show is not listed. */
+export function trainForShowHref(show: { slug: string; venue: { state?: string }; isPublicListed?: boolean }, needs: ReadonlyArray<TrainingNeed>): string | null {
+  if (needs.length === 0 || !trainForEligible(show)) return null;
   const q = new URLSearchParams({ show: show.slug });
   if (show.venue.state) q.set('state', show.venue.state);
   return `/gyms?${q.toString()}`;

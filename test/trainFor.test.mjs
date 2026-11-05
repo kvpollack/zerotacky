@@ -65,3 +65,16 @@ describe('train for this show', () => {
     assert.equal(T.trainForShowHref({ slug: 'x', venue: { state: 'PA' } }, T.showTrainingNeeds([EVENTS[3]])), null);
   });
 });
+
+describe('trainForEligible (Astra BR-01: unlisted meets never drive /gyms)', () => {
+  const needs = T.showTrainingNeeds(EVENTS);
+  test('a listed show and a demo fixture (no flag) are eligible', () => {
+    assert.equal(T.trainForEligible({ isPublicListed: true }), true);
+    assert.equal(T.trainForEligible({}), true);
+    assert.ok(T.trainForShowHref({ slug: 'a', venue: { state: 'PA' }, isPublicListed: true }, needs));
+  });
+  test('an unlisted show (results-retention path) is not, and gets no train-for link', () => {
+    assert.equal(T.trainForEligible({ isPublicListed: false }), false);
+    assert.equal(T.trainForShowHref({ slug: 'a', venue: { state: 'PA' }, isPublicListed: false }, needs), null);
+  });
+});

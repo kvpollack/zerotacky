@@ -27,10 +27,11 @@ export async function generateMetadata({ params }: ShowDetailPageProps): Promise
     `${show.name} in ${show.venue.city}, ${show.venue.state} on ${show.date}. Divisions, events, weights, and results.`;
   const title = `${show.name} (${show.date}) | ZeroTacky`;
   // Link previews (Kurt 10/19): the image comes from ./opengraph-image.tsx; Next adds og:image and twitter:image itself.
+  // No `images` here: an explicit list overrides the file convention and advertised the generic /og.png (Astra BR-02).
   return {
     title,
     description,
-    openGraph: { title, description, type: 'website', siteName: 'ZeroTacky', url: `/shows/${show.slug}` , images: ['/og.png'] },
+    openGraph: { title, description, type: 'website', siteName: 'ZeroTacky', url: `/shows/${show.slug}` },
     twitter: { card: 'summary_large_image', title, description },
     ...canonical(`/shows/${show.slug}`),
     // Demo fixtures stay reachable for people we send there, but they are made-up shows: keep them out of the index.
