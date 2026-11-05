@@ -6,6 +6,11 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Satori fonts for the share cards (lib/website/og.tsx) are read from disk at request time; trace them into both lambdas.
+  outputFileTracingIncludes: {
+    '/shows/[slug]/opengraph-image': ['./lib/website/fonts/*.ttf'],
+    '/m/[slug]/opengraph-image': ['./lib/website/fonts/*.ttf'],
+  },
   // dev only: lets a second "phone" (127.0.0.1) hit the same dev server for sync smoke tests
   allowedDevOrigins: ['127.0.0.1'],
   // 11/2: the 10/16 field-test links used /m/strongfest-2026; the real meet was published as all-out-strongfest-2026

@@ -481,3 +481,7 @@ untouched. The bridge still resolves what these files used to use, so nothing do
   deferred since 10/26) are now what the pictures show.
 - Still rose on purpose: the hex examples in `supabase/030_theme.sql` / `032` error strings and in tests (`#e11d48` is
   just a sample colour there), and `--zt-bg #0a0b0e` in the bridge, which only feeds screens not yet redrawn.
+- 11/5 follow-up: on Vercel the `import.meta.url` font read returned 200 with Satori's fallback mono (the bundler rewrote
+  the asset URL, no throw). Now `readFile(path.join(process.cwd(), 'lib/website/fonts', file))` plus
+  `outputFileTracingIncludes` for `/shows/[slug]/opengraph-image` and `/m/[slug]/opengraph-image` in `next.config.mjs`.
+  Local render unchanged; prod check after deploy.
