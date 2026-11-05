@@ -57,18 +57,35 @@ function Stone({ size }: { size: number }) {
  *  The body column has about 135 px for the title (three lines at 40 px = 130), and the title box is capped at the line
  *  count used and clipped, so a bad wrap can never run into the date line below it. */
 const TITLE_W = 1040, MONO_ADV = 0.6, WRAP_MARGIN = 0.9, TITLE_LH = 1.08;
+const perLine = (px: number) => Math.floor((TITLE_W / (MONO_ADV * px)) * WRAP_MARGIN);
+
+/** Lines a greedy word wrap needs at `cap` characters per line, with words longer than a line broken across lines the
+ *  way `wordBreak: break-word` paints them (Astra recheck 11/5: a 99-character unbroken token must not escape the card). */
+export function ogTitleLines(text: string, cap: number): number {
+  let lines = 1, col = 0;
+  for (const w of text.split(' ')) {
+    let word = w;
+    if (col > 0 && col + 1 + word.length <= cap) { col += 1 + word.length; continue; }
+    if (col > 0) { lines += 1; col = 0; }
+    while (word.length > cap) { word = word.slice(cap); lines += 1; }
+    col = word.length;
+  }
+  return lines;
+}
+
 export function fitOgTitle(raw: string): { text: string; fontSize: number; lines: number } {
   const text0 = raw.replace(/\s+/g, ' ').trim();
-  const perLine = (px: number) => Math.floor((TITLE_W / (MONO_ADV * px)) * WRAP_MARGIN);
-  if (text0.length <= perLine(66)) return { text: text0, fontSize: 66, lines: 1 };
+  if (ogTitleLines(text0, perLine(66)) <= 1) return { text: text0, fontSize: 66, lines: 1 };
   for (let px = 60; px >= 42; px -= 2) {
-    if (text0.length <= 2 * perLine(px)) return { text: text0, fontSize: px, lines: 2 };
+    if (ogTitleLines(text0, perLine(px)) <= 2) return { text: text0, fontSize: px, lines: 2 };
   }
   for (let px = 40; px >= 36; px -= 2) {
-    if (text0.length <= 3 * perLine(px)) return { text: text0, fontSize: px, lines: 3 };
+    if (ogTitleLines(text0, perLine(px)) <= 3) return { text: text0, fontSize: px, lines: 3 };
   }
-  const max = 3 * perLine(36);
-  return { text: `${text0.slice(0, max - 3).trimEnd()}...`, fontSize: 36, lines: 3 };
+  // Too long even at 36 px: cut until three lines hold it, then the ellipsis.
+  let cut = text0;
+  while (cut.length > 3 && ogTitleLines(`${cut}...`, perLine(36)) > 3) cut = cut.slice(0, -1).trimEnd();
+  return { text: `${cut}...`, fontSize: 36, lines: 3 };
 }
 
 export async function renderOgCard(card: OgCard): Promise<ImageResponse> {
@@ -96,7 +113,7 @@ export async function renderOgCard(card: OgCard): Promise<ImageResponse> {
           {/* body */}
           <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center', padding: '28px 40px', gap: 18 }}>
             <div style={{ fontSize: 22, letterSpacing: 2, color: MUTED, textTransform: 'uppercase' }}>{card.kicker}</div>
-            <div style={{ fontSize: titlePx, fontWeight: 700, lineHeight: TITLE_LH, lineClamp: titleLines }}>{title}</div>
+            <div style={{ fontSize: titlePx, fontWeight: 700, lineHeight: TITLE_LH, wordBreak: 'break-word', lineClamp: titleLines }}>{title}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {card.lines.slice(0, 3).map((l, i) => (
                 <div key={i} style={{ fontSize: 28, fontWeight: i === 0 ? 700 : 400, color: INK }}>{l}</div>

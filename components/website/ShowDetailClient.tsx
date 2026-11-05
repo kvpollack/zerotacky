@@ -9,7 +9,7 @@ import { formatShowDate } from '@/lib/website/showHistory';
 import { directionsUrl, eventWeightDisplay, formatLocalDateTime } from '@/lib/website/format';
 import { specSegments } from '@/lib/events/spec';
 import { showTrainingNeeds, trainForShowHref } from '@/lib/website/trainFor';
-import { safeVideoUrl } from '@/lib/events/spec';
+import { safeVideoUrl, specNotes } from '@/lib/events/spec';
 import { longIsoDate, shortIsoDate, splitFee, venueLine } from '@/lib/website/sheetFormat';
 import type { DivisionResultsView, PublicShowRecord } from '@/lib/website/types';
 
@@ -444,15 +444,15 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
               </tbody>
             </table>
           </div>
-          {sortedEvents.some((ev) => ev.fixedImplementDescription || ev.spec?.notes || (ev.maxFormat === 'rising_bar' && ev.risingBarWeights)) && (
+          {sortedEvents.some((ev) => ev.fixedImplementDescription || specNotes(ev.spec) || (ev.maxFormat === 'rising_bar' && ev.risingBarWeights)) && (
             <ul className="border-t border-rule px-3 py-2.5 space-y-1 text-[13px] text-ink">
               {sortedEvents.map((ev) => (
                 <React.Fragment key={ev.id}>
                   {ev.fixedImplementDescription && (
                     <li><span className="text-ink-muted">Ev {ev.eventNumber} implement:</span> {ev.fixedImplementDescription}</li>
                   )}
-                  {ev.spec?.notes && (
-                    <li><span className="text-ink-muted">Ev {ev.eventNumber} notes:</span> {ev.spec.notes}</li>
+                  {specNotes(ev.spec) && (
+                    <li><span className="text-ink-muted">Ev {ev.eventNumber} notes:</span> {specNotes(ev.spec)}</li>
                   )}
                   {ev.maxFormat === 'rising_bar' && ev.risingBarWeights && (
                     <li><span className="text-ink-muted">Ev {ev.eventNumber} rising bar:</span> <span className={NUM}>{ev.risingBarWeights.join(' lb → ')}</span> lb</li>

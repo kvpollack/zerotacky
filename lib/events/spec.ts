@@ -62,10 +62,16 @@ export interface EventSpecInput {
   notes?: string;
 }
 
-function cleanRules(list: string[] | undefined): EquipmentRule[] {
+/** Text fields accept strings only; anything else (null, number, object) reads as empty (Astra recheck 11/5). */
+function str(v: unknown): string {
+  return typeof v === 'string' ? v.trim() : '';
+}
+
+function cleanRules(list: unknown): EquipmentRule[] {
   const out: EquipmentRule[] = [];
-  for (const r of list ?? []) {
-    const k = String(r).trim().toLowerCase();
+  if (!Array.isArray(list)) return out;
+  for (const r of list) {
+    const k = str(r).toLowerCase();
     if (RULE_IDS.has(k) && !out.includes(k as EquipmentRule)) out.push(k as EquipmentRule);
   }
   return out;
@@ -75,20 +81,21 @@ function cleanRules(list: string[] | undefined): EquipmentRule[] {
 export function normalizeEventSpec(input: EventSpecInput | EventSpec | null | undefined): EventSpec | undefined {
   if (!input) return undefined;
   const out: EventSpec = {};
-  const impl = String(input.implement ?? '').trim();
+  const impl = str(input.implement);
   if (IMPLEMENT_IDS.has(impl)) out.implement = impl as ImplementKind;
-  const note = String(input.implementNote ?? '').trim();
+  const note = str(input.implementNote);
   if (note) out.implementNote = note.slice(0, SPEC_LIMITS.implementNote);
-  const feet = Number(input.courseFeet);
+  const rawFeet = input.courseFeet;
+  const feet = typeof rawFeet === 'number' ? rawFeet : typeof rawFeet === 'string' && rawFeet.trim() !== '' ? Number(rawFeet) : NaN;
   // Half-foot steps, the form's own step (Astra BR-08): what validation accepts is what normalization keeps.
-  if (input.courseFeet !== '' && input.courseFeet !== undefined && input.courseFeet !== null && Number.isFinite(feet) && feet >= 1) out.courseFeet = Math.round(feet * 2) / 2;
-  const allowed = cleanRules(input.allowed as string[] | undefined);
-  const notAllowed = cleanRules(input.notAllowed as string[] | undefined).filter((r) => !allowed.includes(r));
+  if (Number.isFinite(feet) && feet >= 1 && feet <= SPEC_LIMITS.courseFeetMax) out.courseFeet = Math.round(feet * 2) / 2;
+  const allowed = cleanRules(input.allowed);
+  const notAllowed = cleanRules(input.notAllowed).filter((r) => !allowed.includes(r));
   if (allowed.length) out.allowed = allowed;
   if (notAllowed.length) out.notAllowed = notAllowed;
-  const url = String(input.videoUrl ?? '').trim();
+  const url = str(input.videoUrl);
   if (url) out.videoUrl = url;
-  const notes = String(input.notes ?? '').trim();
+  const notes = str(input.notes);
   if (notes) out.notes = notes.slice(0, SPEC_LIMITS.notes);
   return Object.keys(out).length ? out : undefined;
 }
@@ -96,10 +103,18 @@ export function normalizeEventSpec(input: EventSpecInput | EventSpec | null | un
 /** Null when the input is acceptable, else the message the form shows. Checked on the raw input, before normalize. */
 export function validateEventSpec(input: EventSpecInput | null | undefined): string | null {
   if (!input) return null;
-  const impl = String(input.implement ?? '').trim();
+  for (const k of ['implement', 'implementNote', 'videoUrl', 'notes'] as const) {
+    const v = (input as Record<string, unknown>)[k];
+    if (v !== undefined && v !== null && typeof v !== 'string') return 'Event spec fields must be text.';
+  }
+  for (const k of ['allowed', 'notAllowed'] as const) {
+    const v = (input as Record<string, unknown>)[k];
+    if (v !== undefined && v !== null && (!Array.isArray(v) || v.some((r) => typeof r !== 'string'))) return 'Equipment rules must be a list of rule names.';
+  }
+  const impl = str(input.implement);
   if (impl && !IMPLEMENT_IDS.has(impl)) return 'Pick an implement from the list.';
-  if (impl === 'other' && !String(input.implementNote ?? '').trim()) return 'Describe the implement when you pick "Other".';
-  if (String(input.implementNote ?? '').trim().length > SPEC_LIMITS.implementNote) return `Implement note is limited to ${SPEC_LIMITS.implementNote} characters.`;
+  if (impl === 'other' && !str(input.implementNote)) return 'Describe the implement when you pick "Other".';
+  if (str(input.implementNote).length > SPEC_LIMITS.implementNote) return `Implement note is limited to ${SPEC_LIMITS.implementNote} characters.`;
   const rawFeet = input.courseFeet;
   if (rawFeet !== '' && rawFeet !== undefined && rawFeet !== null) {
     const feet = Number(rawFeet);
@@ -109,12 +124,12 @@ export function validateEventSpec(input: EventSpecInput | null | undefined): str
   const allowed = cleanRules(input.allowed);
   const both = cleanRules(input.notAllowed).filter((r) => allowed.includes(r));
   if (both.length) return `${ruleLabel(both[0])} cannot be both allowed and not allowed.`;
-  const url = String(input.videoUrl ?? '').trim();
+  const url = str(input.videoUrl);
   if (url) {
     if (url.length > SPEC_LIMITS.videoUrl) return `Video link is limited to ${SPEC_LIMITS.videoUrl} characters.`;
     if (!safeVideoUrl(url)) return 'Video link must start with http:// or https://.';
   }
-  if (String(input.notes ?? '').trim().length > SPEC_LIMITS.notes) return `Notes are limited to ${SPEC_LIMITS.notes} characters.`;
+  if (str(input.notes).length > SPEC_LIMITS.notes) return `Notes are limited to ${SPEC_LIMITS.notes} characters.`;
   return null;
 }
 
@@ -142,8 +157,11 @@ export function kgLabel(lb: number | null | undefined): string {
   return kg === 0 ? '<1 kg' : `${kg} kg`;
 }
 
-/** Short segments for one line under the event name: implement, course, equipment. The video link is separate. */
-export function specSegments(spec: EventSpec | undefined): string[] {
+/** Short segments for one line under the event name: implement, course, equipment. The video link is separate.
+ *  The spec is normalized first, so a malformed object that reached the database by another path (a null rule member,
+ *  Astra recheck 11/5) renders as whatever is valid in it instead of crashing the show page. */
+export function specSegments(raw: EventSpec | undefined): string[] {
+  const spec = normalizeEventSpec(raw);
   if (!spec) return [];
   const out: string[] = [];
   if (spec.implement) {
@@ -156,7 +174,13 @@ export function specSegments(spec: EventSpec | undefined): string[] {
   return out;
 }
 
+/** The notes as text, '' for anything that is not a non-empty string (render-safe). */
+export function specNotes(raw: EventSpec | undefined): string {
+  return normalizeEventSpec(raw)?.notes ?? '';
+}
+
 /** True when the spec has anything an athlete would read (used to decide whether to render a line at all). */
-export function specHasContent(spec: EventSpec | undefined): boolean {
-  return !!spec && (specSegments(spec).length > 0 || !!spec.videoUrl || !!spec.notes);
+export function specHasContent(raw: EventSpec | undefined): boolean {
+  const spec = normalizeEventSpec(raw);
+  return !!spec && (specSegments(spec).length > 0 || !!safeVideoUrl(spec.videoUrl) || !!spec.notes);
 }

@@ -94,3 +94,26 @@ describe('Astra 11/5 fixes (BR-05 safe video URL, BR-08 course step and small we
     assert.equal(S.kgLabel(0), '');
   });
 });
+
+describe('Astra recheck 11/5: malformed specs never crash a render', () => {
+  test('null and non-string rule members are dropped by normalize and refused by validate', () => {
+    assert.equal(S.normalizeEventSpec({ notAllowed: [null] }), undefined);
+    assert.deepEqual(S.normalizeEventSpec({ allowed: ['belt', null, 7] }), { allowed: ['belt'] });
+    assert.match(S.validateEventSpec({ notAllowed: [null] }), /list of rule names/);
+    assert.match(S.validateEventSpec({ allowed: ['belt', null] }), /list of rule names/);
+    assert.match(S.validateEventSpec({ allowed: 'belt' }), /list of rule names/);
+  });
+  test('object-valued text fields are refused by validate and ignored by normalize', () => {
+    assert.match(S.validateEventSpec({ implementNote: { a: 1 } }), /must be text/);
+    assert.match(S.validateEventSpec({ notes: ['x'] }), /must be text/);
+    assert.equal(S.normalizeEventSpec({ notes: { a: 1 }, implementNote: 5 }), undefined);
+  });
+  test('specSegments, specNotes and specHasContent survive junk', () => {
+    assert.deepEqual(S.specSegments({ notAllowed: [null] }), []);
+    assert.deepEqual(S.specSegments({ implement: 'yoke', allowed: ['belt', null], notAllowed: [null, 'straps'] }), ['Yoke', 'Belt allowed', 'No straps']);
+    assert.equal(S.specNotes({ notes: { a: 1 } }), '');
+    assert.equal(S.specNotes({ notes: ' Turn at 25. ' }), 'Turn at 25.');
+    assert.equal(S.specHasContent({ notAllowed: [null] }), false);
+    assert.equal(S.specHasContent({ videoUrl: 'javascript:void(0)' }), false);
+  });
+});
