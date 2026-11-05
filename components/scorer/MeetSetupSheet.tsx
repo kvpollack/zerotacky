@@ -12,6 +12,8 @@ import { hasCustomEventOrder, moveEventInOrder, stationEvents } from '@/lib/engi
 import { RUN_ORDER_OPTIONS, TIEBREAK_OPTIONS } from '@/components/setup/builder/MeetSection';
 import EventForm from '@/components/setup/builder/EventForm';
 import CloudSync, { type PanelSync } from './CloudSync';
+import RosterImport from './RosterImport';
+import type { RosterPlan } from '@/lib/roster/import';
 import { CAP, Field, Key, KeyGroup, Note, NumInput, Sec, Select, TextInput, Toast } from './parts';
 import { SETUP_SECTIONS, type SetupSectionId } from './scorerModel';
 
@@ -84,6 +86,8 @@ export type MeetSetupSheetProps = {
   reorderEvents: (ids: string[]) => void;
   addAthlete: (a: { divisionId: string; name: string }) => void;
   bulkAddAthletes: (divisionId: string, text: string) => void;
+  /** Roster import with columns (11/5): adds a previewed plan from lib/roster/import.ts, new divisions included. */
+  importRoster?: (plan: RosterPlan) => void;
   updateAthlete: (id: string, patch: { lotNumber?: number; name?: string }) => void;
   removeAthlete: (id: string) => void;
   moveAthlete: (id: string, divisionId: string) => void;
@@ -572,11 +576,13 @@ function StationEventOrder({ station, events, updateStation }: { station: Statio
 // 5. Athletes (pointer + keyboard lot reorder carried over unchanged)
 type Drag = { divId: string; athleteId: string; fromIndex: number; overIndex: number };
 function Athletes(props: MeetSetupSheetProps) {
-  const { divisions, athletes, results, addAthlete, bulkAddAthletes, updateAthlete, removeAthlete, moveAthlete, shuffleLots, moveLot, toggleAthleteWithdrawn } = props;
+  const { divisions, athletes, results, addAthlete, bulkAddAthletes, importRoster, updateAthlete, removeAthlete, moveAthlete, shuffleLots, moveLot, toggleAthleteWithdrawn } = props;
   const sortedDivisions = [...divisions].sort((a, b) => a.sortOrder - b.sortOrder);
   const [targetDivId, setTargetDivId] = useState(sortedDivisions[0]?.id || '');
   const [newName, setNewName] = useState('');
-  const [bulkMode, setBulkMode] = useState(false);
+  const [addMode, setAddMode] = useState<'single' | 'bulk' | 'import'>('single');
+  const bulkMode = addMode === 'bulk';
+  const setBulkMode = (on: boolean) => setAddMode(on ? 'bulk' : 'single');
   const [bulkText, setBulkText] = useState('');
   const [armedDeleteId, setArmedDeleteId] = useState<string | null>(null);
   const [armedDrawDivId, setArmedDrawDivId] = useState<string | null>(null);
@@ -672,8 +678,10 @@ function Athletes(props: MeetSetupSheetProps) {
         <Empty>Add at least one division above before adding athletes.</Empty>
       ) : (
         <>
-          <KeyGroup ariaLabel="Add mode" options={[{ value: 'single', label: 'Single Add' }, { value: 'bulk', label: 'Bulk Add' }]} value={bulkMode ? 'bulk' : 'single'} onChange={(v) => setBulkMode(v === 'bulk')} />
-          {!bulkMode ? (
+          <KeyGroup ariaLabel="Add mode" options={[{ value: 'single' as const, label: 'Single Add' }, { value: 'bulk' as const, label: 'Bulk Add' }, ...(importRoster ? [{ value: 'import' as const, label: 'Import' }] : [])]} value={addMode} onChange={(v) => setAddMode(v)} />
+          {addMode === 'import' && importRoster ? (
+            <RosterImport divisions={sortedDivisions} athletes={athletes} defaultDivisionId={activeDivId} onDefaultDivisionChange={setTargetDivId} onImport={importRoster} onCancel={() => setAddMode('single')} />
+          ) : !bulkMode ? (
             <form onSubmit={handleSingleAdd} className="flex flex-col gap-2">
               <Form>
                 <Field label="Division">

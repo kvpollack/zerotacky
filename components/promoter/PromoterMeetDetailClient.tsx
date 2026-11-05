@@ -22,6 +22,7 @@ import {
   addEvent as mbAddEvent,
   addStation as mbAddStation,
   bulkAddAthletes as mbBulkAddAthletes,
+  applyRosterImport as mbApplyRosterImport,
   moveAthlete as mbMoveAthlete,
   removeAthlete as mbRemoveAthlete,
   removeDivision as mbRemoveDivision,
@@ -51,6 +52,7 @@ import { isLiveBackend, usePromoterApi } from '@/lib/promoter/usePromoterApi';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import { describeEmailResult, requestRegistrationEmail } from '@/lib/email/client';
 import type { AppState, Athlete, Division, EventDef, Meet } from '@/lib/types';
+import type { RosterPlan } from '@/lib/roster/import';
 import ListingSection from './ListingSection';
 import { useAuth } from '@/lib/auth/useAuth';
 import RegistrationsSection from './RegistrationsSection';
@@ -250,6 +252,8 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     setWorkingState((prev) => (prev ? mbAddAthlete(prev, input) : prev));
   const bulkAddAthletes = (divisionId: string, namesText: string) =>
     setWorkingState((prev) => (prev ? mbBulkAddAthletes(prev, divisionId, namesText) : prev));
+  const importRoster = (plan: RosterPlan) =>
+    setWorkingState((prev) => (prev ? mbApplyRosterImport(prev, plan) : prev));
   const updateAthlete = (athleteId: string, patch: Partial<Omit<Athlete, 'id'>>) =>
     setWorkingState((prev) => (prev ? mbUpdateAthlete(prev, athleteId, patch) : prev));
   const removeAthlete = (athleteId: string) =>
@@ -513,6 +517,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     reorderEvents,
     addAthlete,
     bulkAddAthletes,
+    importRoster,
     updateAthlete,
     removeAthlete,
     moveAthlete,

@@ -19,6 +19,7 @@ import { loadingTakesCollars, normalizeCollarWeight } from './engine/plates';
 import { ALL_POSSIBLE_PLATES } from './constants';
 import { getInitialSeedState, MEET_PRESETS } from './presets';
 import { normalizeEventOrder } from './engine/eventOrder';
+import type { RosterPlan } from './roster/import';
 
 export const DEFAULT_STATIONS: Station[] = [
   { id: 'A', label: 'Station 1' },
@@ -651,6 +652,34 @@ export function bulkAddAthletes(
     nextState = addAthlete(nextState, { divisionId, name });
   }
   return nextState;
+}
+
+/**
+ * Roster import (11/5, gaps #6): add every planned row, creating the plan's new divisions first. The plan comes from
+ * lib/roster/import.ts (`buildRosterPlan`) and was previewed by the user; rows with `skip` set are left out. Lots the
+ * plan assigned are kept; the rest take the next free lot in their division (addAthlete).
+ */
+export function applyRosterImport(state: AppState, plan: RosterPlan): AppState {
+  if (plan.problems.length) return state;
+  let next = state;
+  const newIds = new Map<string, string>();
+  for (const name of plan.newDivisions) {
+    const id = makeId('div');
+    next = addDivision(next, { id, name });
+    newIds.set(name.toLowerCase(), id);
+  }
+  for (const row of plan.rows) {
+    if (row.skip) continue;
+    const divisionId = row.divisionId ?? newIds.get(row.divisionName.toLowerCase());
+    if (!divisionId || !next.divisions.some((d) => d.id === divisionId)) continue;
+    next = addAthlete(next, {
+      divisionId,
+      name: row.name,
+      ...(row.bodyweight !== undefined ? { bodyweight: row.bodyweight } : {}),
+      ...(row.lotNumber !== undefined ? { lotNumber: row.lotNumber } : {}),
+    });
+  }
+  return next;
 }
 
 export function updateAthlete(

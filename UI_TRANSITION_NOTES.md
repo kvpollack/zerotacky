@@ -616,3 +616,41 @@ Report `audits/astra-2026-11-05-builds-and-redraws.md`, disposition per finding 
   renderer normalizes before it reads (`specSegments`, `specNotes`, `specHasContent`). BR-03 residual, a 99-char unbroken
   token painted past the border: `ogTitleLines()` greedy wrap with long-token breaking + `wordBreak: 'break-word'`.
   604 tests. Lesson for the SQL guards: check `jsonb_typeof` per element before any text coercion.
+
+## Feature gaps #6: roster import with columns (11/5 late)
+
+Kurt picked #6, #15 and #10 from `Downloads/zerotacky_feature_gaps_2026-11-03.md` on 11/5; this is the first. Iron Podium
+exports PDF only, so the target is the spreadsheet a promoter already keeps. 615 tests (+11), tsc clean, no migration.
+
+- **Where:** a third add mode, `Import`, beside Single Add and Bulk Add in the Athletes section. Both hosts: the scorer's Meet
+  Setup 5 and the promoter editor's tab 7 (`host='promoter'`, same working-state save bar; new divisions ride along).
+- **`lib/roster/import.ts` (pure):** `parseDelimited` (tab / comma / semicolon by first-line count, RFC 4180 quotes, CRLF, BOM,
+  blank lines dropped, short rows padded), `looksLikeHeader` (a known alias and no bare numbers), `guessMapping` (aliases:
+  name / athlete / lifter; first + last; division / class / weight class / category / flight; bodyweight / BW / weigh-in /
+  weight; lot / draw / order / bib / #; each field claimed once), `parseBodyweight` (lb default, `kg` suffix or a kg header
+  converts, 1 decimal), `parseLot`, `buildRosterPlan` -> `RosterPlan`, `describePlan`. Plan rules: division matched by
+  name case- and space-insensitively, else queued as new (first spelling wins); blank name skipped; duplicate on the roster
+  or in the paste skipped; a lot already taken (roster or earlier row) falls back to the next free lot with a note;
+  `MAX_ROWS = 500`, the rest counted as `truncated`. `problems[]` non-empty = nothing importable (no name column, no division
+  anywhere, nothing left to add).
+- **`applyRosterImport(state, plan)` in `lib/meetBuilder.ts`:** creates the new divisions (default station) then
+  `addAthlete` per non-skipped row with the plan's bodyweight and lot. A plan with problems is a no-op. Wired as
+  `importRoster` in `hooks/useMeetState.js`, `strongman-app.jsx` and `PromoterMeetDetailClient.tsx`; the sheet prop is
+  optional so a host without it shows two modes as before.
+- **`components/scorer/RosterImport.tsx`:** textarea (`whitespace-pre`, tabs stay columns) or a file input (<= 2 MB, `.csv
+  .tsv .txt`); "First row is: Headers / An athlete" follows the guess until tapped; one row per column with the header
+  and a sample value and a Select (Ignore / Full name / First / Last / Division / Bodyweight / Lot #; picking a field
+  releases it from any other column); "Every athlete goes to" Select only when no Division column is mapped (shares the
+  section's target division); preview = status line + first 12 rows (lot, athlete, division with a `new` tag, BW; skipped
+  rows struck with the reason in red); the submit key reads `Import N Athletes` and is off while `problems` remain. After
+  import the paste clears, a status line says `Added ...`, focus returns to the textarea. A new paste resets header and
+  column choices to the guesses (done in the change handler, not an effect: an effect on `text` wiped the done line).
+- **Verified on staging** Iron Harbor (promoter editor, 1280 and 390): a 4-column tab paste with a kg bodyweight, a new
+  division, a taken lot, a blank line and an in-paste duplicate previewed as `Add 3 athletes to 3 divisions. 1 new: Masters
+  Men 40+. 1 skipped.`; Save Changes persisted `Masters Men 40+` (flight A, sort 6), bodyweights 205 / 138.9 / 240 and lots
+  9 / 3 (next free) / 1. Test rows and the division deleted afterwards (15 athletes again). Scorer host on the demo meet
+  (430 px dark): same panel, `Added 2 athletes to 1 division. 1 new: Open Men.` Shots `~/Downloads/zt_ui_1105/import_*.png`,
+  scripts `~/.aki/tmp/zt/shots/roster_import*.py`. No page errors.
+- **Left on purpose:** no email column (athletes have no email field; registrations carry accounts), no update of existing
+  athletes (an import only adds; a re-import skips names already there), the strike-through on skipped rows is on the text
+  spans only (text-decoration propagates to children, so a struck container would strike the red note too).

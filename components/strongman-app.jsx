@@ -60,6 +60,7 @@ export default function App() {
     reorderEvents,
     addAthlete,
     bulkAddAthletes,
+    importRoster,
     updateAthlete,
     removeAthlete,
     moveAthlete,
@@ -671,6 +672,7 @@ export default function App() {
             reorderEvents={reorderEvents}
             addAthlete={addAthlete}
             bulkAddAthletes={bulkAddAthletes}
+            importRoster={importRoster}
             updateAthlete={updateAthlete}
             removeAthlete={removeAthlete}
             moveAthlete={moveAthlete}
