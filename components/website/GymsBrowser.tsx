@@ -2,12 +2,11 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Calendar, Dumbbell, ExternalLink, MapPin, RotateCcw, Search } from 'lucide-react';
 import { filterPublicGyms, gymDistanceMiles } from '@/lib/website/filters';
 import { DEFAULT_RADIUS_MILES, RADIUS_OPTIONS_MILES, formatMiles, normalizeZip, type GeoPoint, type RadiusMiles } from '@/lib/geo/geo';
 import type { DayPassAvailability, StrongmanGymListing } from '@/lib/website/types';
 import { coverageLabel, rankGymsForShow, type TrainingNeed } from '@/lib/website/trainFor';
-import { Cap, textLink } from './sheet';
+import { Cap, Key, KeyButton, textLink } from './sheet';
 import { longIsoDate } from '@/lib/website/sheetFormat';
 
 interface GymsBrowserProps {
@@ -27,6 +26,12 @@ const DAY_PASS_LABELS: Record<DayPassAvailability, string> = {
   not_available: 'Members Only',
   not_provided: 'Day pass not provided',
 };
+
+// Hand redraw in the sheet grammar (11/5, sweep item 5): the filter bar is one ruled block with a cap over each input;
+// each gym is a ruled block (chips row, name + address + distance, hours/policy, equipment tags, footer with keys).
+const CHIP = 'inline-flex items-center border-2 border-rule px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.04em] text-ink whitespace-nowrap';
+const TAG = 'inline-flex items-center border border-rule px-2 py-0.5 text-[12px] font-bold text-ink';
+const CHECK = { accentColor: 'var(--pen)' } as const;
 
 export default function GymsBrowser({
   initialGyms,
@@ -143,42 +148,23 @@ export default function GymsBrowser({
           )}
         </section>
       )}
-      {/* Filter Bar */}
-      <section
-        aria-label="Filter gyms"
-        className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-3.5"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-          <div>
-            <label
-              htmlFor="gym-search-input"
-              className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1"
-            >
-              Search Gym, City, or Equipment
-            </label>
-            <div className="relative">
-              <Search
-                className="w-4 h-4 text-zt-muted absolute left-3 top-1/2 -translate-y-1/2"
-                aria-hidden="true"
-              />
-              <input
-                id="gym-search-input"
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="e.g. Hercules, Brooklyn, monolift, stones"
-                className="w-full bg-zt-inset border border-zt-border-strong rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm font-bold text-zt-text"
-              />
-            </div>
+      {/* Filter bar */}
+      <section aria-label="Filter gyms" className="zt-block grid-cols-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-x-6 gap-y-4 px-4 py-4 sm:px-5">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="gym-search-input"><Cap as="span">Search gym, city, or equipment</Cap></label>
+            <input
+              id="gym-search-input"
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="e.g. Hercules, Brooklyn, monolift, stones"
+              className="zt-input"
+            />
           </div>
 
-          <div>
-            <label
-              htmlFor="gym-zip-input"
-              className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1"
-            >
-              Near zip
-            </label>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="gym-zip-input"><Cap as="span">Near zip</Cap></label>
             <div className="flex gap-2">
               <input
                 id="gym-zip-input"
@@ -189,13 +175,13 @@ export default function GymsBrowser({
                 onChange={(e) => setZip(e.target.value.replace(/[^\d-]/g, '').slice(0, 10))}
                 placeholder="19063"
                 aria-describedby="gym-zip-note"
-                className="w-28 bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-zt-text"
+                className="zt-input !w-24 shrink-0"
               />
               <select
                 aria-label="Within miles"
                 value={radius}
                 onChange={(e) => setRadius(Number(e.target.value) as RadiusMiles)}
-                className="flex-1 bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
+                className="zt-input flex-1"
               >
                 {RADIUS_OPTIONS_MILES.map((r) => (
                   <option key={r} value={r}>
@@ -206,18 +192,13 @@ export default function GymsBrowser({
             </div>
           </div>
 
-          <div>
-            <label
-              htmlFor="gym-state-select"
-              className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1"
-            >
-              State
-            </label>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="gym-state-select"><Cap as="span">State</Cap></label>
             <select
               id="gym-state-select"
               value={stateFilter}
               onChange={(e) => setStateFilter(e.target.value)}
-              className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
+              className="zt-input"
             >
               <option value="ALL">All States</option>
               {availableStates.map((st) => (
@@ -228,18 +209,13 @@ export default function GymsBrowser({
             </select>
           </div>
 
-          <div>
-            <label
-              htmlFor="gym-implement-select"
-              className="block text-[11px] font-extrabold uppercase text-zt-muted mb-1"
-            >
-              Filter by equipment
-            </label>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="gym-implement-select"><Cap as="span">Filter by equipment</Cap></label>
             <select
               id="gym-implement-select"
               value={implementTag}
               onChange={(e) => setImplementTag(e.target.value)}
-              className="w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-xs font-bold text-zt-text"
+              className="zt-input"
             >
               <option value="ALL">Any equipment</option>
               {availableImplements.map((imp) => (
@@ -251,114 +227,69 @@ export default function GymsBrowser({
           </div>
         </div>
 
-        <div id="gym-zip-note" role="status" className={`text-[11px] font-bold ${zipState === 'unknown' || zipState === 'error' ? 'text-zt-danger-text' : 'text-zt-muted'} ${zipNote ? '' : 'hidden'}`}>
-          {zipNote}
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zt-border text-xs">
-          <label className="inline-flex items-center gap-2 font-bold text-zt-text cursor-pointer">
-            <input
-              type="checkbox"
-              checked={dayPassOnly}
-              onChange={(e) => setDayPassOnly(e.target.checked)}
-            />
-            <span>Only show gyms with day-pass or appointment drop-in availability</span>
-          </label>
-
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-3 sm:px-5">
+          <div className="flex flex-col gap-1.5 min-w-0">
+            <label className="flex items-center gap-2.5 text-[15px] font-bold text-ink cursor-pointer">
+              <input type="checkbox" checked={dayPassOnly} onChange={(e) => setDayPassOnly(e.target.checked)} className="w-5 h-5 shrink-0" style={CHECK} />
+              <span>Only gyms with day-pass or appointment drop-in availability</span>
+            </label>
+            <div id="gym-zip-note" role="status" className={`text-[13px] ${zipState === 'unknown' || zipState === 'error' ? 'text-redpen font-bold' : 'text-ink-muted'} ${zipNote ? '' : 'hidden'}`}>
+              {zipNote}
+            </div>
+          </div>
           {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="px-3 py-1.5 rounded-xl bg-zt-surface-2 border border-zt-border-strong text-zt-text font-extrabold text-xs uppercase flex items-center gap-1.5"
-            >
-              <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
-              Reset Filters
-            </button>
+            <button type="button" onClick={resetFilters} className={`text-[13px] ${textLink}`}>Reset filters</button>
           )}
         </div>
       </section>
 
       {/* Listings */}
       {rankedGyms.length === 0 ? (
-        <div className="bg-zt-surface border border-zt-border rounded-2xl p-8 text-center space-y-3">
-          <div className="text-base font-black text-zt-text">
-            {origin ? `No gyms within ${radius} miles of ${zip5}.` : 'No gyms match your current filters.'}
+        <div className="zt-block grid-cols-1">
+          <div className="flex flex-col items-start gap-3 px-5 py-6 sm:px-7">
+            <div className="text-[22px] font-bold leading-tight text-ink">
+              {origin ? `No gyms within ${radius} miles of ${zip5}.` : 'No gyms match your current filters.'}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {origin && radius < 100 && (
+                <KeyButton variant="line" onClick={() => setRadius(100)}>Widen to 100 miles</KeyButton>
+              )}
+              <KeyButton variant="ink" onClick={resetFilters}>Reset filters</KeyButton>
+            </div>
           </div>
-          {origin && radius < 100 && (
-            <button type="button" onClick={() => setRadius(100)} className="px-3 py-1.5 rounded-xl bg-zt-surface-2 border border-zt-border-strong text-zt-text font-extrabold text-xs uppercase">
-              Widen to 100 miles
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase"
-          >
-            <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
-            Reset Filters
-          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {rankedGyms.map(({ gym, coverage }) => (
-            <article
-              key={gym.id}
-              className="bg-zt-surface border border-zt-border rounded-2xl p-5 flex flex-col justify-between space-y-4"
-            >
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span
-                    className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border ${
-                      gym.dayPassAvailability === 'available'
-                        ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'
-                        : gym.dayPassAvailability === 'by_appointment'
-                        ? 'bg-zt-secondary/20 text-zt-text border-zt-secondary/50'
-                        : 'bg-zt-inset text-zt-muted border-zt-border'
-                    }`}
-                  >
+          {rankedGyms.map(({ gym, coverage }) => {
+            const miles = origin ? gymDistanceMiles(gym, origin) : null;
+            return (
+              <article key={gym.id} className="zt-block grid-cols-1 grid-rows-[auto_auto_auto_1fr_auto]">
+                <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 sm:px-5">
+                  <span className={gym.dayPassAvailability === 'available' ? `${CHIP} border-pen bg-pen text-pen-label` : CHIP}>
                     {DAY_PASS_LABELS[gym.dayPassAvailability]}
-                    {gym.dayPassPriceDisplay ? ` • ${gym.dayPassPriceDisplay}` : ''}
+                    {gym.dayPassPriceDisplay ? ` · ${gym.dayPassPriceDisplay}` : ''}
                   </span>
-
-                  <span className="flex items-center gap-1.5">
-                    {gym.gymType && (
-                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-text-2">
-                        {gym.gymType === 'mixed' ? 'Strongman + Powerlifting' : gym.gymType}
-                      </span>
-                    )}
-                    {gym.isDemoListing && (
-                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
-                        Demo Listing
-                      </span>
-                    )}
+                  <span className="flex flex-wrap items-center gap-1.5">
+                    {gym.gymType && <span className={CHIP}>{gym.gymType === 'mixed' ? 'Strongman + Powerlifting' : gym.gymType}</span>}
+                    {gym.isDemoListing && <span className={`${CHIP} border-dashed`}>Demo listing</span>}
                     {gym.claimStatus === 'unclaimed' && (
-                      <Link href={`/gyms/${gym.slug}/claim`} className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-zt-inset border border-dashed border-zt-border-strong text-zt-muted hover:text-zt-primary hover:border-zt-primary">
-                        Unclaimed
-                      </Link>
+                      <Link href={`/gyms/${gym.slug}/claim`} className={`${CHIP} border-dashed text-ink-muted no-underline hover:text-pen hover:border-pen`}>Unclaimed</Link>
                     )}
                   </span>
                 </div>
 
-                <div>
-                  <h2 className="text-lg font-black text-zt-text">
-                    <Link href={`/gyms/${gym.slug}`} className="hover:text-zt-primary">
-                      {gym.name}
-                    </Link>
+                <div className="flex flex-col gap-1 px-4 py-3 sm:px-5">
+                  <h2 className="text-[22px] font-bold leading-tight text-ink">
+                    <Link href={`/gyms/${gym.slug}`} className="no-underline hover:text-pen">{gym.name}</Link>
                   </h2>
-                  <div className="text-xs font-bold text-zt-muted flex items-center gap-1.5 mt-0.5">
-                    <MapPin className="w-3.5 h-3.5 text-zt-primary" aria-hidden="true" />
-                    <span>
-                      {gym.city}, {gym.state} •{' '}
-                      {gym.streetAddress ? gym.streetAddress : 'Street address: Not provided'}
-                    </span>
-                    {origin && gymDistanceMiles(gym, origin) !== null && (
-                      <span className="ml-1 px-1.5 py-0.5 rounded bg-zt-primary/15 text-zt-primary font-black">
-                        {formatMiles(gymDistanceMiles(gym, origin) as number)}
-                      </span>
-                    )}
+                  <div className="text-[13px] text-ink-muted">
+                    <span className="font-bold text-ink">{gym.city}, {gym.state}</span>
+                    {' · '}
+                    {gym.streetAddress ? gym.streetAddress : 'Street address not provided'}
+                    {miles !== null && <span className="font-bold text-pen"> · {formatMiles(miles)}</span>}
                   </div>
                   {trainFor && needs.length > 0 && (
-                    <div className="mt-1.5 text-[13px] leading-snug" data-testid="coverage">
+                    <div className="text-[13px] leading-snug" data-testid="coverage">
                       <span className={`font-bold ${coverage.missing.length === 0 ? 'text-pen' : 'text-ink'}`}>{coverageLabel(coverage, needs.length)}</span>
                       {coverage.missing.length > 0 && (
                         <span className="text-ink-muted"> · missing {coverage.missing.map((n) => n.label.toLowerCase()).join(', ')}</span>
@@ -367,66 +298,35 @@ export default function GymsBrowser({
                   )}
                 </div>
 
-                <div className="text-xs text-zt-text-2 space-y-1">
-                  <div>
-                    <strong className="text-zt-muted">Drop-In Hours:</strong>{' '}
-                    {gym.dropInHours || 'Not provided'}
-                  </div>
-                  <div>
-                    <strong className="text-zt-muted">Drop-In Policy:</strong>{' '}
-                    {gym.dropInPolicy || 'Not provided'}
-                  </div>
-                </div>
+                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 px-4 py-3 sm:px-5 text-[13px] leading-snug">
+                  <dt className="text-ink-muted">Hours</dt>
+                  <dd className="text-ink">{gym.dropInHours || 'Not provided'}</dd>
+                  <dt className="text-ink-muted">Policy</dt>
+                  <dd className="text-ink">{gym.dropInPolicy || 'Not provided'}</dd>
+                </dl>
 
-                <div>
-                  <div className="text-[10px] font-extrabold uppercase text-zt-muted mb-1 flex items-center gap-1">
-                    <Dumbbell className="w-3 h-3 text-zt-secondary" aria-hidden="true" />
-                    <span>Equipment ({gym.implementTags.length})</span>
-                  </div>
+                <div className="flex flex-col gap-1.5 px-4 py-3 sm:px-5">
+                  <Cap as="span">Equipment ({gym.implementTags.length})</Cap>
                   <div className="flex flex-wrap gap-1.5">
-                    {gym.implementTags.length === 0 && (
-                      <span className="text-[11px] text-zt-muted">No equipment list yet.</span>
-                    )}
+                    {gym.implementTags.length === 0 && <span className="text-[13px] text-ink-muted">No equipment list yet.</span>}
                     {gym.implementTags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-[10px] font-bold px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-text"
-                      >
-                        {tag}
-                      </span>
+                      <span key={tag} className={TAG}>{tag}</span>
                     ))}
                   </div>
                 </div>
-              </div>
 
-              <div className="pt-3 border-t border-zt-border flex flex-wrap items-center justify-between gap-2 text-xs">
-                <span className="text-[11px] font-semibold text-zt-muted flex items-center gap-1">
-                  <Calendar className="w-3 h-3" aria-hidden="true" />
-                  Updated {gym.lastUpdatedDate}
-                </span>
-
-                <div className="flex items-center gap-2">
-                  {gym.websiteUrl && (
-                    <a
-                      href={gym.websiteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-xl bg-zt-inset border border-zt-border-strong text-zt-text-2 font-bold text-xs inline-flex items-center gap-1 hover:text-zt-text"
-                    >
-                      Website
-                      <ExternalLink className="w-3 h-3" aria-hidden="true" />
-                    </a>
-                  )}
-                  <Link
-                    href={`/gyms/${gym.slug}`}
-                    className="px-3.5 py-1.5 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase"
-                  >
-                    Equipment Details →
-                  </Link>
+                <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-5">
+                  <span className="text-[12px] text-ink-muted">Updated {gym.lastUpdatedDate}</span>
+                  <div className="flex items-center gap-2">
+                    {gym.websiteUrl && (
+                      <a href={gym.websiteUrl} target="_blank" rel="noopener noreferrer" className={`text-[13px] ${textLink}`}>Website <span aria-hidden="true">↗</span></a>
+                    )}
+                    <Key href={`/gyms/${gym.slug}`} variant="ink" className="min-h-10 px-4 text-[12px]">Equipment details →</Key>
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
       )}
     </div>

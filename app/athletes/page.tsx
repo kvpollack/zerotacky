@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import WebsiteShell from '@/components/website/WebsiteShell';
+import { textLink } from '@/components/website/sheet';
 import AthletesBrowser from '@/components/website/AthletesBrowser';
 import { listPublicAthletes } from '@/lib/website/data';
 import { cleanRoleParam, cleanSearchParam, cleanStateParam, collectAthleteStates } from '@/lib/website/athletes';
@@ -25,22 +26,22 @@ export default async function AthletesDirectoryPage({ searchParams }: { searchPa
 
   return (
     <WebsiteShell activeNav="athletes">
-      <div className="space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-2xl sm:text-3xl font-black text-zt-text">Athletes</h1>
-          <span className="text-[11px] font-black uppercase px-2.5 py-1 rounded-lg bg-zt-inset text-zt-text-2 border border-zt-border">
-            {athletes.length} listed{states.length ? ` • ${states.length} state${states.length === 1 ? '' : 's'}` : ''}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-[28px] sm:text-[34px] font-bold leading-[1.05] text-ink">Athletes</h1>
+          <span className="inline-flex items-center border-2 border-rule px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.04em] text-ink whitespace-nowrap">
+            {athletes.length} listed{states.length ? ` · ${states.length} state${states.length === 1 ? '' : 's'}` : ''}
           </span>
         </div>
-        <p className="text-xs sm:text-sm text-zt-text-2 max-w-3xl">
+        <p className="text-[15px] leading-relaxed text-ink max-w-3xl">
           People who train, compete, run shows or coach, and chose to be listed. Everyone here opted in from their account
           page and can leave the list any time.{' '}
-          <Link href="/website/account" className="font-bold text-zt-primary hover:underline">Add yourself</Link>: pick a
+          <Link href="/website/account" className={textLink}>Add yourself</Link>: pick a
           username and turn on your public profile. Looking for a coach? See the{' '}
-          <Link href="/trainers" className="font-bold text-zt-primary hover:underline">Trainers</Link> list.
+          <Link href="/trainers" className={textLink}>Trainers</Link> list.
         </p>
         {res.error && (
-          <p className="text-xs font-bold text-red-400" role="alert">The directory could not be loaded right now. {res.error}</p>
+          <p className="text-[13px] font-bold text-redpen" role="alert">The directory could not be loaded right now. {res.error}</p>
         )}
       </div>
 

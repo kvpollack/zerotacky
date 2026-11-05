@@ -546,3 +546,42 @@ class hits (`rounded-*`, `bg-zt-*`, `text-zt-*`) 51 + 40 + 33 + 25 -> 0. No luci
   errors; tsc clean, 588 tests. Screenshots `~/Downloads/zt_ui_1105/`.
 - Still on the bridge (sweep item 5): gym claim form, gym add / My Gym, admin claims, legal, demo, trainers, athletes
   list, `/gyms` browser body and filter bar, `/shows` filter block, sign-in form.
+
+## Sweep item 5: the small pages (11/5)
+
+The rest of the public bridge, render only. Data loaders, server actions, query logic (`lib/website/trainFor.ts`,
+`gymSearch`, filters) and copy are untouched; `trainfor.py` and the 588 tests still pass. Old-skin class hits
+(`rounded-*`, `bg-zt-*`, `text-zt-*`) -> 0 in every file below; lucide icons removed from each.
+
+- **`/gyms` browser** (`components/website/GymsBrowser.tsx`, `app/gyms/page.tsx`): filter bar is one `.zt-block` of cap +
+  `.zt-input` cells (zip with a narrow radius select, day-pass checkbox tinted `--pen`, zip note in redpen on error,
+  "Reset filters" text link). Each gym card is a `.zt-block` with explicit `grid-rows-[auto_auto_auto_1fr_auto]` (chips,
+  name/address/distance, Hours/Policy `<dl>`, equipment tags, footer with website link + "Equipment details" key).
+  Equal-height grid cards without explicit rows left a dark band at the bottom (the gap colour showing through); giving the
+  equipment row `1fr` lets it absorb the slack instead.
+- **`/shows` filter block** (`components/website/ShowsBrowser.tsx`, `app/shows/page.tsx`): six fields in one block
+  (`md:grid-cols-2 xl:grid-cols-3`), count + Reset row, ruled empty state. `ShowRows` untouched. Both list headers now share
+  one shape: H1, count chip (dashed when demo), lede, redpen error.
+- **`/athletes` and `/trainers`** (`components/website/AthletesBrowser.tsx`, both `page.tsx`): filter block, then people as
+  cells of a `ul.zt-block` (1 / 2 / 3 columns): square avatar or initials in the sheet face, name, @handle cap, role chips,
+  location, favorite lift. Filler `<li>` cells (`hidden sm:block` / `hidden lg:block`) keep the gap colour from showing on
+  odd counts, same trick as how-it-works.
+- **Gym claim form** (`app/gyms/[slug]/claim/GymClaimClient.tsx`, CRLF): tabs as pen / line keys, form cells with caps,
+  receipt block, `KeyButton` submit.
+- **Add my gym** (`components/website/AddGymClient.tsx`): gym type as three ruled radio cells (picked one fills pen),
+  address split City / State / Zip, pen submit + line cancel.
+- **My Gym editor** (`components/website/MyGymClient.tsx`): editor is a `.zt-block`; fieldsets are cells with the legend
+  floated (`float-left w-full`), which makes a `<legend>` lay out as an ordinary block instead of sitting in the border;
+  equipment tiles get `border-2 border-pen` when ticked; notices are redpen or rule bordered.
+- **Admin claims queue** (`components/website/AdminClaimsClient.tsx`): each claim is a block (header, claimant / message
+  grid, actions cell with small keys); status chips plain / good / warn / bad; "Nothing waiting" empty state.
+- **`/demo`** (`app/demo/page.tsx`): cards as blocks with `grid-rows-[auto_1fr_auto]`, cap meta line, keys.
+- **Legal** (`app/legal/[doc]/page.tsx`, `components/legal/MarkdownBlocks.tsx`): doc nav as caps with the active one
+  underlined; markdown renderer on ink / rule / ground tokens with the sheet heading sizes. `MarkdownBlocks` also renders
+  the waiver inside `RegisterClient`, so /register was reloaded and is clean.
+- **Still on the bridge, on purpose:** `WebsiteThemeControls.tsx` (the bright / dark popover in the shell header, shared
+  with /join, /m and the root landing) and `WebsiteThemeFrame.tsx` (the bridge root, `bg-zt-bg text-zt-text`). Both are
+  the bridge itself rather than pages on it; they go when the shell does. The promoter meet-detail sections
+  (`components/promoter/*Section.tsx`, `PromoterMeetDetailClient.tsx`) are console, not website, and were never in the sweep.
+- Checked on staging :3079 at 1280 and 390, signed out and signed in (`shots/athlete.py --login <paths>`), zero page
+  errors; tsc clean, 588 tests. Screenshots `~/Downloads/zt_ui_1105/`.
