@@ -8,6 +8,7 @@ import { describeShowLifecycle } from '@/lib/website/filters';
 import { formatShowDate } from '@/lib/website/showHistory';
 import { directionsUrl, eventWeightDisplay, formatLocalDateTime } from '@/lib/website/format';
 import { specSegments } from '@/lib/events/spec';
+import { showTrainingNeeds, trainForShowHref } from '@/lib/website/trainFor';
 import { longIsoDate, shortIsoDate, splitFee, venueLine } from '@/lib/website/sheetFormat';
 import type { DivisionResultsView, PublicShowRecord } from '@/lib/website/types';
 
@@ -46,6 +47,7 @@ const DD = 'text-[15px] text-ink leading-snug';
 export default function ShowDetailClient({ show, divisionResults }: ShowDetailClientProps) {
   const sortedDivisions = [...show.state.divisions].sort((a, b) => a.sortOrder - b.sortOrder);
   const sortedEvents = [...show.state.events].sort((a, b) => a.eventNumber - b.eventNumber);
+  const trainHref = trainForShowHref(show, showTrainingNeeds(sortedEvents));
 
   const [selectedDivId, setSelectedDivId] = useState<string>(sortedDivisions[0]?.id ?? 'ALL');
 
@@ -538,6 +540,11 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
               <FollowShowButton slug={show.slug} isDemoFixture={!!show.isDemoFixture} />
               {show.liveScoreboardPath && (
                 <Key href={show.liveScoreboardPath} variant="ink">Open Public Live Scoreboard</Key>
+              )}
+              {/* Train for this show (11/5): the gym directory ranked by this show's event implements; only when the
+                  promoter has specced at least one event with a mappable implement. */}
+              {trainHref && (
+                <Key href={trainHref} variant="line">Find a gym to train for this show</Key>
               )}
             </div>
           </WebCell>

@@ -485,3 +485,33 @@ untouched. The bridge still resolves what these files used to use, so nothing do
   the asset URL, no throw). Now `readFile(path.join(process.cwd(), 'lib/website/fonts', file))` plus
   `outputFileTracingIncludes` for `/shows/[slug]/opengraph-image` and `/m/[slug]/opengraph-image` in `next.config.mjs`.
   Local render unchanged; prod check after deploy.
+
+## Feature 4: train for this show (11/5, roadmap build 4)
+
+The gym directory can now be opened *for a show*: `/gyms?show=<slug>` ranks gyms by how much of that show's implement
+list they carry, and every public show page links there. Pure lib + two components; no schema change, no new tables.
+
+- **`lib/website/trainFor.ts`.** `showTrainingNeeds(events)` walks each event's spec through `IMPLEMENTS[].gymEquipment`
+  (`lib/events/spec.ts`) and the `GYM_EQUIPMENT` labels, merging repeats (two keg events = one "Kegs" need listing both
+  events). Barbell, duck walk, `other` and spec-less events contribute nothing: barbells are everywhere, and guessing the
+  rest would mislead. `gymCoverage(gym, needs)` is a case-insensitive tag match; `rankGymsForShow(gyms, needs, {fullOnly,
+  tieBreak})` keeps gyms with at least one hit, most complete first, ties broken by the caller (distance when a zip is set,
+  else name); with no needs it is a passthrough. `coverageLabel` writes the one-liner ("Everything the show uses", "1 of 2
+  implements", "Has the yoke"). `trainForShowHref(show, needs)` builds the link with the venue state preselected, or null
+  when there is nothing to match. `test/trainFor.test.mjs` (5 tests, 588 total).
+- **`/gyms`.** `app/gyms/page.tsx` resolves `?show=` through `getPublicShowBySlug` (unknown slug = plain directory) and
+  hands `{slug, name, date, needs}` to `GymsBrowser`. The browser draws a `data-testid="train-for"` section above the
+  filter bar: cap "Training for a show · date", the show name as a link back, the ranking rule in one sentence, `Clear
+  show`, the needs as wrapped bordered tiles (label / events; a padded `zt-block` grid painted its empty cells as a black
+  bar when a show had one need, so tiles instead), and a checkbox "Only gyms with everything the show uses" (counts as an
+  active filter, cleared by Reset). Each card gets a coverage line under the address (`data-testid="coverage"`, bold pen
+  when complete, "· missing x, y" in muted). The rest of the browser is still the bridge-rendered old markup; the gym page
+  redraw is a later sweep item.
+- **Show page.** `ShowDetailClient` adds a line key "Find a gym to train for this show" after the live scoreboard key,
+  only when the show has at least one matchable spec.
+- Checked on staging :3079 at 1280 and 390 (`~/.aki/tmp/zt/shots/trainfor.py`, zero page errors): Iron Harbor Classic
+  (one spec, yoke) -> 1 PA gym, "Has the yoke"; Riverside Iron Fest demo (kegs + truck pull) -> 7 gyms, "1 of 2
+  implements · missing pull harness and sled". Screenshots `~/Downloads/zt_ui_1105/trainfor_*.png`.
+- Left for later: nudge promoters to fill specs (a show with none shows every gym and says so); match on per-gym
+  equipment detail (yoke weight, log diameter) once gyms record it; surface the link on the athlete's registered-show
+  cards in /website/account.
