@@ -18,6 +18,7 @@ import {
   reorderEvents as mbReorderEvents,
   addAthlete as mbAddAthlete,
   bulkAddAthletes as mbBulkAddAthletes,
+  applyRosterImport as mbApplyRosterImport,
   updateAthlete as mbUpdateAthlete,
   removeAthlete as mbRemoveAthlete,
   moveAthlete as mbMoveAthlete,
@@ -164,6 +165,7 @@ export function useMeetState() {
 
   const addAthlete = (input) => setState((prev) => mbAddAthlete(prev, input));
   const bulkAddAthletes = (divisionId, namesText) => setState((prev) => mbBulkAddAthletes(prev, divisionId, namesText));
+  const importRoster = (plan) => setState((prev) => mbApplyRosterImport(prev, plan));
   const updateAthlete = (athleteId, patch) => setState((prev) => mbUpdateAthlete(prev, athleteId, patch));
   const removeAthlete = (athleteId) => setState((prev) => mbRemoveAthlete(prev, athleteId));
   const moveAthlete = (athleteId, toDivisionId) => setState((prev) => mbMoveAthlete(prev, athleteId, toDivisionId));
@@ -195,6 +197,7 @@ export function useMeetState() {
     reorderEvents,
     addAthlete,
     bulkAddAthletes,
+    importRoster,
     updateAthlete,
     removeAthlete,
     moveAthlete,
