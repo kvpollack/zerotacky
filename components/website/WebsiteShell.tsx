@@ -73,7 +73,7 @@ export default function WebsiteShell({ activeNav, brand = null, sheet, children 
       <div className="flex-1 flex flex-col min-w-0 p-2 sm:p-4 lg:p-6">
         <div className="flex-1 flex flex-col min-w-0 bg-sheet border-2 border-rule">
           {/* header strip: a ruled block, 1 px rules drawn as grid gaps over the rule colour */}
-          <header className="sticky top-0 z-20 border-b-2 border-rule">
+          <header className="sticky top-0 z-20 border-b-2 border-rule zt-print-hide">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] lg:grid-cols-[auto_minmax(0,1fr)] 2xl:grid-cols-[260px_minmax(0,1fr)] gap-px bg-rule">
               <div className={`${CELL} gap-3 px-3 2xl:px-[18px] overflow-hidden`}>
                 <Link
@@ -148,7 +148,7 @@ export default function WebsiteShell({ activeNav, brand = null, sheet, children 
           </main>
 
           {/* Footer = title block. Fields: TITLE, SHEET, REV, STATUS; links, OPERATOR, UNITS, COPY. */}
-          <footer className="mt-10 zt-block border-x-0 border-b-0 grid-cols-2 lg:grid-cols-[90px_1fr_220px_220px_160px_120px] lg:grid-rows-2 text-[15px]">
+          <footer className="mt-10 zt-block border-x-0 border-b-0 grid-cols-2 zt-print-hide lg:grid-cols-[90px_1fr_220px_220px_160px_120px] lg:grid-rows-2 text-[15px]">
             <div className="hidden lg:flex items-center justify-center row-span-2 text-ink">
               <StoneMark size={48} stroke={7} title="ZeroTacky" />
             </div>

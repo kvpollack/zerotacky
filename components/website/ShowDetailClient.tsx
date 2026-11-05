@@ -9,6 +9,7 @@ import { formatShowDate } from '@/lib/website/showHistory';
 import { directionsUrl, eventWeightDisplay, formatLocalDateTime } from '@/lib/website/format';
 import { specSegments } from '@/lib/events/spec';
 import { showTrainingNeeds, trainForShowHref } from '@/lib/website/trainFor';
+import { prepSheetHref } from '@/lib/website/prepSheet';
 import { safeVideoUrl, specNotes } from '@/lib/events/spec';
 import { longIsoDate, shortIsoDate, splitFee, venueLine } from '@/lib/website/sheetFormat';
 import type { DivisionResultsView, PublicShowRecord } from '@/lib/website/types';
@@ -381,14 +382,21 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
           top to bottom. Scrolls sideways on phones with the event column pinned. Implement specs and rising-bar
           progressions are footnotes under the table. */}
       <section aria-labelledby="events-weights-heading">
-        <div className="mb-2.5">
-          <h2 id="events-weights-heading" className="text-[22px] font-bold leading-tight text-ink">
-            Events &amp; Weights by Division ({sortedEvents.length} Events)
-          </h2>
-          <p className="text-[13px] text-ink-muted mt-1">
-            Find your division across the top and read down. Details the promoter has not entered say so
-            rather than guessing.
-          </p>
+        <div className="mb-2.5 flex flex-wrap items-end justify-between gap-3">
+          <div className="min-w-0">
+            <h2 id="events-weights-heading" className="text-[22px] font-bold leading-tight text-ink">
+              Events &amp; Weights by Division ({sortedEvents.length} Events)
+            </h2>
+            <p className="text-[13px] text-ink-muted mt-1">
+              Find your division across the top and read down. Details the promoter has not entered say so
+              rather than guessing.
+            </p>
+          </div>
+          {/* Comp-prep sheet (11/5, gaps #15): the same events as a printable training sheet with a CSV, for the division
+              picked in the standings strip (or all). */}
+          {sortedEvents.length > 0 && (
+            <Key href={prepSheetHref(show.slug, selectedDivId)} variant="line" className="!min-h-10 !px-4 !text-[12px] shrink-0">Prep sheet</Key>
+          )}
         </div>
 
         <div className="border-2 border-rule">
