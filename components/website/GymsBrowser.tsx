@@ -6,6 +6,9 @@ import { Calendar, Dumbbell, ExternalLink, MapPin, RotateCcw, Search } from 'luc
 import { filterPublicGyms, gymDistanceMiles } from '@/lib/website/filters';
 import { DEFAULT_RADIUS_MILES, RADIUS_OPTIONS_MILES, formatMiles, normalizeZip, type GeoPoint, type RadiusMiles } from '@/lib/geo/geo';
 import type { DayPassAvailability, StrongmanGymListing } from '@/lib/website/types';
+import { coverageLabel, rankGymsForShow, type TrainingNeed } from '@/lib/website/trainFor';
+import { Cap, textLink } from './sheet';
+import { longIsoDate } from '@/lib/website/sheetFormat';
 
 interface GymsBrowserProps {
   initialGyms: StrongmanGymListing[];
@@ -14,6 +17,8 @@ interface GymsBrowserProps {
   // From /gyms?q=&state= (10/21): the sitewide SearchAction in JSON-LD points here.
   initialSearch?: string;
   initialState?: string;
+  // Train for this show (11/5): /gyms?show=<slug>. Gyms are ranked by how many of the show's implements they tag.
+  trainFor?: { slug: string; name: string; date: string; needs: TrainingNeed[] } | null;
 }
 
 const DAY_PASS_LABELS: Record<DayPassAvailability, string> = {
@@ -29,11 +34,13 @@ export default function GymsBrowser({
   availableImplements,
   initialSearch = '',
   initialState = 'ALL',
+  trainFor = null,
 }: GymsBrowserProps) {
   const [search, setSearch] = useState(initialSearch);
   const [stateFilter, setStateFilter] = useState(initialState);
   const [implementTag, setImplementTag] = useState('ALL');
   const [dayPassOnly, setDayPassOnly] = useState(false);
+  const [fullKitOnly, setFullKitOnly] = useState(false);
 
   // Zip + radius (Kurt 10/20). The zip resolves to a centroid through /api/zip so the table stays on the server.
   const [zip, setZip] = useState('');
@@ -72,15 +79,23 @@ export default function GymsBrowser({
       }),
     [initialGyms, search, stateFilter, implementTag, dayPassOnly, origin, radius]
   );
+  // With a show: keep gyms that have at least one of its implements (or every one), best coverage first, then the
+  // directory's own order (distance when a zip is set, otherwise name). Without a show every gym gets full coverage.
+  const needs = trainFor?.needs ?? [];
+  const rankedGyms = useMemo(() => {
+    const byDistance = origin ? (a: StrongmanGymListing, b: StrongmanGymListing) => (gymDistanceMiles(a, origin) ?? Infinity) - (gymDistanceMiles(b, origin) ?? Infinity) : undefined;
+    return rankGymsForShow(filteredGyms, needs, { fullOnly: fullKitOnly, tieBreak: byDistance });
+  }, [filteredGyms, needs, fullKitOnly, origin]);
 
   const hasActiveFilters =
-    search.trim() !== '' || stateFilter !== 'ALL' || implementTag !== 'ALL' || dayPassOnly || zip.trim() !== '';
+    search.trim() !== '' || stateFilter !== 'ALL' || implementTag !== 'ALL' || dayPassOnly || zip.trim() !== '' || fullKitOnly;
 
   const resetFilters = () => {
     setSearch('');
     setStateFilter('ALL');
     setImplementTag('ALL');
     setDayPassOnly(false);
+    setFullKitOnly(false);
     setZip('');
   };
 
@@ -94,6 +109,40 @@ export default function GymsBrowser({
 
   return (
     <div className="space-y-5">
+      {trainFor && (
+        <section aria-labelledby="train-for-heading" className="flex flex-col gap-3" data-testid="train-for">
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+            <div className="flex flex-col gap-1 min-w-0">
+              <Cap as="span">Training for a show · {longIsoDate(trainFor.date)}</Cap>
+              <h2 id="train-for-heading" className="text-[22px] font-bold leading-tight text-ink">
+                <Link href={`/shows/${trainFor.slug}`} className="no-underline hover:text-pen">{trainFor.name}</Link>
+              </h2>
+              <p className="text-[13px] leading-snug text-ink-muted max-w-2xl">
+                {needs.length === 0
+                  ? 'The promoter has not listed implements for the events yet, so every gym shows. Check back once the event specs are in.'
+                  : 'Gyms below have at least one of the implements this show uses, the most complete kits first. Set a zip to put the closest first within each tier.'}
+              </p>
+            </div>
+            <Link href="/gyms" className={`text-[13px] ${textLink}`}>Clear show</Link>
+          </div>
+          {needs.length > 0 && (
+            <dl className="flex flex-wrap gap-2">
+              {needs.map((n) => (
+                <div key={n.equipment} className="flex flex-col gap-1 px-4 py-3 min-w-0 max-w-full border-2 border-rule bg-sheet">
+                  <dt className="text-[15px] font-bold leading-tight text-ink">{n.label}</dt>
+                  <dd className="text-[12px] leading-snug text-ink-muted">{n.events.join(' · ')}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          {needs.length > 0 && (
+            <label className="flex items-center gap-2.5 text-[15px] font-bold text-ink cursor-pointer self-start">
+              <input type="checkbox" checked={fullKitOnly} onChange={(e) => setFullKitOnly(e.target.checked)} className="w-5 h-5 shrink-0" style={{ accentColor: 'var(--pen)' }} />
+              Only gyms with everything the show uses
+            </label>
+          )}
+        </section>
+      )}
       {/* Filter Bar */}
       <section
         aria-label="Filter gyms"
@@ -230,7 +279,7 @@ export default function GymsBrowser({
       </section>
 
       {/* Listings */}
-      {filteredGyms.length === 0 ? (
+      {rankedGyms.length === 0 ? (
         <div className="bg-zt-surface border border-zt-border rounded-2xl p-8 text-center space-y-3">
           <div className="text-base font-black text-zt-text">
             {origin ? `No gyms within ${radius} miles of ${zip5}.` : 'No gyms match your current filters.'}
@@ -251,7 +300,7 @@ export default function GymsBrowser({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredGyms.map((gym) => (
+          {rankedGyms.map(({ gym, coverage }) => (
             <article
               key={gym.id}
               className="bg-zt-surface border border-zt-border rounded-2xl p-5 flex flex-col justify-between space-y-4"
@@ -308,6 +357,14 @@ export default function GymsBrowser({
                       </span>
                     )}
                   </div>
+                  {trainFor && needs.length > 0 && (
+                    <div className="mt-1.5 text-[13px] leading-snug" data-testid="coverage">
+                      <span className={`font-bold ${coverage.missing.length === 0 ? 'text-pen' : 'text-ink'}`}>{coverageLabel(coverage, needs.length)}</span>
+                      {coverage.missing.length > 0 && (
+                        <span className="text-ink-muted"> · missing {coverage.missing.map((n) => n.label.toLowerCase()).join(', ')}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="text-xs text-zt-text-2 space-y-1">
