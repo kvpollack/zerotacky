@@ -97,6 +97,9 @@ export default function GymClaimClient({ gymId, gymName, gymSlug }: { gymId: str
           <div>
             <label className={label} htmlFor="claim-name">Your name</label>
             <input id="claim-name" className={field} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} required autoComplete="name" />
+            {auth.user && (
+              <p className="text-[11px] text-zt-muted mt-1">Filled from your account. Change it if you are filing this for someone else.</p>
+            )}
           </div>
           <div>
             <label className={label} htmlFor="claim-email">Email</label>

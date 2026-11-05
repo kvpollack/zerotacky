@@ -1,14 +1,27 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Calendar, Dumbbell, ExternalLink, MapPin } from 'lucide-react';
 import WebsiteShell from '@/components/website/WebsiteShell';
+import { Cap, Key, SectionCap, WebCell, textLink } from '@/components/website/sheet';
 import { getPublicGymBySlug, listPublicShows } from '@/lib/website/data';
 import { canonical, gymJsonLd } from '@/lib/website/seo';
+import { longIsoDate } from '@/lib/website/sheetFormat';
+import { competitionStatusLabel } from '@/lib/website/profileLinks';
 import JsonLd from '@/components/website/JsonLd';
 
 // Directory rows are loaded by scripts outside deploys; refresh every 5 min.
 export const revalidate = 300;
+
+// Hand redraw in the sheet grammar (11/5): the gym's colour fills one band (like the promoter band on a show page),
+// a facts strip under it, then one ruled block per section. Equipment and hosted shows are ruled lists, two columns
+// from `sm` with a blank filler cell when the count is odd so the block never shows a dark hole.
+const FACT_V = 'text-[15px] font-bold leading-snug text-ink';
+const FACT_S = 'block text-[13px] font-normal text-ink-muted';
+const NOTE = 'text-[13px] leading-snug text-ink-muted';
+const CHIP = 'inline-flex items-center border-2 border-rule px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.04em] text-ink whitespace-nowrap';
+const ROW = 'flex flex-col gap-1 px-4 py-3 sm:px-5 min-w-0';
+
+const DAY_PASS: Record<string, string> = { available: 'Available', by_appointment: 'By appointment', not_available: 'Not available' };
 
 interface GymDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -39,217 +52,159 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
   const hostedShows = (showsRes.data ?? []).filter((s) =>
     s.hostGymSlug === gym.slug || gym.hostedShowSlugs.includes(s.slug)
   );
+  const typeLabel = gym.gymType === 'mixed' ? 'Strongman + Powerlifting' : gym.gymType;
+  const claimLabel = gym.claimStatus === 'claimed' ? 'Claimed by the gym' : gym.claimStatus === 'unclaimed' ? 'Unclaimed listing' : '';
+  const notProvided = <span className={`${FACT_V} text-ink-muted font-normal`}>Not provided</span>;
 
   return (
     <WebsiteShell activeNav="gyms" brand={gym.theme ?? null}>
       {!gym.isDemoListing && <JsonLd data={gymJsonLd(gym)} />}
-      <div className="space-y-6">
+      <div className="flex flex-col gap-7">
         <div>
-          <Link
-            href="/gyms"
-            className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase text-zt-muted hover:text-zt-text"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+          <Link href="/gyms" className="inline-flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-[0.04em] text-ink-muted hover:text-ink no-underline">
+            <span aria-hidden="true">←</span>
             Back to Gym Directory
           </Link>
         </div>
 
-        {/* Header Card */}
-        <section className="bg-zt-surface border border-zt-border rounded-2xl p-5 sm:p-6 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded bg-zt-inset border border-zt-border text-zt-text-2">
-              Last Updated: {gym.lastUpdatedDate}
-            </span>
-            <span className="flex flex-wrap items-center gap-1.5">
-              {gym.gymType && (
-                <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded bg-zt-inset border border-zt-border text-zt-text-2">
-                  {gym.gymType === 'mixed' ? 'Strongman + Powerlifting' : gym.gymType}
-                </span>
-              )}
+        {/* Gym band: the one place on this page the gym's colour fills */}
+        <div>
+          <div className="bg-slot text-slot-label border-2 border-b-0 border-rule flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-5 sm:px-7 min-h-16 py-3 text-[15px] sm:text-lg leading-snug">
+            <h1 className="font-normal">
+              <span className="font-bold text-xl sm:text-[22px]">{gym.name}</span>
+              <span className="opacity-60 mx-3.5" aria-hidden="true">·</span>
+              <span>{gym.city}, {gym.state}</span>
+            </h1>
+            <div className="text-[13px] sm:text-[15px] uppercase tracking-[0.04em]">
+              {typeLabel && <span>{typeLabel}</span>}
+              {typeLabel && claimLabel && <span className="opacity-60 mx-3.5" aria-hidden="true">·</span>}
+              {claimLabel && <span>{claimLabel}</span>}
               {gym.isDemoListing && (
-                <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
-                  Demo Listing (fictional)
-                </span>
-              )}
-              {gym.claimStatus === 'unclaimed' && (
-                <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded bg-zt-inset border border-dashed border-zt-border-strong text-zt-muted">
-                  Unclaimed listing
-                </span>
-              )}
-              {gym.claimStatus === 'claimed' && (
-                <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/40">
-                  Claimed by the gym
-                </span>
-              )}
-            </span>
-          </div>
-
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-black text-zt-text">{gym.name}</h1>
-            <div className="text-xs sm:text-sm font-bold text-zt-text-2 flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-zt-primary" aria-hidden="true" />
-              <span>
-                {gym.streetAddress
-                  ? `${gym.streetAddress}, ${gym.city}, ${gym.state}${gym.postalCode ? ` ${gym.postalCode}` : ''}`
-                  : `${gym.city}, ${gym.state} (Street address: Not provided)`}
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-zt-border text-xs">
-            <div className="bg-zt-inset border border-zt-border rounded-xl p-3">
-              <div className="text-[10px] font-extrabold uppercase text-zt-muted">
-                Day-Pass Availability
-              </div>
-              <div className="text-sm font-black text-zt-text mt-0.5">
-                {gym.dayPassAvailability === 'available'
-                  ? 'Available'
-                  : gym.dayPassAvailability === 'by_appointment'
-                  ? 'By Appointment'
-                  : gym.dayPassAvailability === 'not_available'
-                  ? 'Not Available'
-                  : 'Not provided'}
-              </div>
-              <div className="text-[11px] font-bold text-zt-primary mt-0.5">
-                {gym.dayPassPriceDisplay ? `Price: ${gym.dayPassPriceDisplay}` : 'The day-pass price has not been provided.'}
-              </div>
-            </div>
-
-            <div className="bg-zt-inset border border-zt-border rounded-xl p-3">
-              <div className="text-[10px] font-extrabold uppercase text-zt-muted">
-                Drop-In Hours
-              </div>
-              <div className="text-xs font-bold text-zt-text mt-0.5">
-                {gym.dropInHours || 'Not provided'}
-              </div>
-            </div>
-
-            <div className="bg-zt-inset border border-zt-border rounded-xl p-3">
-              <div className="text-[10px] font-extrabold uppercase text-zt-muted">
-                Contact &amp; Booking Link
-              </div>
-              <div className="text-xs font-bold text-zt-text mt-0.5">
-                {gym.contactInfo || 'Not provided'}
-              </div>
-              {gym.dayPassBookingUrl ? (
-                <a
-                  href={gym.dayPassBookingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] font-black text-zt-primary hover:underline mt-1"
-                >
-                  Day pass / waiver link
-                  <ExternalLink className="w-3 h-3" aria-hidden="true" />
-                </a>
-              ) : (
-                <div className="text-[11px] text-zt-muted mt-1">No booking link has been provided.</div>
+                <>
+                  <span className="opacity-60 mx-3.5" aria-hidden="true">·</span>
+                  <span>Demo listing (fictional)</span>
+                </>
               )}
             </div>
           </div>
 
-          <div className="bg-zt-inset border border-zt-border rounded-xl p-3.5 text-xs">
-            <span className="font-extrabold uppercase text-zt-muted block mb-1">
-              Drop-In &amp; Equipment Policy
-            </span>
-            <p className="font-semibold text-zt-text-2">
-              {gym.dropInPolicy || 'Not provided'}
-            </p>
-          </div>
-
-          {!gym.isDemoListing && (
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-zt-border text-xs">
-              <p className="text-zt-muted">
-                {gym.claimStatus === 'claimed'
-                  ? 'Details are maintained by the gym.'
-                  : (
-                    <>
-                      Built from the gym&rsquo;s own website
-                      {gym.sourceUrl ? (<> (<a href={gym.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-zt-text">source</a>)</>) : null}
-                      , checked {gym.lastUpdatedDate}. Nobody from the gym has reviewed it yet.
-                    </>
-                  )}
-              </p>
-              <div className="flex items-center gap-2 shrink-0">
-                {gym.claimStatus === 'unclaimed' && (
-                  <Link href={`/gyms/${gym.slug}/claim`} className="px-3.5 py-2 rounded-xl bg-zt-primary text-zt-on-primary font-black text-xs uppercase">
-                    Claim this gym
-                  </Link>
+          {/* Facts strip */}
+          <section aria-label="Gym facts" className="zt-block border-t-0 grid-cols-2 lg:grid-cols-4">
+            <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+              <Cap>Address</Cap>
+              <div className={FACT_V}>
+                {gym.streetAddress || <span className="font-normal text-ink-muted">Street address not provided</span>}
+                <span className={FACT_S}>{gym.city}, {gym.state}{gym.postalCode ? ` ${gym.postalCode}` : ''}</span>
+              </div>
+            </WebCell>
+            <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+              <Cap>Day pass</Cap>
+              <div className={FACT_V}>
+                {DAY_PASS[gym.dayPassAvailability] ?? <span className="font-normal text-ink-muted">Not provided</span>}
+                <span className={`${FACT_S} ${gym.dayPassPriceDisplay ? 'text-pen font-bold' : ''}`}>{gym.dayPassPriceDisplay || 'Price not provided'}</span>
+              </div>
+            </WebCell>
+            <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+              <Cap>Drop-in hours</Cap>
+              {gym.dropInHours ? <div className={FACT_V}>{gym.dropInHours}</div> : notProvided}
+            </WebCell>
+            <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+              <Cap>Contact &amp; booking</Cap>
+              <div className={FACT_V}>
+                {gym.contactInfo ? <span className="break-words">{gym.contactInfo}</span> : <span className="font-normal text-ink-muted">Not provided</span>}
+                {gym.dayPassBookingUrl ? (
+                  <a href={gym.dayPassBookingUrl} target="_blank" rel="noopener noreferrer" className={`${FACT_S} ${textLink} text-pen`}>Day pass / waiver link <span aria-hidden="true">↗</span></a>
+                ) : (
+                  <span className={FACT_S}>No booking link</span>
                 )}
-                <Link href={`/gyms/${gym.slug}/claim?mode=report`} className="px-3 py-2 rounded-xl bg-zt-inset border border-zt-border text-zt-text-2 font-bold text-xs hover:text-zt-text">
-                  Not right? Report it
-                </Link>
               </div>
-            </div>
-          )}
+            </WebCell>
+          </section>
+
+          <div className="text-[12px] text-ink-muted mt-2">Last updated: {gym.lastUpdatedDate}</div>
+        </div>
+
+        {/* Policy */}
+        <section aria-labelledby="policy-heading" className="zt-block grid-cols-1">
+          <WebCell>
+            <Cap as="h2" id="policy-heading">Drop-in &amp; equipment policy</Cap>
+            <p className={gym.dropInPolicy ? 'text-[15px] leading-relaxed text-ink' : NOTE}>{gym.dropInPolicy || 'Not provided'}</p>
+          </WebCell>
         </section>
 
-        {/* Strongman Equipment Breakdown */}
-        <section aria-labelledby="gym-equipment-heading" className="space-y-3">
-          <h2
-            id="gym-equipment-heading"
-            className="text-base font-black uppercase tracking-wider text-zt-primary flex items-center gap-2"
-          >
-            <Dumbbell className="w-4 h-4" aria-hidden="true" />
-            <span>Equipment &amp; Specifications ({gym.equipment.length})</span>
-          </h2>
-
-          {gym.equipment.length === 0 && (
-            <p className="text-xs font-bold text-zt-muted bg-zt-surface border border-zt-border rounded-2xl p-4">
-              No equipment list yet. The gym&rsquo;s site confirms strongman or powerlifting training but does not name implements; the owner can fill this in after claiming.
+        {/* Provenance + claim keys */}
+        {!gym.isDemoListing && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <p className={`${NOTE} max-w-2xl`}>
+              {gym.claimStatus === 'claimed'
+                ? 'Details are maintained by the gym.'
+                : (
+                  <>
+                    Built from the gym&rsquo;s own website
+                    {gym.sourceUrl ? (<> (<a href={gym.sourceUrl} target="_blank" rel="noopener noreferrer" className={textLink}>source</a>)</>) : null}
+                    , checked {gym.lastUpdatedDate}. Nobody from the gym has reviewed it yet.
+                  </>
+                )}
             </p>
-          )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {gym.equipment.map((item) => (
-              <div
-                key={item.name}
-                className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-1"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm font-black text-zt-text">{item.name}</span>
-                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-primary">
-                    {item.category}
-                  </span>
-                </div>
-                <p className="text-xs font-semibold text-zt-text-2">
-                  {item.details || 'Size/weight range: Not provided'}
-                </p>
-              </div>
-            ))}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              {gym.claimStatus === 'unclaimed' && (
+                <Key href={`/gyms/${gym.slug}/claim`} variant="pen">Claim this gym</Key>
+              )}
+              <Key href={`/gyms/${gym.slug}/claim?mode=report`} variant="line">Not right? Report it</Key>
+            </div>
           </div>
+        )}
+
+        {/* Equipment */}
+        <section aria-labelledby="gym-equipment-heading">
+          <SectionCap id="gym-equipment-heading" aside={gym.equipment.length > 0 ? <span className={`${NOTE} hidden sm:inline`}>Sizes and weights as the gym lists them</span> : undefined}>
+            Equipment &amp; specifications ({gym.equipment.length})
+          </SectionCap>
+          {gym.equipment.length === 0 ? (
+            <div className="zt-block grid-cols-1">
+              <WebCell><p className={NOTE}>No equipment list yet. The gym&rsquo;s site confirms strongman or powerlifting training but does not name implements; the owner can fill this in after claiming.</p></WebCell>
+            </div>
+          ) : (
+            <ul className="zt-block grid-cols-1 sm:grid-cols-2">
+              {gym.equipment.map((item) => (
+                <li key={item.name} className={ROW}>
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                    <span className="text-[15px] font-bold text-ink">{item.name}</span>
+                    <span className={CHIP}>{item.category}</span>
+                  </div>
+                  <p className={item.details ? 'text-[13px] leading-snug text-ink' : NOTE}>{item.details || 'Size / weight range not provided'}</p>
+                </li>
+              ))}
+              {gym.equipment.length % 2 === 1 && <li aria-hidden="true" className="hidden sm:block" />}
+            </ul>
+          )}
         </section>
 
-        {/* Hosted Competitions */}
-        <section aria-labelledby="hosted-shows-heading" className="space-y-3">
-          <h2
-            id="hosted-shows-heading"
-            className="text-base font-black uppercase tracking-wider text-zt-text flex items-center gap-2"
-          >
-            <Calendar className="w-4 h-4 text-zt-primary" aria-hidden="true" />
-            <span>Shows Hosted at This Facility ({hostedShows.length})</span>
-          </h2>
-
+        {/* Hosted shows */}
+        <section aria-labelledby="hosted-shows-heading">
+          <SectionCap id="hosted-shows-heading">Shows hosted at this facility ({hostedShows.length})</SectionCap>
           {hostedShows.length === 0 ? (
-            <p className="text-xs font-bold text-zt-muted bg-zt-surface border border-zt-border rounded-2xl p-4">
-              No shows currently linked to this gym listing.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {hostedShows.map((show) => (
-                <Link
-                  key={show.id}
-                  href={`/shows/${show.slug}`}
-                  className="bg-zt-surface border border-zt-border hover:border-zt-primary rounded-2xl p-4 space-y-1 transition block"
-                >
-                  <div className="text-[10px] font-black uppercase text-zt-primary">
-                    {show.competitionStatus} • {show.date}
-                  </div>
-                  <div className="text-base font-black text-zt-text">{show.name}</div>
-                  <div className="text-xs text-zt-muted">
-                    {show.divisionLabels.length} divisions • {show.implementTags.join(', ')}
-                  </div>
-                </Link>
-              ))}
+            <div className="zt-block grid-cols-1">
+              <WebCell><p className={NOTE}>No shows currently linked to this gym listing.</p></WebCell>
             </div>
+          ) : (
+            <ul className="zt-block grid-cols-1">
+              {hostedShows.map((show) => (
+                <li key={show.id} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 sm:px-5">
+                  <div className="min-w-0 flex-1 basis-[14rem] flex flex-col gap-0.5">
+                    <Cap as="span">{show.date ? longIsoDate(show.date) : 'Date not provided'}</Cap>
+                    <Link href={`/shows/${show.slug}`} className="text-[15px] font-bold leading-snug text-ink no-underline hover:text-pen break-words">{show.name}</Link>
+                    <div className="text-[13px] text-ink-muted">
+                      {show.divisionLabels.length} division{show.divisionLabels.length === 1 ? '' : 's'}
+                      {show.implementTags.length > 0 ? ` · ${show.implementTags.join(', ')}` : ''}
+                    </div>
+                  </div>
+                  <span className={show.competitionStatus === 'live' ? `${CHIP} border-pen bg-pen text-pen-label` : CHIP}>
+                    {competitionStatusLabel(show.competitionStatus)}
+                  </span>
+                </li>
+              ))}
+            </ul>
           )}
         </section>
       </div>

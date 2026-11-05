@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Building2, Calendar, Dumbbell, ExternalLink, MapPin, Trophy, User } from 'lucide-react';
 import WebsiteShell from '@/components/website/WebsiteShell';
+import { Cap, SectionCap, WebCell, textLink } from '@/components/website/sheet';
 import { getAthleteShowHistory, getProfileLinks, getPublicAthleteByUsername } from '@/lib/website/data';
 import { formatPlace, formatShowDate } from '@/lib/website/showHistory';
 import { competitionStatusLabel, splitShows } from '@/lib/website/profileLinks';
@@ -12,6 +12,15 @@ import JsonLd from '@/components/website/JsonLd';
 
 // Profiles change when people edit them; 60 s keeps the page close to live without a query per visit.
 export const revalidate = 60;
+
+// Hand redraw in the sheet grammar (11/5): identity band + facts strip like the show page, then one ruled block per
+// section (PRs, show history, shows they run, gyms, links). No icons, no floating cards; podium places in pen.
+const NUM = 'font-sheet text-pen';
+const FACT_V = 'text-[15px] font-bold leading-snug text-ink';
+const FACT_S = 'block text-[13px] font-normal text-ink-muted';
+const NOTE = 'text-[13px] leading-snug text-ink-muted';
+const ROW_TITLE = 'text-[15px] font-bold leading-snug text-ink no-underline hover:text-pen break-words';
+const CHIP = 'inline-flex items-center border-2 border-rule px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.04em] text-ink';
 
 interface AthletePageProps {
   params: Promise<{ username: string }>;
@@ -30,6 +39,12 @@ export async function generateMetadata({ params }: AthletePageProps): Promise<Me
   };
 }
 
+function initials(name: string): string {
+  const parts = name.replace(/^@/, '').split(/[\s_.-]+/).filter(Boolean);
+  const s = parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : (parts[0] ?? '?').slice(0, 2);
+  return s.toUpperCase();
+}
+
 export default async function AthleteProfilePage({ params }: AthletePageProps) {
   const { username } = await params;
   const res = await getPublicAthleteByUsername(username);
@@ -42,192 +57,189 @@ export default async function AthleteProfilePage({ params }: AthletePageProps) {
   const homeGymLabel = links.homeGym?.name || a.homeGymName;
   const { upcoming: showsUpcoming, past: showsPast } = splitShows(links.shows);
   const showsRun = [...showsUpcoming, ...showsPast];
+  const podiums = history.filter((h) => h.place != null && h.place <= 3 && !h.withdrawn).length;
 
   const socials = SOCIAL_KEYS.map((sk) => ({ ...sk, value: a.socials[sk.key] ?? '', href: a.socials[sk.key] ? socialUrl(sk.key, a.socials[sk.key] as string) : '' })).filter((s) => s.value && s.href);
 
   return (
     <WebsiteShell activeNav="athletes">
       <JsonLd data={athleteJsonLd(a)} />
-      <div className="space-y-6">
+      <div className="flex flex-col gap-7">
         <div>
-          <Link href="/athletes" className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase text-zt-muted hover:text-zt-text">
-            <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+          <Link href="/athletes" className="inline-flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-[0.04em] text-ink-muted hover:text-ink no-underline">
+            <span aria-hidden="true">←</span>
             Back to Athletes
           </Link>
         </div>
 
-        <section className="bg-zt-surface border border-zt-border rounded-2xl p-5 sm:p-6 space-y-4">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="w-20 h-20 rounded-full overflow-hidden bg-zt-inset border border-zt-border-strong flex items-center justify-center shrink-0">
+        {/* Identity band + facts strip */}
+        <div>
+          <header className="border-2 border-b-0 border-rule bg-sheet flex items-stretch">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 shrink-0 border-r-2 border-rule bg-ground flex items-center justify-center overflow-hidden">
               {a.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={a.avatarUrl} alt={`${a.displayName}'s profile photo`} className="w-full h-full object-cover" />
               ) : (
-                <User className="w-8 h-8 text-zt-muted" aria-hidden="true" />
+                <span aria-hidden="true" className={`${NUM} text-[34px] leading-none`}>{initials(a.displayName)}</span>
               )}
             </div>
-            <div className="min-w-0 space-y-1">
-              <h1 className="text-2xl sm:text-3xl font-black text-zt-text truncate">{a.displayName}</h1>
-              <div className="text-xs font-bold text-zt-muted">@{a.username}</div>
-              <div className="flex flex-wrap gap-1 pt-1">
-                {a.badges.map((b) => (
-                  <span key={b} className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-primary">{b}</span>
-                ))}
-              </div>
+            <div className="min-w-0 flex flex-col justify-center gap-1.5 px-5 sm:px-7 py-3">
+              <Cap as="span">@{a.username}</Cap>
+              <h1 className="text-[28px] sm:text-[34px] font-bold leading-[1.05] text-ink break-words">{a.displayName}</h1>
+              {a.badges.length > 0 && (
+                <ul className="flex flex-wrap gap-1.5 pt-0.5" aria-label="Roles">
+                  {a.badges.map((b) => (
+                    <li key={b} className={CHIP}>{b}</li>
+                  ))}
+                </ul>
+              )}
             </div>
-          </div>
+          </header>
 
-          {(a.location || homeGymLabel) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-zt-border text-xs">
-              {a.location && (
-                <div className="bg-zt-inset border border-zt-border rounded-xl p-3">
-                  <div className="text-[10px] font-extrabold uppercase text-zt-muted">Location</div>
-                  <div className="text-sm font-black text-zt-text mt-0.5 flex items-center gap-1.5"><MapPin className="w-4 h-4 text-zt-primary" aria-hidden="true" />{a.location}</div>
-                </div>
-              )}
-              {homeGymLabel && (
-                <div className="bg-zt-inset border border-zt-border rounded-xl p-3">
-                  <div className="text-[10px] font-extrabold uppercase text-zt-muted">Home gym</div>
-                  <div className="text-sm font-black text-zt-text mt-0.5 flex items-center gap-1.5">
-                    <Dumbbell className="w-4 h-4 text-zt-primary shrink-0" aria-hidden="true" />
-                    {links.homeGym ? (
-                      <Link href={`/gyms/${links.homeGym.slug}`} className="hover:text-zt-primary underline-offset-2 hover:underline">{links.homeGym.name}</Link>
-                    ) : (
-                      <span>{homeGymLabel}</span>
-                    )}
-                  </div>
+          <section aria-label="Athlete facts" className="zt-block grid-cols-2 lg:grid-cols-4">
+            <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+              <Cap>Location</Cap>
+              <div className={a.location ? FACT_V : `${FACT_V} text-ink-muted font-normal`}>{a.location || 'Not provided'}</div>
+            </WebCell>
+            <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+              <Cap>Home gym</Cap>
+              {homeGymLabel ? (
+                <div className={FACT_V}>
+                  {links.homeGym ? (
+                    <Link href={`/gyms/${links.homeGym.slug}`} className={`${textLink} font-bold`}>{links.homeGym.name}</Link>
+                  ) : (
+                    homeGymLabel
+                  )}
                   {links.homeGym && (links.homeGym.city || links.homeGym.state) && (
-                    <div className="text-[11px] font-semibold text-zt-muted mt-0.5">{[links.homeGym.city, links.homeGym.state].filter(Boolean).join(', ')} • in the Gym Directory</div>
+                    <span className={FACT_S}>{[links.homeGym.city, links.homeGym.state].filter(Boolean).join(', ')} · in the Gym Directory</span>
                   )}
                 </div>
+              ) : (
+                <div className={`${FACT_V} text-ink-muted font-normal`}>Not provided</div>
               )}
-            </div>
-          )}
-        </section>
+            </WebCell>
+            <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+              <Cap>Favorite lift</Cap>
+              {a.favoriteLift ? (
+                <div className={FACT_V}>
+                  {a.favoriteLift}
+                  {a.favoriteLiftNote && <span className={FACT_S}>{a.favoriteLiftNote}</span>}
+                </div>
+              ) : (
+                <div className={`${FACT_V} text-ink-muted font-normal`}>Not provided</div>
+              )}
+            </WebCell>
+            <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
+              <Cap>Shows on record</Cap>
+              <div className={`${NUM} text-[28px] leading-none`}>
+                {history.length}
+                {podiums > 0 && <span className="font-sans text-[13px] text-ink-muted"> · {podiums} podium{podiums === 1 ? '' : 's'}</span>}
+              </div>
+            </WebCell>
+          </section>
+        </div>
 
-        {(a.favoriteLift || a.prs.length > 0) && (
-          <section aria-labelledby="lifting-heading" className="space-y-3">
-            <h2 id="lifting-heading" className="text-base font-black uppercase tracking-wider text-zt-primary">Lifting</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {a.favoriteLift && (
-                <div className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-1">
-                  <div className="text-[10px] font-extrabold uppercase text-zt-muted">Favorite lift</div>
-                  <div className="text-sm font-black text-zt-text">{a.favoriteLift}</div>
-                  {a.favoriteLiftNote && <p className="text-xs font-semibold text-zt-text-2">{a.favoriteLiftNote}</p>}
+        {a.prs.length > 0 && (
+          <section aria-labelledby="prs-heading">
+            <SectionCap id="prs-heading" aside={<span className={NOTE}>Self-reported</span>}>PRs</SectionCap>
+            <dl className="zt-block grid-cols-1">
+              {a.prs.map((pr, i) => (
+                <div key={i} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3 sm:px-5">
+                  <dt className="text-[15px] font-bold text-ink">{pr.lift || 'Lift'}</dt>
+                  <dd className="text-[18px] font-bold leading-none text-pen shrink-0">{pr.value || '—'}</dd>
                 </div>
-              )}
-              {a.prs.length > 0 && (
-                <div className="bg-zt-surface border border-zt-border rounded-2xl p-4 space-y-1.5">
-                  <div className="text-[10px] font-extrabold uppercase text-zt-muted">PRs</div>
-                  <ul className="space-y-1">
-                    {a.prs.map((pr, i) => (
-                      <li key={i} className="flex items-baseline justify-between gap-3 text-xs">
-                        <span className="font-black text-zt-text">{pr.lift || 'Lift'}</span>
-                        <span className="font-bold text-zt-primary">{pr.value || '—'}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="text-[10px] text-zt-muted">Self-reported.</p>
-                </div>
-              )}
-            </div>
+              ))}
+            </dl>
           </section>
         )}
 
         {history.length > 0 && (
-          <section aria-labelledby="history-heading" className="space-y-3">
-            <h2 id="history-heading" className="text-base font-black uppercase tracking-wider text-zt-primary">Show History</h2>
-            <ul className="space-y-2">
+          <section aria-labelledby="history-heading">
+            <SectionCap id="history-heading" aside={<span className={`${NOTE} hidden sm:inline`}>Official results, marked final by the promoter</span>}>Show history</SectionCap>
+            <ol className="zt-block grid-cols-1">
               {history.map((h) => {
                 const placeLabel = formatPlace(h);
                 const podium = h.place != null && h.place <= 3 && !h.withdrawn;
                 return (
-                  <li key={h.meetId} className="bg-zt-surface border border-zt-border rounded-2xl p-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-                    <div className="min-w-0 flex-1 space-y-0.5">
-                      <div className="text-xs font-extrabold uppercase text-zt-muted">{formatShowDate(h.date)}{h.venue ? ` • ${h.venue}` : ''}</div>
-                      <Link href={h.href} className="block text-sm font-black text-zt-text hover:text-zt-primary break-words">{h.name}</Link>
-                      <div className="text-xs font-semibold text-zt-text-2">
+                  <li key={h.meetId} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 sm:px-5">
+                    <div className="min-w-0 flex-1 basis-[14rem] flex flex-col gap-0.5">
+                      <Cap as="span">{formatShowDate(h.date)}{h.venue ? ` · ${h.venue}` : ''}</Cap>
+                      <Link href={h.href} className={ROW_TITLE}>{h.name}</Link>
+                      <div className="text-[13px] text-ink-muted">
                         {h.divisionName}
-                        {h.athleteName !== a.displayName ? ` • entered as ${h.athleteName}` : ''}
+                        {h.athleteName !== a.displayName ? ` · entered as ${h.athleteName}` : ''}
                       </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <div className={`text-lg font-black flex items-center justify-end gap-1.5 ${podium ? 'text-zt-primary' : 'text-zt-text'}`}>
-                        {podium && <Trophy className="w-4 h-4" aria-hidden="true" />}
-                        {placeLabel}
-                      </div>
+                    <div className="shrink-0 flex flex-col gap-0.5 sm:text-right">
+                      <div className={`text-[20px] font-bold leading-none ${podium ? 'text-pen' : 'text-ink'}`}>{placeLabel}</div>
                       {h.place != null && !h.withdrawn && (
-                        <div className="text-xs font-bold text-zt-muted">
-                          {h.totalPoints} pts • {h.eventWins} event {h.eventWins === 1 ? 'win' : 'wins'} of {h.eventCount}
+                        <div className="text-[12px] text-ink-muted">
+                          {h.totalPoints} pts · {h.eventWins} event {h.eventWins === 1 ? 'win' : 'wins'} of {h.eventCount}
                         </div>
                       )}
                     </div>
                   </li>
                 );
               })}
-            </ul>
-            <p className="text-xs text-zt-muted">Official results from shows scored on ZeroTacky and marked final by the promoter.</p>
+            </ol>
+            <p className={`${NOTE} mt-2 sm:hidden`}>Official results from shows scored on ZeroTacky and marked final by the promoter.</p>
           </section>
         )}
 
         {showsRun.length > 0 && (
-          <section aria-labelledby="shows-run-heading" className="space-y-3">
-            <h2 id="shows-run-heading" className="text-base font-black uppercase tracking-wider text-zt-primary">Shows They Run</h2>
-            <ul className="space-y-2">
+          <section aria-labelledby="shows-run-heading">
+            <SectionCap id="shows-run-heading" aside={<span className={`${NOTE} hidden sm:inline`}>Listed shows this account owns</span>}>Shows they run</SectionCap>
+            <ul className="zt-block grid-cols-1">
               {showsRun.map((sh) => (
-                <li key={sh.slug} className="bg-zt-surface border border-zt-border rounded-2xl p-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-                  <div className="min-w-0 flex-1 space-y-0.5">
-                    <div className="text-xs font-extrabold uppercase text-zt-muted flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
-                      {formatShowDate(sh.date)}{sh.venue ? ` • ${sh.venue}` : ''}
-                    </div>
-                    <Link href={`/shows/${sh.slug}`} className="block text-sm font-black text-zt-text hover:text-zt-primary break-words">{sh.name}</Link>
+                <li key={sh.slug} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 sm:px-5">
+                  <div className="min-w-0 flex-1 basis-[14rem] flex flex-col gap-0.5">
+                    <Cap as="span">{formatShowDate(sh.date)}{sh.venue ? ` · ${sh.venue}` : ''}</Cap>
+                    <Link href={`/shows/${sh.slug}`} className={ROW_TITLE}>{sh.name}</Link>
                   </div>
-                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border ${sh.competitionStatus === 'live' ? 'bg-zt-primary text-zt-on-primary border-zt-primary' : 'bg-zt-inset text-zt-text-2 border-zt-border'}`}>
+                  <span className={sh.competitionStatus === 'live' ? `${CHIP} border-pen bg-pen text-pen-label` : CHIP}>
                     {competitionStatusLabel(sh.competitionStatus)}
                   </span>
                 </li>
               ))}
             </ul>
-            <p className="text-xs text-zt-muted">Listed shows this promoter&apos;s account owns on ZeroTacky.</p>
           </section>
         )}
 
         {links.gyms.length > 0 && (
-          <section aria-labelledby="gyms-heading" className="space-y-3">
-            <h2 id="gyms-heading" className="text-base font-black uppercase tracking-wider text-zt-primary">{links.gyms.length === 1 ? 'Gym' : 'Gyms'}</h2>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <section aria-labelledby="gyms-heading">
+            <SectionCap id="gyms-heading" aside={<span className={`${NOTE} hidden sm:inline`}>Claimed listings in the Gym Directory</span>}>{links.gyms.length === 1 ? 'Gym' : 'Gyms'}</SectionCap>
+            <ul className="zt-block grid-cols-1">
               {links.gyms.map((g) => (
-                <li key={g.slug}>
-                  <Link href={`/gyms/${g.slug}`} className="block bg-zt-surface border border-zt-border hover:border-zt-primary rounded-2xl p-4 transition h-full">
-                    <div className="text-sm font-black text-zt-text flex items-center gap-1.5"><Building2 className="w-4 h-4 text-zt-primary shrink-0" aria-hidden="true" />{g.name}</div>
-                    <div className="text-[11px] font-semibold text-zt-text-2 mt-0.5">{[g.city, g.state].filter(Boolean).join(', ')}{g.gymType ? ` • ${g.gymType}` : ''}</div>
-                  </Link>
+                <li key={g.slug} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-4 py-3 sm:px-5">
+                  <Link href={`/gyms/${g.slug}`} className={ROW_TITLE}>{g.name}</Link>
+                  <span className="text-[13px] text-ink-muted">{[g.city, g.state].filter(Boolean).join(', ')}{g.gymType ? ` · ${g.gymType}` : ''}</span>
                 </li>
               ))}
             </ul>
-            <p className="text-xs text-zt-muted">Claimed listings in the Gym Directory owned by this account.</p>
           </section>
         )}
 
         {socials.length > 0 && (
-          <section aria-labelledby="links-heading" className="space-y-3">
-            <h2 id="links-heading" className="text-base font-black uppercase tracking-wider text-zt-text">Links</h2>
-            <div className="flex flex-wrap gap-2">
+          <section aria-labelledby="links-heading">
+            <SectionCap id="links-heading">Links</SectionCap>
+            <ul className="flex flex-wrap gap-2">
               {socials.map((s) => (
-                <a key={s.key} href={s.href} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zt-surface border border-zt-border hover:border-zt-primary text-xs font-bold text-zt-text">
-                  <span className="text-[10px] font-black uppercase text-zt-muted">{s.label}</span>
-                  <span className="truncate max-w-[14rem]">{s.key === 'website' ? s.value.replace(/^https?:\/\//, '') : `@${s.value}`}</span>
-                  <ExternalLink className="w-3 h-3 text-zt-muted" aria-hidden="true" />
-                </a>
+                <li key={s.key}>
+                  <a href={s.href} target="_blank" rel="noopener noreferrer nofollow" className="flex flex-col gap-0.5 border-2 border-rule bg-sheet px-4 py-2.5 no-underline hover:bg-ink hover:text-sheet group">
+                    <Cap as="span" className="group-hover:text-sheet">{s.label}</Cap>
+                    <span className="text-[15px] font-bold text-ink group-hover:text-sheet truncate max-w-[16rem]">
+                      {s.key === 'website' ? s.value.replace(/^https?:\/\//, '') : `@${s.value}`} <span aria-hidden="true">↗</span>
+                    </span>
+                  </a>
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
         )}
 
-        <p className="text-[11px] text-zt-muted">
+        <p className={NOTE}>
           Everything on this page was entered by {a.displayName} and is shown because they turned on their public profile.
-          Is this you? Edit it from your <Link href="/website/account" className="underline hover:text-zt-text">account page</Link>.
+          Is this you? Edit it from your <Link href="/website/account" className={textLink}>account page</Link>.
         </p>
       </div>
     </WebsiteShell>

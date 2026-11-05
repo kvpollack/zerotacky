@@ -515,3 +515,34 @@ list they carry, and every public show page links there. Pure lib + two componen
 - Left for later: nudge promoters to fill specs (a show with none shows every gym and says so); match on per-gym
   equipment detail (yoke weight, log diameter) once gyms record it; surface the link on the athlete's registered-show
   cards in /website/account.
+
+## Sweep item 3 + 4 hand redraws: athlete profile, gym page, how-it-works (11/5)
+
+Four public pages off the bridge, render only; data loaders, metadata, JSON-LD and the copy files are untouched. Old-skin
+class hits (`rounded-*`, `bg-zt-*`, `text-zt-*`) 51 + 40 + 33 + 25 -> 0. No lucide icons remain on these routes.
+
+- **`/athletes/<username>`** (`app/athletes/[username]/page.tsx`): identity band (square avatar cell with initials in
+  the sheet face when there is no photo, @handle cap, name, roles as bordered chips) over a four-cell facts strip
+  (Location, Home gym with directory link, Favorite lift + note, Shows on record with podium count); then one ruled block
+  per section: PRs (lift / value in pen), Show history (date · venue cap, show link, division, place in bold pen when
+  podium with pts and event wins), Shows they run (status chip, pen when live), Gyms, Links (bordered tiles). Mixed text
+  such as "3rd of 4" or "250 lb" stays in the body face; the sheet face is for pure numbers only.
+- **`/gyms/<slug>`** (`app/gyms/[slug]/page.tsx`): the gym's colour fills one band (name · city, state; type · claim
+  status · demo) exactly like the promoter band on a show page, then a facts strip (Address, Day pass + price in pen,
+  Drop-in hours, Contact & booking link), the policy block, provenance text with `Claim this gym` (pen key) and `Not
+  right? Report it` (line key), Equipment as a two-column ruled list with category chips, Hosted shows as a ruled list.
+- **`/how-it-works`** and **`/how-it-works/first-show`**: jump links are small line keys; each track's steps are rows
+  of one ruled block with the step number in the sheet face (pen); the first-show call-out is the block's last row on
+  ground with an ink key; FAQ groups and the roadmap are two-column ruled blocks. The guide draws each step as one
+  block: number + title cell, body cell, "On the public side" cell on ground, one cell per screenshot (2 px rule on the
+  image, no radius); outro block with pen + line keys.
+- **Odd counts in two-column blocks:** a `.zt-block` paints its gaps in the rule colour, so an odd number of cells left
+  a dark hole. Both pages append an empty `hidden sm:block` cell when the count is odd (`Filler` in how-it-works, inline
+  on the gym page). Same reason the train-for needs on `/gyms` are wrapped tiles rather than a grid.
+- **Claim form note** (`app/gyms/[slug]/claim/GymClaimClient.tsx`, Kurt 11/5): the name and email prefill from the
+  signed-in account read like a placeholder. A line under the name now says "Filled from your account. Change it if you
+  are filing this for someone else." Rendered only when a session exists; the page itself is still on the bridge.
+- Checked on staging :3079 at 1280 and 390 (`~/.aki/tmp/zt/shots/athlete.py <paths>`, `shots/claim_note.py`), zero page
+  errors; tsc clean, 588 tests. Screenshots `~/Downloads/zt_ui_1105/`.
+- Still on the bridge (sweep item 5): gym claim form, gym add / My Gym, admin claims, legal, demo, trainers, athletes
+  list, `/gyms` browser body and filter bar, `/shows` filter block, sign-in form.
