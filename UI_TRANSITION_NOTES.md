@@ -741,3 +741,31 @@ out and the day before. Migration 042, 631 tests (+11), tsc clean. Addresses nev
   athletes only (pending ones are not on the roster yet); no "resume" key in the UI for a half-finished send (the
   route supports `{broadcastId}`; the history shows "in progress" when it happens, and the next cron pass finishes
   reminders on its own); Resend free tier is 3,000 a month, the limits above keep one show well under it.
+
+## Astra audit of #10: fixes BC-01 to BC-11 (11/6, migration 043)
+
+Report: `Downloads/zerotacky_astra_audit_10_2026-11-06.md`. HOLD lifted by this set. 637 tests (+6), tsc clean. 043 is
+additive on 042 (constraint widened, two columns, functions replaced); every scenario below was reproduced against 043 on
+staging inside a rolled-back transaction, and the UI findings on the dev server.
+
+| ID | Disposition |
+|---|---|
+| BC-01 High | **Fixed.** `zt_broadcast_payload` / `zt_broadcast_mark_many` take `p_server boolean`; a null uid is accepted only with it (the cron route passes true; the promoter route never does), and a signed-in caller must be owner/member (`zt_broadcast_caller_ok`). Old signatures dropped. Reproduced: anon + false = "Sign in required"; other user = "no access"; anon + true (cron) = OK. |
+| BC-02 High | **Fixed.** Claims are chunks of up to 100 in id order; each chunk goes to Resend with a deterministic `Idempotency-Key` (`chunkIdempotencyKey` = broadcast id + sha256 of the row ids), so a retry of the same chunk is delivered once; provider ids are stored per recipient. A failed outcome save (two tries) stops the pass and is returned as `unresolved`; the browser shows "N not confirmed, check the history before sending again" and never a bare success. Reminder retry window cut to 20 h to stay inside the 24 h key life. |
+| BC-03 Med | **Fixed.** Claim rechecks each row's registration (opt-out, status still in the audience, show-wide suppression) and skips the rest; `zt_mail_opt_out` skips anything still queued for that address. New recipient status `skipped`. |
+| BC-04 Med | **Fixed.** `zt_mail_suppressed(meet, email)`: an opted-out registration suppresses its effective address show-wide; create, queue and claim all consult it; opt-out flips every registration of that person (same address or same account) in the meet. Reproduced with a second registration of the same address. |
+| BC-05 Med | **Fixed.** `pg_advisory_xact_lock` on the meet (real sends) or the promoter (tests) before counting. Source fix; not stress-tested. |
+| BC-06 Med | **Fixed.** `zt_reminder_meet_ok` (reminders on, listed, not demo, live status, date not past in New York) is checked when queuing, in the "still queued" lookup, and at claim; a failing claim skips the rows and closes the broadcast (`closed: 'ineligible'`). Reminder insert uses `ON CONFLICT DO NOTHING`. |
+| BC-07 Med | **Fixed.** `sendBatchViaResend` returns `sent` / `retry` (429, 5xx, network, timeout) / `rejected`; retry marks keep rows queued with the error noted and the attempt counted; five attempts then `failed`. The pass stops after a retry outcome rather than hammering the provider; the cron picks reminders up next day, the promoter has a **Resume** key in the history. |
+| BC-08 Med | **Fixed.** Outcomes are saved per chunk; the runner takes a deadline (promoter route 40 s of 60, cron 240 s of 300 shared across broadcasts) and reports `remaining` and `time_budget`; batch timeout 15 s. |
+| BC-09 Med | **Fixed.** Routes return public error codes (`provider_unavailable`, `provider_rejected`, `record_failed`, `time_budget`) and fixed sentences; provider detail is written to the recipient row only; any address in a message is scrubbed (`scrubAddresses`). |
+| BC-10 Low | **Fixed.** Arming stores the reach it was armed with; the confirm sends only if the reach is unchanged, and any registrations refresh disarms. Reproduced: declining an athlete while armed disarmed the key. |
+| BC-11 Low | **Fixed.** The subtraction is gone; the line reads "about N with an email address. An estimate from this list; opt-outs and duplicate addresses come off when you send", capped at 500. Opted-out count is reported in the reminders paragraph. |
+
+Also from the audit table: control characters refused in the subject (SQL and route); `CRON_SECRET` compared with
+`timingSafeEqual`. Not changed: `isDemo` is not passed by the parent (the database refuses demo meets; the section's
+copy is a courtesy); the 500 cap still applies before dedupe.
+
+**Operator steps**: apply 043 to prod (functions change signature; the deployed code and the database must move
+together, so push and migrate in the same sitting). Then the same two as before: `CRON_SECRET` on Vercel, first real test
+send from the Iron Harbor editor.

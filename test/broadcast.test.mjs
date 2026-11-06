@@ -106,12 +106,60 @@ describe('audienceCount', () => {
 });
 
 describe('describeBroadcastResult', () => {
+  const R = (o) => ({ ok: true, recipients: 0, sent: 0, failed: 0, unresolved: 0, remaining: 0, errors: [], ...o });
   test('wording for test, nobody, counts, errors', () => {
-    assert.match(C.describeBroadcastResult({ ok: true, recipients: 1, sent: 1, failed: 0 }, true), /Test sent to your account email/);
-    assert.match(C.describeBroadcastResult({ ok: true, recipients: 0, sent: 0, failed: 0 }, true), /confirmed email/);
-    assert.match(C.describeBroadcastResult({ ok: true, recipients: 0, sent: 0, failed: 0 }, false), /Nobody to send to/);
-    assert.equal(C.describeBroadcastResult({ ok: true, recipients: 12, sent: 11, failed: 1 }, false), 'Sent to 11 athletes, 1 failed.');
-    assert.equal(C.describeBroadcastResult({ ok: true, recipients: 1, sent: 1, failed: 0 }, false), 'Sent to 1 athlete.');
-    assert.equal(C.describeBroadcastResult({ ok: false, recipients: 0, sent: 0, failed: 0, error: 'Limit reached' }, false), 'Not sent: Limit reached');
+    assert.match(C.describeBroadcastResult(R({ recipients: 1, sent: 1 }), true), /Test sent to your account email/);
+    assert.match(C.describeBroadcastResult(R({}), true), /confirmed email/);
+    assert.match(C.describeBroadcastResult(R({ recipients: 1, unresolved: 1 }), true), /could not be recorded/);
+    assert.match(C.describeBroadcastResult(R({}), false), /Nobody to send to/);
+    assert.equal(C.describeBroadcastResult(R({ recipients: 12, sent: 11, failed: 1 }), false), 'Sent to 11 athletes; 1 failed.');
+    assert.equal(C.describeBroadcastResult(R({ recipients: 1, sent: 1 }), false), 'Sent to 1 athlete.');
+    assert.equal(C.describeBroadcastResult(R({ ok: false, error: 'Limit reached' }), false), 'Not sent: Limit reached');
+  });
+  test('BC-02: unrecorded and still-queued outcomes are named, never folded into success', () => {
+    const s = C.describeBroadcastResult(R({ recipients: 100, sent: 50, unresolved: 50 }), false);
+    assert.match(s, /Sent to 50 athletes; 50 not confirmed/);
+    assert.match(s, /check the history before sending again/);
+    assert.match(C.describeBroadcastResult(R({ recipients: 100, sent: 100, remaining: 200 }), false), /200 still queued \(resume from the history\)/);
+  });
+});
+
+const RUN = await import(`${ROOT}/lib/email/broadcastRun.ts`);
+const SEND = await import(`${ROOT}/lib/email/send.ts`);
+
+describe('broadcastRun helpers (043)', () => {
+  test('chunk idempotency key is deterministic over the same rows in the same order', () => {
+    const k1 = RUN.chunkIdempotencyKey('b1', ['r1', 'r2', 'r3']);
+    assert.equal(k1, RUN.chunkIdempotencyKey('b1', ['r1', 'r2', 'r3']));
+    assert.notEqual(k1, RUN.chunkIdempotencyKey('b1', ['r1', 'r2']));
+    assert.notEqual(k1, RUN.chunkIdempotencyKey('b2', ['r1', 'r2', 'r3']));
+    assert.match(k1, /^zt-bc-b1-[0-9a-f]{32}$/);
+  });
+  test('BC-09: addresses are scrubbed from error text', () => {
+    assert.equal(RUN.scrubAddresses('Resend 422: invalid to private-account@example.invalid, retry'), 'Resend 422: invalid to [address], retry');
+    assert.equal(RUN.scrubAddresses('no address here'), 'no address here');
+  });
+});
+
+describe('sendBatchViaResend outcome classes (043 BC-07)', () => {
+  const mails = [{ to: 'a@x.com', subject: 's', text: 't', html: 'h', tag: 'k' }];
+  const withFetch = async (impl, fn) => { const real = globalThis.fetch; globalThis.fetch = impl; try { return await fn(); } finally { globalThis.fetch = real; } };
+  test('2xx -> sent with ids; idempotency header forwarded', async () => {
+    let seen;
+    const r = await withFetch(async (url, init) => { seen = init; return new Response(JSON.stringify({ data: [{ id: 'm1' }] }), { status: 200 }); },
+      () => SEND.sendBatchViaResend('k', mails, { idempotencyKey: 'zt-bc-1-abc' }));
+    assert.deepEqual(r, { kind: 'sent', ids: ['m1'] });
+    assert.equal(seen.headers['Idempotency-Key'], 'zt-bc-1-abc');
+  });
+  test('429 and 5xx -> retry; 4xx -> rejected; network -> retry', async () => {
+    const st = (s) => async () => new Response('x', { status: s });
+    assert.equal((await withFetch(st(503), () => SEND.sendBatchViaResend('k', mails))).kind, 'retry');
+    assert.equal((await withFetch(st(429), () => SEND.sendBatchViaResend('k', mails))).kind, 'retry');
+    assert.equal((await withFetch(st(422), () => SEND.sendBatchViaResend('k', mails))).kind, 'rejected');
+    assert.equal((await withFetch(async () => { throw new TypeError('fetch failed'); }, () => SEND.sendBatchViaResend('k', mails))).kind, 'retry');
+  });
+  test('empty batch is a no-op; more than 100 refused', async () => {
+    assert.deepEqual(await SEND.sendBatchViaResend('k', []), { kind: 'sent', ids: [] });
+    await assert.rejects(() => SEND.sendBatchViaResend('k', Array.from({ length: 101 }, () => mails[0])), /at most 100/);
   });
 });
