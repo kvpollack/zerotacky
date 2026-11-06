@@ -6,7 +6,7 @@
 // per station with the crew, the events in running order, the weights per division, the structured spec and the
 // standards the head judge sets at the rules meeting. Staff never appears on a public page.
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, CheckCircle2, Printer, Plus, Trash2, Users } from 'lucide-react';
 import type { MeetListing } from '@/lib/promoter/contract';
 import type { Division, EventDef, Station } from '@/lib/types';
@@ -21,6 +21,8 @@ interface StaffSectionProps {
   divisions: Division[];
   events: EventDef[];
   onSaveListing: (patch: Partial<MeetListing>) => Promise<{ error: string | null }>;
+  // MD-06: the parent folds this into its unsaved-work guard (dirty bar + beforeunload)
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 interface StaffRow { name: string; role: StaffRole; station: string; contact: string; note: string }
@@ -31,11 +33,15 @@ const KEY = 'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zt-inset b
 function toRows(staff: MeetStaff[] | null): StaffRow[] {
   return (staff ?? []).map((s) => ({ name: s.name, role: s.role, station: s.station ?? '', contact: s.contact ?? '', note: s.note ?? '' }));
 }
+// MD-06: the raw rows (trimmed) decide dirtiness, so an invalid draft (a contact with no name) still counts as unsaved work
+// and Save stays enabled to explain what is missing. Rows with nothing typed are ignored.
 function rowsKey(rows: StaffRow[]): string {
-  return JSON.stringify(cleanStaff(rows).staff ?? []);
+  return JSON.stringify(rows
+    .map((r) => ({ name: r.name.trim(), role: r.role, station: r.station.trim(), contact: r.contact.trim(), note: r.note.trim() }))
+    .filter((r) => r.name || r.station || r.contact || r.note));
 }
 
-export default function StaffSection({ meetName, meetDate, listing, stations, divisions, events, onSaveListing }: StaffSectionProps) {
+export default function StaffSection({ meetName, meetDate, listing, stations, divisions, events, onSaveListing, onDirtyChange }: StaffSectionProps) {
   const [rows, setRows] = useState<StaffRow[]>(() => toRows(listing.staff));
   const [savedKey, setSavedKey] = useState(() => rowsKey(toRows(listing.staff)));
   const [saving, setSaving] = useState(false);
@@ -50,7 +56,17 @@ export default function StaffSection({ meetName, meetDate, listing, stations, di
   }
 
   const dirty = rowsKey(rows) !== savedKey;
-  const stationLabels = useMemo(() => stations.map((s) => s.label), [stations]);
+  useEffect(() => { onDirtyChange?.(dirty); }, [dirty, onDirtyChange]);
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
+  // MD-15: rows store the station ID; labels are display only (two stations may share a label). Rows saved before this
+  // change hold a label and are matched to the first station with that label when displayed.
+  const stationIds = useMemo(() => new Set(stations.map((s) => s.id)), [stations]);
+  const stationIdFor = (raw: string): string => {
+    if (!raw) return '';
+    if (stationIds.has(raw)) return raw;
+    const norm = (s: string) => s.trim().toLowerCase().replace(/^station\s+/, '');
+    return stations.find((s) => norm(s.label) === norm(raw))?.id ?? raw;
+  };
   const counts = useMemo(() => {
     const c: Partial<Record<StaffRole, number>> = {};
     for (const r of cleanStaff(rows).staff ?? []) c[r.role] = (c[r.role] ?? 0) + 1;
@@ -64,7 +80,7 @@ export default function StaffSection({ meetName, meetDate, listing, stations, di
   const handleSave = async () => {
     setError(null);
     setNotice(null);
-    const c = cleanStaff(rows);
+    const c = cleanStaff(rows.map((r) => ({ ...r, station: stationIdFor(r.station) })));
     if (c.problem) { setError(c.problem); return; }
     setSaving(true);
     const res = await onSaveListing({ staff: c.staff });
@@ -79,14 +95,17 @@ export default function StaffSection({ meetName, meetDate, listing, stations, di
   const handleReset = () => { setRows(toRows(listing.staff)); setError(null); };
 
   const openBriefing = () => {
-    const c = cleanStaff(rows);
+    const c = cleanStaff(rows.map((r) => ({ ...r, station: stationIdFor(r.station) })));
+    if (c.problem) { setError(c.problem); return; }
     const html = briefingHtml({
       meetName, meetDate, federation: listing.federation, promoterContact: listing.promoterContact, schedule: listing.schedule,
       stations, divisions, events, staff: c.staff,
     });
     const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-    const w = window.open(url, '_blank', 'noopener');
+    // MD-13: with 'noopener' Chrome returns null even when the tab opened, so open first and cut the opener link after
+    const w = window.open(url, '_blank');
     if (!w) setError('Your browser blocked the briefing tab. Allow pop-ups for this site and try again.');
+    else w.opener = null;
     window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
   };
 
@@ -129,10 +148,10 @@ export default function StaffSection({ meetName, meetDate, listing, stations, di
             </div>
             <div>
               <label htmlFor={`staff-station-${i}`} className="sr-only">Station</label>
-              <select id={`staff-station-${i}`} value={stationLabels.includes(r.station) ? r.station : r.station ? '__other' : ''} onChange={(e) => setRow(i, { station: e.target.value === '__other' ? r.station : e.target.value })} className={INPUT}>
+              <select id={`staff-station-${i}`} value={stationIds.has(stationIdFor(r.station)) ? stationIdFor(r.station) : r.station ? '__other' : ''} onChange={(e) => setRow(i, { station: e.target.value === '__other' ? r.station : e.target.value })} className={INPUT}>
                 <option value="">Floating</option>
-                {stationLabels.map((s) => <option key={s} value={s}>{s}</option>)}
-                {r.station && !stationLabels.includes(r.station) && <option value="__other">{r.station}</option>}
+                {stations.map((s) => <option key={s.id} value={s.id}>{stations.filter((x) => x.label === s.label).length > 1 ? `${s.label} (${s.id})` : s.label}</option>)}
+                {r.station && !stationIds.has(stationIdFor(r.station)) && <option value="__other">{r.station}</option>}
               </select>
             </div>
             <div>

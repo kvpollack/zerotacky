@@ -16,8 +16,8 @@ const events = [
     divisionWeights: { d1: 350 }, hasHeightCallout: true, heightLabel: 'Yoke height', divisionDefaultHeights: { d1: '7' } },
 ];
 const staff = [
-  { name: 'Pat', role: 'head_judge', station: 'Station 1', contact: '555-0100', note: 'arrives 7:00' },
-  { name: 'Lee', role: 'loader', station: 'station 1' },
+  { name: 'Pat', role: 'head_judge', station: 'A', contact: '555-0100', note: 'arrives 7:00' },
+  { name: 'Lee', role: 'loader', station: 'station 1' },   // a row saved before ids were stored
   { name: 'Sam', role: 'scorer' },
   { name: 'Ro', role: 'judge', station: 'Pit 9' },
 ];
@@ -56,6 +56,12 @@ describe('briefing cards (046, #12)', () => {
     assert.ok(html.includes('Promoter: promo@x.y'));
     assert.ok(html.includes('first event 09:00'));
     assert.equal((html.match(/<section class="card">/g) ?? []).length, 3);
+  });
+  test('duplicate station labels keep the judge on one card and name the id (MD-15)', () => {
+    const dup = [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 1' }];
+    const cards = B.briefingCards({ ...input, stations: dup, staff: [{ name: 'Ro', role: 'judge', station: 'B' }] });
+    assert.deepEqual(cards.map((c) => c.title), ['Station 1 (A)', 'Station 1 (B)', 'Floating crew']);
+    assert.deepEqual(cards.map((c) => c.people.map((p) => p.name)), [[], ['Ro'], []]);
   });
   test('a meet with no stations gets a single card holding every division', () => {
     const cards = B.briefingCards({ ...input, stations: [], divisions: divisions.map((d) => ({ ...d, flight: 'ALL' })), staff: null });

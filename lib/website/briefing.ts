@@ -68,14 +68,18 @@ function loadLines(e: EventDef, divs: Division[]): string[] {
 
 export function briefingCards(input: BriefingInput): BriefingCard[] {
   const stations = input.stations.length ? input.stations : [{ id: 'A', label: 'Station 1' }];
-  const labels = stations.map((s) => s.label);
-  const groups = new Map(staffByStation(input.staff, labels).map((g) => [g.station, g.people] as const));
+  const grouped = staffByStation(input.staff, stations);
+  const groups = new Map(grouped.map((g) => [g.station, g.people] as const));
+  // MD-15: two stations with the same label get the id appended so the cards stay distinguishable
+  const labelCount = new Map<string, number>();
+  for (const s of stations) labelCount.set(s.label, (labelCount.get(s.label) ?? 0) + 1);
+  const titleOf = (st: Station) => ((labelCount.get(st.label) ?? 0) > 1 ? `${st.label} (${st.id})` : st.label);
   const cards: BriefingCard[] = stations.map((st) => {
     const divs = input.divisions.filter((d) => d.flight === st.id || (d.flight === 'ALL' && stations.length === 1));
     const events = stationEvents(st, input.events);
     return {
-      title: st.label,
-      people: (groups.get(st.label) ?? []).map((p) => ({ name: p.name, role: staffRoleLabel(p.role), note: p.note })),
+      title: titleOf(st),
+      people: (groups.get(st.id) ?? []).map((p) => ({ name: p.name, role: staffRoleLabel(p.role), note: p.note })),
       divisions: divs.map((d) => d.name),
       events: events.map((e) => ({
         number: e.eventNumber,
@@ -92,9 +96,10 @@ export function briefingCards(input: BriefingInput): BriefingCard[] {
   });
   // staff on a station name that matches no station, plus the floating crew
   const extra: BriefingCard['people'] = [];
-  for (const [station, people] of groups) {
-    if (labels.includes(station)) continue;
-    for (const p of people) extra.push({ name: p.name, role: station ? `${staffRoleLabel(p.role)} (${station})` : staffRoleLabel(p.role), note: p.note });
+  const ids = new Set(stations.map((s) => s.id));
+  for (const g of grouped) {
+    if (ids.has(g.station)) continue;
+    for (const p of g.people) extra.push({ name: p.name, role: g.station ? `${staffRoleLabel(p.role)} (${g.label})` : staffRoleLabel(p.role), note: p.note });
   }
   cards.push({ title: 'Floating crew', people: extra, divisions: [], events: [], floating: true });
   return cards;

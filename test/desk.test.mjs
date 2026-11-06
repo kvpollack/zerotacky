@@ -15,7 +15,9 @@ describe('desk rules', () => {
     assert.equal(D.parseKg('19.9'), null);
     assert.equal(D.parseKg('301'), null);
     assert.equal(D.parseKg('abc'), null);
-    assert.equal(D.parseKg(92.449), 92.45);
+    assert.equal(D.parseKg(92.449), null);   // MD-16: three decimals are refused, not rounded
+    assert.equal(D.parseKg(92.45), 92.45);
+    assert.equal(D.parseKg(19.999), null);
   });
   test('lb and kg conversions', () => {
     assert.equal(D.lbToKg(200), 90.72);
@@ -86,6 +88,14 @@ describe('desk fixture api', () => {
     const moved = (await api.getMeet(id)).data.state.athletes.find((a) => a.id === athlete.id);
     assert.equal(moved.divisionId, other.id);
     assert.match((await api.updateDeskAthlete(id, athlete.id, { divisionId: 'ghost' })).error, /not on this meet/);
+    // MD-18: a rejected patch changes nothing, even the parts that were valid on their own
+    const before = (await api.getMeet(id)).data.state.athletes.find((a) => a.id === athlete.id).bodyweight;
+    assert.match((await api.updateDeskAthlete(id, athlete.id, { weighedKg: 95.5, divisionId: 'ghost' })).error, /not on this meet/);
+    assert.equal((await api.getMeet(id)).data.state.athletes.find((a) => a.id === athlete.id).bodyweight, before);
+    assert.equal((await api.getDesk(id)).data.checkins[athlete.id].weighedKg, 92.45);
+    // MD-16: three decimals are refused on the raw value
+    assert.match((await api.updateDeskAthlete(id, athlete.id, { weighedKg: 92.455 })).error, /two decimals/);
+    assert.match((await api.setDivisionCap(id, other.id, 90.001)).error, /two decimals/);
 
     const scored = detail.state.athletes.find((a) => detail.state.results.some((x) => x.athleteId === a.id));
     if (scored) {
@@ -102,6 +112,8 @@ describe('desk fixture api', () => {
     r = await api.updateDeskAthlete(id, athlete.id, { checkedIn: false, weighedKg: null });
     assert.equal(r.data.checkedInAt, null);
     assert.equal(r.data.weighedKg, null);
+    // MD-08: clearing the weigh-in clears the roster mirror too
+    assert.equal((await api.getMeet(id)).data.state.athletes.find((a) => a.id === athlete.id).bodyweight, undefined);
   });
   test('signed out is refused', async () => {
     const api = F.createFixturePromoterApi({ signedOut: true });

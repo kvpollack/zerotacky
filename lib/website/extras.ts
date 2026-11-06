@@ -13,7 +13,7 @@ export type StaffRole = 'judge' | 'head_judge' | 'state_rep' | 'volunteer' | 'lo
 export interface MeetStaff {
   name: string;        // <= 60
   role: StaffRole;
-  station?: string;    // <= 40, free text matched against meet.stations by name ('A', 'Station 1', ...)
+  station?: string;    // <= 40: a station id ('A', 'B'; the editor saves ids since MD-15) or, on rows saved before that, a label ('Station 1')
   contact?: string;    // <= 80, phone or email, never printed on a public page
   note?: string;       // <= 160, e.g. 'Arrives 7:00, brings tape measure'
 }
@@ -38,12 +38,19 @@ export function isStaffRole(v: unknown): v is StaffRole {
   return typeof v === 'string' && (STAFF_ROLES as readonly string[]).includes(v);
 }
 
-const HTTPS = /^https:\/\/\S+$/;
+// MD-17: a hostname with at least one dot (no 'https://?', no localhost); mirrors zt_https_url_ok in 047
+const HTTPS = /^https:\/\/[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+(:\d{1,5})?([/?#]\S*)?$/;
 const LOGO_PATH = /^[0-9a-f-]{36}\/[A-Za-z0-9._-]{1,120}$/;
 
-/** 'https://...' within the limit, or null; a bare domain or http:// is refused (the server does the same). */
+/** 'https://host.tld/...' within the limit; a bare domain, http:// or a scheme with no host is refused (the server does the same). */
 export function httpsUrlOk(v: unknown, max = URL_MAX): v is string {
-  return typeof v === 'string' && v.length <= max && HTTPS.test(v);
+  if (typeof v !== 'string' || v.length > max || !HTTPS.test(v)) return false;
+  try {
+    const u = new URL(v);
+    return u.protocol === 'https:' && u.hostname.includes('.');
+  } catch {
+    return false;
+  }
 }
 
 /** Typed text -> saveable link or null (blank). `problem` is set when the text is not an https link. */
@@ -162,20 +169,25 @@ export function cleanStaff(list: Array<Partial<Record<keyof MeetStaff, unknown>>
   return { staff: out.length ? out : null, problem: null };
 }
 
-/** Staff grouped by station for the briefing cards: '' = floating (no station). Stations keep the meet's order. */
-export function staffByStation(staff: MeetStaff[] | null | undefined, stationNames: string[]): Array<{ station: string; people: MeetStaff[] }> {
+/** Staff grouped by station for the briefing cards, keyed by station id (MD-15: two stations may share a label, ids are
+ *  unique). A row's `station` is matched as an id first, then as a label (rows saved before ids were stored; when two
+ *  stations share that label the row goes to the first and is flagged nowhere else, so the editor shows ids). '' = floating. */
+export function staffByStation(staff: MeetStaff[] | null | undefined, stations: Array<{ id: string; label: string }>): Array<{ station: string; label: string; people: MeetStaff[] }> {
   const groups = new Map<string, MeetStaff[]>();
   const norm = (s: string) => s.trim().toLowerCase().replace(/^station\s+/, '');
-  const canon = new Map(stationNames.map((n) => [norm(n), n] as const));
+  const byId = new Map(stations.map((s) => [s.id, s] as const));
+  const byLabel = new Map<string, string>();
+  for (const s of stations) if (!byLabel.has(norm(s.label))) byLabel.set(norm(s.label), s.id);
   for (const p of staff ?? []) {
-    const key = p.station ? (canon.get(norm(p.station)) ?? p.station.trim()) : '';
+    const raw = p.station?.trim() ?? '';
+    const key = !raw ? '' : byId.has(raw) ? raw : (byLabel.get(norm(raw)) ?? raw);
     const list = groups.get(key) ?? [];
     list.push(p);
     groups.set(key, list);
   }
-  const ordered: Array<{ station: string; people: MeetStaff[] }> = [];
-  for (const n of stationNames) if (groups.has(n)) ordered.push({ station: n, people: groups.get(n)! });
-  for (const [k, people] of groups) if (k && !stationNames.includes(k)) ordered.push({ station: k, people });
-  if (groups.has('')) ordered.push({ station: '', people: groups.get('')! });
+  const ordered: Array<{ station: string; label: string; people: MeetStaff[] }> = [];
+  for (const s of stations) if (groups.has(s.id)) ordered.push({ station: s.id, label: s.label, people: groups.get(s.id)! });
+  for (const [k, people] of groups) if (k && !byId.has(k)) ordered.push({ station: k, label: k, people });
+  if (groups.has('')) ordered.push({ station: '', label: '', people: groups.get('')! });
   return ordered;
 }

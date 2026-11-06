@@ -217,6 +217,11 @@ export function zonedToUtc(dateIso: string, hhmm: string, tz: string): Date | nu
   let utc = guess - off1 * 60000;
   const off2 = tzOffsetMinutes(new Date(utc), tz);
   if (off2 !== off1) utc = guess - off2 * 60000;
+  // MD-12: a wall time inside a spring-forward gap (02:30 on 2026-03-08 in New York) does not exist. The round trip
+  // then lands an hour early (01:30); move forward by the gap instead, which is what clocks and calendar apps do.
+  // An ambiguous fall-back time (01:30 on 2026-11-01) keeps its first occurrence (the daylight-time one).
+  const back = tzOffsetMinutes(new Date(utc), tz);
+  if (utc + back * 60000 !== guess) utc = guess - Math.min(off1, off2) * 60000;   // the pre-transition offset, i.e. forward by the gap
   return new Date(utc);
 }
 
@@ -270,7 +275,8 @@ export function buildShowIcs(show: IcsShow, now: Date = new Date()): string {
     show.url,
   ].join('\n');
 
-  const arrive = s?.checkIn || s?.weighInStart || s?.rulesMeeting || s?.start || null;
+  // MD-11: the calendar starts at the earliest same-day time the athlete must be there, whichever field holds it
+  const arrive = [s?.checkIn, s?.weighInStart, s?.weighInEnd, s?.rulesMeeting, s?.start].filter((t): t is string => Boolean(t)).sort()[0] ?? null;
   const startUtc = arrive ? zonedToUtc(show.date, arrive, tz) : null;
   let endUtc = s?.estimatedEnd ? zonedToUtc(show.date, s.estimatedEnd, tz) : null;
   if (startUtc && (!endUtc || endUtc <= startUtc)) endUtc = new Date(startUtc.getTime() + 8 * 3600_000);
