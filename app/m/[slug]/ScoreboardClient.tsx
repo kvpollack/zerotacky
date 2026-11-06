@@ -19,6 +19,7 @@ import StandingsSheet from '@/components/scorer/StandingsSheet';
 import type { AppState, Division, EventDef } from '@/lib/types';
 import useLayoutMode from '@/hooks/useLayoutMode';
 import { getDemoScoreboardState } from '@/lib/website/data';
+import { FOLLOW_KEY, notifyKey, upLine, upStatus } from '@/lib/tv/youreUp';
 
 const POLL_MS = 4000;
 
@@ -42,6 +43,40 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   const [division, setDivision] = useState<string>('ALL');
   const since = useRef<string | null>(null);
   const [themeOverride, setThemeOverride] = useState<string | null>(null);   // from ?theme=, dropped once the user picks
+  // #7b "you're up": the athlete this phone follows (device-local), and whether the browser may buzz on deck / up.
+  const [followId, setFollowId] = useState<string | null>(null);
+  const [followOpen, setFollowOpen] = useState(false);
+  const [notifyOn, setNotifyOn] = useState(false);
+  const lastNotify = useRef<string | null>(null);
+  useEffect(() => {
+    try { setFollowId(window.localStorage.getItem(FOLLOW_KEY(slug))); } catch { /* private mode */ }
+    setNotifyOn(typeof Notification !== 'undefined' && Notification.permission === 'granted');
+  }, [slug]);
+  const chooseFollow = (id: string | null) => {
+    setFollowId(id);
+    setFollowOpen(false);
+    lastNotify.current = null;
+    try {
+      if (id) window.localStorage.setItem(FOLLOW_KEY(slug), id); else window.localStorage.removeItem(FOLLOW_KEY(slug));
+    } catch { /* private mode */ }
+  };
+  const askNotify = async () => {
+    if (typeof Notification === 'undefined') return;
+    const p = await Notification.requestPermission();
+    setNotifyOn(p === 'granted');
+  };
+  const myStatus = useMemo(() => (state && followId ? upStatus(state, live, followId) : null), [state, live, followId]);
+  useEffect(() => {
+    if (!myStatus || !notifyOn) return;
+    const key = notifyKey(myStatus);
+    if (!key || key === lastNotify.current) return;
+    lastNotify.current = key;
+    const line = upLine(myStatus);
+    try {
+      new Notification(line.title, { body: line.detail, tag: key });
+      if ('vibrate' in navigator) navigator.vibrate?.(myStatus.kind === 'up' ? [200, 100, 200] : 150);
+    } catch { /* notifications unavailable on this browser */ }
+  }, [myStatus, notifyOn]);
   const [layout, toggleLayout] = useLayoutMode() as ['phone' | 'tv', () => void];
   const tv = layout === 'tv';
 
@@ -198,6 +233,52 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
           <button type="button" onClick={toggleLayout} className={`${textLink} font-normal`}>TV layout</button>
         </p>
       </div>
+
+      {/* #7b: follow one athlete; the banner says where they stand on their station. Device-local, no account. */}
+      {!completed && !cancelled && (
+        <div className="px-4 py-3 sm:px-5 flex flex-col gap-2 border-t border-rule">
+          {myStatus ? (() => {
+            const line = upLine(myStatus);
+            const tone = line.tone === 'up' ? 'bg-pen text-sheet' : line.tone === 'soon' ? 'border-2 border-pen text-ink' : 'border border-rule text-ink';
+            return (
+              <div role="status" aria-live="polite" className={`px-4 py-3 flex flex-col gap-0.5 ${tone}`}>
+                <span className="text-[18px] font-bold leading-tight break-words">{line.title}</span>
+                <span className={`text-[12px] ${line.tone === 'up' ? 'opacity-90' : CAP}`}>{line.detail}</span>
+              </div>
+            );
+          })() : null}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">
+            <button type="button" onClick={() => setFollowOpen((v) => !v)} className={textLink} aria-expanded={followOpen}>
+              {followId ? 'Follow someone else' : 'Follow an athlete: get told when they are up'}
+            </button>
+            {followId && <button type="button" onClick={() => chooseFollow(null)} className={textLink}>Stop following</button>}
+            {followId && typeof Notification !== 'undefined' && !notifyOn && Notification.permission !== 'denied' && (
+              <button type="button" onClick={() => void askNotify()} className={textLink}>Buzz this phone when on deck</button>
+            )}
+            {followId && notifyOn && <span className={`text-[12px] ${CAP}`}>Alerts on while this page is open</span>}
+          </div>
+          {followOpen && (
+            <label className="flex flex-col gap-1 text-[12px]">
+              <span className={CAP}>Athlete</span>
+              <select
+                value={followId ?? ''}
+                onChange={(e) => chooseFollow(e.target.value || null)}
+                className="min-h-10 px-3 bg-sheet border-2 border-rule text-[14px] font-bold text-ink"
+              >
+                <option value="">Choose…</option>
+                {[...state.divisions].sort((a, b) => a.sortOrder - b.sortOrder).map((d) => (
+                  <optgroup key={d.id} label={d.name}>
+                    {state.athletes.filter((a) => a.divisionId === d.id && a.status === 'active').sort((a, b) => a.name.localeCompare(b.name)).map((a) => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              <span className={`text-[11px] ${CAP}`}>Alerts only work while this page is open. On iPhone, add the page to your Home Screen first (Share, then Add to Home Screen).</span>
+            </label>
+          )}
+        </div>
+      )}
 
       {/* Up now per station. Hidden once the meet is completed (Astra DR-02). */}
       {!completed && (

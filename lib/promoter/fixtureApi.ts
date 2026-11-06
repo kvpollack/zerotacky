@@ -12,6 +12,9 @@ import {
   type ApiResult,
   type AthleteAccountLink,
   type DeletedMeet,
+  type DeskCheckin,
+  type DeskPatch,
+  type DeskState,
   type MyAthleteMeet,
   type MeetListing,
   type PromoterApi,
@@ -100,6 +103,7 @@ export function createFixturePromoterApi(
   // 023: in-memory account links keyed `${serverId}/${athleteId}`; any non-empty username resolves in the fixture.
   const athleteAccounts = new Map<string, AthleteAccountLink>();
   const follows = new Map<string, string>();   // slug -> ISO followed at (010 fixture; this tab only)
+  const desks = new Map<string, DeskState>();  // 045 fixture: serverId -> desk rows (this tab only)
   // Display name of the organizer per meet; fixture meets belong to the demo user, bridged /shows records carry
   // their own promoterName.
   const ownerNames = new Map<string, string | null>();
@@ -158,6 +162,7 @@ export function createFixturePromoterApi(
           theme: null,
           autoAccept: false,   // fixtures keep the review queue so the demo dashboard has pending rows
           resultsSubmittedAt: pubShow.resultsSubmittedAt ?? null,
+          schedule: pubShow.schedule ? clone(pubShow.schedule) : null,
         },
         divisionCount: pubShow.state.divisions.length,
         athleteCount: pubShow.state.athletes.length,
@@ -527,6 +532,74 @@ export function createFixturePromoterApi(
       if (follow) follows.set(slug, new Date().toISOString());
       else follows.delete(slug);
       return { data: { slug, following: follow }, error: null };
+    },
+
+    // 045 check-in desk (fixture): same rules as zt_desk_athlete / zt_desk_division_cap, in memory.
+    async getDesk(serverId: string): Promise<ApiResult<DeskState>> {
+      if (signedOut) return { data: null, error: 'Sign in required for the check-in desk.' };
+      if (!meets.some((m) => m.summary.serverId === serverId)) return { data: null, error: `No meet found with serverId "${serverId}".` };
+      const d = desks.get(serverId) ?? { caps: {}, checkins: {} };
+      return { data: clone(d), error: null };
+    },
+
+    async updateDeskAthlete(serverId: string, athleteId: string, patch: DeskPatch): Promise<ApiResult<DeskCheckin>> {
+      if (signedOut) return { data: null, error: 'Sign in required for the check-in desk.' };
+      const found = meets.find((m) => m.summary.serverId === serverId);
+      if (!found) return { data: null, error: `No meet found with serverId "${serverId}".` };
+      const athlete = found.state.athletes.find((a) => a.id === athleteId);
+      if (!athlete) return { data: null, error: 'That athlete is not on the roster any more. Reload the meet.' };
+      const desk = desks.get(serverId) ?? { caps: {}, checkins: {} };
+      const now = new Date().toISOString();
+      const row: DeskCheckin = desk.checkins[athleteId] ?? {
+        athleteId, checkedInAt: null, weighedKg: null, weighedAt: null, paperWaiverAt: null, cardVerifiedAt: null, note: null,
+      };
+      if (patch.checkedIn !== undefined) row.checkedInAt = patch.checkedIn ? row.checkedInAt ?? now : null;
+      if (patch.paperWaiver !== undefined) row.paperWaiverAt = patch.paperWaiver ? row.paperWaiverAt ?? now : null;
+      if (patch.cardVerified !== undefined) row.cardVerifiedAt = patch.cardVerified ? row.cardVerifiedAt ?? now : null;
+      if (patch.note !== undefined) {
+        const note = (patch.note ?? '').trim();
+        if (note.length > 120) return { data: null, error: 'Desk note is too long (120 characters max).' };
+        row.note = note || null;
+      }
+      if (patch.weighedKg !== undefined) {
+        if (patch.weighedKg === null) { row.weighedKg = null; row.weighedAt = null; }
+        else {
+          const kg = Math.round(Number(patch.weighedKg) * 100) / 100;
+          if (!Number.isFinite(kg)) return { data: null, error: 'Bodyweight must be a number in kilograms (like 92.4).' };
+          if (kg < 20 || kg > 300) return { data: null, error: `Bodyweight ${kg} kg is outside 20 to 300. Check the scale reading.` };
+          row.weighedKg = kg; row.weighedAt = now;
+          athlete.bodyweight = Math.round(kg * 2.2046226218 * 10) / 10;
+        }
+      }
+      if (patch.divisionId !== undefined && patch.divisionId && patch.divisionId !== athlete.divisionId) {
+        if (!found.state.divisions.some((d) => d.id === patch.divisionId)) return { data: null, error: 'That division is not on this meet.' };
+        if (found.state.results.some((r) => r.athleteId === athleteId)) {
+          return { data: null, error: 'This athlete already has a result; a reclass would orphan it. Clear the result on the scoring phone first.' };
+        }
+        const lots = found.state.athletes.filter((a) => a.divisionId === patch.divisionId).map((a) => a.lotNumber);
+        athlete.divisionId = patch.divisionId;
+        athlete.lotNumber = (lots.length ? Math.max(...lots) : 0) + 1;
+        for (const r of registrations) if (r.meetServerId === serverId && r.athleteId === athleteId) r.divisionId = patch.divisionId;
+      }
+      desk.checkins[athleteId] = row;
+      desks.set(serverId, desk);
+      found.summary = { ...found.summary, updatedAt: now };
+      return { data: clone(row), error: null };
+    },
+
+    async setDivisionCap(serverId: string, divisionId: string, capKg: number | null): Promise<ApiResult<{ divisionId: string; capKg: number | null }>> {
+      if (signedOut) return { data: null, error: 'Sign in required for the check-in desk.' };
+      const found = meets.find((m) => m.summary.serverId === serverId);
+      if (!found) return { data: null, error: `No meet found with serverId "${serverId}".` };
+      if (!found.state.divisions.some((d) => d.id === divisionId)) return { data: null, error: 'That division is not on this meet.' };
+      if (capKg !== null && (!Number.isFinite(capKg) || capKg < 20 || capKg > 300)) {
+        return { data: null, error: 'Weight cap must be between 20 and 300 kg (leave it blank for no cap).' };
+      }
+      const desk = desks.get(serverId) ?? { caps: {}, checkins: {} };
+      if (capKg === null) delete desk.caps[divisionId]; else desk.caps[divisionId] = Math.round(capKg * 100) / 100;
+      desks.set(serverId, desk);
+      found.summary = { ...found.summary, updatedAt: new Date().toISOString() };
+      return { data: { divisionId, capKg: capKg === null ? null : desk.caps[divisionId] }, error: null };
     },
 
     async markResultsSubmitted(serverId: string): Promise<ApiResult<{ resultsSubmittedAt: string }>> {

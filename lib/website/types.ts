@@ -3,6 +3,7 @@
 
 import type { AppState, Athlete, Division, EventDef, Meet, Result, ScoredRow } from '../types';
 import type { ZtTheme } from './theme';
+import type { MeetSchedule } from './schedule';
 
 export type ShowCompetitionStatus =
   | 'upcoming'
@@ -98,6 +99,7 @@ export interface PublicShowSummary {
   externalHost?: string;
   isPublicListed?: boolean;      // 037: false on a show page reached only through the retention rule below
   resultsSubmittedAt?: string;   // 037: ISO; results sent to the federation. The show page stays up when unlisted.
+  schedule?: MeetSchedule;       // 044: meet-day timeline; the show page prints it and /shows/<slug>/calendar.ics is built from it
 }
 
 export interface PublicShowRecord extends PublicShowSummary {

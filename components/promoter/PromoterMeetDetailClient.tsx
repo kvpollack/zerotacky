@@ -52,6 +52,7 @@ import { isLiveBackend, usePromoterApi } from '@/lib/promoter/usePromoterApi';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import { describeEmailResult, requestRegistrationEmail } from '@/lib/email/client';
 import type { AppState, Athlete, Division, EventDef, Meet } from '@/lib/types';
+import type { DeskPatch, DeskState } from '@/lib/promoter/contract';
 import type { RosterPlan } from '@/lib/roster/import';
 import ListingSection from './ListingSection';
 import { useAuth } from '@/lib/auth/useAuth';
@@ -60,6 +61,7 @@ import BroadcastSection from './BroadcastSection';
 import { fetchRegistrationCards, openCardInNewTab, type MembershipCard } from '@/lib/website/membershipCards';
 import AthleteAccountsSection from './AthleteAccountsSection';
 import MeetDaySection from './MeetDaySection';
+import CheckInDeskSection from './CheckInDeskSection';
 import ResultsPackSection from './ResultsPackSection';
 
 type SectionId =
@@ -144,6 +146,15 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   }, []);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
+  // 045 check-in desk (feature gaps #8): side data like the cards; a failure here must not block the meet.
+  const [desk, setDesk] = useState<DeskState | null>(null);
+  const [deskError, setDeskError] = useState<string | null>(null);
+  const loadDesk = useCallback(async () => {
+    const res = await api.getDesk(serverId);
+    if (res.error || !res.data) setDeskError(res.error ?? 'Desk could not be loaded.');
+    else { setDesk(res.data); setDeskError(null); }
+  }, [api, serverId]);
+
   const loadAll = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
@@ -183,8 +194,9 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     }
     setRegistrations(regsRes.data);
     void loadRegistrationCards();
+    void loadDesk();
     setLoading(false);
-  }, [api, serverId, loadRegistrationCards]);
+  }, [api, serverId, loadRegistrationCards, loadDesk]);
 
   useEffect(() => {
     loadAll();
@@ -319,6 +331,32 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
       await loadAll();
     }
     return { error: res.error };
+  };
+
+  // Desk writes touch the roster (bodyweight, division, lot) and bump updatedAt, so reload meet + registrations after each.
+  const refreshAfterDesk = async (): Promise<string | null> => {
+    const [meetRes, regsRes] = await Promise.all([api.getMeet(serverId), api.listRegistrations(serverId)]);
+    const problems: string[] = [];
+    if (meetRes.error || !meetRes.data) problems.push(`roster refresh failed: ${meetRes.error ?? 'no data'}`);
+    else { setDetail(meetRes.data); setWorkingState(JSON.parse(JSON.stringify(meetRes.data.state))); }
+    if (regsRes.error || !regsRes.data) problems.push(`registrations refresh failed: ${regsRes.error ?? 'no data'}`);
+    else setRegistrations(regsRes.data);
+    await loadDesk();
+    return problems.length ? `Saved, but ${problems.join('; ')}. Reload to see the latest.` : null;
+  };
+  const handleDeskAthlete = async (athleteId: string, patch: DeskPatch) => {
+    if (registrationsBlockedReason) return { error: registrationsBlockedReason };
+    const res = await api.updateDeskAthlete(serverId, athleteId, patch);
+    if (res.error) return { error: res.error };
+    const problem = await refreshAfterDesk();
+    return problem ? { error: problem } : {};
+  };
+  const handleDeskCap = async (divisionId: string, capKg: number | null) => {
+    if (registrationsBlockedReason) return { error: registrationsBlockedReason };
+    const res = await api.setDivisionCap(serverId, divisionId, capKg);
+    if (res.error) return { error: res.error };
+    const problem = await refreshAfterDesk();
+    return problem ? { error: problem } : {};
   };
 
   const registrationsBlockedReason = isDirty
@@ -813,6 +851,19 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
           {summary.listing.competitionStatus === 'completed' && (
             <ResultsPackSection summary={summary} state={workingState} onMarkSubmitted={handleMarkResultsSubmitted} />
           )}
+          {/* 045 (feature gaps #8): the desk sits above the board/QR tools; it is the first thing used on meet morning */}
+          <CheckInDeskSection
+            athletes={workingState.athletes}
+            divisions={workingState.divisions}
+            registrations={registrations}
+            federation={summary.listing.federation}
+            desk={desk}
+            deskError={deskError}
+            cards={registrationCards}
+            blockedReason={registrationsBlockedReason}
+            onUpdateAthlete={handleDeskAthlete}
+            onSetCap={handleDeskCap}
+          />
           <MeetDaySection
             summary={summary}
             resultCount={workingState.results.length}

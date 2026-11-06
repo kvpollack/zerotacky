@@ -769,3 +769,66 @@ copy is a courtesy); the 500 cap still applies before dedupe.
 **Operator steps**: apply 043 to prod (functions change signature; the deployed code and the database must move
 together, so push and migrate in the same sitting). Then the same two as before: `CRON_SECRET` on Vercel, first real test
 send from the Iron Harbor editor.
+
+## Feature gaps #7 + #8: meet-day schedule, "you're up", check-in desk (11/6 afternoon, migrations 044 + 045)
+
+Three pieces, built in this order. Staging has both migrations; prod needs them in order (044 then 045).
+
+**#7a Meet-day schedule (044_schedule.sql).** `meets.schedule jsonb`, checked by `zt_schedule_ok`: `timezone` (IANA),
+`eveWeighInStart/End` (the day before), `checkIn`, `weighInStart/End`, `rulesMeeting`, `start`, `estimatedEnd` (all "HH:MM"
+24-hour, venue local), `notes` (<= 200). `zt_update_listing` accepts `schedule` (blank values dropped, empty object = null);
+`zt_my_meets` / `zt_get_my_meet` return it (and `zt_my_meets` now also returns `results_submitted_at`, which 037 had only
+added to `zt_get_my_meet`); public column grant gains `schedule`; `zt_broadcast_payload` (043 body) carries it.
+- `lib/website/schedule.ts`: parse/clean (typed "9am", "9:30 PM", "0900" all normalise), `scheduleTimeline` (windows joined,
+  day-before row flagged), US time-zone list with a default from the venue state (`timeZoneForState`), `zonedToUtc` via Intl
+  (DST-safe), `buildShowIcs` (RFC 5545: CRLF, 75-octet folding, escaped text; one VEVENT from the first thing on the
+  timeline to the estimated finish, a second for the day-before weigh-in; no times = all-day event).
+- Listing tab: "Meet-Day Schedule" block, native `<input type="time">`, time-zone select ("Same as venue (Eastern)" default),
+  note. Order checks name the field (weigh-in closing after the first event is refused).
+- Show page: the "Schedule Notes" row became "Meet-Day Schedule": a timeline table, the zone, the note, "Add to calendar
+  (.ics)". Falls back to the legacy `scheduleNotes` text, then "Not provided".
+- `/shows/<slug>/calendar.ics` (`app/shows/[slug]/calendar.ics/route.ts`): same visibility rule as the show page; demo
+  fixtures 404. `Content-Disposition: attachment`.
+- Reminders (#10): facts gain the timeline rows + "Time zone", the day-before paragraph leads with the schedule note, and an
+  "Add to calendar (.ics)" link appears when there is a schedule. Wording without a schedule is unchanged.
+
+**#7b "You're up" (no migration).** `lib/tv/youreUp.ts` `upStatus(state, live, athleteId)` reuses `buildSheetA` for the
+athlete's station: `up` / `on_deck` (away = 1 or 2) / `queued` (N away, scored rows ahead do not count) / `scored` (with the
+division's next event) / `waiting` (division not live on its station) / `unknown`. On `/m/<slug>`: "Follow an athlete"
+picker (grouped by division), banner in pen when up, pen border when on deck; choice kept in `localStorage`
+(`zt:follow:<slug>`); optional "Buzz this phone when on deck" asks Notification permission and fires once per state
+transition (`notifyKey`), with a vibrate where supported. Alerts work only while the page is open; the picker says so and
+tells iPhone users to add the page to the Home Screen. No SMS, no server push (held, see the gaps report).
+
+**#8 Check-in desk (045_checkin_desk.sql).** Side data, not roster fields: `meet_checkins (meet_id, athlete_id)` with
+`checked_in_at`, `weighed_kg` (20 to 300, two decimals as typed), `weighed_at`, `paper_waiver_at`, `card_verified_at`,
+`note` (<= 120); `divisions.weight_cap_kg` (20 to 300). The builder's config save and the meet-day publish never write
+these columns, so nothing on the phones changes. RPCs (owner or member, `zt_desk_caller_ok`): `zt_desk_state`,
+`zt_desk_athlete(p_meet_id, p_athlete_id, p_patch)` (keys `checked_in`, `weighed_kg`, `paper_waiver`, `card_verified`,
+`note`, `division_id`), `zt_desk_division_cap`. A kg weigh-in mirrors into `athletes.bodyweight` (lb, one decimal) for the
+roster, standings and the federation export. Reclass moves the athlete (new lot at the end of the target division) and
+re-points the linked registration; refused once the athlete has a result. Every desk write bumps `meets.updated_at`.
+- Contract: `DeskState`, `DeskCheckin`, `DeskPatch`; `getDesk`, `updateDeskAthlete`, `setDivisionCap` on both APIs
+  (fixture keeps an in-memory map per meet).
+- `lib/desk/rules.ts`: `parseKg` (comma or dot, optional "kg", two decimals, range), `lbToKg`/`kgToLb`, `classCheck`
+  (cap inclusive, over by the exact difference, no rounding), `deskPreset(federation)`: SC wording (24 h window, kg, no
+  rounding, combined classes under the heavier class), a short USS line, generic otherwise.
+- `components/promoter/CheckInDeskSection.tsx` on the Meet Day tab, above the board tools: counters (checked in, weighed,
+  over cap), division cap inputs, search + filters (Not checked in / Not weighed / Flagged = over cap or no waiver), scale
+  unit toggle (kg or lb typed, kg stored), per row: division select (reclass), Check in key, bodyweight input with the other
+  unit beside it, class chip, waiver (Online from the registration, else Needs waiver -> Paper signed), card (uploaded card
+  status when there is one + Mark card seen), paid, note. Blocked while the builder draft is dirty (same rule and copy as
+  Registrations). The parent reloads meet + registrations + desk after each write (`refreshAfterDesk`).
+
+Tests: `test/schedule.test.mjs` (14), `test/desk.test.mjs` (7), `test/youreUp.test.mjs` (3); suite 661 pass, tsc clean.
+Staging checks (11/6, screenshots `~/Downloads/zt_ui_1106/`): schedule saved and shown on the show page, `.ics` downloads
+with correct UTC instants (07:00 EST = 12:00Z on 11/14), demo `.ics` 404; desk: cap 90 kg, check in, 92.45 kg -> "Over by
+2.45 kg", bodyweight mirrored to 203.8 lb in the DB, reclass to Novice Men and back, bad input refused; board: Priya "on
+deck · Next", Tessa "is up (event 1 of 5)", Devin "waiting", choice survives reload. Staging roster restored afterwards
+(check-ins deleted, cap cleared, Jo Kessler bodyweight null / lot 3); the Iron Harbor schedule was left in place as demo data.
+
+Dev-server gotcha confirmed: Python-written edits need `touch <file>` (not `printf '' >>`) before the watcher recompiles.
+
+Left on purpose: no web push / SMS (#7 report row says both cost money or need an install; the in-page alert covers the
+athlete with the board open); the board does not yet show the schedule's first-event time; no rule presets beyond the SC
+text; the Athletes tab does not display bodyweight, so the mirror is visible on the desk, standings and export only.
