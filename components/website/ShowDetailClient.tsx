@@ -12,6 +12,7 @@ import { showTrainingNeeds, trainForShowHref } from '@/lib/website/trainFor';
 import { prepSheetHref } from '@/lib/website/prepSheet';
 import { safeVideoUrl, specNotes } from '@/lib/events/spec';
 import { longIsoDate, shortIsoDate, splitFee, venueLine } from '@/lib/website/sheetFormat';
+import { hasScheduleTimes, icsHref, scheduleTimeZone, scheduleTimeline, shiftIsoDate, timeZoneLabel } from '@/lib/website/schedule';
 import type { DivisionResultsView, PublicShowRecord } from '@/lib/website/types';
 
 // Show sheet (UI transition Phase 3, 11/2; mockup hybrid/web_show.html). Promoter band in the show's accent (the
@@ -495,8 +496,38 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
               </dd>
             </div>
             <div>
-              <dt className={DT}>Schedule Notes</dt>
-              <dd className={`${DD} mt-1 leading-[1.55] max-w-[760px]`}>{show.scheduleNotes || 'Not provided'}</dd>
+              <dt className={DT}>Meet-Day Schedule</dt>
+              <dd className={`${DD} mt-1 leading-[1.55] max-w-[760px]`}>
+                {/* 044 (gaps #7a): the promoter's structured timeline, else the legacy free-text note, else 'Not provided'. */}
+                {hasScheduleTimes(show.schedule) ? (
+                  <>
+                    <table className="w-full max-w-[520px] text-[14px] border-collapse">
+                      <tbody>
+                        {scheduleTimeline(show.schedule).map((row) => (
+                          <tr key={row.label} className="border-b border-rule last:border-b-0">
+                            <th scope="row" className="text-left font-normal text-ink-muted py-1.5 pr-4 align-top">
+                              {row.label}
+                              {row.dayBefore && show.date ? <span className="block text-[12px]">{longIsoDate(shiftIsoDate(show.date, -1))}</span> : null}
+                            </th>
+                            <td className={`${NUM} text-[15px] py-1.5 text-right whitespace-nowrap align-top`}>{row.value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div className="text-[12px] text-ink-muted mt-1.5">
+                      Times are {timeZoneLabel(scheduleTimeZone(show.schedule, show.venue.state))}.
+                      {show.schedule?.notes ? <span className="block mt-1 text-[13px] text-ink">{show.schedule.notes}</span> : null}
+                    </div>
+                    {!show.isDemoFixture && show.date ? (
+                      <a href={icsHref(show.slug)} className={`${textLink} inline-flex items-center gap-1 mt-2 text-[13px]`} download>
+                        Add to calendar (.ics)
+                      </a>
+                    ) : null}
+                  </>
+                ) : (
+                  show.scheduleNotes || 'Not provided'
+                )}
+              </dd>
             </div>
             <div>
               <dt className={DT}>Rules &amp; Scoring Format</dt>

@@ -281,6 +281,7 @@ export function createSeedMeets(): PromoterMeetDetail[] {
           theme: null,
           autoAccept: false,   // fixtures keep the review queue so the demo dashboard has pending rows
           resultsSubmittedAt: null,
+          schedule: null,
         },
         divisionCount: upcomingState.divisions.length,
         athleteCount: upcomingState.athletes.length,
@@ -319,6 +320,7 @@ export function createSeedMeets(): PromoterMeetDetail[] {
           theme: null,
           autoAccept: false,   // fixtures keep the review queue so the demo dashboard has pending rows
           resultsSubmittedAt: null,
+          schedule: null,
         },
         divisionCount: liveState.divisions.length,
         athleteCount: liveState.athletes.length,
@@ -357,6 +359,7 @@ export function createSeedMeets(): PromoterMeetDetail[] {
           theme: null,
           autoAccept: false,   // fixtures keep the review queue so the demo dashboard has pending rows
           resultsSubmittedAt: null,
+          schedule: null,
         },
         divisionCount: completedState.divisions.length,
         athleteCount: completedState.athletes.length,

@@ -14,6 +14,7 @@ import type {
   ShowVenue,
 } from '../website/types';
 import type { ZtTheme } from '../website/theme';
+import type { MeetSchedule } from '../website/schedule';
 
 export interface PromoterUser {
   id: string;             // auth.users.id (uuid)
@@ -39,6 +40,7 @@ export interface MeetListing {
   theme: ZtTheme | null;                // 030: the show's own colours (public show page + board); null = ZeroTacky default
   autoAccept: boolean;                  // 032: entries go straight to the roster (default); false = the promoter reviews each one
   resultsSubmittedAt: string | null;    // 037: ISO; when the promoter marked the results as sent to the federation. Read-only here.
+  schedule: MeetSchedule | null;        // 044: meet-day timeline (check-in, weigh-in, rules meeting, first event, finish); null = not provided
 }
 
 export interface PromoterMeetSummary {
@@ -111,6 +113,29 @@ export interface RegistrationRequest {
   guardian: RegistrationGuardian | null; // 009: set when the athlete is under 18 on meet day and a parent/guardian registered them; owner-only, never public
   paid: boolean;
   createdAt: string;
+}
+
+// 045 (feature gaps #8): check-in desk. One row per roster athlete the desk has touched; everything else is absent.
+export interface DeskCheckin {
+  athleteId: string;
+  checkedInAt: string | null;
+  weighedKg: number | null;       // as the scale read it (two decimals kept, never rounded to a class)
+  weighedAt: string | null;
+  paperWaiverAt: string | null;   // a paper waiver signed at the desk (walk-ups, or an online waiver that is missing)
+  cardVerifiedAt: string | null;  // the desk saw a membership card
+  note: string | null;            // <= 120
+}
+export interface DeskState {
+  caps: Record<string, number>;          // divisionId -> weight cap in kg (only divisions that have one)
+  checkins: Record<string, DeskCheckin>; // athleteId -> row
+}
+export interface DeskPatch {
+  checkedIn?: boolean;
+  weighedKg?: number | null;   // null clears
+  paperWaiver?: boolean;
+  cardVerified?: boolean;
+  note?: string | null;
+  divisionId?: string;         // reclass: refused on the server once the athlete has a result
 }
 
 // What the public /register/<slug> page may see. Built from the owner detail by an allowlist; it must never carry
@@ -209,6 +234,11 @@ export interface PromoterApi {
   // 037 retention guard (feature 1): owner only, meet completed with final results. Sets listing.resultsSubmittedAt once;
   // from then on the meet cannot be deleted and its show page stays reachable when unlisted.
   markResultsSubmitted(serverId: string): Promise<ApiResult<{ resultsSubmittedAt: string }>>;
+  // 045 check-in desk (feature gaps #8): owner or member. updateDeskAthlete also moves the athlete (reclass) and mirrors
+  // a kg weigh-in into the roster's bodyweight (lb), so callers reload the meet afterwards. setDivisionCap(null) clears.
+  getDesk(serverId: string): Promise<ApiResult<DeskState>>;
+  updateDeskAthlete(serverId: string, athleteId: string, patch: DeskPatch): Promise<ApiResult<DeskCheckin>>;
+  setDivisionCap(serverId: string, divisionId: string, capKg: number | null): Promise<ApiResult<{ divisionId: string; capKg: number | null }>>;
 
   // athlete side of My Meets (010). followShow(slug, false) unfollows. Demo fixtures cannot be followed (no server row).
   listMyAthleteMeets(): Promise<ApiResult<MyAthleteMeet[]>>;
@@ -249,6 +279,7 @@ export function emptyListing(): MeetListing {
     theme: null,
     autoAccept: true,
     resultsSubmittedAt: null,
+    schedule: null,
   };
 }
 

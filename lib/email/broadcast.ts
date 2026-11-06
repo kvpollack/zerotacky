@@ -3,6 +3,7 @@
 // meet's facts. Both end with a one-click unsubscribe (registration id + mail token) and reply to the promoter.
 import { renderEmail, type EmailDoc } from './layout';
 import { venueLine } from './registration';
+import { icsHref, parseSchedule, scheduleTimeZone, scheduleTimeline, timeZoneLabel } from '../website/schedule';
 import { formatShowDate } from '@/lib/website/showHistory';
 
 export type BroadcastKind = 'broadcast' | 'reminder_7d' | 'reminder_1d';
@@ -33,6 +34,7 @@ export interface BroadcastPayload {
   promoter_email: string | null;
   promoter_name: string;
   promoter_contact: string | null;
+  schedule?: unknown;            // 044: meets.schedule as stored; parseSchedule reads it
   recipients: BroadcastRecipient[];
 }
 
@@ -108,6 +110,11 @@ export function reminderEmail(p: BroadcastPayload, r: BroadcastRecipient, siteUr
   if (when) facts.push({ label: 'Date', value: when });
   if (where) facts.push({ label: 'Where', value: where });
   if (r.division_name) facts.push({ label: 'Division', value: r.division_name });
+  // 044: the promoter's meet-day timeline, when there is one. Day-before weigh-in is labelled as such.
+  const sched = parseSchedule(p.schedule);
+  const timeline = scheduleTimeline(sched);
+  for (const row of timeline) facts.push({ label: row.label, value: row.value });
+  if (timeline.length) facts.push({ label: 'Time zone', value: timeZoneLabel(scheduleTimeZone(sched, p.venue?.state)) });
   if (p.promoter_contact) facts.push({ label: 'Promoter contact', value: p.promoter_contact });
   const prep = `${showUrl(site, p.meet_slug)}/prep${divisionId ? `?division=${encodeURIComponent(divisionId)}` : ''}`;
   const doc: EmailDoc = {
@@ -119,11 +126,16 @@ export function reminderEmail(p: BroadcastPayload, r: BroadcastRecipient, siteUr
       : `${p.meet_name} is tomorrow${when ? `, ${when}` : ''}. You are on the roster${r.division_name ? ` in ${r.division_name}` : ''}.`,
     facts,
     paragraphs: week
-      ? ['The events, weights and rules are on the show page, and the prep sheet lays them out for your division. Weigh-in times, the schedule and anything about the fee come from the promoter: reply to this email to reach them.']
-      : ['Check the show page tonight for the schedule and any late changes from the promoter. On meet day the live scoreboard runs on the show page. Reply to this email to reach the promoter.'],
+      ? [timeline.length
+          ? 'The events, weights and rules are on the show page, and the prep sheet lays them out for your division. The schedule above is the promoter\'s; anything about the fee or a late change comes from them: reply to this email to reach them.'
+          : 'The events, weights and rules are on the show page, and the prep sheet lays them out for your division. Weigh-in times, the schedule and anything about the fee come from the promoter: reply to this email to reach them.']
+      : [timeline.length
+          ? (sched?.notes ? `${sched.notes} ` : '') + 'Check the show page tonight for any late changes from the promoter. On meet day the live scoreboard runs on the show page. Reply to this email to reach the promoter.'
+          : 'Check the show page tonight for the schedule and any late changes from the promoter. On meet day the live scoreboard runs on the show page. Reply to this email to reach the promoter.'],
     cta: { label: week ? 'Prep sheet' : 'Show page', url: week ? prep : showUrl(site, p.meet_slug) },
     links: [
       ...(week ? [{ label: 'Show page', url: showUrl(site, p.meet_slug) }] : [{ label: 'Prep sheet', url: prep }]),
+      ...(timeline.length ? [{ label: 'Add to calendar (.ics)', url: `${site}${icsHref(p.meet_slug)}` }] : []),
       ...(unsub ? [{ label: 'Stop messages and reminders for this show', url: unsub }] : []),
     ],
     footerNote: REMINDER_FOOTER(p.meet_name),

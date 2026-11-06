@@ -12,6 +12,7 @@ import type {
 } from './contract';
 import type { AppState } from '../types';
 import { cleanTheme } from '../website/theme';
+import { cleanSchedule } from '../website/schedule';
 
 export const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -79,6 +80,11 @@ export function validateListingPatch(
   if (merged.theme) {
     const t = cleanTheme(merged.theme);
     if (t.problem) return t.problem;
+  }
+
+  if (merged.schedule) {
+    const s = cleanSchedule(merged.schedule);
+    if (s.problem) return s.problem;
   }
 
   if (merged.venue) {

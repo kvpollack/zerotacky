@@ -33,6 +33,7 @@ export interface MeetListingColumns {
   theme: Record<string, unknown> | null;
   auto_accept?: boolean;   // 032; optional so older fixtures and public rows (not granted) still type
   results_submitted_at?: string | null;   // 037; set once by zt_mark_results_submitted, never patched here
+  schedule?: Record<string, unknown> | null;   // 044; validated by zt_schedule_ok
 }
 
 export interface MeetListingRow extends MeetRow, MeetListingColumns {

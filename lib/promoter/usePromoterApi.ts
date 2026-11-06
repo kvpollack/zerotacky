@@ -53,6 +53,9 @@ const PROMOTER_API_METHODS = [
   'getPublicMeetBySlug',
   'submitRegistration',
   'markResultsSubmitted',
+  'getDesk',
+  'updateDeskAthlete',
+  'setDivisionCap',
 ] as const;
 
 // Compile-time check: adding a method to PromoterApi without listing it here is a type error.

@@ -9,6 +9,16 @@ import HostGymPicker from './HostGymPicker';
 import PaintPicker from '@/components/website/PaintPicker';
 import type { HostGymOption } from '@/lib/website/hostGym';
 import type { ZtTheme } from '@/lib/website/theme';
+import {
+  SCHEDULE_LABELS,
+  SCHEDULE_NOTES_MAX,
+  SCHEDULE_TIME_KEYS,
+  US_TIME_ZONES,
+  cleanSchedule,
+  timeZoneForState,
+  type MeetSchedule,
+  type ScheduleTimeKey,
+} from '@/lib/website/schedule';
 import type {
   ResultsFinalizationStatus,
   ShowCompetitionStatus,
@@ -46,6 +56,24 @@ interface ListingDraft {
   hostGymId: string; // 026: directory gym id or ''
   theme: ZtTheme | null; // 030: raw field text; validateListingPatch normalises or refuses at save
   autoAccept: boolean;   // 032
+  schedule: Record<ScheduleTimeKey, string> & { timezone: string; notes: string };   // 044: raw field text; cleanSchedule decides at save
+}
+
+function scheduleDraft(s: MeetSchedule | null): ListingDraft['schedule'] {
+  const out = { timezone: s?.timezone ?? '', notes: s?.notes ?? '' } as ListingDraft['schedule'];
+  for (const k of SCHEDULE_TIME_KEYS) out[k] = s?.[k] ?? '';
+  return out;
+}
+
+// Draft text -> patch value. All blank = null. Bad text goes through as-is so validateListingPatch names the field.
+function schedulePatch(d: ListingDraft['schedule']): MeetSchedule | null {
+  const c = cleanSchedule(d);
+  if (c.problem) {
+    const raw: Record<string, string> = {};
+    for (const [k, v] of Object.entries(d)) if (v.trim()) raw[k] = v.trim();
+    return raw as MeetSchedule;
+  }
+  return c.schedule;
 }
 
 function toDraft(listing: MeetListing): ListingDraft {
@@ -69,6 +97,7 @@ function toDraft(listing: MeetListing): ListingDraft {
     hostGymId: listing.hostGymId ?? '',
     theme: listing.theme ? { ...listing.theme } : null,
     autoAccept: listing.autoAccept ?? true,
+    schedule: scheduleDraft(listing.schedule ?? null),
   };
 }
 
@@ -100,6 +129,7 @@ function toPatch(d: ListingDraft): Partial<MeetListing> {
     hostGymId: d.hostGymId.trim() || null,
     theme: d.theme,
     autoAccept: d.autoAccept,
+    schedule: schedulePatch(d.schedule),
   };
 }
 
@@ -130,6 +160,10 @@ export default function ListingSection({
 
   const set = <K extends keyof ListingDraft>(key: K, value: ListingDraft[K]) =>
     setDraft((prev) => ({ ...prev, [key]: value }));
+  const setSched = (key: keyof ListingDraft['schedule'], value: string) =>
+    setDraft((prev) => ({ ...prev, schedule: { ...prev.schedule, [key]: value } }));
+  // The zone the schedule will run in when the promoter leaves the picker on 'Same as venue'.
+  const venueZone = timeZoneForState(draft.stateCode);
 
   // "Use gym address": the directory address becomes the venue; the facility name stays if the promoter typed one.
   const useGymAddress = (g: HostGymOption) =>
@@ -493,6 +527,59 @@ export default function ListingSection({
           <p id="listing-contact-help" className="text-[11px] text-zt-muted mt-1">
             Appears on the registration page and in the waiver. Leave blank to show &quot;contact not provided&quot;.
           </p>
+        </div>
+      </div>
+
+      {/* 044: meet-day schedule (feature gaps #7a). Native time inputs; the show page prints the timeline and offers the
+          .ics download; reminders quote check-in and first event. */}
+      <div className="pt-3 border-t border-zt-border space-y-3">
+        <div className="text-xs font-extrabold uppercase text-zt-primary">Meet-Day Schedule</div>
+        <p className="text-xs text-zt-muted">
+          Shown on the show page as a timeline with an &quot;Add to calendar&quot; link, and quoted in the week-out and day-before
+          reminders. Leave anything you have not settled blank. Times are local to the venue.
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {(['checkIn', 'weighInStart', 'weighInEnd', 'rulesMeeting', 'start', 'estimatedEnd', 'eveWeighInStart', 'eveWeighInEnd'] as ScheduleTimeKey[]).map((k) => (
+            <div key={k}>
+              <label htmlFor={`listing-sched-${k}`} className={LABEL}>{SCHEDULE_LABELS[k]}</label>
+              <input
+                id={`listing-sched-${k}`}
+                type="time"
+                step={300}
+                value={draft.schedule[k]}
+                onChange={(e) => setSched(k, e.target.value)}
+                className={INPUT}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-3">
+          <div>
+            <label htmlFor="listing-sched-tz" className={LABEL}>Time zone</label>
+            <select
+              id="listing-sched-tz"
+              value={draft.schedule.timezone}
+              onChange={(e) => setSched('timezone', e.target.value)}
+              className={INPUT}
+            >
+              <option value="">{venueZone ? `Same as venue (${US_TIME_ZONES.find((z) => z.id === venueZone)?.label ?? venueZone})` : 'Same as venue (Eastern until a state is set)'}</option>
+              {US_TIME_ZONES.map((z) => (
+                <option key={z.id} value={z.id}>{z.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="listing-sched-notes" className={LABEL}>Schedule note (optional)</label>
+            <input
+              id="listing-sched-notes"
+              type="text"
+              maxLength={SCHEDULE_NOTES_MAX}
+              value={draft.schedule.notes}
+              onChange={(e) => setSched('notes', e.target.value)}
+              placeholder="e.g. Weigh-in is at the host gym, not the venue"
+              className={INPUT}
+            />
+          </div>
         </div>
       </div>
 

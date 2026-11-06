@@ -10,6 +10,9 @@ import {
   emptyListing,
   type ApiResult,
   type DeletedMeet,
+  type DeskCheckin,
+  type DeskPatch,
+  type DeskState,
   type MyAthleteMeet,
   type MeetListing,
   type PromoterApi,
@@ -36,6 +39,7 @@ import {
   validateRegistrationInput,
 } from './rules';
 import { parseTheme } from '../website/theme';
+import { parseSchedule } from '../website/schedule';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -45,6 +49,40 @@ function errMessage(e: unknown): string {
     return String((e as { message: unknown }).message);
   }
   return String(e);
+}
+
+// 045 desk rows (meet_checkins) <-> contract
+export interface DeskCheckinRow {
+  athlete_id: string; checked_in_at: string | null; weighed_kg: number | string | null; weighed_at: string | null;
+  paper_waiver_at: string | null; card_verified_at: string | null; note: string | null;
+}
+export function rowToDeskCheckin(row: DeskCheckinRow): DeskCheckin {
+  return {
+    athleteId: row.athlete_id,
+    checkedInAt: row.checked_in_at ?? null,
+    weighedKg: row.weighed_kg === null || row.weighed_kg === undefined ? null : Number(row.weighed_kg),
+    weighedAt: row.weighed_at ?? null,
+    paperWaiverAt: row.paper_waiver_at ?? null,
+    cardVerifiedAt: row.card_verified_at ?? null,
+    note: row.note ?? null,
+  };
+}
+export function deskStateFromRpc(out: { caps?: Array<{ division_id: string; weight_cap_kg: number | string | null }>; checkins?: DeskCheckinRow[] } | null | undefined): DeskState {
+  const caps: Record<string, number> = {};
+  for (const c of out?.caps ?? []) if (c.weight_cap_kg !== null && c.weight_cap_kg !== undefined) caps[c.division_id] = Number(c.weight_cap_kg);
+  const checkins: Record<string, DeskCheckin> = {};
+  for (const r of out?.checkins ?? []) checkins[r.athlete_id] = rowToDeskCheckin(r);
+  return { caps, checkins };
+}
+export function deskPatchToJson(patch: DeskPatch): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  if (patch.checkedIn !== undefined) out.checked_in = Boolean(patch.checkedIn);
+  if (patch.weighedKg !== undefined) out.weighed_kg = patch.weighedKg;
+  if (patch.paperWaiver !== undefined) out.paper_waiver = Boolean(patch.paperWaiver);
+  if (patch.cardVerified !== undefined) out.card_verified = Boolean(patch.cardVerified);
+  if (patch.note !== undefined) out.note = patch.note;
+  if (patch.divisionId !== undefined) out.division_id = patch.divisionId;
+  return out;
 }
 
 export function rowToMeetListing(row: Partial<MeetListingRow>): MeetListing {
@@ -65,6 +103,7 @@ export function rowToMeetListing(row: Partial<MeetListingRow>): MeetListing {
     theme: parseTheme(row.theme),
     autoAccept: row.auto_accept === undefined || row.auto_accept === null ? true : Boolean(row.auto_accept),
     resultsSubmittedAt: row.results_submitted_at ?? null,
+    schedule: parseSchedule(row.schedule),
   };
 }
 
@@ -100,6 +139,9 @@ export function listingPatchToColumns(patch: Partial<MeetListing>): Partial<Meet
   }
   if (patch.autoAccept !== undefined) {
     out.auto_accept = Boolean(patch.autoAccept);
+  }
+  if (patch.schedule !== undefined) {
+    out.schedule = patch.schedule ? { ...patch.schedule } : null;
   }
   return out;
 }
@@ -534,6 +576,41 @@ export function createSupabasePromoterApi(
           return { data: null, error: 'Could not mark the results as submitted.' };
         }
         return { data: { resultsSubmittedAt: out.results_submitted_at }, error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    // 045 check-in desk. Three thin RPC wrappers; the server owns every rule (range, reclass guard, caps).
+    async getDesk(serverId: string): Promise<ApiResult<DeskState>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) return { data: null, error: 'Sign in required for the check-in desk.' };
+        const out = await db.rpc<{ caps?: Array<{ division_id: string; weight_cap_kg: number | string | null }>; checkins?: DeskCheckinRow[] }>('zt_desk_state', { p_meet_id: serverId });
+        return { data: deskStateFromRpc(out), error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    async updateDeskAthlete(serverId: string, athleteId: string, patch: DeskPatch): Promise<ApiResult<DeskCheckin>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) return { data: null, error: 'Sign in required for the check-in desk.' };
+        const out = await db.rpc<DeskCheckinRow>('zt_desk_athlete', { p_meet_id: serverId, p_athlete_id: athleteId, p_patch: deskPatchToJson(patch) });
+        if (!out?.athlete_id) return { data: null, error: 'The desk update did not come back from the server.' };
+        return { data: rowToDeskCheckin(out), error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    async setDivisionCap(serverId: string, divisionId: string, capKg: number | null): Promise<ApiResult<{ divisionId: string; capKg: number | null }>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) return { data: null, error: 'Sign in required for the check-in desk.' };
+        const out = await db.rpc<{ division_id: string; weight_cap_kg: number | string | null }>('zt_desk_division_cap', { p_meet_id: serverId, p_division_id: divisionId, p_cap_kg: capKg });
+        return { data: { divisionId: out.division_id, capKg: out.weight_cap_kg === null || out.weight_cap_kg === undefined ? null : Number(out.weight_cap_kg) }, error: null };
       } catch (e) {
         return { data: null, error: errMessage(e) };
       }
