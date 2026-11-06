@@ -890,3 +890,53 @@ Left on purpose: staff is promoter-only (no "show judges on the page" toggle; th
 stays private); no logo cropping or SVG (same limits as avatars); the standards text is generic by design, the federation
 rulebook is not quoted; livestream is a link, not an embed (an iframe needs per-platform embed URLs and a consent story);
 tickets (#17's second half) stay held with payments.
+
+## Astra audit of #7 / #8 / #12 / #14 / #17: fixes MD-01 to MD-18 (11/6 night, migration 047)
+
+Report: `~/Downloads/zerotacky_astra_audit_7_8_small_2026-11-06.md` (1 P0, 10 P1, 7 P2). Every finding fixed; nothing
+left open. SQL in `supabase/047_audit_md_fixes.sql`, client fixes in the same push.
+
+**P0, MD-01: join code leaked the staff roster.** `zt_meet_by_join_code` returned the whole `meets` row (security
+definer), so a volunteer code read the private `staff` column past the missing anon grant. 047 nulls `staff`, `owner_id`,
+`auto_accept` and `reminders_enabled` alongside `admin_pin`; the rule is now "every column outside the public grant except
+`join_code`", and `test/join_code_privacy.test.mjs` recomputes that set from the migrations (meets columns minus the newest
+`grant select (...)` list) and fails when the newest RPC body misses an `r.<col> := null` line. Verified by removing the
+staff line (test fails, names the column) and on staging (`staff`, `owner_id`, `admin_pin`, `auto_accept` all null, code
+intact). 046 is live on prod, so the leak is live until 047 runs there: prod SQL first, then the push.
+
+**P1.** MD-02 `zt_desk_athlete` / `zt_desk_division_cap` lock the meet row first (`select 1 from meets ... for update`),
+the same order as the builder save, so two reclasses cannot share a `max(lot_number)` and desk-vs-builder cannot deadlock.
+MD-03 `ScoreboardClient`: no "you're up" status or notification once the meet is completed or cancelled. MD-04 / MD-14
+`ListingSection`: the post-save pass that deleted old saved logos is gone (a saved logo path may still be referenced; the
+bucket keeps it), unmount cleanup removes uploads that were never saved. MD-05 `TvIdle`: the sponsor row wraps
+(`flex-wrap`, 1700 px), names truncate at 640 px with a `title`, the column is `overflow-hidden`. MD-06 StaffSection
+reports dirty to the meet page (`onDirtyChange`), which joins the unsaved-changes guard and the dirty bar ("Unsaved Staff
+Changes" + "Go to Meet Day" from another tab). MD-07 desk `run()` resolves a boolean and drafts clear only on success, so
+a failed save keeps the typed weight (probed offline: value stays, error shows). MD-08 clearing a weigh-in restores
+`athletes.bodyweight` from the accepted registration (or null) instead of leaving the stale lb mirror; the fixture clears
+it. MD-09 the `pg_column_size` caps (700 / 4000 / 12000) were reachable with field-valid CJK payloads; now 4096 / 32768 /
+131072, pure DoS guards. MD-10 `zt_update_listing` validates the schedule like `cleanSchedule`: object only, string values,
+zone checked with `now() at time zone`, the four order rules with the client's messages. MD-11 the .ics "arrive" time is
+the earliest of check-in, weigh-in start/end, rules meeting and start, not check-in or start alone.
+
+**P2.** MD-12 `zonedToUtc` handles the DST gap (a local time that does not exist moves forward by the gap; New York
+2026-03-08 02:30 -> 07:30Z, Berlin 2026-03-29 02:30 -> 01:30Z, fall-back and ordinary times unchanged). MD-13 Save staff
+stays enabled with an invalid draft and the save or briefing shows the problem ("Staff row 4 needs a name."); the
+briefing opens first and cuts `opener` after (`'noopener'` made Chrome return null even on success). MD-15 staff rows
+store the station **id**; labels are display only, two stations with the same label are shown as `label (id)` in the
+select and the briefing; rows saved with a label (046) map to the first station with that label. MD-16 kg are checked on
+the raw value, two decimals max, in `parseKg`, the fixture and both RPCs (92.455 refused, 92.45 kept; caps too); the lb
+path already rounds to two decimals before the check. MD-17 `httpsUrlOk` and `zt_https_url_ok` require a real hostname
+(`https://?` refused, ports and paths fine, `localhost` refused). MD-18 `updateDeskAthlete` validates the whole patch on a
+copy before applying anything (a bad cap with a good weight changes nothing).
+
+Not changed, on purpose: the bodyweight lb mirror on the public roster stays (the audit listed it as a qualification);
+the fixture does not carry registration bodyweights, so its clear sets `undefined` where SQL restores the registration's.
+The desk's offline error text is the raw fetch error ("TypeError: Failed to fetch"); not in the audit, noted for a later
+copy pass.
+
+Tests: +5 (`join_code_privacy` 3, desk / schedule / extras / briefing cases reworked), suite 679 pass, tsc clean.
+Staging re-probe (`shots/audit1.py`, `audit2.py`, screenshots `audit_staff_editor`, `audit_briefing_cards`,
+`audit_dirty_bar`, `sponsors_tv_idle`): station options carry ids (`A`, `B`), the 046 label rows resolve to `A`, dirty bar
+on edit and gone after save, briefing popup with `opener === null`, offline weigh-in keeps `123.4`, three-decimal weight
+refused, TV sponsor row no longer clips.

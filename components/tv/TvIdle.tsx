@@ -22,7 +22,7 @@ export default function TvIdle({ m, title, divisions, athletes, sponsors = null 
   const shown = m.schedule.slice(0, 6);
   return (
     <>
-      <div className="flex flex-col items-center justify-center gap-7 normal-case min-h-0">
+      <div className="flex flex-col items-center justify-center gap-7 normal-case min-h-0 overflow-hidden">
         <Wordmark className="text-[200px] leading-none" />
         <div className="text-[40px] font-bold uppercase" style={title.nameColor ? { color: title.nameColor } : undefined}>{title.name}</div>
         <div className="grid gap-px bg-rule mt-2.5" style={{ border: '2px solid var(--rule)', gridTemplateColumns: `repeat(${Math.max(1, shown.length)}, auto)` }}>
@@ -37,13 +37,14 @@ export default function TvIdle({ m, title, divisions, athletes, sponsors = null 
         </div>
         <div className="text-[24px] text-ink-muted uppercase">Now <span className="text-pen">{now}</span> · the board starts with the first score</div>
         {/* 046 (#14): sponsor strip between the clock and the title block; logos where uploaded, names otherwise */}
+        {/* MD-05: bounded to the canvas; six long names wrap to a second line and each name is clipped at 480px */}
         {sponsors?.length ? (
-          <div className="flex items-center gap-10 normal-case">
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-2 normal-case max-w-[1700px] px-6">
             <span className="text-[16px] text-ink-muted uppercase tracking-[0.06em]">Sponsors</span>
             {sponsors.map((s, i) => {
               const src = sponsorLogoUrl(s.logoPath);
               // eslint-disable-next-line @next/next/no-img-element
-              return src ? <img key={i} src={src} alt={s.name} className="h-[72px] w-auto max-w-[260px] object-contain" /> : <span key={i} className="text-[26px] font-bold uppercase">{s.name}</span>;
+              return src ? <img key={i} src={src} alt={s.name} className="h-[64px] w-auto max-w-[260px] object-contain" /> : <span key={i} className="text-[24px] font-bold uppercase max-w-[640px] truncate" title={s.name}>{s.name}</span>;
             })}
           </div>
         ) : null}

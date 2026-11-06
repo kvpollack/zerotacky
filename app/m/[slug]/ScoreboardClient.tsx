@@ -66,9 +66,11 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
     const p = await Notification.requestPermission();
     setNotifyOn(p === 'granted');
   };
-  const myStatus = useMemo(() => (state && followId ? upStatus(state, live, followId) : null), [state, live, followId]);
+  // MD-03 (audit 11/6): a completed or cancelled meet has nobody up, whatever a stale live_state row says; no banner, no alert
+  const lifecycleOver = meet?.competitionStatus === 'completed' || meet?.competitionStatus === 'cancelled';
+  const myStatus = useMemo(() => (state && followId && !lifecycleOver ? upStatus(state, live, followId) : null), [state, live, followId, lifecycleOver]);
   useEffect(() => {
-    if (!myStatus || !notifyOn) return;
+    if (!myStatus || !notifyOn || lifecycleOver) return;
     const key = notifyKey(myStatus);
     if (!key || key === lastNotify.current) return;
     lastNotify.current = key;
@@ -77,7 +79,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
       new Notification(line.title, { body: line.detail, tag: key });
       if ('vibrate' in navigator) navigator.vibrate?.(myStatus.kind === 'up' ? [200, 100, 200] : 150);
     } catch { /* notifications unavailable on this browser */ }
-  }, [myStatus, notifyOn]);
+  }, [myStatus, notifyOn, lifecycleOver]);
   const [layout, toggleLayout] = useLayoutMode() as ['phone' | 'tv', () => void];
   const tv = layout === 'tv';
 

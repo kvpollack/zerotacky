@@ -50,7 +50,8 @@ export function fakeServer() {
     if (parts[2] === 'rpc') {
       if (parts[3] === 'zt_meet_by_join_code') {
         const m = db.meets.find((x) => x.join_code === String(body.p_code || '').trim().toUpperCase());
-        return reply(200, m ? { ...m } : { id: null });
+        // 047 (MD-01): a volunteer code never sees the admin PIN or the private staff roster
+        return reply(200, m ? { ...m, admin_pin: null, staff: null } : { id: null });
       }
       // 011: a correct PIN mints a grant tied to the join code in force; the phone sends it as x-zt-grant.
       if (parts[3] === 'zt_check_admin_pin') {

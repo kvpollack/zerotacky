@@ -18,6 +18,11 @@ describe('livestream link (046, #17)', () => {
     assert.match(X.cleanLivestreamUrl('http://insecure.tv').problem, /https/);
     assert.equal(X.cleanLivestreamUrl(`https://x.y/${'a'.repeat(300)}`).url, null);
     assert.equal(X.httpsUrlOk('https://a b'), false);
+    // MD-17: a scheme with no usable host is refused
+    assert.equal(X.httpsUrlOk('https://?'), false);
+    assert.equal(X.httpsUrlOk('https://localhost/x'), false);
+    assert.equal(X.httpsUrlOk('https://x.y:8443/a?b=c#d'), true);
+    assert.equal(X.cleanLivestreamUrl('https://?').url, null);
   });
 });
 
@@ -63,14 +68,19 @@ describe('staff (046, #12)', () => {
     assert.equal(X.staffRoleLabel('state_rep'), 'State rep');
     assert.equal(X.staffRoleLabel('nope'), 'Other');
   });
-  test('staffByStation groups by the meet station labels, matches loosely, floating last', () => {
+  test('staffByStation groups by station id, matches old label rows loosely, floating last (MD-15)', () => {
+    const stations = [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }];
     const g = X.staffByStation([
       { name: 'A', role: 'judge', station: 'station 2' },
-      { name: 'B', role: 'loader', station: 'Station 1' },
+      { name: 'B', role: 'loader', station: 'A' },
       { name: 'C', role: 'scorer' },
       { name: 'D', role: 'judge', station: 'Platform X' },
-    ], ['Station 1', 'Station 2']);
-    assert.deepEqual(g.map((x) => [x.station, x.people.map((p) => p.name)]), [['Station 1', ['B']], ['Station 2', ['A']], ['Platform X', ['D']], ['', ['C']]]);
+    ], stations);
+    assert.deepEqual(g.map((x) => [x.station, x.label, x.people.map((p) => p.name)]), [['A', 'Station 1', ['B']], ['B', 'Station 2', ['A']], ['Platform X', 'Platform X', ['D']], ['', '', ['C']]]);
+    // two stations with one label: an id row lands on its own station, a label row on the first only
+    const dup = [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 1' }];
+    const h = X.staffByStation([{ name: 'P', role: 'judge', station: 'B' }, { name: 'Q', role: 'judge', station: 'Station 1' }], dup);
+    assert.deepEqual(h.map((x) => [x.station, x.people.map((p) => p.name)]), [['A', ['Q']], ['B', ['P']]]);
   });
 });
 

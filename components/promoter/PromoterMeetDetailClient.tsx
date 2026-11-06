@@ -97,6 +97,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   // The Listing tab keeps its own draft (saved through updateListing, not saveMeetState); it reports dirtiness up
   // so the sticky bar can mention it.
   const [listingDirty, setListingDirty] = useState(false);
+  const [staffDirty, setStaffDirty] = useState(false);   // MD-06: Staff & Judges draft on the Meet Day tab
   // Astra M2: an open EventForm holds a draft that reaches workingState only through its own Save button, so the
   // global dirty bar and the registration guard treat it like unsaved work.
   const [eventFormOpen, setEventFormOpen] = useState(false);
@@ -212,7 +213,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     return isMeetStateDirty(detail.state, workingState);
   }, [detail, workingState]);
   // BLD-03: reload, tab close and in-app links ask before a draft is lost (the tab strip has its own guard).
-  useUnsavedGuard(isDirty || listingDirty || eventFormOpen);
+  useUnsavedGuard(isDirty || listingDirty || staffDirty || eventFormOpen);
 
   const readiness = useMemo(() => {
     if (!workingState) return { ok: true, problems: [] };
@@ -875,6 +876,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             divisions={workingState.divisions}
             events={workingState.events}
             onSaveListing={handleSaveListing}
+            onDirtyChange={setStaffDirty}
           />
           <MeetDaySection
             summary={summary}
@@ -886,7 +888,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
       </div>
 
       {/* Sticky Dirty-State Save Bar: builder sections (Meet, Divisions, Events, Stations, Athletes) save here; Listing saves on its own tab. */}
-      {(isDirty || listingDirty || eventFormOpen) && (
+      {(isDirty || listingDirty || staffDirty || eventFormOpen) && (
         <div
           ref={dirtyBarRef}
           tabIndex={-1}
@@ -899,16 +901,20 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
         >
           <div className="space-y-0.5">
             <div className="text-xs font-black uppercase tracking-wider text-zt-primary">
-              {isDirty ? 'Unsaved Meet Builder Changes' : listingDirty ? 'Unsaved Listing Changes' : 'Event Form Open'}
+              {isDirty ? 'Unsaved Meet Builder Changes' : listingDirty ? 'Unsaved Listing Changes' : staffDirty ? 'Unsaved Staff Changes' : 'Event Form Open'}
             </div>
             <div className="text-xs font-bold text-zt-text-2">
               {isDirty
                 ? 'Your edits to Meet, Divisions, Events, or Athletes are in working memory. Save to commit them.'
                 : listingDirty
                   ? 'The Listing tab has edited fields.'
-                  : 'An event form on the Events tab has a draft that Save Changes does not include.'}
+                  : staffDirty
+                    ? 'The Staff & Judges roster on the Meet Day tab has edited rows.'
+                    : 'An event form on the Events tab has a draft that Save Changes does not include.'}
               {isDirty && listingDirty ? ' The Listing tab also has edited fields.' : ''}
               {listingDirty ? ' Use Save Listing Settings or Reset on the Listing tab.' : ''}
+              {staffDirty && (isDirty || listingDirty) ? ' The Staff & Judges roster also has edited rows.' : ''}
+              {staffDirty ? ' Use Save staff or Discard on the Meet Day tab.' : ''}
               {eventFormOpen ? ' Save or cancel the event form on the Events tab to include or drop that draft.' : ''}
               {navBlockedAt ? <strong className="text-zt-danger"> The other tabs stay locked until you do.</strong> : null}
             </div>
@@ -932,6 +938,15 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
               >
                 <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
                 Discard draft
+              </button>
+            )}
+            {staffDirty && activeTab !== 'meetday' && (
+              <button
+                type="button"
+                onClick={() => requestTab('meetday')}
+                className="px-4 py-2.5 rounded-xl bg-zt-surface-2 border border-zt-border-strong text-zt-text-2 font-extrabold text-xs uppercase"
+              >
+                Go to Meet Day
               </button>
             )}
             {listingDirty && activeTab !== 'listing' && (

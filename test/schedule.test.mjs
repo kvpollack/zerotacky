@@ -86,6 +86,13 @@ describe('schedule: zoned time and ics', () => {
     assert.equal(S.zonedToUtc('2026-07-11', '09:00', 'America/New_York').toISOString(), '2026-07-11T13:00:00.000Z');
     assert.equal(S.zonedToUtc('2026-07-11', '09:00', 'America/Phoenix').toISOString(), '2026-07-11T16:00:00.000Z');
     assert.equal(S.zonedToUtc('2026-7-11', '09:00', 'America/Phoenix'), null);
+    // MD-12: the spring-forward gap moves forward (02:30 does not exist on 2026-03-08; 03:30 EDT = 07:30Z), never back
+    assert.equal(S.zonedToUtc('2026-03-08', '02:30', 'America/New_York').toISOString(), '2026-03-08T07:30:00.000Z');
+    assert.equal(S.zonedToUtc('2026-03-08', '09:00', 'America/New_York').toISOString(), '2026-03-08T13:00:00.000Z');
+    assert.equal(S.zonedToUtc('2026-03-08', '01:59', 'America/New_York').toISOString(), '2026-03-08T06:59:00.000Z');
+    // fall back: the ambiguous 01:30 keeps its first (daylight) occurrence
+    assert.equal(S.zonedToUtc('2026-11-01', '01:30', 'America/New_York').toISOString(), '2026-11-01T05:30:00.000Z');
+    assert.equal(S.zonedToUtc('2026-03-29', '02:30', 'Europe/Berlin').toISOString(), '2026-03-29T01:30:00.000Z');   // gap east of UTC
     assert.equal(S.shiftIsoDate('2026-03-01', -1), '2026-02-28');
     assert.equal(S.shiftIsoDate('2026-12-31', 1), '2027-01-01');
   });
@@ -111,6 +118,10 @@ describe('schedule: zoned time and ics', () => {
     assert.equal((ics.match(/BEGIN:VEVENT/g) || []).length, 2);
     for (const line of ics.split('\r\n')) assert.ok(new TextEncoder().encode(line).length <= 75, `folded: ${line.length}`);
     assert.match(ics, /Times are Central \(America\/Chicago\)/);
+  });
+  test('buildShowIcs: the calendar starts at the earliest same-day time, not the first field set (MD-11)', () => {
+    const ics = S.buildShowIcs({ slug: 's', name: 'Show', date: '2026-11-21', venueState: 'TN', schedule: { checkIn: '09:00', weighInStart: '07:00', weighInEnd: '08:00', start: '10:00' }, url: 'https://x/shows/s' });
+    assert.match(ics, /DTSTART:20261121T130000Z/);   // 07:00 Central, the weigh-in, not the 09:00 check-in
   });
   test('buildShowIcs: no schedule = all-day event, one VEVENT', () => {
     const ics = S.buildShowIcs({ slug: 's', name: 'Show', date: '2026-11-21', venueState: null, schedule: null, url: 'https://x/shows/s' });

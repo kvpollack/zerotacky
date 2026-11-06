@@ -7,9 +7,13 @@ export const LB_PER_KG = 2.2046226218;
 export const DESK_KG_MIN = 20;
 export const DESK_KG_MAX = 300;
 
-/** '92.4', '92,4', '92.45 kg' -> 92.45 (two decimals kept as typed, never rounded up to a class). Out of range or junk = null. */
+/** '92.4', '92,4', '92.45 kg' -> 92.45 (two decimals kept as typed, never rounded up to a class). Out of range or junk = null.
+ *  A number is held to the same rule (MD-16): more than two decimals is refused, not rounded, so 92.455 never becomes a class. */
 export function parseKg(raw: unknown): number | null {
-  if (typeof raw === 'number') return Number.isFinite(raw) && raw >= DESK_KG_MIN && raw <= DESK_KG_MAX ? Math.round(raw * 100) / 100 : null;
+  if (typeof raw === 'number') {
+    if (!Number.isFinite(raw) || raw < DESK_KG_MIN || raw > DESK_KG_MAX) return null;
+    return Math.abs(Math.round(raw * 100) / 100 - raw) < 1e-9 ? Math.round(raw * 100) / 100 : null;
+  }
   if (typeof raw !== 'string') return null;
   const s = raw.trim().toLowerCase().replace(/\s*kgs?$/, '').replace(',', '.');
   if (!/^\d{1,3}(\.\d{1,2})?$/.test(s)) return null;

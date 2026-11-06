@@ -553,9 +553,13 @@ export function createFixturePromoterApi(
       if (!athlete) return { data: null, error: 'That athlete is not on the roster any more. Reload the meet.' };
       const desk = desks.get(serverId) ?? { caps: {}, checkins: {} };
       const now = new Date().toISOString();
-      const row: DeskCheckin = desk.checkins[athleteId] ?? {
+      // MD-18: validate the whole patch on a copy first; nothing on the roster or the desk changes unless every check passes
+      // (the SQL function rolls back the same way).
+      const row: DeskCheckin = { ...(desk.checkins[athleteId] ?? {
         athleteId, checkedInAt: null, weighedKg: null, weighedAt: null, paperWaiverAt: null, cardVerifiedAt: null, note: null,
-      };
+      }) };
+      let nextBodyweight: number | undefined | null = undefined;   // undefined = unchanged
+      let nextDivision: string | null = null;
       if (patch.checkedIn !== undefined) row.checkedInAt = patch.checkedIn ? row.checkedInAt ?? now : null;
       if (patch.paperWaiver !== undefined) row.paperWaiverAt = patch.paperWaiver ? row.paperWaiverAt ?? now : null;
       if (patch.cardVerified !== undefined) row.cardVerifiedAt = patch.cardVerified ? row.cardVerifiedAt ?? now : null;
@@ -565,13 +569,19 @@ export function createFixturePromoterApi(
         row.note = note || null;
       }
       if (patch.weighedKg !== undefined) {
-        if (patch.weighedKg === null) { row.weighedKg = null; row.weighedAt = null; }
-        else {
-          const kg = Math.round(Number(patch.weighedKg) * 100) / 100;
+        if (patch.weighedKg === null) {
+          // MD-08: the roster mirror is cleared with the weigh-in (the SQL function restores the registration's declared
+          // bodyweight; fixture registrations carry none)
+          row.weighedKg = null; row.weighedAt = null;
+          nextBodyweight = null;
+        } else {
+          const kg = Number(patch.weighedKg);
           if (!Number.isFinite(kg)) return { data: null, error: 'Bodyweight must be a number in kilograms (like 92.4).' };
+          // MD-16: raw value, two decimals at most, no rounding first
+          if (Math.abs(Math.round(kg * 100) / 100 - kg) > 1e-9) return { data: null, error: 'Bodyweight is read to two decimals at most (like 92.45).' };
           if (kg < 20 || kg > 300) return { data: null, error: `Bodyweight ${kg} kg is outside 20 to 300. Check the scale reading.` };
           row.weighedKg = kg; row.weighedAt = now;
-          athlete.bodyweight = Math.round(kg * 2.2046226218 * 10) / 10;
+          nextBodyweight = Math.round(kg * 2.2046226218 * 10) / 10;
         }
       }
       if (patch.divisionId !== undefined && patch.divisionId && patch.divisionId !== athlete.divisionId) {
@@ -579,10 +589,15 @@ export function createFixturePromoterApi(
         if (found.state.results.some((r) => r.athleteId === athleteId)) {
           return { data: null, error: 'This athlete already has a result; a reclass would orphan it. Clear the result on the scoring phone first.' };
         }
-        const lots = found.state.athletes.filter((a) => a.divisionId === patch.divisionId).map((a) => a.lotNumber);
-        athlete.divisionId = patch.divisionId;
+        nextDivision = patch.divisionId;
+      }
+      // every check passed: apply
+      if (nextBodyweight !== undefined) athlete.bodyweight = nextBodyweight ?? undefined;
+      if (nextDivision) {
+        const lots = found.state.athletes.filter((a) => a.divisionId === nextDivision).map((a) => a.lotNumber);
+        athlete.divisionId = nextDivision;
         athlete.lotNumber = (lots.length ? Math.max(...lots) : 0) + 1;
-        for (const r of registrations) if (r.meetServerId === serverId && r.athleteId === athleteId) r.divisionId = patch.divisionId;
+        for (const r of registrations) if (r.meetServerId === serverId && r.athleteId === athleteId) r.divisionId = nextDivision;
       }
       desk.checkins[athleteId] = row;
       desks.set(serverId, desk);
@@ -595,6 +610,9 @@ export function createFixturePromoterApi(
       const found = meets.find((m) => m.summary.serverId === serverId);
       if (!found) return { data: null, error: `No meet found with serverId "${serverId}".` };
       if (!found.state.divisions.some((d) => d.id === divisionId)) return { data: null, error: 'That division is not on this meet.' };
+      if (capKg !== null && Number.isFinite(capKg) && Math.abs(Math.round(capKg * 100) / 100 - capKg) > 1e-9) {
+        return { data: null, error: 'Weight cap is set to two decimals at most (like 90 or 82.5).' };   // MD-16
+      }
       if (capKg !== null && (!Number.isFinite(capKg) || capKg < 20 || capKg > 300)) {
         return { data: null, error: 'Weight cap must be between 20 and 300 kg (leave it blank for no cap).' };
       }

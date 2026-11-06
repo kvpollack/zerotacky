@@ -171,9 +171,15 @@ export default function ListingSection({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
-  // 046: logos uploaded in this form session but not yet saved on the listing; removed on Reset or a failed save path.
+  // 046: logos uploaded in this form session but not yet saved on the listing; removed on Reset, after a save that
+  // dropped them, and on unmount (MD-14, best effort: a hard refresh still leaves the object behind). Logos that were
+  // saved on a listing are never deleted from here (MD-04): the same path may be on another of the owner's meets.
   const pendingLogos = useRef<Set<string>>(new Set());
   const [logoBusy, setLogoBusy] = useState<number | null>(null);
+  useEffect(() => () => {
+    if (sb) for (const p of pendingLogos.current) void removeSponsorLogoQuietly(sb, p);
+    pendingLogos.current.clear();
+  }, [sb]);
 
   const isDirty = useMemo(
     () => JSON.stringify(toPatch(draft)) !== JSON.stringify(toPatch(toDraft(listing))),
@@ -241,11 +247,10 @@ export default function ListingSection({
     if (res.error) {
       setError(res.error);
     } else {
-      // 046: the saved listing owns its logos now; replaced ones (and any upload that was dropped from a row) go away
+      // 046: the saved listing owns its logos now; an upload that was dropped from a row before saving goes away
       if (sb) {
         const kept = new Set(draft.sponsors.map((s) => s.logoPath).filter(Boolean));
         for (const p of pendingLogos.current) if (!kept.has(p)) void removeSponsorLogoQuietly(sb, p);
-        for (const s of listing.sponsors ?? []) if (s.logoPath && !kept.has(s.logoPath)) void removeSponsorLogoQuietly(sb, s.logoPath);
         pendingLogos.current.clear();
       }
       setSavedNotice(

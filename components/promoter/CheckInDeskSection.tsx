@@ -83,13 +83,15 @@ export default function CheckInDeskSection({
     return true;
   });
 
-  const run = async (key: string, fn: () => Promise<{ error?: string }>, done?: string) => {
-    if (blockedReason) { setError(blockedReason); return; }
+  // Resolves true on success so callers clear their drafts only then (MD-07: a failed save keeps the typed value).
+  const run = async (key: string, fn: () => Promise<{ error?: string }>, done?: string): Promise<boolean> => {
+    if (blockedReason) { setError(blockedReason); return false; }
     setBusy(key); setError(null); setNotice(null);
     const res = await fn();
     setBusy(null);
-    if (res.error) setError(res.error);
-    else if (done) { setNotice(done); setTimeout(() => setNotice(null), 4000); }
+    if (res.error) { setError(res.error); return false; }
+    if (done) { setNotice(done); setTimeout(() => setNotice(null), 4000); }
+    return true;
   };
 
   const saveWeight = (a: Athlete) => {
@@ -107,8 +109,9 @@ export default function CheckInDeskSection({
       kg = parseKg(raw);
     }
     if (kg === null) { setError(`"${raw}" is not a bodyweight between 20 and 300 kg (44 to 661 lb). Type it the way the scale shows it.`); return; }
-    void run(`w-${a.id}`, () => onUpdateAthlete(a.id, { weighedKg: kg }), `${a.name}: ${formatKg(kg)} recorded.`);
-    setWeightDraft((p) => { const n = { ...p }; delete n[a.id]; return n; });
+    void run(`w-${a.id}`, () => onUpdateAthlete(a.id, { weighedKg: kg }), `${a.name}: ${formatKg(kg)} recorded.`).then((ok) => {
+      if (ok) setWeightDraft((p) => { const n = { ...p }; delete n[a.id]; return n; });
+    });
   };
 
   const saveCap = (d: Division) => {
@@ -116,8 +119,9 @@ export default function CheckInDeskSection({
     if (raw === undefined) return;
     const kg = raw.trim() ? parseKg(raw) : null;
     if (raw.trim() && kg === null) { setError(`"${raw}" is not a cap between 20 and 300 kg.`); return; }
-    void run(`cap-${d.id}`, () => onSetCap(d.id, kg), kg === null ? `${d.name}: cap cleared.` : `${d.name}: cap ${formatKg(kg)}.`);
-    setCapDraft((p) => { const n = { ...p }; delete n[d.id]; return n; });
+    void run(`cap-${d.id}`, () => onSetCap(d.id, kg), kg === null ? `${d.name}: cap cleared.` : `${d.name}: cap ${formatKg(kg)}.`).then((ok) => {
+      if (ok) setCapDraft((p) => { const n = { ...p }; delete n[d.id]; return n; });
+    });
   };
 
   const preset = deskPreset(federation);
