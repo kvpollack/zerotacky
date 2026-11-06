@@ -694,3 +694,50 @@ row (load + distance + time, custom implements), so the first cut is a generic C
   nudged it. Check the served HTML for the new string before screenshotting.
 - **Left on purpose:** no Strong / Hevy-format CSV yet (would need one row per exercise with fixed columns; add when a
   user asks), no per-athlete rack heights (the sheet is the show's spec, not a registration), no landscape.
+
+## Feature gaps #10: promoter broadcasts and automatic reminders (11/5 night)
+
+Third of Kurt's picks, both halves at once: a message from the promoter to the registered athletes, and reminders a week
+out and the day before. Migration 042, 631 tests (+11), tsc clean. Addresses never reach the browser; the UI gets counts.
+
+- **042 `supabase/042_broadcasts.sql`**: `registrations.mail_token` (per-row unsubscribe token) and `mail_opt_out`;
+  `meets.reminders_enabled` (default on); `meet_broadcasts` (kind broadcast / reminder_7d / reminder_1d, audience,
+  subject, body, test_only, counts; one reminder per meet per kind by unique index) and `meet_broadcast_recipients`
+  (snapshot per send: email, name, division, token, status queued/sent/failed, error). RLS on, no policies: functions only.
+  `zt_create_broadcast` (promoter, server key, demo refused; limits: subject 120, body 2,000, 3 sends per meet per 24 h,
+  10 tests per promoter per day, 500 recipients, dedupe by email, opted-out skipped; a test queues one row to the
+  promoter's confirmed address), `zt_broadcast_payload` (claims queued rows, 2-minute in-flight window, joins
+  `division_id` for the prep link), `zt_broadcast_mark` / `zt_broadcast_mark_many` (per-recipient outcome, rolls up
+  counts and `finished_at`), `zt_list_broadcasts` + `zt_set_reminders` (promoter, no key), `zt_queue_due_reminders(today,
+  key)` (cron: listed, non-demo, not cancelled/postponed/completed, reminders on, date = today+7 or today+1, accepted
+  athletes; also returns recent reminders still holding queued rows), `zt_mail_opt_out(reg, token)` (anon).
+- **`lib/email/broadcast.ts`**: pure builders. `broadcastEmail` (promoter's paragraphs, "From <name> of <meet>", View
+  the show, unsubscribe link, `[Test]` subject prefix on a test), `reminderEmail` (facts: show, date, where, division,
+  promoter contact; 7-day key = prep sheet for the athlete's division, 1-day key = show page), `bodyParagraphs`,
+  `unsubscribeUrl` (body link, page with a confirm key) vs `unsubscribePostUrl` (List-Unsubscribe header, one-click
+  POST), `reminderDue`, `audienceCount`, labels and limits. `lib/email/send.ts` gained `replyTo`, `unsubscribe`
+  (RFC 8058 headers) and `sendBatchViaResend` (100 per call). `lib/email/broadcastRun.ts`: the shared pass (claim,
+  build, batch send, mark) used by both routes; a retry after a half-finished pass sends only what is still queued.
+- **Routes**: `POST /api/broadcast` (bearer = promoter; create+send, or `{broadcastId}` to resume; `maxDuration` 60).
+  `GET /api/cron/reminders` (bearer = `CRON_SECRET`; today in America/New_York; queue, then send each; `maxDuration`
+  300). `vercel.json` schedules it daily at 13:00 UTC (08:00 EST / 09:00 EDT). `/api/unsubscribe` POST = one-click
+  from the mail client, GET = redirect to the page. `/unsubscribe?r&t` page (noindex): one confirm key, so a link
+  scanner prefetching the URL opts nobody out; done state names the meet; bad or missing token explained.
+- **UI `components/promoter/BroadcastSection.tsx`** under Registrations (tab 6): subject (counter), To = Accepted /
+  Everyone with the live reach count, message (blank line = paragraph), Preview, Send a test to me, Send to N behind an
+  armed "Yes, send to N now" that disarms after 8 s or on any edit, result line, Automatic reminders on/off with the
+  copy, Sent history (kind, audience, sent/recipients, failed, in progress, time). Preview build: explains, does nothing.
+- **Verified on staging** (Iron Harbor, 3 pending, 0 accepted): test-mode create queues one row to the promoter's
+  address; all_active create snapshots 3 rows with division ids and tokens; a second payload pass claims nothing;
+  `mark_many` rolls up 2 sent / 1 failed and finishes; reminder queue for 11/7 and 11/13 creates both rows with 0
+  recipients (nobody accepted) and returns no ids; unsubscribe page end to end with a real token (reset after); one-click
+  POST 200; header GET 303. No real email left the laptop: `.env.local` has no `RESEND_API_KEY`, so the UI's test send
+  returned the 503 wording. First real send happens on Vercel.
+- **Operator steps**: apply 042 to prod; set `CRON_SECRET` on Vercel (any long random string; Vercel sends it as the
+  bearer on cron calls); confirm `RESEND_API_KEY` and `ZT_MAIL_KEY` are already there (they are, for 031). After the first
+  deploy the cron shows under Project > Settings > Cron Jobs.
+- **Left on purpose**: no scheduling of a broadcast for later; no per-athlete send; the reach count in the UI does not
+  know about opt-outs (the server count is the truth and the result line says what went); reminders go to accepted
+  athletes only (pending ones are not on the roster yet); no "resume" key in the UI for a half-finished send (the
+  route supports `{broadcastId}`; the history shows "in progress" when it happens, and the next cron pass finishes
+  reminders on its own); Resend free tier is 3,000 a month, the limits above keep one show well under it.
