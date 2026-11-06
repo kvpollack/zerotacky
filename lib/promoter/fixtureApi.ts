@@ -163,6 +163,9 @@ export function createFixturePromoterApi(
           autoAccept: false,   // fixtures keep the review queue so the demo dashboard has pending rows
           resultsSubmittedAt: pubShow.resultsSubmittedAt ?? null,
           schedule: pubShow.schedule ? clone(pubShow.schedule) : null,
+          sponsors: pubShow.sponsors ? clone(pubShow.sponsors) : null,
+          livestreamUrl: pubShow.livestreamUrl ?? null,
+          staff: null,
         },
         divisionCount: pubShow.state.divisions.length,
         athleteCount: pubShow.state.athletes.length,

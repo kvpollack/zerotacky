@@ -40,6 +40,7 @@ import {
 } from './rules';
 import { parseTheme } from '../website/theme';
 import { parseSchedule } from '../website/schedule';
+import { httpsUrlOk, parseSponsors, parseStaff } from '../website/extras';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -104,6 +105,9 @@ export function rowToMeetListing(row: Partial<MeetListingRow>): MeetListing {
     autoAccept: row.auto_accept === undefined || row.auto_accept === null ? true : Boolean(row.auto_accept),
     resultsSubmittedAt: row.results_submitted_at ?? null,
     schedule: parseSchedule(row.schedule),
+    sponsors: parseSponsors(row.sponsors),
+    livestreamUrl: httpsUrlOk(row.livestream_url) ? row.livestream_url : null,
+    staff: parseStaff(row.staff),
   };
 }
 
@@ -142,6 +146,15 @@ export function listingPatchToColumns(patch: Partial<MeetListing>): Partial<Meet
   }
   if (patch.schedule !== undefined) {
     out.schedule = patch.schedule ? { ...patch.schedule } : null;
+  }
+  if (patch.sponsors !== undefined) {
+    out.sponsors = patch.sponsors ? patch.sponsors.map((s) => ({ ...s })) : null;
+  }
+  if (patch.livestreamUrl !== undefined) {
+    out.livestream_url = patch.livestreamUrl ? patch.livestreamUrl.trim() || null : null;
+  }
+  if (patch.staff !== undefined) {
+    out.staff = patch.staff ? patch.staff.map((s) => ({ ...s })) : null;
   }
   return out;
 }

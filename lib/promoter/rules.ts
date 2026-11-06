@@ -13,6 +13,7 @@ import type {
 import type { AppState } from '../types';
 import { cleanTheme } from '../website/theme';
 import { cleanSchedule } from '../website/schedule';
+import { cleanLivestreamUrl, cleanSponsors, cleanStaff } from '../website/extras';
 
 export const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -85,6 +86,20 @@ export function validateListingPatch(
   if (merged.schedule) {
     const s = cleanSchedule(merged.schedule);
     if (s.problem) return s.problem;
+  }
+
+  // 046: sponsors / livestream / staff mirror zt_sponsors_ok, zt_https_url_ok, zt_staff_ok
+  if (merged.sponsors) {
+    const sp = cleanSponsors(merged.sponsors);
+    if (sp.problem) return sp.problem;
+  }
+  if (merged.livestreamUrl) {
+    const u = cleanLivestreamUrl(merged.livestreamUrl);
+    if (u.problem) return u.problem;
+  }
+  if (merged.staff) {
+    const st = cleanStaff(merged.staff);
+    if (st.problem) return st.problem;
   }
 
   if (merged.venue) {

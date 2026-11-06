@@ -4,6 +4,7 @@ import type { SyncClient } from './client';
 import { stateToRows, rowsToState, rowToResult, rowToAthlete, resultToRow, athleteToRow } from './mapping';
 import type { MeetRow, DivisionRow, EventRow, AthleteRow, ResultRow, PublishExtra } from './mapping';
 import { parseTheme, type ZtTheme } from '../website/theme';
+import { httpsUrlOk, parseSponsors, type MeetSponsor } from '../website/extras';
 
 export interface LiveStateRow {
   meet_id: string;
@@ -40,13 +41,15 @@ export interface RemoteMeet {
   venue?: { facilityName?: string; city?: string; state?: string } | null;   // listing venue (005); the TV title block
   federation?: string | null;
   hostGymId?: string | null;       // the CLIENT cell on the TV reads the gym's name
+  sponsors?: MeetSponsor[] | null; // 046 (#14): sponsor strip on the TV idle sheet and the phone board footer
+  livestreamUrl?: string | null;   // 046 (#17): Watch live link in the phone board footer
 }
 
 // What a linked judge phone needs when the admin republishes: meet settings + divisions + events.
 export interface MeetConfig { meet: AppState['meet']; divisions: AppState['divisions']; events: AppState['events']; updatedAt: string | null }
 
 // Public columns only (join_code and admin_pin are revoked from anon in the schema).
-const MEET_COLS = 'id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,competition_status,results_status,updated_at,theme,venue,federation,host_gym_id';
+const MEET_COLS = 'id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,competition_status,results_status,updated_at,theme,venue,federation,host_gym_id,sponsors,livestream_url';
 
 export function latestServerAt(rows: { server_at?: string }[]): string | null {
   let m: string | null = null;
@@ -81,6 +84,8 @@ function toRemoteMeet(meet: MeetRow, kids: Awaited<ReturnType<typeof fetchChildr
     venue: (meet as { venue?: RemoteMeet['venue'] }).venue ?? null,
     federation: (meet as { federation?: string | null }).federation ?? null,
     hostGymId: (meet as { host_gym_id?: string | null }).host_gym_id ?? null,
+    sponsors: parseSponsors((meet as { sponsors?: unknown }).sponsors),
+    livestreamUrl: ((u) => (httpsUrlOk(u) ? u : null))((meet as { livestream_url?: unknown }).livestream_url),
   };
 }
 

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, CheckCircle2, Eye, EyeOff, Globe, RotateCcw } from 'lucide-react';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { AlertTriangle, CheckCircle2, Eye, EyeOff, Globe, ImagePlus, Plus, RotateCcw, Trash2 } from 'lucide-react';
 import type { MeetListing } from '@/lib/promoter/contract';
 import { isLiveBackend } from '@/lib/promoter/usePromoterApi';
 import HostGymPicker from './HostGymPicker';
@@ -24,6 +25,8 @@ import type {
   ShowCompetitionStatus,
   ShowRegistrationStatus,
 } from '@/lib/website/types';
+import { SPONSORS_MAX, SPONSOR_NAME_MAX, URL_MAX, cleanLivestreamUrl, cleanSponsors, sponsorLogoUrl, type MeetSponsor } from '@/lib/website/extras';
+import { removeSponsorLogoQuietly, uploadSponsorLogo } from '@/lib/auth/sponsorLogo';
 
 interface ListingSectionProps {
   meetDate: string;
@@ -34,6 +37,8 @@ interface ListingSectionProps {
   onDirtyChange?: (dirty: boolean) => void;
   // EM-05 (10/29): the new-entry notice goes to the owner's confirmed sign-in email; when there is none, say so here.
   ownerEmailUnconfirmed?: boolean;
+  // 046: logo uploads go through the browser Supabase client; null (demo / no backend) hides the upload key.
+  sb?: SupabaseClient | null;
 }
 
 // Flat text form of a listing. Kept as strings so the inputs are controlled and comparison is trivial.
@@ -57,6 +62,18 @@ interface ListingDraft {
   theme: ZtTheme | null; // 030: raw field text; validateListingPatch normalises or refuses at save
   autoAccept: boolean;   // 032
   schedule: Record<ScheduleTimeKey, string> & { timezone: string; notes: string };   // 044: raw field text; cleanSchedule decides at save
+  livestreamUrl: string;                 // 046 (#17): raw text; cleanLivestreamUrl decides at save
+  sponsors: SponsorDraft[];              // 046 (#14): raw rows; blank rows are dropped at save
+}
+interface SponsorDraft { name: string; url: string; logoPath: string }
+function sponsorsDraft(list: MeetSponsor[] | null): SponsorDraft[] {
+  return (list ?? []).map((s) => ({ name: s.name, url: s.url ?? '', logoPath: s.logoPath ?? '' }));
+}
+// Blank rows disappear; otherwise the raw rows go through so validateListingPatch can name the problem row.
+function sponsorsPatch(rows: SponsorDraft[]): MeetSponsor[] | null {
+  const c = cleanSponsors(rows);
+  if (c.problem) return rows.filter((r) => r.name.trim() || r.url.trim() || r.logoPath).map((r) => ({ name: r.name, url: r.url, logoPath: r.logoPath } as MeetSponsor));
+  return c.sponsors;
 }
 
 function scheduleDraft(s: MeetSchedule | null): ListingDraft['schedule'] {
@@ -98,6 +115,8 @@ function toDraft(listing: MeetListing): ListingDraft {
     theme: listing.theme ? { ...listing.theme } : null,
     autoAccept: listing.autoAccept ?? true,
     schedule: scheduleDraft(listing.schedule ?? null),
+    livestreamUrl: listing.livestreamUrl ?? '',
+    sponsors: sponsorsDraft(listing.sponsors ?? null),
   };
 }
 
@@ -130,6 +149,9 @@ function toPatch(d: ListingDraft): Partial<MeetListing> {
     theme: d.theme,
     autoAccept: d.autoAccept,
     schedule: schedulePatch(d.schedule),
+    // a bare domain becomes https://...; bad text goes through raw so validateListingPatch can refuse it by name
+    livestreamUrl: cleanLivestreamUrl(d.livestreamUrl).url ?? (d.livestreamUrl.trim() || null),
+    sponsors: sponsorsPatch(d.sponsors),
   };
 }
 
@@ -143,11 +165,15 @@ export default function ListingSection({
   onSaveListing,
   onDirtyChange,
   ownerEmailUnconfirmed = false,
+  sb = null,
 }: ListingSectionProps) {
   const [draft, setDraft] = useState<ListingDraft>(() => toDraft(listing));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
+  // 046: logos uploaded in this form session but not yet saved on the listing; removed on Reset or a failed save path.
+  const pendingLogos = useRef<Set<string>>(new Set());
+  const [logoBusy, setLogoBusy] = useState<number | null>(null);
 
   const isDirty = useMemo(
     () => JSON.stringify(toPatch(draft)) !== JSON.stringify(toPatch(toDraft(listing))),
@@ -178,8 +204,29 @@ export default function ListingSection({
     }));
 
   const handleReset = () => {
+    if (sb) for (const p of pendingLogos.current) void removeSponsorLogoQuietly(sb, p);
+    pendingLogos.current.clear();
     setDraft(toDraft(listing));
     setError(null);
+  };
+
+  const setSponsor = (i: number, patch: Partial<SponsorDraft>) =>
+    setDraft((prev) => ({ ...prev, sponsors: prev.sponsors.map((s, j) => (j === i ? { ...s, ...patch } : s)) }));
+  const addSponsor = () => setDraft((prev) => (prev.sponsors.length >= SPONSORS_MAX ? prev : { ...prev, sponsors: [...prev.sponsors, { name: '', url: '', logoPath: '' }] }));
+  const removeSponsor = (i: number) => setDraft((prev) => ({ ...prev, sponsors: prev.sponsors.filter((_, j) => j !== i) }));
+  const handleLogo = async (i: number, file: File | undefined) => {
+    if (!file || !sb) return;
+    setLogoBusy(i);
+    setError(null);
+    try {
+      const path = await uploadSponsorLogo(sb, file);
+      pendingLogos.current.add(path);
+      setSponsor(i, { logoPath: path });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Logo upload failed.');
+    } finally {
+      setLogoBusy(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -194,6 +241,13 @@ export default function ListingSection({
     if (res.error) {
       setError(res.error);
     } else {
+      // 046: the saved listing owns its logos now; replaced ones (and any upload that was dropped from a row) go away
+      if (sb) {
+        const kept = new Set(draft.sponsors.map((s) => s.logoPath).filter(Boolean));
+        for (const p of pendingLogos.current) if (!kept.has(p)) void removeSponsorLogoQuietly(sb, p);
+        for (const s of listing.sponsors ?? []) if (s.logoPath && !kept.has(s.logoPath)) void removeSponsorLogoQuietly(sb, s.logoPath);
+        pendingLogos.current.clear();
+      }
       setSavedNotice(
         isLiveBackend()
           ? 'Listing settings saved. Listed meets appear on Find a Show within a minute.'
@@ -580,6 +634,74 @@ export default function ListingSection({
               className={INPUT}
             />
           </div>
+        </div>
+      </div>
+
+      {/* 046: livestream link (#17) and sponsor blocks (#14). Public on the show page, the phone board footer and the TV idle sheet. */}
+      <div className="pt-3 border-t border-zt-border space-y-3">
+        <div className="text-xs font-extrabold uppercase text-zt-primary">Livestream &amp; Sponsors</div>
+        <div>
+          <label htmlFor="listing-livestream" className={LABEL}>Livestream link (optional)</label>
+          <input
+            id="listing-livestream"
+            type="text"   /* not type=url: the browser would block submit on a bare domain, which cleanLivestreamUrl accepts */
+            inputMode="url"
+            maxLength={URL_MAX}
+            value={draft.livestreamUrl}
+            onChange={(e) => set('livestreamUrl', e.target.value)}
+            placeholder="https://youtube.com/live/..."
+            className={INPUT}
+          />
+          <p className="text-[11px] text-zt-muted mt-1">Shown as a &quot;Watch live&quot; key on the show page and the phone board. Any https:// link works (YouTube, Twitch, Facebook, Instagram).</p>
+        </div>
+        <div className="space-y-2">
+          <div className={LABEL}>Sponsors (up to {SPONSORS_MAX})</div>
+          {draft.sponsors.length === 0 && (
+            <p className="text-xs text-zt-muted">None yet. Sponsors print as a logo strip on the show page and the board, each linking to the sponsor&apos;s site.</p>
+          )}
+          {draft.sponsors.map((s, i) => {
+            const logoSrc = s.logoPath ? sponsorLogoUrl(s.logoPath) : '';
+            return (
+              <div key={i} className="grid grid-cols-1 md:grid-cols-[56px_1fr_1fr_auto] gap-2 items-center bg-zt-inset/50 border border-zt-border rounded-xl p-2">
+                <div className="w-14 h-14 rounded-lg bg-zt-inset border border-zt-border flex items-center justify-center overflow-hidden">
+                  {logoSrc ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={logoSrc} alt="" className="max-w-full max-h-full object-contain" />
+                  ) : (
+                    <ImagePlus className="w-5 h-5 text-zt-muted" aria-hidden="true" />
+                  )}
+                </div>
+                <div>
+                  <label htmlFor={`listing-sponsor-name-${i}`} className="sr-only">Sponsor {i + 1} name</label>
+                  <input id={`listing-sponsor-name-${i}`} type="text" maxLength={SPONSOR_NAME_MAX} value={s.name} onChange={(e) => setSponsor(i, { name: e.target.value })} placeholder="Sponsor name" className={INPUT} />
+                </div>
+                <div>
+                  <label htmlFor={`listing-sponsor-url-${i}`} className="sr-only">Sponsor {i + 1} link</label>
+                  <input id={`listing-sponsor-url-${i}`} type="text" inputMode="url" maxLength={URL_MAX} value={s.url} onChange={(e) => setSponsor(i, { url: e.target.value })} placeholder="https://sponsor.com (optional)" className={INPUT} />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {sb && (
+                    <label className="px-3 py-2 rounded-xl bg-zt-inset border border-zt-border-strong text-zt-text font-black text-[11px] uppercase cursor-pointer whitespace-nowrap">
+                      {logoBusy === i ? 'Uploading...' : s.logoPath ? 'Replace logo' : 'Add logo'}
+                      <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={logoBusy !== null} onChange={(e) => { void handleLogo(i, e.target.files?.[0]); e.target.value = ''; }} />
+                    </label>
+                  )}
+                  {s.logoPath && (
+                    <button type="button" onClick={() => setSponsor(i, { logoPath: '' })} className="px-2.5 py-2 rounded-xl text-[11px] font-black uppercase text-zt-muted hover:text-zt-text">No logo</button>
+                  )}
+                  <button type="button" onClick={() => removeSponsor(i)} aria-label={`Remove sponsor ${i + 1}`} className="p-2 rounded-xl text-zt-muted hover:text-zt-danger-text">
+                    <Trash2 className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          {draft.sponsors.length < SPONSORS_MAX && (
+            <button type="button" onClick={addSponsor} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zt-inset border border-zt-border-strong text-zt-text font-black text-[11px] uppercase">
+              <Plus className="w-3.5 h-3.5" aria-hidden="true" /> Add sponsor
+            </button>
+          )}
+          {!sb && draft.sponsors.length > 0 && <p className="text-[11px] text-zt-muted">Logo upload needs a signed-in live backend; names and links still save.</p>}
         </div>
       </div>
 
