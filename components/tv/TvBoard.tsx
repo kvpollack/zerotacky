@@ -123,7 +123,7 @@ export default function TvBoard({ meet, state, live, control, clientName, error,
           upcoming={a?.next ? `E${a.next.eventNumber} ${a.next.name}` : '—'}
         />
       )}
-      {sheet === 'idle' && <TvIdle m={buildIdle(state)} title={title} divisions={state.divisions.map((d) => d.name)} athletes={state.athletes.filter((x) => x.status === 'active').length} />}
+      {sheet === 'idle' && <TvIdle m={buildIdle(state)} title={title} divisions={state.divisions.map((d) => d.name)} athletes={state.athletes.filter((x) => x.status === 'active').length} sponsors={meet.sponsors ?? null} />}
     </TvFrame>
   );
 }

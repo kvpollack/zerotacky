@@ -62,6 +62,7 @@ import { fetchRegistrationCards, openCardInNewTab, type MembershipCard } from '@
 import AthleteAccountsSection from './AthleteAccountsSection';
 import MeetDaySection from './MeetDaySection';
 import CheckInDeskSection from './CheckInDeskSection';
+import StaffSection from './StaffSection';
 import ResultsPackSection from './ResultsPackSection';
 
 type SectionId =
@@ -822,6 +823,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             onSaveListing={handleSaveListing}
             onDirtyChange={setListingDirty}
             ownerEmailUnconfirmed={ownerEmailUnconfirmed}
+            sb={isLiveBackend() ? getSupabase() : null}
           />
         </div>
 
@@ -863,6 +865,16 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             blockedReason={registrationsBlockedReason}
             onUpdateAthlete={handleDeskAthlete}
             onSetCap={handleDeskCap}
+          />
+          {/* 046 (feature gaps #12): who works the meet, and the printable briefing cards */}
+          <StaffSection
+            meetName={workingState.meet.name}
+            meetDate={workingState.meet.date}
+            listing={summary.listing}
+            stations={workingState.meet.stations ?? []}
+            divisions={workingState.divisions}
+            events={workingState.events}
+            onSaveListing={handleSaveListing}
           />
           <MeetDaySection
             summary={summary}

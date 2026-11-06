@@ -20,7 +20,7 @@ import type {
 
 export const PUBLIC_SHOW_MEET_COLS =
   'id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,updated_at,' +
-  'competition_status,registration_status,results_status,is_public_listed,venue,federation,entry_fee_display,registration_deadline,athlete_cap,promoter_contact,host_gym_id,theme,results_submitted_at,schedule';
+  'competition_status,registration_status,results_status,is_public_listed,venue,federation,entry_fee_display,registration_deadline,athlete_cap,promoter_contact,host_gym_id,theme,results_submitted_at,schedule,sponsors,livestream_url';
 
 const FALLBACK_VENUE: ShowVenue = {
   city: 'Not provided',
@@ -107,6 +107,8 @@ export function mapMeetRowToPublicShowSummary(
     isPublicListed: listing.isPublicListed,
     ...(listing.resultsSubmittedAt ? { resultsSubmittedAt: listing.resultsSubmittedAt } : {}),
     ...(listing.schedule ? { schedule: listing.schedule } : {}),
+    ...(listing.sponsors ? { sponsors: listing.sponsors } : {}),
+    ...(listing.livestreamUrl ? { livestreamUrl: listing.livestreamUrl } : {}),
   };
 }
 

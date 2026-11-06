@@ -20,9 +20,9 @@ export function fakeServer() {
       else db[table][i] = { ...db[table][i], ...r, ...stamp };
     }
   }
-  // mirrors the public column grant on meets (030): a select naming any other column is refused like PostgREST would
+  // mirrors the public column grant on meets (030, +schedule 044, +sponsors/livestream_url 046): a select naming any other column is refused like PostgREST would
   const PUBLIC_MEET_COLS = ['id', 'slug', 'name', 'date', 'run_order_method', 'tiebreaker_rule', 'available_plates', 'collar_weight_per_pair', 'stations', 'is_demo', 'created_at', 'updated_at',
-    'competition_status', 'registration_status', 'results_status', 'is_public_listed', 'venue', 'federation', 'entry_fee_display', 'registration_deadline', 'athlete_cap', 'promoter_contact', 'host_gym_id', 'theme'];
+    'competition_status', 'registration_status', 'results_status', 'is_public_listed', 'venue', 'federation', 'entry_fee_display', 'registration_deadline', 'athlete_cap', 'promoter_contact', 'host_gym_id', 'theme', 'schedule', 'sponsors', 'livestream_url'];
   const publicMeet = (m) => Object.fromEntries(Object.entries(m).filter(([k]) => PUBLIC_MEET_COLS.includes(k)));
   function select(table, params) {
     let rows = db[table];

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import FollowShowButton from './FollowShowButton';
 import { Cap, Key, KeyButton, WebCell, keyClass, textLink } from './sheet';
+import SponsorStrip from './SponsorStrip';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import { formatShowDate } from '@/lib/website/showHistory';
 import { directionsUrl, eventWeightDisplay, formatLocalDateTime } from '@/lib/website/format';
@@ -581,6 +582,10 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
               {show.liveScoreboardPath && (
                 <Key href={show.liveScoreboardPath} variant="ink">Open Public Live Scoreboard</Key>
               )}
+              {/* 046 (#17): the promoter's stream, any https link */}
+              {show.livestreamUrl && (
+                <a href={show.livestreamUrl} target="_blank" rel="noopener noreferrer" className={keyClass('line')}>Watch live ↗</a>
+              )}
               {/* Train for this show (11/5): the gym directory ranked by this show's event implements; only when the
                   promoter has specced at least one event with a mappable implement. */}
               {trainHref && (
@@ -601,6 +606,12 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
             )}
           </WebCell>
         </div>
+        {/* 046 (#14): sponsor strip, only when the promoter listed any */}
+        {show.sponsors?.length ? (
+          <WebCell pad="lg" className="border-t border-rule">
+            <SponsorStrip sponsors={show.sponsors} />
+          </WebCell>
+        ) : null}
       </section>
     </div>
   );

@@ -15,6 +15,7 @@ import type {
 } from '../website/types';
 import type { ZtTheme } from '../website/theme';
 import type { MeetSchedule } from '../website/schedule';
+import type { MeetSponsor, MeetStaff } from '../website/extras';
 
 export interface PromoterUser {
   id: string;             // auth.users.id (uuid)
@@ -41,6 +42,9 @@ export interface MeetListing {
   autoAccept: boolean;                  // 032: entries go straight to the roster (default); false = the promoter reviews each one
   resultsSubmittedAt: string | null;    // 037: ISO; when the promoter marked the results as sent to the federation. Read-only here.
   schedule: MeetSchedule | null;        // 044: meet-day timeline (check-in, weigh-in, rules meeting, first event, finish); null = not provided
+  sponsors: MeetSponsor[] | null;       // 046 (#14): up to 6, public (show page, boards); null = none
+  livestreamUrl: string | null;         // 046 (#17): https link, public; null = none
+  staff: MeetStaff[] | null;            // 046 (#12): judges, volunteers, state rep; PRIVATE (never on a public page); null = none
 }
 
 export interface PromoterMeetSummary {
@@ -280,6 +284,9 @@ export function emptyListing(): MeetListing {
     autoAccept: true,
     resultsSubmittedAt: null,
     schedule: null,
+    sponsors: null,
+    livestreamUrl: null,
+    staff: null,
   };
 }
 

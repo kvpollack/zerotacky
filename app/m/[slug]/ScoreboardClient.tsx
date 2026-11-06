@@ -13,6 +13,7 @@ import WebsiteThemeFrame from '@/components/website/WebsiteThemeFrame';
 import Wordmark from '@/components/brand/Wordmark';
 import { ModeToggle } from '@/components/website/SheetMode';
 import { Cap, keyClass, textLink } from '@/components/website/sheet';
+import SponsorStrip from '@/components/website/SponsorStrip';
 import { RuledBlock } from '@/components/sheet';
 import { CAP, LH, LR, Sec } from '@/components/scorer/parts';
 import StandingsSheet from '@/components/scorer/StandingsSheet';
@@ -95,7 +96,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
     if (!fx) return false;
     setDemo(true);
     // the fixture's lifecycle, venue and promoter ride along so the demo board reads like a real one (UI transition Phase 2)
-    setMeet({ state: fx.state, slug: fx.slug, stations: fx.state.meet.stations ?? [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }], isDemo: true, competitionStatus: fx.competitionStatus ?? null, resultsStatus: fx.resultsStatus ?? null, latestServerAt: null, updatedAt: null, venue: fx.venue ?? null });
+    setMeet({ state: fx.state, slug: fx.slug, stations: fx.state.meet.stations ?? [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }], isDemo: true, competitionStatus: fx.competitionStatus ?? null, resultsStatus: fx.resultsStatus ?? null, latestServerAt: null, updatedAt: null, venue: fx.venue ?? null, sponsors: fx.sponsors ?? null, livestreamUrl: fx.livestreamUrl ?? null });
     if (fx.promoterName) setClientName(fx.promoterName);
     setState(fx.state);
     setUpdatedAt(Date.now());
@@ -353,7 +354,10 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
         );
       })}
 
+      {/* 046: sponsors (#14) and the stream link (#17) ride on the public meet row */}
+      {meet.sponsors?.length ? <SponsorStrip sponsors={meet.sponsors} className="px-4 py-4 sm:px-5 border-t border-rule" /> : null}
       <div className="px-4 py-4 sm:px-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
+        {meet.livestreamUrl && <a href={meet.livestreamUrl} target="_blank" rel="noopener noreferrer" className={`${textLink} text-pen`}>Watch live ↗</a>}
         <a href="/website" className={textLink}>ZeroTacky home</a>
         <a href="/website/account" className={textLink}>Account</a>
       </div>

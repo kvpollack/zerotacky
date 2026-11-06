@@ -54,6 +54,11 @@ export const DEMO_SHOW_RECORDS: PublicShowRecord[] = [
     hostGymName: 'Riverside Strength Co. (Fictional)',
     scheduleNotes: 'Rules meeting at 8:30 AM EDT. First implement on platform at 9:00 AM EDT.',
     schedule: { timezone: 'America/New_York', checkIn: '07:30', rulesMeeting: '08:30', start: '09:00', estimatedEnd: '15:00' },
+    sponsors: [
+      { name: 'Riverside Strength Co. (Fictional)', url: 'https://example.com/riverside' },
+      { name: 'Keystone Chalk Works (Fictional)' },
+    ],
+    livestreamUrl: 'https://example.com/live/riverside-iron-fest',
     rulesSummary:
       'Athletes compete in five strength-tiered groups (Group 1 through Group 5). Reverse overall standings determine run order after Event 1. Most event wins breaks overall point ties.',
     registration: {

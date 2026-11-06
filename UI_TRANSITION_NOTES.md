@@ -832,3 +832,61 @@ Dev-server gotcha confirmed: Python-written edits need `touch <file>` (not `prin
 Left on purpose: no web push / SMS (#7 report row says both cost money or need an install; the in-page alert covers the
 athlete with the board open); the board does not yet show the schedule's first-event time; no rule presets beyond the SC
 text; the Athletes tab does not display bodyweight, so the mirror is visible on the desk, standings and export only.
+
+## Feature gaps #12 + #14 + #17: staff roster and briefing cards, sponsor blocks, livestream link (11/6 evening, migration 046)
+
+Report rows: #12 "volunteer and judge roster with briefing cards", #14 "sponsor blocks on show page and live board", #17
+"livestream link field" (`~/Downloads/zerotacky_feature_gaps_2026-11-03.md`). One migration, three columns on `meets`,
+one storage bucket.
+
+**046_sponsors_staff_stream.sql.** `sponsors jsonb` (array <= 6 of `{name <= 60, url? https <= 300, logoPath?
+"<uid>/<file>"}`, `zt_sponsors_ok`), `livestream_url text` (`zt_https_url_ok(p, 300)`: https only), `staff jsonb` (array
+<= 40 of `{name <= 60, role in judge | head_judge | state_rep | volunteer | loader | scorer | emcee | medic | other,
+station? <= 40, contact? <= 80, note? <= 160}`, `zt_staff_ok`). Public column grant gains `sponsors` + `livestream_url`
+only: **staff has no anon grant** and travels only through `zt_my_meets` / `zt_get_my_meet` (owner or member), so a judge's
+phone number never reaches a public select. `zt_update_listing` (044 body) accepts all three in the patch, trims strings,
+drops blank optional keys and nameless rows, and clears on jsonb null / blank. Bucket `sponsor-logos` copies the 013
+avatars pattern (public read, 1 MiB, jpeg/png/webp, writes only inside the caller's `<uid>/` folder); a meet member uploads
+under their own id and the path is saved on the meet. Applied to staging; `test/fake_supabase.mjs` mirrors the grant list
+(it already lacked 044's `schedule`; added with the two new columns, which is what made two SyncController tests fail
+until it was).
+
+**Shared code.** `lib/website/extras.ts` (pure): types `MeetSponsor`, `MeetStaff`, `StaffRole`; `cleanLivestreamUrl`
+(bare domain -> https://, http refused), `parseSponsors` / `cleanSponsors`, `parseStaff` / `cleanStaff`, `staffByStation`
+(matches "station 1" / "Station 1" loosely, keeps the meet's station order, floating last), `sponsorLogoUrl(path, base)`
+(public bucket URL, no client needed), logo size/type checks. `lib/website/briefing.ts` (pure): `briefingCards` (one card
+per station: crew, divisions on the station, events in the station's running order with per-division lb + kg, height
+callouts, `specSegments` / notes / video, then a Floating crew card), `standardsLines` (generic head-judge standards;
+names the federation unless it is Unsanctioned / None; flags a missing state rep or medic), `briefingHtml` (self-contained
+printable document, one card per page, escapes everything, **never prints the contact field**). `lib/auth/sponsorLogo.ts`:
+`uploadSponsorLogo(sb, file)` (uid from the session), `removeSponsorLogoQuietly`.
+
+**Plumbing.** `MeetListing.sponsors / livestreamUrl / staff` (contract, `emptyListing`, fixtures x3, fixtureApi), db row
+types, `rowToMeetListing` / `listingPatchToColumns`, `validateListingPatch` (mirrors the three checks), `PublicShowSummary`
+(sponsors, livestreamUrl; not staff), `PUBLIC_SHOW_MEET_COLS`, `RemoteMeet` + `MEET_COLS` + `toRemoteMeet` for the boards,
+demo board `setMeet` carries the fixture's sponsors + link; Riverside fixture got two fictional sponsors and a link.
+
+**UI.** Listing tab, new block "Livestream & Sponsors" below the schedule: link input (plain `type=text` with
+`inputMode=url`: `type=url` made the browser block the submit on a bare domain, found on staging), sponsor rows (name,
+link, Add/Replace logo via the bucket, No logo, remove, Add sponsor up to 6). Logo uploads happen on pick; the form tracks
+them and removes unsaved uploads on Reset and replaced ones after a successful save. Meet Day tab, new
+`components/promoter/StaffSection.tsx` between the desk and the board tools: rows (name, role, station select = the
+meet's station labels + Floating, private contact, note), role counters, Add judge / loader / volunteer / other, Save staff
+(patches `staff` only, so the Listing tab's draft is untouched), **Briefing cards** opens `briefingHtml` in a new tab
+(Blob URL) with a Print key. Public: show page gets a "Watch live ↗" key in the action bar and a `SponsorStrip`
+(`components/website/SponsorStrip.tsx`, logo or name, link out with `rel="noopener noreferrer sponsored"`, a logo that
+fails to load falls back to the name); phone board footer gets the strip and the Watch live link; TV idle sheet gets a
+sponsor row between the clock line and the title block (`TvIdle` prop `sponsors`).
+
+Tests: `test/extras.test.mjs` (9), `test/briefing.test.mjs` (4); suite 674 pass, tsc clean. Staging checks (11/6,
+screenshots `~/Downloads/zt_ui_1106/`: `sponsors_editor`, `staff_editor`, `briefing_cards`, `sponsors_show_page`,
+`watch_live_show_page`, `sponsors_phone_board`, `sponsors_tv_idle`): link `youtube.com/live/ironharbor` saved as https,
+two sponsors (one with an uploaded logo) saved and shown on the show page and the phone board, three staff saved (a blank
+volunteer row dropped), persisted across reload, briefing opened with 3 cards and no contact text, TV idle strip on the
+Riverside demo. Orphan test logos removed through the Storage API (`shots/orphans.py`); the Iron Harbor sponsors, link and
+staff were left on staging as demo data.
+
+Left on purpose: staff is promoter-only (no "show judges on the page" toggle; that needs a public RPC so the contact field
+stays private); no logo cropping or SVG (same limits as avatars); the standards text is generic by design, the federation
+rulebook is not quoted; livestream is a link, not an embed (an iframe needs per-platform embed URLs and a consent story);
+tickets (#17's second half) stay held with payments.

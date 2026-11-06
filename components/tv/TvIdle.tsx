@@ -7,10 +7,11 @@ import Wordmark from '@/components/brand/Wordmark';
 import StoneMark from '@/components/sheet/StoneMark';
 import { TvCell, TField } from './TvFrame';
 import type { TitleData } from './TvBoard';
+import { sponsorLogoUrl, type MeetSponsor } from '@/lib/website/extras';
 
 const CELL = 'bg-sheet';
 
-export default function TvIdle({ m, title, divisions, athletes }: { m: IdleModel; title: TitleData; divisions: string[]; athletes: number }) {
+export default function TvIdle({ m, title, divisions, athletes, sponsors = null }: { m: IdleModel; title: TitleData; divisions: string[]; athletes: number; sponsors?: MeetSponsor[] | null }) {
   const [now, setNow] = useState('');
   useEffect(() => {
     const tick = () => setNow(new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }));
@@ -35,6 +36,17 @@ export default function TvIdle({ m, title, divisions, athletes }: { m: IdleModel
           ))}
         </div>
         <div className="text-[24px] text-ink-muted uppercase">Now <span className="text-pen">{now}</span> · the board starts with the first score</div>
+        {/* 046 (#14): sponsor strip between the clock and the title block; logos where uploaded, names otherwise */}
+        {sponsors?.length ? (
+          <div className="flex items-center gap-10 normal-case">
+            <span className="text-[16px] text-ink-muted uppercase tracking-[0.06em]">Sponsors</span>
+            {sponsors.map((s, i) => {
+              const src = sponsorLogoUrl(s.logoPath);
+              // eslint-disable-next-line @next/next/no-img-element
+              return src ? <img key={i} src={src} alt={s.name} className="h-[72px] w-auto max-w-[260px] object-contain" /> : <span key={i} className="text-[26px] font-bold uppercase">{s.name}</span>;
+            })}
+          </div>
+        ) : null}
       </div>
       <div className="grid gap-px bg-rule" style={{ borderTop: '2px solid var(--rule)', gridTemplateColumns: '120px 210px 1fr 1fr 230px', gridTemplateRows: '1fr 1fr 1fr' }}>
         <TvCell className={`${CELL} items-center justify-center`} style={{ gridRow: '1 / 3' }}><StoneMark size={72} stroke={7} title="ZeroTacky" /></TvCell>
