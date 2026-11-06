@@ -48,3 +48,57 @@ export function describeEmailResult(r: EmailRequestResult, who: 'athlete' | 'pro
   if (r.error) return `Saved, but the email did not go out (${r.error}).`;
   return null;
 }
+
+// ---------------------------------------------------------------------------------------------------------------------
+// 042 (feature gaps #10): promoter broadcasts and reminders. Same shape as above: the browser asks with its session
+// token, the server owns the addresses, the UI gets counts back.
+export interface BroadcastRequest { meetId: string; subject: string; body: string; audience: 'accepted' | 'all_active'; test?: boolean }
+export interface BroadcastResult { ok: boolean; id?: string; recipients: number; sent: number; failed: number; error?: string }
+
+export async function requestBroadcast(sb: SupabaseClient | null, req: BroadcastRequest | { broadcastId: string }, fetchImpl: typeof fetch = fetch): Promise<BroadcastResult> {
+  const none: BroadcastResult = { ok: false, recipients: 0, sent: 0, failed: 0 };
+  try {
+    if (!sb) return { ...none, error: 'no backend' };
+    const { data } = await sb.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) return { ...none, error: 'Sign in required.' };
+    const res = await fetchImpl('/api/broadcast', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(req),
+    });
+    const j = (await res.json().catch(() => ({}))) as Partial<BroadcastResult>;
+    const counts = { recipients: j.recipients ?? 0, sent: j.sent ?? 0, failed: j.failed ?? 0 };
+    if (!res.ok || !j.ok) return { ...none, ...counts, id: j.id, error: j.error || `Send failed (${res.status}).` };
+    return { ok: true, id: j.id, ...counts };
+  } catch (e) {
+    return { ...none, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+export interface BroadcastHistoryItem {
+  id: string; kind: 'broadcast' | 'reminder_7d' | 'reminder_1d'; audience: 'accepted' | 'all_active'; subject: string; test_only: boolean;
+  created_at: string; finished_at: string | null; recipient_count: number; sent_count: number; failed_count: number;
+}
+export interface BroadcastHistory { reminders_enabled: boolean; broadcasts: BroadcastHistoryItem[]; opted_out: number }
+
+export async function fetchBroadcastHistory(sb: SupabaseClient, meetId: string): Promise<{ data: BroadcastHistory | null; error: string | null }> {
+  const { data, error } = await sb.rpc('zt_list_broadcasts', { p_meet: meetId });
+  if (error) return { data: null, error: error.message };
+  const d = (data ?? {}) as Partial<BroadcastHistory>;
+  return { data: { reminders_enabled: d.reminders_enabled !== false, broadcasts: d.broadcasts ?? [], opted_out: d.opted_out ?? 0 }, error: null };
+}
+
+export async function setReminders(sb: SupabaseClient, meetId: string, on: boolean): Promise<string | null> {
+  const { error } = await sb.rpc('zt_set_reminders', { p_meet: meetId, p_on: on });
+  return error ? error.message : null;
+}
+
+/** One line for the UI after a broadcast attempt. */
+export function describeBroadcastResult(r: BroadcastResult, test: boolean): string {
+  if (!r.ok) return r.error ? `Not sent: ${r.error}` : 'Not sent.';
+  if (test) return r.sent > 0 ? 'Test sent to your account email. Check your inbox, then send to the athletes.' : 'The test did not go out. Your account needs a confirmed email address.';
+  if (r.recipients === 0) return 'Nobody to send to: no athletes in that group have an email address, or they have all opted out.';
+  const failed = r.failed ? `, ${r.failed} failed` : '';
+  return `Sent to ${r.sent} ${r.sent === 1 ? 'athlete' : 'athletes'}${failed}.`;
+}

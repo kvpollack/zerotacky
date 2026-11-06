@@ -56,6 +56,7 @@ import type { RosterPlan } from '@/lib/roster/import';
 import ListingSection from './ListingSection';
 import { useAuth } from '@/lib/auth/useAuth';
 import RegistrationsSection from './RegistrationsSection';
+import BroadcastSection from './BroadcastSection';
 import { fetchRegistrationCards, openCardInNewTab, type MembershipCard } from '@/lib/website/membershipCards';
 import AthleteAccountsSection from './AthleteAccountsSection';
 import MeetDaySection from './MeetDaySection';
@@ -786,7 +787,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
           />
         </div>
 
-        <div role="tabpanel" id="panel-registrations" aria-labelledby="tab-registrations" hidden={activeTab !== 'registrations'}>
+        <div role="tabpanel" id="panel-registrations" aria-labelledby="tab-registrations" hidden={activeTab !== 'registrations'} className="flex flex-col gap-6">
           <RegistrationsSection
             registrations={registrations}
             divisions={workingState.divisions}
@@ -796,6 +797,15 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             blockedReason={registrationsBlockedReason}
             cards={registrationCards}
             onViewCard={handleViewCard}
+          />
+          {/* 042 (feature gaps #10): broadcasts and reminders live with the registrations they go to */}
+          <BroadcastSection
+            meetId={serverId}
+            meetName={workingState.meet.name}
+            meetDate={workingState.meet.date}
+            registrations={registrations}
+            sb={isLiveBackend() ? getSupabase() : null}
+            ownerEmailUnconfirmed={ownerEmailUnconfirmed}
           />
         </div>
 
