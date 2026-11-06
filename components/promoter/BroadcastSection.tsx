@@ -38,13 +38,17 @@ export default function BroadcastSection({ meetId, meetName, meetDate = '', regi
   const [body, setBody] = useState('');
   const [audience, setAudience] = useState<BroadcastAudience>('accepted');
   const [preview, setPreview] = useState(false);
-  const [armed, setArmed] = useState(false);
+  const [armedReach, setArmedReach] = useState<number | null>(null);   // BC-10: the count the promoter saw when arming
+  const armed = armedReach !== null;
+  const setArmed = (on: boolean) => setArmedReach(on ? reach : null);
   const [busy, setBusy] = useState<'test' | 'send' | 'reminders' | null>(null);
   const [notice, setNotice] = useState<{ text: string; tone: 'ok' | 'bad' } | null>(null);
   const [history, setHistory] = useState<BroadcastHistory | null>(null);
   const [historyError, setHistoryError] = useState<string | null>(null);
 
   const reach = useMemo(() => audienceCount(registrations, audience), [registrations, audience]);
+  // BC-10: the registrations list refreshed under an armed key (a status change, another device): disarm
+  useEffect(() => { setArmedReach(null); }, [registrations]);
   const paragraphs = useMemo(() => bodyParagraphs(body), [body]);
   const canWrite = !!sb && !isDemo;
   const ready = subject.trim().length > 0 && body.trim().length > 0 && subject.length <= BROADCAST_LIMITS.subject && body.length <= BROADCAST_LIMITS.body;
@@ -65,13 +69,26 @@ export default function BroadcastSection({ meetId, meetName, meetDate = '', regi
 
   const send = async (test: boolean) => {
     if (!canWrite || !ready) return;
+    if (!test && armedReach !== reach) { setArmedReach(null); return; }   // BC-10: the list moved since arming; look again
     setBusy(test ? 'test' : 'send');
     setNotice(null);
     const r = await requestBroadcast(sb, { meetId, subject: subject.trim(), body, audience, test });
     setBusy(null);
-    setArmed(false);
-    setNotice({ text: describeBroadcastResult(r, test), tone: r.ok && (test ? r.sent > 0 : r.failed === 0) ? 'ok' : 'bad' });
-    if (r.ok && !test && r.sent > 0) { setSubject(''); setBody(''); setPreview(false); }
+    setArmedReach(null);
+    const settled = r.ok && r.failed === 0 && r.unresolved === 0 && r.remaining === 0 && (test ? r.sent > 0 : true);
+    setNotice({ text: describeBroadcastResult(r, test), tone: settled ? 'ok' : 'bad' });
+    if (r.ok && !test && (r.sent > 0 || r.unresolved > 0 || r.remaining > 0)) { setSubject(''); setBody(''); setPreview(false); }
+    void load();
+  };
+
+  // 043: pick up a broadcast that stopped part way (provider outage, time budget, unrecorded outcome)
+  const [resuming, setResuming] = useState<string | null>(null);
+  const resume = async (id: string) => {
+    if (!canWrite) return;
+    setResuming(id);
+    const r = await requestBroadcast(sb, { broadcastId: id });
+    setResuming(null);
+    setNotice({ text: describeBroadcastResult(r, false), tone: r.ok && r.failed === 0 && r.unresolved === 0 && r.remaining === 0 ? 'ok' : 'bad' });
     void load();
   };
 
@@ -128,7 +145,7 @@ export default function BroadcastSection({ meetId, meetName, meetDate = '', regi
         </div>
       </div>
       <p className="text-[11px] text-zt-muted -mt-2">
-        {AUDIENCE_LABELS[audience]}: about <span className="font-bold text-zt-text">{reach}</span> with an email address{history?.opted_out ? `, minus ${history.opted_out} opted out` : ''}.
+        {AUDIENCE_LABELS[audience]}: about <span className="font-bold text-zt-text">{Math.min(reach, BROADCAST_LIMITS.recipients)}</span> with an email address. An estimate from this list; opt-outs and duplicate addresses come off when you send, and the result line says what went.
       </p>
 
       <div>
@@ -149,7 +166,7 @@ export default function BroadcastSection({ meetId, meetName, meetDate = '', regi
         ) : (
           <>
             <button type="button" className={`${KEY_INK} ring-2 ring-zt-primary/50`} onClick={() => void send(false)} disabled={busy !== null}>
-              <Send className="w-3.5 h-3.5" aria-hidden="true" />{busy === 'send' ? 'Sending\u2026' : `Yes, send to ${reach} now`}
+              <Send className="w-3.5 h-3.5" aria-hidden="true" />{busy === 'send' ? 'Sending\u2026' : `Yes, send to ${armedReach} now`}
             </button>
             <button type="button" className={KEY_LINE} onClick={() => setArmed(false)} disabled={busy !== null}>Cancel</button>
           </>
@@ -178,6 +195,7 @@ export default function BroadcastSection({ meetId, meetName, meetDate = '', regi
           </div>
           <p className="text-xs text-zt-muted mt-0.5">
             One week out and the day before the show date, accepted athletes get a reminder with the date, venue, your contact line and the prep sheet for their division. Listed shows only; nothing goes while the show is postponed or cancelled.
+            {history?.opted_out ? ` ${history.opted_out} ${history.opted_out === 1 ? 'registration has' : 'registrations have'} opted out of show emails.` : ''}
           </p>
         </div>
         <button type="button" className={KEY_LINE} onClick={() => void toggleReminders()} disabled={!canWrite || !history || busy !== null}>
@@ -197,8 +215,15 @@ export default function BroadcastSection({ meetId, meetName, meetDate = '', regi
                   <span className="font-bold text-zt-text">{b.subject}</span>
                   <span className="text-zt-muted"> {'\u00b7'} {KIND_LABELS[b.kind]}{b.test_only ? ' (test)' : ''}{b.kind === 'broadcast' && !b.test_only ? ` ${'\u00b7'} ${b.audience === 'accepted' ? 'accepted' : 'everyone'}` : ''}</span>
                 </div>
-                <div className="text-zt-text-2 whitespace-nowrap">
-                  {b.sent_count}/{b.recipient_count} sent{b.failed_count ? `, ${b.failed_count} failed` : ''}{b.recipient_count > b.sent_count + b.failed_count ? ', in progress' : ''} {'\u00b7'} {when(b.created_at)}
+                <div className="text-zt-text-2 whitespace-nowrap flex items-baseline gap-2">
+                  <span>
+                    {b.sent_count}/{b.recipient_count} sent{b.failed_count ? `, ${b.failed_count} failed` : ''}{b.skipped_count ? `, ${b.skipped_count} skipped` : ''}{(b.queued_count ?? 0) > 0 ? `, ${b.queued_count} queued` : ''} {'\u00b7'} {when(b.created_at)}
+                  </span>
+                  {(b.queued_count ?? 0) > 0 && b.kind === 'broadcast' && (
+                    <button type="button" className="underline underline-offset-2 font-bold text-zt-primary disabled:opacity-40" onClick={() => void resume(b.id)} disabled={!canWrite || busy !== null || resuming !== null}>
+                      {resuming === b.id ? 'Resuming\u2026' : 'Resume'}
+                    </button>
+                  )}
                 </div>
               </li>
             ))}

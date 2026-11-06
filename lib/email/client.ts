@@ -53,10 +53,16 @@ export function describeEmailResult(r: EmailRequestResult, who: 'athlete' | 'pro
 // 042 (feature gaps #10): promoter broadcasts and reminders. Same shape as above: the browser asks with its session
 // token, the server owns the addresses, the UI gets counts back.
 export interface BroadcastRequest { meetId: string; subject: string; body: string; audience: 'accepted' | 'all_active'; test?: boolean }
-export interface BroadcastResult { ok: boolean; id?: string; recipients: number; sent: number; failed: number; error?: string }
+export type BroadcastErrorCode = 'provider_unavailable' | 'provider_rejected' | 'record_failed' | 'time_budget';
+export interface BroadcastResult {
+  ok: boolean; id?: string; recipients: number; sent: number; failed: number;
+  unresolved: number;    // 043 BC-02: delivered or attempted, outcome not recorded; still queued, shows in history
+  remaining: number;     // still queued when the pass ended
+  errors: BroadcastErrorCode[]; error?: string;
+}
 
 export async function requestBroadcast(sb: SupabaseClient | null, req: BroadcastRequest | { broadcastId: string }, fetchImpl: typeof fetch = fetch): Promise<BroadcastResult> {
-  const none: BroadcastResult = { ok: false, recipients: 0, sent: 0, failed: 0 };
+  const none: BroadcastResult = { ok: false, recipients: 0, sent: 0, failed: 0, unresolved: 0, remaining: 0, errors: [] };
   try {
     if (!sb) return { ...none, error: 'no backend' };
     const { data } = await sb.auth.getSession();
@@ -68,7 +74,7 @@ export async function requestBroadcast(sb: SupabaseClient | null, req: Broadcast
       body: JSON.stringify(req),
     });
     const j = (await res.json().catch(() => ({}))) as Partial<BroadcastResult>;
-    const counts = { recipients: j.recipients ?? 0, sent: j.sent ?? 0, failed: j.failed ?? 0 };
+    const counts = { recipients: j.recipients ?? 0, sent: j.sent ?? 0, failed: j.failed ?? 0, unresolved: j.unresolved ?? 0, remaining: j.remaining ?? 0, errors: Array.isArray(j.errors) ? j.errors : [] };
     if (!res.ok || !j.ok) return { ...none, ...counts, id: j.id, error: j.error || `Send failed (${res.status}).` };
     return { ok: true, id: j.id, ...counts };
   } catch (e) {
@@ -79,6 +85,7 @@ export async function requestBroadcast(sb: SupabaseClient | null, req: Broadcast
 export interface BroadcastHistoryItem {
   id: string; kind: 'broadcast' | 'reminder_7d' | 'reminder_1d'; audience: 'accepted' | 'all_active'; subject: string; test_only: boolean;
   created_at: string; finished_at: string | null; recipient_count: number; sent_count: number; failed_count: number;
+  skipped_count?: number; queued_count?: number;
 }
 export interface BroadcastHistory { reminders_enabled: boolean; broadcasts: BroadcastHistoryItem[]; opted_out: number }
 
@@ -94,11 +101,18 @@ export async function setReminders(sb: SupabaseClient, meetId: string, on: boole
   return error ? error.message : null;
 }
 
-/** One line for the UI after a broadcast attempt. */
+/** One line for the UI after a broadcast attempt. Says exactly what is not settled (043 BC-02). */
 export function describeBroadcastResult(r: BroadcastResult, test: boolean): string {
   if (!r.ok) return r.error ? `Not sent: ${r.error}` : 'Not sent.';
-  if (test) return r.sent > 0 ? 'Test sent to your account email. Check your inbox, then send to the athletes.' : 'The test did not go out. Your account needs a confirmed email address.';
-  if (r.recipients === 0) return 'Nobody to send to: no athletes in that group have an email address, or they have all opted out.';
-  const failed = r.failed ? `, ${r.failed} failed` : '';
-  return `Sent to ${r.sent} ${r.sent === 1 ? 'athlete' : 'athletes'}${failed}.`;
+  if (test) {
+    if (r.unresolved > 0) return 'The test went to the email service, but the outcome could not be recorded. Check your inbox before sending to the athletes.';
+    return r.sent > 0 ? 'Test sent to your account email. Check your inbox, then send to the athletes.' : 'The test did not go out. Your account needs a confirmed email address.';
+  }
+  if (r.recipients === 0 && r.remaining === 0 && r.unresolved === 0) return 'Nobody to send to: no athletes in that group have an email address, or they have all opted out.';
+  const parts: string[] = [];
+  if (r.sent > 0) parts.push(`Sent to ${r.sent} ${r.sent === 1 ? 'athlete' : 'athletes'}`);
+  if (r.failed > 0) parts.push(`${r.failed} failed`);
+  if (r.unresolved > 0) parts.push(`${r.unresolved} not confirmed (the outcome could not be recorded; check the history before sending again)`);
+  if (r.remaining > 0) parts.push(`${r.remaining} still queued (resume from the history)`);
+  return (parts.length ? parts.join('; ') : 'Nothing was sent') + '.';
 }

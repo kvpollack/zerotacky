@@ -30,31 +30,40 @@ function resendBody(m: Outbound) {
   };
 }
 
-/** Up to 100 messages in one call (Resend batch). Returns one id or error per message, in order. */
-export async function sendBatchViaResend(key: string, mails: Outbound[]): Promise<Array<{ id: string | null; error: string | null }>> {
-  const out: Array<{ id: string | null; error: string | null }> = [];
-  for (let i = 0; i < mails.length; i += 100) {
-    const chunk = mails.slice(i, i + 100);
-    try {
-      const res = await fetch('https://api.resend.com/emails/batch', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(chunk.map(resendBody)),
-        signal: AbortSignal.timeout(20000),
-      });
-      if (!res.ok) {
-        const detail = (await res.text().catch(() => '')).slice(0, 300);
-        for (const _ of chunk) out.push({ id: null, error: `Resend refused the batch (${res.status}): ${detail}` });
-        continue;
-      }
-      const j = (await res.json().catch(() => ({}))) as { data?: Array<{ id?: string }> };
-      const ids = j.data ?? [];
-      chunk.forEach((_, k) => out.push({ id: ids[k]?.id ?? null, error: ids[k]?.id ? null : 'no id returned' }));
-    } catch (e) {
-      for (const _ of chunk) out.push({ id: null, error: e instanceof Error ? e.message : String(e) });
-    }
+/** One Resend batch call (at most 100 messages; the caller chunks). All-or-nothing on the provider side.
+ * `idempotencyKey` (043, BC-02): the same key with the same payload inside 24 h is delivered once; a retried chunk must
+ * therefore have the same members in the same order, which the database claim guarantees (id order).
+ * Outcome classes (BC-07): `sent` with one provider id per message; `retry` for 429/5xx/network/timeout (rows stay
+ * queued); `rejected` for any other non-2xx (rows fail). `detail` is for the server record only, never for the browser. */
+export type BatchOutcome =
+  | { kind: 'sent'; ids: Array<string | null> }
+  | { kind: 'retry'; detail: string }
+  | { kind: 'rejected'; detail: string };
+
+export async function sendBatchViaResend(key: string, mails: Outbound[], opts: { idempotencyKey?: string; timeoutMs?: number } = {}): Promise<BatchOutcome> {
+  if (mails.length === 0) return { kind: 'sent', ids: [] };
+  if (mails.length > 100) throw new Error('sendBatchViaResend: at most 100 messages per call');
+  let res: Response;
+  try {
+    res = await fetch('https://api.resend.com/emails/batch', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`, 'Content-Type': 'application/json',
+        ...(opts.idempotencyKey ? { 'Idempotency-Key': opts.idempotencyKey } : {}),
+      },
+      body: JSON.stringify(mails.map(resendBody)),
+      signal: AbortSignal.timeout(opts.timeoutMs ?? 15000),
+    });
+  } catch (e) {
+    return { kind: 'retry', detail: `network: ${e instanceof Error ? e.message : String(e)}`.slice(0, 300) };
   }
-  return out;
+  if (!res.ok) {
+    const detail = `Resend ${res.status}: ${(await res.text().catch(() => '')).slice(0, 250)}`;
+    return res.status === 429 || res.status >= 500 ? { kind: 'retry', detail } : { kind: 'rejected', detail };
+  }
+  const j = (await res.json().catch(() => ({}))) as { data?: Array<{ id?: string }> };
+  const ids = j.data ?? [];
+  return { kind: 'sent', ids: mails.map((_, k) => ids[k]?.id ?? null) };
 }
 
 export async function sendViaResend(key: string, m: Outbound): Promise<{ id: string | null }> {
