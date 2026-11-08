@@ -7,6 +7,8 @@ import { rowsToState, stateToRows } from '../sync/mapping';
 import type { AppState } from '../types';
 import {
   type AthleteAccountLink,
+  type ClaimStatus,
+  type ResultClaim,
   emptyListing,
   type ApiResult,
   type DeletedMeet,
@@ -741,6 +743,77 @@ export function createSupabasePromoterApi(
         });
         if (!row || !row.username) return { data: null, error: null };
         return { data: { athleteId: row.athleteId, username: row.username, displayName: row.displayName ?? row.username, fromRegistration: false }, error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    // 048 result claims (#9). The RPCs shape the rows (zt_claim_json); this layer only checks the session first so a
+    // signed-out caller gets a readable error instead of a PostgREST 401.
+    async getClaimStatus(serverId: string): Promise<ApiResult<ClaimStatus>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) return { data: null, error: 'Sign in required.' };
+        const row = await db.rpc<ClaimStatus | null>('zt_claim_status', { p_meet_id: serverId });
+        return { data: { linkedAthleteIds: row?.linkedAthleteIds ?? [], myAthleteId: row?.myAthleteId ?? null, myClaim: row?.myClaim ?? null }, error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    async claimResult(serverId: string, athleteId: string, note: string | null): Promise<ApiResult<ResultClaim>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) return { data: null, error: 'Sign in required to claim a result.' };
+        const row = await db.rpc<ResultClaim | null>('zt_claim_result', { p_meet_id: serverId, p_athlete_id: athleteId, p_note: note ?? null });
+        if (!row) return { data: null, error: 'The claim did not come back from the server.' };
+        return { data: row, error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    async withdrawClaim(claimId: string): Promise<ApiResult<{ id: string; withdrawn: true }>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) return { data: null, error: 'Sign in required.' };
+        const row = await db.rpc<{ id: string; withdrawn: boolean } | null>('zt_withdraw_claim', { p_claim_id: claimId });
+        if (!row?.withdrawn) return { data: null, error: 'That claim is no longer pending.' };
+        return { data: { id: row.id, withdrawn: true }, error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    async listMyClaims(): Promise<ApiResult<ResultClaim[]>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) return { data: null, error: 'Sign in required.' };
+        const rows = (await db.rpc<ResultClaim[] | null>('zt_my_claims', {})) ?? [];
+        return { data: rows, error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    async listMeetClaims(serverId: string): Promise<ApiResult<ResultClaim[]>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) return { data: null, error: 'Sign in required to view claims.' };
+        const rows = (await db.rpc<ResultClaim[] | null>('zt_meet_claims', { p_meet_id: serverId })) ?? [];
+        return { data: rows, error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+
+    async resolveClaim(claimId: string, approve: boolean): Promise<ApiResult<ResultClaim>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) return { data: null, error: 'Sign in required.' };
+        const row = await db.rpc<ResultClaim | null>('zt_resolve_claim', { p_claim_id: claimId, p_approve: approve });
+        if (!row) return { data: null, error: 'The claim did not come back from the server.' };
+        return { data: row, error: null };
       } catch (e) {
         return { data: null, error: errMessage(e) };
       }

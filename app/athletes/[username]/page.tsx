@@ -5,6 +5,7 @@ import WebsiteShell from '@/components/website/WebsiteShell';
 import { Cap, SectionCap, WebCell, textLink } from '@/components/website/sheet';
 import { getAthleteShowHistory, getProfileLinks, getPublicAthleteByUsername } from '@/lib/website/data';
 import { formatPlace, formatShowDate } from '@/lib/website/showHistory';
+import { competitionBests } from '@/lib/website/prBoard';
 import { competitionStatusLabel, splitShows } from '@/lib/website/profileLinks';
 import { SOCIAL_KEYS, socialUrl } from '@/lib/auth/profile';
 import { athleteJsonLd, canonical } from '@/lib/website/seo';
@@ -58,6 +59,8 @@ export default async function AthleteProfilePage({ params }: AthletePageProps) {
   const { upcoming: showsUpcoming, past: showsPast } = splitShows(links.shows);
   const showsRun = [...showsUpcoming, ...showsPast];
   const podiums = history.filter((h) => h.place != null && h.place <= 3 && !h.withdrawn).length;
+  // #9 (11/8): competition bests fall out of the Final results already loaded for the history; nothing stored.
+  const bests = competitionBests(history);
 
   const socials = SOCIAL_KEYS.map((sk) => ({ ...sk, value: a.socials[sk.key] ?? '', href: a.socials[sk.key] ? socialUrl(sk.key, a.socials[sk.key] as string) : '' })).filter((s) => s.value && s.href);
 
@@ -138,6 +141,26 @@ export default async function AthleteProfilePage({ params }: AthletePageProps) {
             </WebCell>
           </section>
         </div>
+
+        {bests.length > 0 && (
+          <section aria-labelledby="bests-heading">
+            <SectionCap id="bests-heading" aside={<span className={`${NOTE} hidden sm:inline`}>From final results; heaviest load first, then the result at it</span>}>Competition bests</SectionCap>
+            <dl className="zt-block grid-cols-1">
+              {bests.map((b) => (
+                <div key={b.key} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3 sm:px-5">
+                  <dt className="min-w-0">
+                    <span className="text-[15px] font-bold text-ink">{b.label}</span>
+                    <span className={`${FACT_S}`}>
+                      <Link href={b.showHref} className={textLink}>{b.showName}</Link>
+                      {b.dateLabel ? ` · ${b.dateLabel}` : ''} · {b.divisionName}{b.appearances > 1 ? ` · best of ${b.appearances} shows` : ''}
+                    </span>
+                  </dt>
+                  <dd className="text-[18px] font-bold leading-none text-pen shrink-0">{b.result}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
 
         {a.prs.length > 0 && (
           <section aria-labelledby="prs-heading">

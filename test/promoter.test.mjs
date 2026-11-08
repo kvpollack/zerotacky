@@ -302,7 +302,8 @@ describe('fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers',
   });
 
   test('H2: two registrants with the same name in the same division become two athletes; declining a pending same-name request removes nothing', async () => {
-    const api = FA.createFixturePromoterApi();
+    // Pinned: the Iron Furnace fixture's deadline is 2026-11-07, so the real clock closed this registration on 11/8.
+    const api = FA.createFixturePromoterApi({ today: () => '2026-11-01' });
     const base = {
       slug: 'iron-furnace-classic-2026',
       divisionId: 'ifc-g1',

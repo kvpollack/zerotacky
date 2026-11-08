@@ -3,7 +3,8 @@
 // with the same engine the board uses (via standingsAdapter), never stored or re-implemented.
 
 import type { AthleteRow, DivisionRow, EventRow, MeetRow, ResultRow } from '../sync/mapping';
-import { scoringField } from '@/lib/engine/scoring';
+import { effectiveMaxWeight, scoringField } from '@/lib/engine/scoring';
+import type { ImplementKind, ScoringType } from '../types';
 import { rowsToState } from '../sync/mapping';
 import { buildDivisionResultsView } from './standingsAdapter';
 import type { PublicShowRecord } from './types';
@@ -49,6 +50,27 @@ export interface ShowHistoryEntry {
   eventWins: number;
   eventCount: number;
   withdrawn: boolean;
+  /** 11/8 (#9 PR board): this athlete's scored result on each event, with the load they faced. Empty when withdrawn. */
+  events: HistoryEventResult[];
+}
+
+export interface HistoryEventResult {
+  eventId: string;
+  eventName: string;
+  scoringType: ScoringType;
+  implement: ImplementKind | null;
+  implementNote: string | null;
+  /** The division's listed weight in lb for the tier the athlete lifted (light tier when they took the trump), 0 = none. */
+  weightLbs: number;
+  courseFeet: number | null;
+  timeCapSeconds: number;
+  reps: number;
+  timeSeconds: number;
+  /** Time counts only when the course was finished inside the cap. */
+  finished: boolean;
+  distanceFeet: number;
+  implementsCompleted: number;
+  maxWeightLbs: number;
 }
 
 export const PLACE_SUFFIX = (n: number): string => {
@@ -93,6 +115,32 @@ export function buildShowHistoryEntry(row: ShowHistoryRow, bundle: ShowHistoryBu
   const mine = view.standings.find((s) => s.athleteId === athlete.id);
   const scored = mine ? Object.keys(mine.eventBreakdown).length : 0;
   const withdrawn = athlete.status === 'withdrawn';
+  const events: HistoryEventResult[] = withdrawn ? [] : state.events.flatMap((ev) => {
+    const r = state.results.find((x) => x.eventId === ev.id && x.athleteId === athlete.id);
+    if (!r || r.didNotStart) return [];
+    const time = r.timeSeconds ?? 0;
+    const finished = time > 0 && time <= ev.timeCapSeconds;
+    const light = r.tier === 'light' && ev.hasTrumpWeight ? ev.divisionLightWeights?.[division.id] : undefined;
+    const weight = typeof light === 'number' && light > 0 ? light : (ev.divisionWeights?.[division.id] ?? 0);
+    const out: HistoryEventResult = {
+      eventId: ev.id,
+      eventName: ev.name,
+      scoringType: ev.scoringType,
+      implement: ev.spec?.implement ?? null,
+      implementNote: ev.spec?.implementNote ?? null,
+      weightLbs: weight > 0 ? weight : 0,
+      courseFeet: ev.spec?.courseFeet ?? null,
+      timeCapSeconds: ev.timeCapSeconds,
+      reps: r.reps ?? 0,
+      timeSeconds: time,
+      finished,
+      distanceFeet: r.distanceFeet ?? 0,
+      implementsCompleted: r.implementsCompleted ?? 0,
+      maxWeightLbs: effectiveMaxWeight(r),
+    };
+    const has = out.reps > 0 || finished || out.distanceFeet > 0 || out.implementsCompleted > 0 || out.maxWeightLbs > 0;
+    return has ? [out] : [];
+  });
 
   return {
     meetId: row.meet_id,
@@ -110,6 +158,7 @@ export function buildShowHistoryEntry(row: ShowHistoryRow, bundle: ShowHistoryBu
     eventWins: mine?.eventWins ?? 0,
     eventCount: state.events.length,
     withdrawn,
+    events,
   };
 }
 

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Link2, Link2Off } from 'lucide-react';
 import type { Athlete, Division } from '@/lib/types';
-import type { AthleteAccountLink } from '@/lib/promoter/contract';
+import type { AthleteAccountLink, ResultClaim } from '@/lib/promoter/contract';
 
 interface Props {
   /** Saved roster (server state), not the working draft: a link needs a saved athlete row. */
@@ -11,16 +11,29 @@ interface Props {
   divisions: Division[];
   links: AthleteAccountLink[];
   onLink: (athleteId: string, username: string | null) => Promise<{ error?: string }>;
+  /** 048: athletes' claims on this meet (pending first). Approve links the row like onLink does. */
+  claims: ResultClaim[];
+  onResolveClaim: (claimId: string, approve: boolean) => Promise<{ error?: string }>;
   /** Set while the working draft is dirty; linking reloads nothing but the roster ids must be the saved ones. */
   blockedReason: string | null;
 }
 
 // 023 show history (10/26). A roster athlete linked to a ZeroTacky account gets this show on their public page once
 // the show is Final. Accepted registrations link themselves; this is for hand-entered rosters and fixes.
-export default function AthleteAccountsSection({ athletes, divisions, links, onLink, blockedReason }: Props) {
+export default function AthleteAccountsSection({ athletes, divisions, links, onLink, blockedReason, claims, onResolveClaim }: Props) {
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
+  const [claimError, setClaimError] = useState<string | null>(null);
+  const [showResolved, setShowResolved] = useState(false);
+  const pendingClaims = claims.filter((c) => c.status === 'pending');
+  const resolvedClaims = claims.filter((c) => c.status !== 'pending');
+  const resolve = async (id: string, approve: boolean) => {
+    setBusyId(`claim-${id}`); setClaimError(null);
+    const res = await onResolveClaim(id, approve);
+    setBusyId(null);
+    if (res.error) setClaimError(res.error);
+  };
   const byAthlete = new Map(links.map((l) => [l.athleteId, l]));
   const divName = (id: string) => divisions.find((d) => d.id === id)?.name ?? id;
   const sorted = [...athletes].sort((a, b) => {
@@ -66,6 +79,52 @@ export default function AthleteAccountsSection({ athletes, divisions, links, onL
           username on their account page; only one account per athlete, one athlete per account.
         </p>
       </div>
+
+      {(pendingClaims.length > 0 || resolvedClaims.length > 0) && (
+        <div className="rounded-xl border border-zt-border bg-zt-inset p-3 space-y-2" aria-labelledby="claims-heading">
+          <h3 id="claims-heading" className="text-xs font-black uppercase tracking-wider text-zt-text">
+            Claims from athletes ({pendingClaims.length} waiting)
+          </h3>
+          <p className="text-xs text-zt-muted">
+            An athlete picked a roster row on the show page and asked to have it linked. Approve when the name matches
+            the person; the show then appears on their page once results are Final.
+          </p>
+          {pendingClaims.length === 0 && <p className="text-xs font-semibold text-zt-muted">Nothing waiting.</p>}
+          <ul className="divide-y divide-zt-border">
+            {pendingClaims.map((c) => (
+              <li key={c.id} className="py-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <div className="min-w-[10rem] flex-1">
+                  <div className="text-sm font-black text-zt-text">{c.athleteName ?? 'Roster row removed'} <span className="text-zt-muted font-semibold">· {c.divisionName ?? ''}</span></div>
+                  <div className="text-xs text-zt-muted">
+                    @{c.username} · {c.displayName}{c.note ? ` · "${c.note}"` : ''}{c.alreadyLinked ? ' · row already linked' : ''}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button type="button" disabled={busyId === `claim-${c.id}` || c.alreadyLinked} onClick={() => resolve(c.id, true)} className="px-3 py-1.5 rounded-lg bg-zt-primary text-zt-on-primary text-xs font-black disabled:opacity-50">Approve</button>
+                  <button type="button" disabled={busyId === `claim-${c.id}`} onClick={() => resolve(c.id, false)} className="px-3 py-1.5 rounded-lg border border-zt-border text-xs font-bold text-zt-text-2 hover:text-zt-text disabled:opacity-50">Reject</button>
+                </div>
+              </li>
+            ))}
+          </ul>
+          {resolvedClaims.length > 0 && (
+            <div>
+              <button type="button" onClick={() => setShowResolved((v) => !v)} className="text-xs font-bold text-zt-text-2 hover:text-zt-text underline underline-offset-2">
+                {showResolved ? 'Hide' : 'Show'} {resolvedClaims.length} resolved
+              </button>
+              {showResolved && (
+                <ul className="mt-1 divide-y divide-zt-border">
+                  {resolvedClaims.map((c) => (
+                    <li key={c.id} className="py-1.5 text-xs text-zt-muted">
+                      <span className="font-bold text-zt-text">{c.athleteName ?? 'Roster row removed'}</span> · @{c.username} · {c.status === 'approved' ? 'approved' : 'rejected'}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+          {claimError && <p role="alert" className="text-xs font-bold text-red-300">{claimError}</p>}
+        </div>
+      )}
 
       {athletes.length === 0 ? (
         <p className="text-xs font-semibold text-zt-muted">No saved athletes yet. Add them above and save.</p>

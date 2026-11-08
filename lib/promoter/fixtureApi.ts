@@ -11,7 +11,9 @@ import {
   emptyListing,
   type ApiResult,
   type AthleteAccountLink,
+  type ClaimStatus,
   type DeletedMeet,
+  type ResultClaim,
   type DeskCheckin,
   type DeskPatch,
   type DeskState,
@@ -102,6 +104,9 @@ export function createFixturePromoterApi(
   const registrations: RegistrationRequest[] = createSeedRegistrations();
   // 023: in-memory account links keyed `${serverId}/${athleteId}`; any non-empty username resolves in the fixture.
   const athleteAccounts = new Map<string, AthleteAccountLink>();
+  // 048 fixture: result claims by the demo account (who is also the promoter here), keyed by claim id.
+  const claims = new Map<string, ResultClaim>();
+  const FIXTURE_USERNAME = 'demo_athlete';
   const follows = new Map<string, string>();   // slug -> ISO followed at (010 fixture; this tab only)
   const desks = new Map<string, DeskState>();  // 045 fixture: serverId -> desk rows (this tab only)
   // Display name of the organizer per meet; fixture meets belong to the demo user, bridged /shows records carry
@@ -791,7 +796,107 @@ export function createFixturePromoterApi(
       }
       const link: AthleteAccountLink = { athleteId, username: clean, displayName: clean, fromRegistration: false };
       athleteAccounts.set(key, link);
+      // 048: a link made by hand settles a matching pending claim (the server does this with a trigger).
+      for (const [id, c] of claims) {
+        if (c.meetServerId === serverId && c.athleteId === athleteId && c.username === clean && c.status === 'pending') {
+          claims.set(id, { ...c, status: 'approved', resolvedAt: new Date().toISOString(), alreadyLinked: true });
+        }
+      }
       return { data: clone(link), error: null };
+    },
+
+    // 048 result claims (#9): the same rules as the RPCs, in memory, for the demo account.
+    async getClaimStatus(serverId: string): Promise<ApiResult<ClaimStatus>> {
+      if (signedOut) return { data: null, error: 'Sign in required.' };
+      const found = meets.find((m) => m.summary.serverId === serverId);
+      if (!found) return { data: null, error: `No meet found with serverId "${serverId}".` };
+      const linked = [...athleteAccounts.entries()].filter(([k]) => k.startsWith(`${serverId}/`)).map(([, v]) => v);
+      const mine = linked.find((l) => l.username === FIXTURE_USERNAME);
+      const myClaim = [...claims.values()].filter((c) => c.meetServerId === serverId).sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0] ?? null;
+      return { data: { linkedAthleteIds: linked.map((l) => l.athleteId), myAthleteId: mine?.athleteId ?? null, myClaim: myClaim ? clone(myClaim) : null }, error: null };
+    },
+
+    async claimResult(serverId: string, athleteId: string, note: string | null): Promise<ApiResult<ResultClaim>> {
+      if (signedOut) return { data: null, error: 'Sign in required to claim a result.' };
+      const found = meets.find((m) => m.summary.serverId === serverId);
+      if (!found) return { data: null, error: 'That show does not exist.' };
+      if (found.summary.listing.competitionStatus !== 'completed') return { data: null, error: 'Results can be claimed once the show is completed.' };
+      const athlete = found.state.athletes.find((a) => a.id === athleteId);
+      if (!athlete) return { data: null, error: 'That athlete is not on this roster.' };
+      if (athleteAccounts.has(`${serverId}/${athleteId}`)) return { data: null, error: 'That result is already linked to an account. If it is yours, contact the promoter.' };
+      const other = [...athleteAccounts.entries()].find(([k, v]) => k.startsWith(`${serverId}/`) && v.username === FIXTURE_USERNAME);
+      if (other) {
+        const otherName = found.state.athletes.find((a) => a.id === other[1].athleteId)?.name ?? other[1].athleteId;
+        return { data: null, error: `Your account is already linked to ${otherName} on this show.` };
+      }
+      if ([...claims.values()].some((c) => c.meetServerId === serverId && c.status === 'pending')) {
+        return { data: null, error: 'You already have a claim waiting on this show. Withdraw it to claim a different row.' };
+      }
+      const cleanNote = (note ?? '').trim() || null;
+      if (cleanNote && cleanNote.length > 200) return { data: null, error: 'Keep the note to 200 characters.' };
+      const division = found.state.divisions.find((d) => d.id === athlete.divisionId);
+      const claim: ResultClaim = {
+        id: `claim-${nextSeq()}`,
+        meetServerId: serverId,
+        slug: found.summary.slug,
+        meetName: found.summary.name,
+        meetDate: found.summary.date || null,
+        athleteId,
+        athleteName: athlete.name,
+        divisionName: division?.name ?? null,
+        username: FIXTURE_USERNAME,
+        displayName: user.displayName,
+        note: cleanNote,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        resolvedAt: null,
+        alreadyLinked: false,
+      };
+      claims.set(claim.id, claim);
+      return { data: clone(claim), error: null };
+    },
+
+    async withdrawClaim(claimId: string): Promise<ApiResult<{ id: string; withdrawn: true }>> {
+      if (signedOut) return { data: null, error: 'Sign in required.' };
+      const c = claims.get(claimId);
+      if (!c || c.status !== 'pending') return { data: null, error: 'That claim is no longer pending.' };
+      claims.delete(claimId);
+      return { data: { id: claimId, withdrawn: true }, error: null };
+    },
+
+    async listMyClaims(): Promise<ApiResult<ResultClaim[]>> {
+      if (signedOut) return { data: null, error: 'Sign in required.' };
+      return { data: [...claims.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(clone), error: null };
+    },
+
+    async listMeetClaims(serverId: string): Promise<ApiResult<ResultClaim[]>> {
+      if (signedOut) return { data: null, error: 'Sign in required to view claims.' };
+      if (!meets.some((m) => m.summary.serverId === serverId)) return { data: null, error: `No meet found with serverId "${serverId}".` };
+      const rows = [...claims.values()].filter((c) => c.meetServerId === serverId)
+        .map((c) => ({ ...clone(c), alreadyLinked: athleteAccounts.has(`${serverId}/${c.athleteId}`) }))
+        .sort((a, b) => Number(a.status !== 'pending') - Number(b.status !== 'pending') || b.createdAt.localeCompare(a.createdAt));
+      return { data: rows, error: null };
+    },
+
+    async resolveClaim(claimId: string, approve: boolean): Promise<ApiResult<ResultClaim>> {
+      if (signedOut) return { data: null, error: 'Sign in required.' };
+      const c = claims.get(claimId);
+      if (!c) return { data: null, error: 'That claim does not exist.' };
+      if (c.status !== 'pending') return { data: null, error: `That claim was already ${c.status}.` };
+      if (approve) {
+        const key = `${c.meetServerId}/${c.athleteId}`;
+        if (athleteAccounts.has(key)) return { data: null, error: 'That roster row is already linked to an account. Unlink it first, or reject the claim.' };
+        const found = meets.find((m) => m.summary.serverId === c.meetServerId);
+        const other = [...athleteAccounts.entries()].find(([k, v]) => k.startsWith(`${c.meetServerId}/`) && v.username === c.username);
+        if (other) {
+          const otherName = found?.state.athletes.find((a) => a.id === other[1].athleteId)?.name ?? other[1].athleteId;
+          return { data: null, error: `That account is already linked to ${otherName} on this meet. Reject the claim or unlink that row first.` };
+        }
+        athleteAccounts.set(key, { athleteId: c.athleteId, username: c.username ?? FIXTURE_USERNAME, displayName: c.displayName ?? c.username ?? FIXTURE_USERNAME, fromRegistration: false });
+      }
+      const next: ResultClaim = { ...c, status: approve ? 'approved' : 'rejected', resolvedAt: new Date().toISOString(), alreadyLinked: approve };
+      claims.set(claimId, next);
+      return { data: clone(next), error: null };
     },
 
     async getPublicMeetBySlug(slug: string): Promise<ApiResult<PublicRegistrationMeet | null>> {

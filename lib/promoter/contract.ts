@@ -79,6 +79,33 @@ export interface AthleteAccountLink {
   fromRegistration: boolean;
 }
 
+// 048 result claims (feature gaps #9, 11/8): an athlete asks for a roster row on a completed show; the promoter approves
+// (writes the 023 link) or rejects. `alreadyLinked` tells the promoter the row was linked some other way meanwhile.
+export type ResultClaimStatus = 'pending' | 'approved' | 'rejected';
+export interface ResultClaim {
+  id: string;
+  meetServerId: string;
+  slug: string;
+  meetName: string;
+  meetDate: string | null;
+  athleteId: string;
+  athleteName: string | null;
+  divisionName: string | null;
+  username: string | null;
+  displayName: string | null;
+  note: string | null;
+  status: ResultClaimStatus;
+  createdAt: string;
+  resolvedAt: string | null;
+  alreadyLinked: boolean;
+}
+export interface ClaimStatus {
+  linkedAthleteIds: string[];
+  myAthleteId: string | null;
+  myClaim: ResultClaim | null;
+}
+export const CLAIM_NOTE_MAX = 200;
+
 export interface MyAthleteMeet {
   meetServerId: string;
   slug: string;
@@ -254,6 +281,15 @@ export interface PromoterApi {
   // unlinks). Owner or member only; the server rejects a username already linked to another athlete on the meet.
   listAthleteAccounts(serverId: string): Promise<ApiResult<AthleteAccountLink[]>>;
   linkAthleteAccount(serverId: string, athleteId: string, username: string | null): Promise<ApiResult<AthleteAccountLink | null>>;
+  // 048 result claims (#9). Athlete side: status on one show (signed in only), claim a roster row on a completed
+  // show (one pending claim per account per show; needs a username), withdraw a pending claim, list mine. Promoter
+  // side (owner or member): list the meet's claims (pending first), approve (links the row) or reject.
+  getClaimStatus(serverId: string): Promise<ApiResult<ClaimStatus>>;
+  claimResult(serverId: string, athleteId: string, note: string | null): Promise<ApiResult<ResultClaim>>;
+  withdrawClaim(claimId: string): Promise<ApiResult<{ id: string; withdrawn: true }>>;
+  listMyClaims(): Promise<ApiResult<ResultClaim[]>>;
+  listMeetClaims(serverId: string): Promise<ApiResult<ResultClaim[]>>;
+  resolveClaim(claimId: string, approve: boolean): Promise<ApiResult<ResultClaim>>;
   // accept: validates the division still exists, refuses when the roster is at listing.athleteCap (raise the cap first;
   // there is no silent override), creates the state.athletes row, stores athleteId on the request.
   // decline/withdraw of an accepted request removes exactly that athleteId's row, and only if it has no results.

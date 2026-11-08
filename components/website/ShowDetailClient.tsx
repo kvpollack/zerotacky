@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import FollowShowButton from './FollowShowButton';
+import ClaimResultClient from './ClaimResultClient';
 import { Cap, Key, KeyButton, WebCell, keyClass, textLink } from './sheet';
 import SponsorStrip from './SponsorStrip';
 import { describeShowLifecycle } from '@/lib/website/filters';
@@ -289,6 +290,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
               })}
             </div>
           )}
+          <ClaimResultClient meetServerId={show.id} athletes={show.state.athletes} divisions={show.state.divisions} isDemoFixture={!!show.isDemoFixture} resultsFinal={show.resultsStatus === 'final'} />
         </section>
       )}
 
