@@ -940,3 +940,57 @@ Staging re-probe (`shots/audit1.py`, `audit2.py`, screenshots `audit_staff_edito
 `audit_dirty_bar`, `sponsors_tv_idle`): station options carry ids (`A`, `B`), the 046 label rows resolve to `A`, dirty bar
 on edit and gone after save, briefing popup with `opener === null`, offline weigh-in keeps `123.4`, three-decimal weight
 refused, TV sponsor row no longer clips.
+
+## Feature gaps #9: claim my results + competition bests (11/8, migration 048)
+
+Report item 9: "Claim my results and an automatic PR board." Iron Podium sells a version of this as Premium ($5.99 a
+month); here it falls out of the 023 account links. Two halves.
+
+**Claim flow (048 `supabase/048_result_claims.sql`).** 023 linked roster rows to accounts from accepted registrations
+and from the promoter typing a username; hand-entered and imported rosters (#6) left most rows unlinked with no way for
+the athlete to ask. New table `athlete_claims` (meet, athlete row, user, note <= 200, status pending / approved /
+rejected, resolved_by / at; partial unique index = one pending claim per account per meet; RLS read = claimant or the
+meet's owners / members; no write policies). RPCs: `zt_claim_result` (completed, non-demo show; account needs a
+username; row not already linked; account not linked to another row; note trimmed), `zt_withdraw_claim`,
+`zt_my_claims`, `zt_claim_status` (linked athlete ids, my link, my latest claim; signed in only), `zt_meet_claims`
+(promoter: pending first, then the last 50 resolved), `zt_resolve_claim` (approve inserts the `athlete_accounts` row
+with `linked_by`, same as `zt_link_athlete_account`; reject marks it). Trigger `athlete_accounts_settle_claim`: a
+link made any other way (registration trigger, username link) approves a matching pending claim. `zt_claim_json`
+shapes every row (usernames and display names, never account ids). Staging probes (`~/.aki/tmp/zt/claim_probes.py`,
+all rolled back): approve links and marks approved, manual link settles the claim, reject then re-claim, duplicate
+pending refused, no username refused, withdraw, non-promoter resolve refused, already-linked row refused, anon status
+refused.
+
+**Client.** Contract: `ResultClaim`, `ClaimStatus`, `CLAIM_NOTE_MAX`, six methods on `PromoterApi` (supabase + fixture
++ the lazy hook list). Show page: `components/website/ClaimResultClient.tsx` under the completed-results block
+("Competed here?"): signed out = sign-in link; linked = "linked to your account as X"; pending = who and a Withdraw
+key; otherwise "Claim my result" opens a roster select grouped by division (linked rows disabled, scratched marked) and
+an optional note; a rejected claim explains and lets them claim again. Not shown on demo fixtures. Account page:
+`MyClaimsSection` (every claim with status, Withdraw on pending; hidden when there are none). Promoter Athletes tab:
+`AthleteAccountsSection` gains "Claims from athletes (N waiting)" above the link list with Approve / Reject, a toggle
+for resolved ones, and "row already linked" when a claim was overtaken; both lists reload together after a link or a
+resolve (`PromoterMeetDetailClient`).
+
+**Competition bests (`lib/website/prBoard.ts`).** `ShowHistoryEntry` now carries `events`: the athlete's scored result
+on each event with the division's listed weight (light tier when they took the trump), course, implement from the
+event spec. `competitionBests(history)` groups by implement id (or the implement note for "other", or the normalized
+event name when no spec) and keeps one best per group with the show it came from. One rule for every scoring type:
+heaviest load completed something at, then the performance at it (reps: heaviest weight repped, then most reps; max:
+heaviest; time or distance: heaviest finished, then fastest, else longest distance; medley: heaviest, most implements,
+fastest). Equal rank keeps the newer show. Athlete page section "Competition bests" above the self-reported PRs, aside
+"From final results; heaviest load first, then the result at it", each row: implement, result, show link, date,
+division, "best of N shows". Scratched shows contribute nothing. Nothing is stored; the data is what the history
+already fetched.
+
+Tests: `test/claims.test.mjs` (5, fixture), `test/prBoard.test.mjs` (8, incl. entries carry events), suite 692 pass,
+tsc clean. `test/promoter.test.mjs` H2 pinned to `today: 2026-11-01` (the Iron Furnace fixture deadline 2026-11-07
+passed on the real clock; not a product change). Staging UI (`shots/claim1.py`, screenshots `~/Downloads/zt_ui_1108/`:
+`claim_pending`, `claim_account`, `claim_promoter`, `bests_athlete_page`): signed-out link, claim sent, account row
+"Waiting on the promoter", promoter box with Approve, approve linked the row (chip appears, 0 waiting), athlete page
+showed the show and three bests ("9 reps at 100 lb", "24.35 s"), show page then read "linked to your account as Amber
+Simcox. It is on your athlete page." Probe data removed afterwards (link, claim, listing flag).
+
+Left on purpose: no email on approve / reject (the account page carries the status; a Resend route can follow the
+broadcast pattern if athletes ask); claims open only on completed shows (a live show's roster still moves); no
+self-link without the promoter (023's rule stands); bests compare across different loads by naming the load, they do
+not normalize to bodyweight or kg; the self-reported PRs block stays as the athlete's own numbers.

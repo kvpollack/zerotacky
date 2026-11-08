@@ -56,6 +56,12 @@ const PROMOTER_API_METHODS = [
   'getDesk',
   'updateDeskAthlete',
   'setDivisionCap',
+  'getClaimStatus',
+  'claimResult',
+  'withdrawClaim',
+  'listMyClaims',
+  'listMeetClaims',
+  'resolveClaim',
 ] as const;
 
 // Compile-time check: adding a method to PromoterApi without listing it here is a type error.

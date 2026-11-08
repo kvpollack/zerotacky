@@ -41,6 +41,7 @@ import {
 import { describeShowLifecycle } from '@/lib/website/filters';
 import type {
   AthleteAccountLink,
+  ResultClaim,
   MeetListing,
   PromoterMeetDetail,
   PromoterUser,
@@ -125,6 +126,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   }, [navBlockedAt]);
   useEffect(() => { if (!eventFormOpen) setNavBlockedAt(0); }, [eventFormOpen]);
   const [athleteLinks, setAthleteLinks] = useState<AthleteAccountLink[]>([]);
+  const [claims, setClaims] = useState<ResultClaim[]>([]);   // 048: athletes' claims on this meet
   // 035: membership cards of live registrants, keyed by registration id. Undefined on the mock backend (column hidden).
   const [registrationCards, setRegistrationCards] = useState<Record<string, MembershipCard[]> | undefined>(undefined);
   const loadRegistrationCards = useCallback(async () => {
@@ -173,10 +175,11 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
       return;
     }
 
-    const [meetRes, regsRes, linksRes] = await Promise.all([
+    const [meetRes, regsRes, linksRes, claimsRes] = await Promise.all([
       api.getMeet(serverId),
       api.listRegistrations(serverId),
       api.listAthleteAccounts(serverId),
+      api.listMeetClaims(serverId),
     ]);
 
     if (meetRes.error || !meetRes.data) {
@@ -186,6 +189,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     }
     // 023: linked accounts are a side panel; a failure there must not block the meet.
     setAthleteLinks(linksRes.data ?? []);
+    setClaims(claimsRes.data ?? []);
 
     setDetail(meetRes.data);
     setWorkingState(JSON.parse(JSON.stringify(meetRes.data.state)));
@@ -377,6 +381,19 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     const refreshed = await api.listAthleteAccounts(serverId);
     if (refreshed.data) setAthleteLinks(refreshed.data);
     else setAthleteLinks((prev) => (res.data ? [...prev.filter((l) => l.athleteId !== athleteId), res.data] : prev.filter((l) => l.athleteId !== athleteId)));
+    const c = await api.listMeetClaims(serverId);   // a link by hand settles a matching claim (048 trigger)
+    if (c.data) setClaims(c.data);
+    return {};
+  };
+
+  // 048: approve writes the same link as handleLinkAthleteAccount; both lists reload so they agree.
+  const handleResolveClaim = async (claimId: string, approve: boolean): Promise<{ error?: string }> => {
+    const res = await api.resolveClaim(claimId, approve);
+    if (res.error) return { error: res.error };
+    const [links, c] = await Promise.all([api.listAthleteAccounts(serverId), api.listMeetClaims(serverId)]);
+    if (links.data) setAthleteLinks(links.data);
+    if (c.data) setClaims(c.data);
+    else if (res.data) setClaims((prev) => prev.map((x) => (x.id === claimId ? res.data as ResultClaim : x)));
     return {};
   };
 
@@ -812,6 +829,8 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             divisions={detail.state.divisions}
             links={athleteLinks}
             onLink={handleLinkAthleteAccount}
+            claims={claims}
+            onResolveClaim={handleResolveClaim}
             blockedReason={isDirty ? 'Save or discard your roster changes first, then link accounts to the saved athletes.' : null}
           />
         </div>
