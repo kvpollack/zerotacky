@@ -7,6 +7,9 @@ import { getPublicGymBySlug, listPublicShows } from '@/lib/website/data';
 import { canonical, gymJsonLd } from '@/lib/website/seo';
 import { longIsoDate } from '@/lib/website/sheetFormat';
 import { competitionStatusLabel } from '@/lib/website/profileLinks';
+import { buildHostingRecord } from '@/lib/website/hostingRecord';
+import { reportHref } from '@/lib/website/meetReport';
+import { todayIsoDate } from '@/lib/promoter/rules';
 import JsonLd from '@/components/website/JsonLd';
 
 // Directory rows are loaded by scripts outside deploys; refresh every 5 min.
@@ -52,6 +55,8 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
   const hostedShows = (showsRes.data ?? []).filter((s) =>
     s.hostGymSlug === gym.slug || gym.hostedShowSlugs.includes(s.slug)
   );
+  // #19 (11/8): the hosting record, upcoming first, past with a post-meet report key once completed.
+  const record = buildHostingRecord(hostedShows, todayIsoDate());
   const typeLabel = gym.gymType === 'mixed' ? 'Strongman + Powerlifting' : gym.gymType;
   const claimLabel = gym.claimStatus === 'claimed' ? 'Claimed by the gym' : gym.claimStatus === 'unclaimed' ? 'Unclaimed listing' : '';
   const notProvided = <span className={`${FACT_V} text-ink-muted font-normal`}>Not provided</span>;
@@ -180,28 +185,42 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
           )}
         </section>
 
-        {/* Hosted shows */}
+        {/* Hosting record (#19): upcoming, then past with the post-meet report */}
         <section aria-labelledby="hosted-shows-heading">
-          <SectionCap id="hosted-shows-heading">Shows hosted at this facility ({hostedShows.length})</SectionCap>
-          {hostedShows.length === 0 ? (
+          <SectionCap
+            id="hosted-shows-heading"
+            aside={record.total > 0 && record.firstDate ? <span className={`${NOTE} hidden sm:inline`}>{record.total} show{record.total === 1 ? '' : 's'}{record.firstDate !== record.lastDate ? ` since ${longIsoDate(record.firstDate)}` : ''}</span> : undefined}
+          >
+            Hosting record ({record.total})
+          </SectionCap>
+          {record.total === 0 ? (
             <div className="zt-block grid-cols-1">
-              <WebCell><p className={NOTE}>No shows currently linked to this gym listing.</p></WebCell>
+              <WebCell><p className={NOTE}>No shows linked to this gym listing yet. Promoters pick the host gym on their Listing tab.</p></WebCell>
             </div>
           ) : (
             <ul className="zt-block grid-cols-1">
-              {hostedShows.map((show) => (
+              {[...record.upcoming, ...record.past].map((show) => (
                 <li key={show.id} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 sm:px-5">
                   <div className="min-w-0 flex-1 basis-[14rem] flex flex-col gap-0.5">
                     <Cap as="span">{show.date ? longIsoDate(show.date) : 'Date not provided'}</Cap>
-                    <Link href={`/shows/${show.slug}`} className="text-[15px] font-bold leading-snug text-ink no-underline hover:text-pen break-words">{show.name}</Link>
+                    {show.externalUrl ? (
+                      <a href={show.externalUrl} rel="noopener noreferrer" className="text-[15px] font-bold leading-snug text-ink no-underline hover:text-pen break-words">{show.name}</a>
+                    ) : (
+                      <Link href={`/shows/${show.slug}`} className="text-[15px] font-bold leading-snug text-ink no-underline hover:text-pen break-words">{show.name}</Link>
+                    )}
                     <div className="text-[13px] text-ink-muted">
                       {show.divisionLabels.length} division{show.divisionLabels.length === 1 ? '' : 's'}
                       {show.implementTags.length > 0 ? ` · ${show.implementTags.join(', ')}` : ''}
                     </div>
                   </div>
-                  <span className={show.competitionStatus === 'live' ? `${CHIP} border-pen bg-pen text-pen-label` : CHIP}>
-                    {competitionStatusLabel(show.competitionStatus)}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {record.reportable.has(show.slug) && (
+                      <Key href={reportHref(show.slug)} variant="line" className="!min-h-8 !px-3 !text-[11px]">Post-meet report</Key>
+                    )}
+                    <span className={show.competitionStatus === 'live' ? `${CHIP} border-pen bg-pen text-pen-label` : CHIP}>
+                      {competitionStatusLabel(show.competitionStatus)}
+                    </span>
+                  </div>
                 </li>
               ))}
             </ul>

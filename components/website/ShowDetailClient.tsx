@@ -12,6 +12,7 @@ import { directionsUrl, eventWeightDisplay, formatLocalDateTime } from '@/lib/we
 import { specSegments } from '@/lib/events/spec';
 import { showTrainingNeeds, trainForShowHref } from '@/lib/website/trainFor';
 import { prepSheetHref } from '@/lib/website/prepSheet';
+import { reportHref } from '@/lib/website/meetReport';
 import { safeVideoUrl, specNotes } from '@/lib/events/spec';
 import { longIsoDate, shortIsoDate, splitFee, venueLine } from '@/lib/website/sheetFormat';
 import { hasScheduleTimes, icsHref, scheduleTimeZone, scheduleTimeline, shiftIsoDate, timeZoneLabel } from '@/lib/website/schedule';
@@ -199,6 +200,8 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                 ? `Official Finalized Podiums${show.isDemoFixture ? ' (Demo Results)' : ''}`
                 : 'Provisional Standings, Pending Official Finalization'}
             </h2>
+            {/* #19 (11/8): the printable post-meet report for the host gym and the promoter. */}
+            <Key href={reportHref(show.slug)} variant="line" className="!min-h-10 !px-4 !text-[12px] shrink-0">Post-meet report</Key>
 
             {/* Division Filter */}
             <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter results by division">
