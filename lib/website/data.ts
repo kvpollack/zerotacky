@@ -13,6 +13,7 @@ import type { MeetListingRow } from '../promoter/db';
 import { createSyncClient, readSyncEnv, type SyncClient } from '../sync/client';
 import type { AthleteRow, DivisionRow, EventRow, ResultRow } from '../sync/mapping';
 import { buildShowHistoryEntry, type ShowHistoryEntry, type ShowHistoryRow } from './showHistory';
+import type { ReportOrigins } from './meetReport';
 import { EMPTY_PROFILE_LINKS, mapProfileLinks, type ProfileLinks } from './profileLinks';
 import { latestServerAt } from '../sync/meetApi';
 import {
@@ -395,6 +396,20 @@ export async function getAthleteShowHistory(
     return { source: 'live_supabase', data: entries.filter((e): e is ShowHistoryEntry => e !== null), error: null };
   } catch (err) {
     return { source: 'live_supabase', data: [], error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
+// 049 (#19): where a show's field came from, counts only. Demo mode and fixtures have no links: null (the report omits
+// the block). Any failure is also null; the rest of the report does not depend on it.
+export async function getMeetReportOrigins(meetId: string, opts: ShowDataOptions = {}): Promise<ReportOrigins | null> {
+  const client = resolveClient(opts);
+  if (!client || !/^[0-9a-f-]{36}$/i.test(meetId)) return null;
+  try {
+    const row = await client.rpc<ReportOrigins | null>('zt_meet_report_origins', { p_meet_id: meetId });
+    if (!row) return null;
+    return { linked: row.linked ?? 0, public: row.public ?? 0, homeGyms: (row.homeGyms ?? []).map((g) => ({ name: g.name, slug: g.slug ?? null, n: g.n })) };
+  } catch {
+    return null;
   }
 }
 

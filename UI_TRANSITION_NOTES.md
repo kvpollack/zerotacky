@@ -994,3 +994,36 @@ Left on purpose: no email on approve / reject (the account page carries the stat
 broadcast pattern if athletes ask); claims open only on completed shows (a live show's roster still moves); no
 self-link without the promoter (023's rule stands); bests compare across different loads by naming the load, they do
 not normalize to bodyweight or kg; the self-reported PRs block stays as the athlete's own numbers.
+
+## Feature gaps #19: host-gym hosting record + post-meet report (11/8, migration 049)
+
+**Post-meet report (`/shows/<slug>/report`).** One printable page per completed show, built from the same results the
+show page already loads (`buildAllDivisionResultsViews`). `lib/website/meetReport.ts`: `buildMeetReport(show, views,
+origins)` returns the field strip (entered, scored, scratched, divisions, events), a podium per division (places 1-3
+with points, tied flag, event-win count), event winners per division (place 1, non-zero mark), host gym, sponsors,
+stream link, final / provisional flag. `meetReportCsv` and `meetReportFilename` (`<slug>-report.csv`) back the Download
+CSV key; Print is `window.print()` with the shell hidden. Venue placeholders from the data layer ("Not provided") are
+stripped before the header line, so a show with no venue reads "date · hosted at <gym>". Page: revalidate 60, robots
+noindex, demo fixtures render without the origins block, upcoming shows get a "not completed" banner. Show page: a
+"Post-meet report" key in the Official Finalized Podiums heading row.
+
+**Where the field came from (049, `zt_meet_report_origins`).** anon + authenticated, security definer, stable: counts of
+athletes linked to a ZeroTacky account, how many have a public profile, and the public athletes' home gyms (directory
+gym when `home_gym_id` points to an unclaimed or claimed row, else `home_gym_name`), as `{linked, public, homeGyms}`.
+Counts only, no names; unknown or demo meet returns zeros. The report links each home gym and marks the host.
+
+**Hosting record (gym page).** `lib/website/hostingRecord.ts`: `buildHostingRecord(shows, today)` splits a gym's linked
+shows into upcoming and past (completed, or dated before today and not live), newest past first, with a first-show date
+and a `reportable` set (completed shows with results on ZeroTacky). Gym page section redrawn as "Hosting record (N)", aside
+"N shows since <date>", a "Post-meet report" key on reportable rows, external listings link out. Empty copy points
+promoters at the Listing tab's host gym picker. #16 "visiting athletes" folded in here: the gym page is that detail.
+
+Tests: `test/meetReport.test.mjs` (6), suite 698 pass, tsc clean. Staging UI (`shots/report1.py`, `report2.py`,
+screenshots `~/Downloads/zt_ui_1108/`: `report_full`, `report_header`, `gym_hosting_record`, `show_report_key`):
+dryrun2 report rendered 13 / 13 / 0 / 5 / 3, five podiums with T2 and T1 ties, three event-winner rows, origins "0 of
+13 linked"; Hercules Gym page showed "Hosting record (2) · 2 shows since Sat 24 Oct 2026" with two report keys. The two
+dryrun meets were pointed at Hercules Gym and listed publicly for the probe and reverted afterwards.
+
+Left on purpose: no per-athlete origin list (counts only, privacy); the report reads live each time, nothing is
+stored or versioned; no PDF export (Print covers it); event winners list every tied first as its own entry; upcoming
+shows have a report URL but it only shows the banner and the field strip.
