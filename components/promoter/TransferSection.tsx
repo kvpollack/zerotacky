@@ -6,6 +6,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { cancelTransfer, fetchTransferState, partyLabel, requestTransfer, type TransferState } from '@/lib/website/meetTransfers';
+import InviteLinks from '@/components/website/InviteLinks';
 
 const INPUT = 'w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-sm font-bold text-zt-text';
 const KEY = 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border font-black text-[11px] uppercase disabled:opacity-50 disabled:cursor-not-allowed';
@@ -79,6 +80,11 @@ export default function TransferSection({ sb, meetId }: { sb: SupabaseClient | n
       )}
       {error && <p role="alert" className="text-xs font-bold text-red-400">{error}</p>}
       {notice && !error && <p role="status" className="text-xs font-bold text-zt-text">{notice}</p>}
+      {state.isOwner && !state.pending && (
+        <div className="border-t border-zt-border pt-3">
+          <InviteLinks sb={sb} kind="meet" targetId={meetId} theme="promoter" idPrefix="meet-inv" />
+        </div>
+      )}
     </section>
   );
 }

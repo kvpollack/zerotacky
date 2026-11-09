@@ -11,6 +11,7 @@ import { buildHostingRecord } from '@/lib/website/hostingRecord';
 import { reportHref } from '@/lib/website/meetReport';
 import { todayIsoDate } from '@/lib/promoter/rules';
 import JsonLd from '@/components/website/JsonLd';
+import GymInviteAdmin from '@/components/website/GymInviteAdmin';
 
 // Directory rows are loaded by scripts outside deploys; refresh every 5 min.
 export const revalidate = 300;
@@ -159,6 +160,7 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
             </div>
           </div>
         )}
+        {!gym.isDemoListing && <GymInviteAdmin gymId={gym.id} claimed={gym.claimStatus === 'claimed'} />}
 
         {/* Equipment */}
         <section aria-labelledby="gym-equipment-heading">

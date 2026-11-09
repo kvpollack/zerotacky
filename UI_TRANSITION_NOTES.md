@@ -1101,3 +1101,39 @@ invented" note is gone from the show page; an empty podium slot speaks for itsel
 
 Left on purpose: account form inputs still weight 700 (pen blue); may drop to 500 if they read heavy next to the
 bolder labels.
+
+## Ownership invites by link (11/9 evening, migration 052)
+
+Kurt: "send them a link that creates an account and automatically gives them ownership without having to submit a
+claim." `supabase/052_invites.sql`: `invites` (64-hex token, kind gym | meet, target, creator, optional label, 14-day
+expiry, redeemed / revoked stamps; status is derived, never stored). `zt_create_invite` (gym: admin; meet: owner or
+admin; 30 per creator per day), `zt_revoke_invite`, `zt_list_invites` (creator's open + 30-day settled for one target),
+`zt_invite_preview` (anon-callable: who, what, status; no token echo, no ids beyond the public slug),
+`zt_redeem_invite` (signed in; refuses the creator's own link, expired, withdrawn or used links; a redeemer re-opening
+gets `already`). Gym redeem: `gyms.owner_id` + `claimed`, other pending claims close (same as approve), profile
+`is_gym_owner` on. Meet redeem: `meets.owner_id` moves, recipient is the `owner` member, creator is kept as `admin`
+(051 pattern), any pending 051 transfer cancels, profile `is_promoter` on. Sibling open invites for the same target
+are spent on redeem. Verify: `select count(*) from pg_proc where proname like 'zt_%invite%'` = 6 plus the two helpers.
+
+Surfaces: `components/website/InviteLinks.tsx` (shared; `theme` picks promoter zt-* tokens or website ink/pen):
+intro, each open link with Copy / Withdraw and days left, "Who it is for" label, settled list. Promoter Meet tab
+Ownership block gets it under the @username transfer form (owner only). Public gym page gets an admin-only "Admin ·
+invite the owner" section (`GymInviteAdmin.tsx`; renders nothing for everyone else, so the server page is unchanged
+for visitors). `/invite/<token>` (`app/invite/[token]/page.tsx` + `InviteClient.tsx`): headline "<inviter> wants you to
+own <name> on ZeroTacky.", target card, then the sign-in form in sign-up mode with this page as the return path (the
+same `returnTo` the registration page uses, so the confirmation email lands on /website/account and bounces back; no
+Supabase redirect-list change needed). Signed in: redeem once, "It is yours.", Open My Gym / Open the meet.
+
+Tests: `test/invites.test.mjs` (3), suite 712 pass, tsc clean. SQL probe (`invite_probe.py`): non-admin gym invite
+refused, admin mint, anon preview, unknown token, own-link refusal, redeem, re-redeem `already`, third account "already
+been used", non-owner meet invite refused, two meet links with one withdrawn ("has been withdrawn"), redeem moves owner
+and keeps the inviter as admin. Browser (`shots/invite1.py`, `invite2.py`, screenshots `invite_*` in
+`~/Downloads/zt_ui_1109/`): admin block on 5 Stones Fight Club, link minted on the gym page and on the Meet tab, signed-out
+invite page with the sign-up form, sign-in on the invite page redeemed the gym, the same account redeemed the meet,
+re-open "This one is already yours.", stranger "already been used", Kurt's Ownership block then read as admin. One
+hydration error (#418) found and fixed: the server rendered the not-configured branch while the client rendered
+"Checking…"; both now render "Checking…" and the not-configured text arrives through state. Staging reverted.
+
+Left on purpose: no email from ZeroTacky, the creator copies the link and sends it; no co-owner or admin-only invites
+(owner only); gym invites are admin-only since admins are who approve gym claims; an admin invite on an already-claimed
+gym replaces the owner (the block says so); invalid or dead links point at the gym directory's Claim this gym.
