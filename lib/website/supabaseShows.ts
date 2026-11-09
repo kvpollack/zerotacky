@@ -20,7 +20,7 @@ import type {
 
 export const PUBLIC_SHOW_MEET_COLS =
   'id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,updated_at,' +
-  'competition_status,registration_status,results_status,is_public_listed,venue,federation,entry_fee_display,registration_deadline,athlete_cap,promoter_contact,host_gym_id,theme,results_submitted_at,schedule,sponsors,livestream_url';
+  'competition_status,registration_status,results_status,is_public_listed,venue,federation,entry_fee_display,registration_deadline,athlete_cap,promoter_contact,host_gym_id,theme,results_submitted_at,schedule,sponsors,livestream_url,imported_from';
 
 const FALLBACK_VENUE: ShowVenue = {
   city: 'Not provided',
@@ -109,7 +109,25 @@ export function mapMeetRowToPublicShowSummary(
     ...(listing.schedule ? { schedule: listing.schedule } : {}),
     ...(listing.sponsors ? { sponsors: listing.sponsors } : {}),
     ...(listing.livestreamUrl ? { livestreamUrl: listing.livestreamUrl } : {}),
+    ...(listing.importedFrom ? { importedFrom: { sourceName: listing.importedFrom.sourceName, credit: listing.importedFrom.credit, archiveSlug: listing.importedFrom.archiveSlug } } : {}),
   };
+}
+
+export interface ImportedPlacingRow { meet_id: string; athlete_id: string; place: number; points: number | null; is_tied: boolean }
+
+/** 053: meet_imported_placings rows -> the adapter's supplied placements, keyed by division. */
+export function suppliedFromImported(
+  athletes: Array<{ id: string; divisionId: string }>,
+  rows: ImportedPlacingRow[]
+): PublicShowRecord['suppliedDivisionPlacements'] {
+  const divById = new Map(athletes.map((a) => [a.id, a.divisionId] as const));
+  const out: NonNullable<PublicShowRecord['suppliedDivisionPlacements']> = {};
+  for (const r of rows) {
+    const div = divById.get(r.athlete_id);
+    if (!div) continue;
+    (out[div] ??= []).push({ athleteId: r.athlete_id, overallPlace: Number(r.place), isTiedOverall: Boolean(r.is_tied) });
+  }
+  return out;
 }
 
 export function mapMeetBundleToPublicShowRecord(params: {
@@ -120,15 +138,19 @@ export function mapMeetBundleToPublicShowRecord(params: {
   results: ResultRow[];
   latestServerAt?: string | null;
   hostGym?: HostGymRef | null;
+  importedPlacings?: ImportedPlacingRow[] | null;   // 053: published overall places, override the engine's
 }): PublicShowRecord {
-  const { meet, divisions, events, athletes, results, latestServerAt, hostGym } = params;
+  const { meet, divisions, events, athletes, results, latestServerAt, hostGym, importedPlacings } = params;
   const listing = rowToMeetListing(meet);
   const summary = mapMeetRowToPublicShowSummary(meet, divisions, events, hostGym);
   const fullState = rowsToState({ meet, divisions, events, athletes, results });
 
+  const supplied = importedPlacings && importedPlacings.length > 0 ? suppliedFromImported(fullState.athletes, importedPlacings) : undefined;
+
   return {
     ...summary,
     lastUpdatedIso: latestServerAt ?? meet.updated_at ?? undefined,
+    ...(supplied ? { suppliedDivisionPlacements: supplied } : {}),
     registration: {
       status: listing.registrationStatus,
       entryFeeDisplay: listing.entryFeeDisplay ?? undefined,

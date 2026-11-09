@@ -13,6 +13,7 @@ import type {
 // time-or-distance event with 0 ft is a zero, not a score). Without the event, the raw-field heuristic is the fallback.
 export function resultHasScore(r: Result, event?: EventDef): boolean {
   if (r.didNotStart) return false;
+  if (typeof r.importedPoints === 'number') return r.importedPoints > 0;
   if (!event) {
     if ((r.reps ?? 0) > 0 || (r.timeSeconds ?? 0) > 0 || (r.distanceFeet ?? 0) > 0) return true;
     if ((r.implementsCompleted ?? 0) > 0 || (r.maxWeightLbs ?? 0) > 0) return true;
@@ -67,6 +68,33 @@ export function scoreSingleEvent(
   });
 
   const getEffectiveMaxWeight = effectiveMaxWeight;
+
+  // 053 adopted archive show: points and marks are the published ones. Rank by points, share a place on equal points
+  // (1, 1, 3), no pool splitting; a 0-point row reads as the mark it carried (usually "0 reps") and sits last.
+  if (event.imported) {
+    const rows = divisionAthletes.map((athlete) => {
+      const r = resultMap.get(athlete.id);
+      const pts = typeof r?.importedPoints === 'number' ? r.importedPoints : 0;
+      return { athlete, pts, display: r?.importedDisplay ?? (r ? '0' : '—'), isZero: !r || pts <= 0 };
+    });
+    rows.sort((a, b) => (b.pts - a.pts) || a.athlete.lotNumber - b.athlete.lotNumber);
+    const out: ScoredRow[] = [];
+    let k = 0;
+    while (k < rows.length) {
+      const cur = rows[k];
+      if (cur.isZero) {
+        out.push({ athleteId: cur.athlete.id, athleteName: cur.athlete.name, place: field.has(cur.athlete.id) ? N : N + 1, points: 0, displayScore: cur.display, isZero: true, isTied: false });
+        k++; continue;
+      }
+      let end = k;
+      while (end + 1 < rows.length && !rows[end + 1].isZero && rows[end + 1].pts === cur.pts) end++;
+      for (let pos = k; pos <= end; pos++) {
+        out.push({ athleteId: rows[pos].athlete.id, athleteName: rows[pos].athlete.name, place: k + 1, points: rows[pos].pts, displayScore: rows[pos].display, isZero: false, isTied: end > k });
+      }
+      k = end + 1;
+    }
+    return out;
+  }
 
   const evaluated = divisionAthletes.map((athlete) => {
     const r = resultMap.get(athlete.id);

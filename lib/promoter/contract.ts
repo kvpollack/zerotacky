@@ -45,6 +45,14 @@ export interface MeetListing {
   sponsors: MeetSponsor[] | null;       // 046 (#14): up to 6, public (show page, boards); null = none
   livestreamUrl: string | null;         // 046 (#17): https link, public; null = none
   staff: MeetStaff[] | null;            // 046 (#12): judges, volunteers, state rep; PRIVATE (never on a public page); null = none
+  importedFrom: ImportedFrom | null;    // 053: adopted archive show; read-only, the show page prints the credit as a disclaimer
+}
+export interface ImportedFrom {
+  source: string;        // 'sr' | 'os'
+  sourceName: string;    // 'strongmanresults.com'
+  archiveSlug: string;
+  credit: string;        // the disclaimer line, verbatim
+  importedAt: string;
 }
 
 export interface PromoterMeetSummary {
@@ -323,6 +331,7 @@ export function emptyListing(): MeetListing {
     sponsors: null,
     livestreamUrl: null,
     staff: null,
+    importedFrom: null,
   };
 }
 

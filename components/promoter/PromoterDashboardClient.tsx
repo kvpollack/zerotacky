@@ -191,6 +191,9 @@ export default function PromoterDashboardClient() {
             >
               {createOpen ? 'Close' : '+ New Meet'}
             </button>
+            {isLiveBackend() && (
+              <Link href="/promoter/import" className={keyClass('line')}>Import a past show</Link>
+            )}
             {!isLiveBackend() && (
               <a href="/promoter?signedout=1" className={`${textLink} text-[13px]`} title="Dev preview of the signed-out state">
                 Preview signed-out

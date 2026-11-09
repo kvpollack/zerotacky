@@ -131,7 +131,10 @@ function GymEditor({ row, onSaved }: { row: MyGymRow; onSaved: (r: MyGymRow) => 
           </p>
         </div>
         {row.status !== 'pending' && (
-          <Link href={`/gyms/${row.slug}`} className={quietBtn}>View public page ↗</Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href={`/promoter/import?gym=${encodeURIComponent(row.id)}`} className={quietBtn}>Import a past show hosted here</Link>
+            <Link href={`/gyms/${row.slug}`} className={quietBtn}>View public page ↗</Link>
+          </div>
         )}
       </div>
 

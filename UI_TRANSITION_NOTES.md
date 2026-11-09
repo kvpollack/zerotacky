@@ -1137,3 +1137,46 @@ hydration error (#418) found and fixed: the server rendered the not-configured b
 Left on purpose: no email from ZeroTacky, the creator copies the link and sends it; no co-owner or admin-only invites
 (owner only); gym invites are admin-only since admins are who approve gym claims; an admin invite on an already-claimed
 gym replaces the owner (the block says so); invalid or dead links point at the gym directory's Claim this gym.
+
+## Adopt an archive show (11/9 night, migration 053)
+
+Kurt: a promoter or gym owner should be able to "port in an old show from Iron Podium", "built out like it's a completed
+meet for us, but there should be a disclaimer that says that the results were imported from iron podium or elsewhere."
+`supabase/053_adopt_archive.sql`: `meets.imported_from jsonb` (source, sourceName, archiveSlug, competitionId, credit,
+importedAt, importedBy) and `meets.imported_slug` (unique where set: one adoption per archive show), both readable by
+anon; `meet_imported_placings` (meet, athlete, place, points, is_tied; public read). `zt_archive_competition_search(q,
+limit)` (signed in; name, city, state or year; newest first; returns `adopted {slug, id, mine}` so the UI can say "Already
+yours" or "Imported by another account"). `zt_adopt_archive_competition(slug, host_gym_id)` builds a completed, final,
+listed meet owned by the caller: venue from city/state, federation from the sanction, divisions `imp-d<n>`, events
+`imp-e<id>` typed best-fit from the archive event type and unit (`config.imported`, `importedUnit`, `importedType`),
+athletes `imp-a<placement id>` with lot = place, every result locked with `importedPoints` + `importedDisplay` (and the
+reps / time / distance / weight field that matches the unit), placings copied as published. 20 adoptions per account per
+day. Slug is `name-year`, year skipped when the name already carries it (401 of 1,714 archive names do; caught on staging
+as `boiling-point-2026-2026`), numbered on collision. `zt_my_meets` and `zt_get_my_meet` re-declared with `imported_from`.
+
+Engine: `scoreSingleEvent` has an `event.imported` branch, ranks by the published points (shared place on equal points,
+zero rows last with their mark, no pool split); `resultHasScore` counts an imported score. The public show page uses the
+copied placings (`suppliedDivisionPlacements`), so overall standings match the source even where the source's total was
+not the sum of its event points (620 of 59,772 placements).
+
+Surfaces: `/promoter/import` (`ImportArchiveClient`; `?gym=` preselects the host gym): search, pick, optional host gym,
+"Import as a completed meet", lands on the meet editor. Entry points: "Import a past show" on the promoter dashboard
+(live backend only) and "Import a past show hosted here" on My Gym. Disclaimer: public show page gets an "Imported
+results" block under the status banner with the credit ("Results imported from strongmanresults.com (CC BY 4.0);
+original scoring published on Iron Podium. Not scored live on ZeroTacky.") and "Placings and marks are shown as the source
+published them. Athletes can claim their results from this show like any other."; the promoter editor shows the same
+credit as a note above the meet name with "Results are locked as published; the listing, host gym, sponsors and ownership
+are yours to edit." Per-division label fixed on the way: "Official Final (Demo)" was hardcoded, now only demo fixtures say
+Demo.
+
+Tests: `test/adoptArchive.test.mjs` (5), suite 717 pass, tsc clean. SQL probe (`adopt_probe.py`): search, anon refused,
+adopt Pennsylvania's Strongest 2026 (12 divisions, 5 events, 32 athletes, 160 results, equal to the archive), re-adopt
+refused, credit present, caller is the `owner` member. Browser (`shots/adopt1.py`, `adopt2.py`, screenshots `adopt_*` in
+`~/Downloads/zt_ui_1109/`): import flow for Boiling Point 2026, re-search reads "Already yours · open", public page
+disclaimer and Novice Men placings (John Tribe 29, Andrew Jewell 27.5, Curtis Nicolo 27, archive truth), promoter note,
+dashboard link. Dev-server gotcha again: Turbopack refuses the node_modules junction, run `next dev --webpack`. Staging
+reverted (both adopted meets deleted).
+
+Left on purpose: no un-import beyond the normal meet delete; no event weights or heads-up detail (the archive has none);
+imported events are typed for display only and cannot be re-scored; one adoption per archive show, first come (transfer
+or invite moves it); gym owners use the same page through the My Gym link rather than a gym-side import.

@@ -700,6 +700,13 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
           </p>
         )}
 
+        {detail.summary.listing.importedFrom && (
+          <p role="note" className="text-[11px] font-bold text-zt-text bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2">
+            Imported show. {detail.summary.listing.importedFrom.credit} Results are locked as published; the listing, host gym,
+            sponsors and ownership are yours to edit.
+          </p>
+        )}
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-zt-text">

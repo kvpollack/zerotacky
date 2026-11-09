@@ -166,6 +166,17 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
         </div>
       )}
 
+      {/* 053: adopted archive show; the credit line is the disclaimer, on every view of this page */}
+      {show.importedFrom && (
+        <div role="note" className="zt-block grid-cols-1" data-testid="imported-disclaimer">
+          <WebCell className="gap-1">
+            <Cap>Imported results</Cap>
+            <p className="text-[15px] font-bold text-ink">{show.importedFrom.credit}</p>
+            <p className="text-[13px] leading-snug text-ink-muted">Placings and marks are shown as the source published them. Athletes can claim their results from this show like any other.</p>
+          </WebCell>
+        </div>
+      )}
+
       {/* SECTION A: LIVE SHOW CALLOUT */}
       {show.competitionStatus === 'live' && (
         <section aria-label="Live competition status" className="zt-block grid-cols-1">
@@ -243,7 +254,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                         <h3 className="text-base font-bold text-ink">{divView.division.name}</h3>
                         <span className="text-[12px] text-ink-muted">
                           {divView.athletes.length} competitor
-                          {divView.athletes.length === 1 ? '' : 's'} • Official Final (Demo)
+                          {divView.athletes.length === 1 ? '' : 's'} • Official Final{show.isDemoFixture ? ' (Demo)' : ''}
                         </span>
                       </div>
                       <span className="text-xs uppercase tracking-[0.04em] font-bold text-ink">Finalized</span>

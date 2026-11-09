@@ -114,6 +114,11 @@ export interface EventDef {
   pitCrewCallout?: PitCrewCallout;
   fixedImplementDescription?: string;
   spec?: EventSpec;
+  // 053 adopted archive show: the engine does not rescore this event; every result carries importedPoints /
+  // importedDisplay as published by the source. importedUnit / importedType describe the raw mark.
+  imported?: boolean;
+  importedUnit?: string;
+  importedType?: string;
 }
 
 export interface Result {
@@ -134,6 +139,9 @@ export interface Result {
   // Phase 4 (11/2): the judge pad's tape, one entry per GOOD / NO LIFT press. Rides in the sync payload; the engine
   // never reads it (components/judge/padModel.ts recomputes the scored fields from it).
   attemptLog?: { kind: 'good' | 'no'; at: number; split?: number; weight?: number }[];
+  // 053: published event points and the raw mark as text ("18 reps", "42.3 sec") on an adopted archive show.
+  importedPoints?: number;
+  importedDisplay?: string;
   updatedAt: number;
 }
 

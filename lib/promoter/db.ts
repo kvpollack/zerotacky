@@ -37,6 +37,7 @@ export interface MeetListingColumns {
   sponsors?: unknown[] | null;                 // 046; validated by zt_sponsors_ok (public)
   livestream_url?: string | null;              // 046; https (public)
   staff?: unknown[] | null;                    // 046; validated by zt_staff_ok (owner/member only, no anon grant)
+  imported_from?: Record<string, unknown> | null; // 053; set by zt_adopt_archive_competition, never patched from the client
 }
 
 export interface MeetListingRow extends MeetRow, MeetListingColumns {

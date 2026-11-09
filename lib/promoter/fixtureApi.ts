@@ -171,6 +171,7 @@ export function createFixturePromoterApi(
           sponsors: pubShow.sponsors ? clone(pubShow.sponsors) : null,
           livestreamUrl: pubShow.livestreamUrl ?? null,
           staff: null,
+          importedFrom: null,
         },
         divisionCount: pubShow.state.divisions.length,
         athleteCount: pubShow.state.athletes.length,

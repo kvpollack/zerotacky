@@ -17,6 +17,7 @@ import {
   type DeskState,
   type MyAthleteMeet,
   type MeetListing,
+  type ImportedFrom,
   type PromoterApi,
   type PromoterMeetDetail,
   type PromoterMeetSummary,
@@ -110,6 +111,20 @@ export function rowToMeetListing(row: Partial<MeetListingRow>): MeetListing {
     sponsors: parseSponsors(row.sponsors),
     livestreamUrl: httpsUrlOk(row.livestream_url) ? row.livestream_url : null,
     staff: parseStaff(row.staff),
+    importedFrom: parseImportedFrom(row.imported_from),
+  };
+}
+
+function parseImportedFrom(v: unknown): ImportedFrom | null {
+  if (!v || typeof v !== 'object') return null;
+  const o = v as Record<string, unknown>;
+  if (typeof o.credit !== 'string' || typeof o.archiveSlug !== 'string') return null;
+  return {
+    source: typeof o.source === 'string' ? o.source : '',
+    sourceName: typeof o.sourceName === 'string' ? o.sourceName : '',
+    archiveSlug: o.archiveSlug,
+    credit: o.credit,
+    importedAt: typeof o.importedAt === 'string' ? o.importedAt : '',
   };
 }
 

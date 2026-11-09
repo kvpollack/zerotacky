@@ -103,6 +103,7 @@ export interface PublicShowSummary {
   schedule?: MeetSchedule;       // 044: meet-day timeline; the show page prints it and /shows/<slug>/calendar.ics is built from it
   sponsors?: MeetSponsor[];      // 046 (#14): sponsor strip on the show page and the boards
   livestreamUrl?: string;        // 046 (#17): Watch live link on the show page and the phone board
+  importedFrom?: { sourceName: string; credit: string; archiveSlug: string };  // 053: adopted archive show; disclaimer on every surface
 }
 
 export interface PublicShowRecord extends PublicShowSummary {

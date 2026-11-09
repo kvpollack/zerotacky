@@ -28,6 +28,7 @@ import { EXTERNAL_SHOW_COLS, externalRowToSummary, isoToday, type ExternalShowRo
 import { cleanUsernameParam, mapPublicProfileRow, PUBLIC_PROFILE_COLS, sortAthletes, type PublicAthlete, type PublicProfileRow } from './athletes';
 import {
   mapMeetBundleToPublicShowRecord,
+  type ImportedPlacingRow,
   mapMeetRowToPublicShowSummary,
   PUBLIC_SHOW_MEET_COLS,
   type HostGymRef,
@@ -238,12 +239,14 @@ export async function getPublicShowBySlug(
 
     const meet = meets[0];
     const q = `meet_id=eq.${meet.id}`;
-    const [divisions, events, athletes, results, hostGyms] = await Promise.all([
+    const [divisions, events, athletes, results, hostGyms, importedPlacings] = await Promise.all([
       client.select<DivisionRow>('divisions', `${q}&order=sort_order.asc`),
       client.select<EventRow>('events', `${q}&order=event_number.asc`),
       client.select<AthleteRow>('athletes', q),
       client.select<ResultRow>('results', q),
       loadHostGyms(client, [meet]),
+      // 053: an adopted archive show carries its published overall places; native meets have no rows here
+      meet.imported_from ? client.select<ImportedPlacingRow>('meet_imported_placings', q) : Promise.resolve(null),
     ]);
 
     const mapped = mapMeetBundleToPublicShowRecord({
@@ -254,6 +257,7 @@ export async function getPublicShowBySlug(
       results: results ?? [],
       latestServerAt: latestServerAt(results ?? []),
       hostGym: meet.host_gym_id ? hostGyms.get(meet.host_gym_id) : null,
+      importedPlacings,
     });
 
     return { source: 'live_supabase', data: mapped, error: null };
