@@ -14,6 +14,7 @@ import { createSyncClient, readSyncEnv, type SyncClient } from '../sync/client';
 import type { AthleteRow, DivisionRow, EventRow, ResultRow } from '../sync/mapping';
 import { buildShowHistoryEntry, type ShowHistoryEntry, type ShowHistoryRow } from './showHistory';
 import type { ReportOrigins } from './meetReport';
+import type { ArchiveForProfile } from './archive';
 import { EMPTY_PROFILE_LINKS, mapProfileLinks, type ProfileLinks } from './profileLinks';
 import { latestServerAt } from '../sync/meetApi';
 import {
@@ -410,6 +411,22 @@ export async function getMeetReportOrigins(meetId: string, opts: ShowDataOptions
     return { linked: row.linked ?? 0, public: row.public ?? 0, homeGyms: (row.homeGyms ?? []).map((g) => ({ name: g.name, slug: g.slug ?? null, n: g.n })) };
   } catch {
     return null;
+  }
+}
+
+// #11 (11/9): archive competitions attached to a public profile through approved archive_links. Empty for demo
+// personas, missing client or any error; the page simply shows no archive section.
+export async function getArchiveForUsername(username: string, opts: ShowDataOptions = {}): Promise<ArchiveForProfile> {
+  const empty: ArchiveForProfile = { keys: [], competitions: [] };
+  const client = resolveClient(opts);
+  const u = cleanUsernameParam(username);
+  if (!client || !u) return empty;
+  try {
+    const row = await client.rpc<ArchiveForProfile | null>('zt_archive_for_username', { p_username: u });
+    if (!row) return empty;
+    return { keys: row.keys ?? [], competitions: row.competitions ?? [] };
+  } catch {
+    return empty;
   }
 }
 

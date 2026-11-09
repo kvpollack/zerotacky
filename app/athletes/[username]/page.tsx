@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import WebsiteShell from '@/components/website/WebsiteShell';
 import { Cap, SectionCap, WebCell, textLink } from '@/components/website/sheet';
-import { getAthleteShowHistory, getProfileLinks, getPublicAthleteByUsername } from '@/lib/website/data';
+import { getArchiveForUsername, getAthleteShowHistory, getProfileLinks, getPublicAthleteByUsername } from '@/lib/website/data';
+import ArchiveHistory from '@/components/website/ArchiveHistory';
 import { formatPlace, formatShowDate } from '@/lib/website/showHistory';
 import { competitionBests } from '@/lib/website/prBoard';
 import { competitionStatusLabel, splitShows } from '@/lib/website/profileLinks';
@@ -51,7 +52,7 @@ export default async function AthleteProfilePage({ params }: AthletePageProps) {
   const res = await getPublicAthleteByUsername(username);
   const a = res.data;
   if (!a) notFound();
-  const [historyRes, linksRes] = await Promise.all([getAthleteShowHistory(a.username), getProfileLinks(a.username)]);
+  const [historyRes, linksRes, archive] = await Promise.all([getAthleteShowHistory(a.username), getProfileLinks(a.username), getArchiveForUsername(a.username)]);
   const history = historyRes.data ?? [];
   const links = linksRes.data ?? { homeGym: null, shows: [], gyms: [] };
   // 029: the directory row wins over the free text when both are set; a gym that left the directory falls back to the text.
@@ -208,6 +209,8 @@ export default async function AthleteProfilePage({ params }: AthletePageProps) {
             <p className={`${NOTE} mt-2 sm:hidden`}>Official results from shows scored on ZeroTacky and marked final by the promoter.</p>
           </section>
         )}
+
+        <ArchiveHistory competitions={archive.competitions} displayName={a.displayName} />
 
         {showsRun.length > 0 && (
           <section aria-labelledby="shows-run-heading">

@@ -1027,3 +1027,77 @@ dryrun meets were pointed at Hercules Gym and listed publicly for the probe and 
 Left on purpose: no per-athlete origin list (counts only, privacy); the report reads live each time, nothing is
 stored or versioned; no PDF export (Print covers it); event winners list every tied first as its own entry; upcoming
 shows have a report URL but it only shows the banner and the field strip.
+
+## Feature gaps #11: results archive import (11/9, migration 050)
+
+**License.** strongmanresults.com publishes its data under CC BY 4.0, so we can import it with attribution; the
+scoring behind it comes from Iron Podium. openstrongman.org is CC0 (elite international shows only) and is not loaded
+yet. Credit line everywhere the archive shows (`ARCHIVE_CREDIT`): "Archive results via strongmanresults.com (CC BY
+4.0); original scoring published on Iron Podium. ZeroTacky is not affiliated with either." Kurt approved the wording.
+
+**Data.** `supabase/050_archive.sql`: `archive_sources` (seeded `sr`, `os`), `archive_competitions` (slug
+`sr:<date>:<slugified name>`), `archive_placements`, `archive_results`, `archive_links` (an athlete's claim on an
+archive name key; pending / approved / rejected, one approved owner per key). Public read on the data tables, own-read
+on links. Helpers `zt_archive_norm` (name key), `zt_archive_competitions_json`, `zt_archive_athlete`,
+`zt_archive_for_username`; materialized view `archive_athletes` (21,018 distinct name keys, refreshed by the loader)
+behind `zt_archive_search` (65 ms on staging). Claims: `zt_archive_claim` (max 3 pending per user),
+`zt_archive_withdraw`, `zt_my_archive_links`; admin `zt_list_archive_links` and `zt_decide_archive_link` (through
+`zt_require_admin`).
+
+**Loader.** `~/.aki/tmp/zt/archive/load_sr.py`: `uv run python archive/load_sr.py [--ref staging|prod] [--years ...]
+[--no-fetch] [--batch 1500]`. Fetches the strongmanresults CSVs into `archive/snapshots/<stamp>/`, writes SQL batches
+through a temp file (Windows argv cap), refreshes the matview at the end. Full staging load: 1,714 competitions, 59,772
+placements, 291,248 event results in 193 s. 220 orphan result rows belong to one show ("Wildcard Strong" 2023-04-29)
+missing from the source placements file; left as is.
+
+**Surfaces.** `lib/website/archive.ts` (types, `normalizeArchiveKey`, `sanctionLabel`, `formatArchivePlace`,
+`formatArchiveResult`, `summarizeArchive`, `dedupeArchive`, `nameSimilarity`, RPC wrappers). Athlete page: "Archive
+history" after Show history (`components/website/ArchiveHistory.tsx`, one row per competition with a `<details>` for
+events, credit line under it). Account page: "Archive results" (`ArchiveClaimSection.tsx`): Find my archive results,
+search by name, "This is me", then Waiting on review / Withdraw. Admin: `/website/admin/archive`
+(`AdminArchiveClient.tsx`) lists requests with a Names match / close / differ chip and Approve / Reject.
+
+Tests: `test/archive.test.mjs` (8). Staging UI (`shots/archive1.py`, screenshots `~/Downloads/zt_ui_1109/archive_*`):
+"kurt pollack" searched to one hit (2 comps, NJ and PA), claim went to Waiting on review, admin row showed the chips,
+Approve put two rows and the credit under Archive history on `/athletes/slate_staging`. That approved link is still on
+staging.
+
+Left on purpose: archive rows feed the athlete's history, not competition bests (the source has no implement weights,
+so there is nothing load-based to compare); matching is by normalized name key only, no fuzzy merge (the admin chip is
+the hint); refresh is by hand (`--ref prod --no-fetch` after a fetch) until a cron exists; OpenStrongman is a seeded
+source with no loader.
+
+## Meet transfers (11/9, migration 051)
+
+Kurt builds meets for other promoters and runs them alongside, so a meet needs to move to another owner account
+without a database edit. `supabase/051_meet_transfers.sql`: `meet_transfers` (one pending per meet),
+`zt_request_meet_transfer(p_meet_id, p_username)` (owner only, by @username, not to yourself),
+`zt_cancel_meet_transfer`, `zt_respond_meet_transfer(p_id, p_accept)` (recipient only; on accept `meets.owner_id`
+moves, the recipient becomes the `owner` member and the sender is kept as `admin` so they can keep editing),
+`zt_my_meet_transfers` (incoming / outgoing / settled in the last 30 days), `zt_meet_transfer_state`.
+
+Promoter Meet tab: "Ownership" block (`components/promoter/TransferSection.tsx`): the owner types a @username and
+sends; a pending request shows who and when with Cancel; non-owners see the owner's name only. Account page: "Meet
+transfers" (`components/website/MeetTransfersSection.tsx`): Accept / Decline incoming, Cancel outgoing, settled list.
+Helpers in `lib/website/meetTransfers.ts`.
+
+Tests: `test/meetTransfers.test.mjs` (3), suite 709 pass, tsc clean. SQL probe (`transfer_probe.py`) covered owner
+only, no self transfer, one pending per meet, accept moves owner and demotes sender, decline and cancel. Staging UI
+(`shots/transfer1.py`, screenshots `transfer_owner_form`, `transfer_pending`, `transfer_incoming`,
+`transfer_member_view`) moved Iron Harbor to @jess_test and back; staging reverted afterwards.
+
+Left on purpose: no email or Slack notification on a request (the recipient sees it on their Account page); no transfer
+of host-gym links or sponsor blocks beyond what rides on the meet row; settled history is 30 days.
+
+## Type pass (11/9)
+
+Kurt: desktop body type read light and small. Red Hat Mono 500 added (`public/fonts/red-hat-mono-latin-500.woff2`,
+latin subset), `--font-weight-normal` and `-medium` now 500 and `-light` 400, `[data-zt-sheet]` body weight 500. Desktop
+(`min-width: 1024px`) scale bumps the sheet `text-[10..17px]` and `text-xs / sm / base` utilities one step (13 to 15 and
+so on) inside `app/globals.css`. `Cap` labels are bold and `SectionCap` no longer forces normal weight. Gym card key
+reads "Gym details" (was "Equipment details"). The "Group N had X finisher(s); unoccupied podium places are not
+invented" note is gone from the show page; an empty podium slot speaks for itself. Screenshots `gym_card`,
+`gym_page_desktop`, `account_profile_desktop` in `~/Downloads/zt_ui_1109/`.
+
+Left on purpose: account form inputs still weight 700 (pen blue); may drop to 500 if they read heavy next to the
+bolder labels.

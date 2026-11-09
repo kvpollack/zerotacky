@@ -321,7 +321,7 @@ export default function GymsBrowser({
                     {gym.websiteUrl && (
                       <a href={gym.websiteUrl} target="_blank" rel="noopener noreferrer" className={`text-[13px] ${textLink}`}>Website <span aria-hidden="true">↗</span></a>
                     )}
-                    <Key href={`/gyms/${gym.slug}`} variant="ink" className="min-h-10 px-4 text-[12px]">Equipment details →</Key>
+                    <Key href={`/gyms/${gym.slug}`} variant="ink" className="min-h-10 px-4 text-[12px]">Gym details →</Key>
                   </div>
                 </div>
               </article>

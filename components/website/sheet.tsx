@@ -5,7 +5,7 @@ import React from 'react';
 import Link from 'next/link';
 
 export function Cap({ children, className = '', as: Tag = 'div', id }: { children: React.ReactNode; className?: string; as?: 'div' | 'h2' | 'h3' | 'span'; id?: string }) {
-  return <Tag id={id} className={`text-xs tracking-[0.06em] uppercase text-ink-muted ${className}`}>{children}</Tag>;
+  return <Tag id={id} className={`text-xs font-bold tracking-[0.06em] uppercase text-ink-muted ${className}`}>{children}</Tag>;
 }
 
 export type KeyVariant = 'ink' | 'line' | 'pen';
@@ -51,7 +51,7 @@ export function WebCell({ children, className = '', pad = 'md', style, ...rest }
 export function SectionCap({ children, aside, id }: { children: React.ReactNode; aside?: React.ReactNode; id?: string }) {
   return (
     <div className="flex items-end justify-between gap-3 mb-2.5">
-      <Cap as="h2" className="font-normal" id={id}>{children}</Cap>
+      <Cap as="h2" id={id}>{children}</Cap>
       {aside}
     </div>
   );

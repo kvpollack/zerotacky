@@ -452,6 +452,7 @@
    and corrections only). Promoter accent fills three slots and is resolved by lib/theme/promoter.ts.
    ===================================================================================================== */
 @font-face { font-family: 'Red Hat Mono'; src: url('/fonts/red-hat-mono-latin-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Red Hat Mono'; src: url('/fonts/red-hat-mono-latin-500.woff2') format('woff2'); font-weight: 500; font-display: swap; }
 @font-face { font-family: 'Red Hat Mono'; src: url('/fonts/red-hat-mono-latin-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
 /* Numerals only in running text (digits, point, colon, slash), like a lettering template */
 @font-face { font-family: 'ZT Numerals'; src: url('/fonts/saira-stencil-one-latin-400.woff2') format('woff2'); font-weight: 100 900; font-display: swap; unicode-range: U+0030-0039, U+002E, U+003A, U+002F; }
@@ -467,8 +468,11 @@
   --font-mono: 'Red Hat Mono', 'Red Hat Mono Fallback', ui-monospace, monospace;
   --font-sheet: 'ZT Numerals', 'Red Hat Mono', 'Red Hat Mono Fallback', ui-monospace, monospace;
   --font-wordmark: 'Saira Stencil One', 'Saira Stencil One Fallback', sans-serif;
-  /* Red Hat Mono ships 400 and 700 only: the heavier utilities collapse to 700 instead of synthesised bold */
-  --font-weight-medium: 400;
+  /* Red Hat Mono at 400, 500, 700. Body text sits on 500 (Kurt 11/9: 400 read thin on desktop); the heavier utilities
+     collapse to 700 instead of synthesised bold. font-light stays the true 400 for anything that wants the thin cut. */
+  --font-weight-normal: 500;
+  --font-weight-medium: 500;
+  --font-weight-light: 400;
   --font-weight-semibold: 700;
   --font-weight-extrabold: 700;
   --font-weight-black: 700;
@@ -536,6 +540,22 @@ body { font-family: var(--font-sans); }
 [data-zt-sheet] :is(.bg-amber-500\/20, .bg-amber-500\/15, .bg-amber-500\/10) { background-color: transparent; }
 [data-zt-sheet] :is(.border-amber-500\/40, .border-amber-500\/50) { border-color: var(--rule); }
 [data-zt-sheet] h1, [data-zt-sheet] h2, [data-zt-sheet] h3 { letter-spacing: 0; }
+[data-zt-sheet] { font-weight: 500; }
+/* Desktop type scale (Kurt 11/9): the mono body at 13 px got lost on a desktop display. From lg every body size steps
+   up one notch; phones keep the tight scale. Headings (22 px and up) are untouched. One place to tune or revert. */
+@media (min-width: 1024px) {
+  [data-zt-sheet] .text-\[10px\] { font-size: 11px; }
+  [data-zt-sheet] .text-\[11px\] { font-size: 12px; }
+  [data-zt-sheet] .text-\[12px\] { font-size: 13px; }
+  [data-zt-sheet] .text-\[13px\] { font-size: 15px; }
+  [data-zt-sheet] .text-\[14px\] { font-size: 16px; }
+  [data-zt-sheet] .text-\[15px\] { font-size: 17px; }
+  [data-zt-sheet] .text-\[16px\] { font-size: 17px; }
+  [data-zt-sheet] .text-\[17px\] { font-size: 18px; }
+  [data-zt-sheet] .text-xs { font-size: 13px; }
+  [data-zt-sheet] .text-sm { font-size: 15px; }
+  [data-zt-sheet] .text-base { font-size: 17px; }
+}
 /* the old emerald "success" paint: pen text, no tint, pen rule; the solid emerald button is an ink key */
 [data-zt-sheet] :is(.text-emerald-200, .text-emerald-300, .text-emerald-400, .text-emerald-200\/80) { color: var(--pen); }
 [data-zt-sheet] :is(.bg-emerald-500\/20, .bg-emerald-500\/15, .bg-emerald-500\/10, .bg-emerald-950\/30) { background-color: transparent; }

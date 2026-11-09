@@ -51,6 +51,7 @@ import { isMeetStateDirty } from '@/lib/promoter/rules';
 import { useUnsavedGuard } from '@/lib/promoter/unsavedGuard';
 import { isLiveBackend, usePromoterApi } from '@/lib/promoter/usePromoterApi';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
+import TransferSection from '@/components/promoter/TransferSection';
 import { describeEmailResult, requestRegistrationEmail } from '@/lib/email/client';
 import type { AppState, Athlete, Division, EventDef, Meet } from '@/lib/types';
 import type { DeskPatch, DeskState } from '@/lib/promoter/contract';
@@ -806,8 +807,9 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
       {/* Active Section Content. Every section stays mounted so in-progress drafts (Listing fields, EventForm)
           survive tab switches; inactive panels are hidden with the HTML hidden attribute (M2). */}
       <div>
-        <div role="tabpanel" id="panel-meet" aria-labelledby="tab-meet" hidden={activeTab !== 'meet'}>
+        <div role="tabpanel" id="panel-meet" aria-labelledby="tab-meet" hidden={activeTab !== 'meet'} className="flex flex-col gap-6">
           <SheetMeetDetails {...sheetProps} />
+          {isLiveBackend() && <TransferSection sb={getSupabase()} meetId={serverId} />}
         </div>
 
         <div role="tabpanel" id="panel-stations" aria-labelledby="tab-stations" hidden={activeTab !== 'stations'}>

@@ -278,14 +278,6 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                             </div>
                           </div>
                         ))}
-
-                        {divView.athletes.length < 3 && (
-                          <div className="text-[12px] text-ink-muted px-5 py-2.5">
-                            Note: {divView.division.name} had {divView.athletes.length} finisher
-                            {divView.athletes.length === 1 ? '' : 's'}; unoccupied podium places are
-                            not invented.
-                          </div>
-                        )}
                       </div>
                     )}
                   </WebCell>

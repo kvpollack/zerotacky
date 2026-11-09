@@ -14,6 +14,8 @@ import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import HostGymPicker from '@/components/promoter/HostGymPicker';
 import MembershipCardsSection from '@/components/website/MembershipCardsSection';
 import MyClaimsSection from '@/components/website/MyClaimsSection';
+import MeetTransfersSection from '@/components/website/MeetTransfersSection';
+import ArchiveClaimSection from '@/components/website/ArchiveClaimSection';
 
 // Real account page (v2): sign in / create account / magic link, then a profile editor. The three role flags
 // are self-declared and only shape what the site shows; meet access is decided by meets.owner_id / meet_members.
@@ -110,6 +112,7 @@ function AdminLink() {
     <>
       <Link href="/website/admin/claims" className={keyClass('line')}>Gym claims queue</Link>
       <Link href="/website/admin/shows" className={keyClass('line')}>Show listings queue</Link>
+      <Link href="/website/admin/archive" className={keyClass('line')}>Archive name requests</Link>
     </>
   );
 }
@@ -488,6 +491,8 @@ export default function AccountClient() {
       <MembershipCardsSection userId={auth.user.id} />
 
       <MyClaimsSection />
+      {p && <ArchiveClaimSection displayName={p.display_name ?? ''} username={p.username ?? null} />}
+      <MeetTransfersSection />
 
       {p && (
         <section aria-labelledby="public-heading" className="flex flex-col gap-3">
