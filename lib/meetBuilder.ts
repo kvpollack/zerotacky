@@ -144,6 +144,8 @@ export function normalizeState(raw: unknown): AppState {
     isDemo,
     stations,
     slug,
+    // 054: absent stays absent (the server keeps its value); anything but the two known formats is dropped
+    ...(rawMeet.divisionFormat === 'weight_classes' || rawMeet.divisionFormat === 'custom' ? { divisionFormat: rawMeet.divisionFormat } : {}),
   };
 
   const rawDivisions = Array.isArray(unwrapped.divisions) ? unwrapped.divisions : [];
@@ -155,6 +157,8 @@ export function normalizeState(raw: unknown): AppState {
       name: String(d.name ?? `Division ${idx + 1}`),
       flight: String(d.flight ?? stations[0]?.id ?? 'A'),
       sortOrder: typeof d.sortOrder === 'number' ? d.sortOrder : idx + 1,
+      // 054: a finite cap is kept, an explicit null is kept (it clears the server's cap), anything else is dropped
+      ...(d.weightCapKg === null || (typeof d.weightCapKg === 'number' && Number.isFinite(d.weightCapKg)) ? { weightCapKg: d.weightCapKg } : {}),
     }))
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map((d, idx) => ({ ...d, sortOrder: idx + 1 }));
@@ -314,7 +318,7 @@ export function removeStation(state: AppState, stationId: string): AppState {
 
 export function addDivision(
   state: AppState,
-  input: { id?: string; name: string; flight?: string }
+  input: { id?: string; name: string; flight?: string; weightCapKg?: number | null }
 ): AppState {
   const trimmedName = String(input.name ?? '').trim() || `Division ${state.divisions.length + 1}`;
   const defaultStation = state.meet.stations?.[0]?.id ?? 'A';
@@ -325,6 +329,8 @@ export function addDivision(
     name: trimmedName,
     flight,
     sortOrder: state.divisions.length + 1,
+    // 054: a standard-class quick-add carries the cap; a typed division has none
+    ...(typeof input.weightCapKg === 'number' && Number.isFinite(input.weightCapKg) ? { weightCapKg: input.weightCapKg } : {}),
   };
   return {
     ...state,
@@ -335,7 +341,7 @@ export function addDivision(
 export function updateDivision(
   state: AppState,
   divisionId: string,
-  patch: Partial<Pick<Division, 'name' | 'flight' | 'sortOrder'>>
+  patch: Partial<Pick<Division, 'name' | 'flight' | 'sortOrder' | 'weightCapKg'>>
 ): AppState {
   if (!state.divisions.some((d) => d.id === divisionId)) return state;
   const divisions = state.divisions.map((d) => {
@@ -345,6 +351,8 @@ export function updateDivision(
       ...(patch.name !== undefined ? { name: patch.name } : {}),
       ...(patch.flight !== undefined ? { flight: patch.flight } : {}),
       ...(patch.sortOrder !== undefined ? { sortOrder: patch.sortOrder } : {}),
+      // 054: null clears the cap (the row keeps the key so the save sends the clear); undefined leaves it alone
+      ...(patch.weightCapKg !== undefined ? { weightCapKg: patch.weightCapKg } : {}),
     };
   });
   return { ...state, divisions };

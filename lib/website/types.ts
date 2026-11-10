@@ -32,6 +32,10 @@ export type DivisionGroupingStyle =
   | 'traditional_weight_classes'
   | 'mixed';
 
+// 054: the promoter's own answer; undefined = not chosen (grouping style is then inferred from the division names)
+import type { DivisionFormat } from '../types';
+export type { DivisionFormat };
+
 export interface ShowVenue {
   facilityName?: string;
   streetAddress?: string;
@@ -83,6 +87,7 @@ export interface PublicShowSummary {
   venue: ShowVenue;
   federation?: string; // Optional: e.g. 'Unsanctioned', 'Strongman Corporation', 'USS'
   divisionGroupingStyle: DivisionGroupingStyle;
+  divisionFormat?: DivisionFormat;   // 054: set by the promoter; drives whether "Which group fits me?" appears
   divisionLabels: string[];
   implementTags: string[];
   competitionStatus: ShowCompetitionStatus;

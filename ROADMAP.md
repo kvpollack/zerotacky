@@ -1,5 +1,55 @@
 # ZeroTacky roadmap to "final state" (drafted 10/16 evening, Slate; Kurt to edit)
 
+## Status, 2026-11-10 (Slate; the sections below are the 10/16 plan and its running log)
+
+**Where we are.** The two-track plan finished: `v2` became `main` on 11/9 (tag `v2-retired-2026-11-09`), one branch, one
+Supabase prod (`kagitbfthapxmaljsdtz`, migrations 001-053 applied) plus staging, www.zerotacky.com on Vercel Hobby, Resend
+mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 feature-gaps report ranked 22 builds;
+18 shipped. Live main `1fa331b5`, 731 tests. Jess has the gym and meet invite links and the feature email (11/10).
+
+**Shipped since the 10/21 entries below (newest first)**
+- 11/10 "Which group fits me?" (#13) + division format (054): the promoter marks a meet as standard weight classes
+  (kg, with per-class caps and one-tap Strongman Corporation / IPF tables) or custom groups / thresholds; only custom shows get the helper, which ranks the groups
+  from a deadlift, a press and a carry number. Register step 1 preselects the suggested group.
+- 11/10 copy scrub: Strongfest demo preset removed, format wording explained, fictional placeholders.
+- 11/9 import a past show (053): a promoter or gym owner adopts an archive competition as a completed meet with an
+  imported-results disclaimer. Ownership invites by link (052). Meet transfers (051). Results archive (050): 1,714
+  shows, 59,772 placements, 290k event results from strongmanresults.com (CC BY 4.0), on athlete pages and the PR board.
+- 11/8 to 11/9 claim my results + PR board (048, gap #9); host-gym hosting record + post-meet report (049, #19, #16 folded in).
+- 11/6 schedule + .ics + "you're up" (044, #7); check-in and weigh-in desk (045, #8); sponsors, livestream link, staff
+  roster with briefing cards (046, #12 #14 #17); broadcasts + 7-day / 1-day reminder emails (042/043, #10). Two Astra
+  audits, all findings fixed (047).
+- 11/5 roster import with columns (#6); comp-prep sheet (#15); structured event specs (#3) and "train for this show" (#4).
+- 11/2 to 11/4 design system (sheet grammar) across every page; results export + federation pack (#1); every-show
+  calendar with link-out listings (#2); membership cards; athlete directory and public profiles; gym directory with
+  claims, owner edits, zip radius, colour ways.
+
+**Open from the gaps report** (all held unless Kurt says otherwise)
+- #5 Stripe Connect paid registration: the first real revenue item; build when a promoter wants to charge through us.
+  Prerequisite: confirm the $0-fee Connect configuration with Stripe, then counsel on marketplace terms.
+- #17 paid spectator tickets, #20 day-pass waivers, #21 trainer reviews: each waits on payments or counsel.
+- #18 Instagram embeds: needs a Meta app review. #22 federation membership verification: no partner API, watch only.
+
+**Kurt's set-up items still open** (each blocks something live)
+1. `CRON_SECRET` on Vercel, then redeploy and one test send: until then the reminder emails (#10) never fire.
+2. Vercel deployment retention (1 day preview / 7 days prod): Functions storage was at 75% of the Hobby limit on 11/9.
+3. Delete the Supabase `zerotacky-upgrade-test` project (`yqqdbokdjwrcwwdsntgw`); optional: drop the old v2 preview
+   URL from Supabase Auth redirects.
+4. admin@zerotacky.com forwarding in Namecheap, and one claim-approved email read in a real inbox on prod.
+5. Age / parent-account rule after counsel (terms say 13, sign-up has no date of birth).
+
+**Infrastructure still held**
+- Weekly archive refresh (GitHub Actions) needs a long-lived, scoped prod DB role; today the loader runs by hand.
+- M6 leftover: `/` is still the three-button splash (Scorer / Website / Join). Promote `/website` to `/` once the first
+  outside promoter has been through the site, so their feedback shapes the landing page.
+- iOS / Google Play: Capacitor shell around the scorer, Android first; nothing started.
+
+**Recommended next (one path).** Stop adding features for a week and run the site the way Jess will: a fresh account
+takes the gym invite, imports Power Plant's past shows, builds the next meet, opens registration, sends a broadcast,
+runs a dry meet day on two phones. Fix what snags, in the order it snags. In parallel Kurt clears set-up items 1 and 2
+(an hour, and both are live-affecting). Stripe (#5) starts the day a promoter asks to charge.
+
+
 Two tracks run at once. `main` stays the meet-day build for 10/24 and only takes the five sprint items plus bug fixes. A `v2` branch takes everything that needs accounts. They merge after the meet.
 
 ## 1. Branches and environments
@@ -105,6 +155,7 @@ Public athlete profiles at `/athletes/<username>`, listed at `/athletes`. This i
 4. **Shows on the profile**: upcoming = accepted `registrations` for this user whose meet date is ahead (meet name, date, division, link to `/shows/<slug>`); completed = meets where this user was on the roster and `results_status` is final, with placing when results are public. Needs a reliable athlete <-> user link: `registrations.user_id` exists; roster athletes created from a registration carry it through, hand-entered roster rows do not (a "claim my result" flow is the later fix). Only public-listed meets appear.
 5. **Promoter / gym owner cross-links**: if `is_promoter`, a "Shows I run" block from `meets.owner_id` (public-listed only); if `is_gym_owner`, "My gym" linking the claimed `gyms` rows. Both come from existing tables, no new columns.
 6. **Directory `/athletes`**: cards (avatar, display name, @username, location, badges, favorite lift), filter by state and role, search by name or username. ISR like `/gyms`. Trainer filter here is what becomes `/trainers`.
-7. **Privacy details to decide with Kurt before build**: whether PRs can be hidden separately from the rest, whether completed shows list placing or only participation, and whether a public profile may hide location to the state level.
+7. **Privacy details to decide with Kurt before build**: whether PRs can be hidden separately from the rest, whether completed shows list placing or only participation, and whether a public profile may hide location to the state level.
+
 
 **Built 10/21 evening on v2 (minimal cut, Kurt's calls: PRs not separately hideable, location shown as entered, shows-on-profile deferred).** `supabase/020_athlete_directory.sql` (staging applied, prod pending Astra): `profiles.username` (unique, `^[a-z0-9_]{3,30}$`, set only through `zt_set_username`, which lowercases, blocks reserved words, enforces the 30-day hold via `username_holds`), `profiles.is_public` (owner-updatable, check: public needs a username), `zt_username_available`, and the `zt_public_profiles` view (opted-in rows, public columns only, no email) as the only anon read path. Pages: `/athletes` (`AthletesBrowser`: search, state parsed from location, role filter) and `/athletes/<username>` (avatar, badges, location, home gym, favorite lift, PRs, socials) with a real 404; account page gets a Public profile section (username form + visibility switch, both save on their own). Nav and footer link, sitemap entries. 13 tests in `test/athletes.test.mjs`. Not built: items 4 and 5 (shows on the profile, promoter/gym cross-links; the public meets grant omits owner_id, so item 5 needs a view or RPC), home gym as a link to a `gyms` row, trainer filter as `/trainers`.

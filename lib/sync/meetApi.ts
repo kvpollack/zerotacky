@@ -49,7 +49,7 @@ export interface RemoteMeet {
 export interface MeetConfig { meet: AppState['meet']; divisions: AppState['divisions']; events: AppState['events']; updatedAt: string | null }
 
 // Public columns only (join_code and admin_pin are revoked from anon in the schema).
-const MEET_COLS = 'id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,competition_status,results_status,updated_at,theme,venue,federation,host_gym_id,sponsors,livestream_url';
+const MEET_COLS = 'id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,competition_status,results_status,updated_at,theme,venue,federation,host_gym_id,sponsors,livestream_url,division_format';
 
 export function latestServerAt(rows: { server_at?: string }[]): string | null {
   let m: string | null = null;

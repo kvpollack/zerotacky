@@ -353,9 +353,11 @@ export function toPublicRegistrationMeet(
       promoterContact: l.promoterContact,
     },
     promoterDisplayName,
+    ...(state.meet.divisionFormat ? { divisionFormat: state.meet.divisionFormat } : {}),
     divisions: state.divisions.map((d) => ({
       id: d.id,
       name: d.name,
+      ...(typeof d.weightCapKg === 'number' ? { weightCapKg: d.weightCapKg } : {}),
       targetWeights: state.events.map((e) => ({
         eventName: e.name,
         weight: typeof e.divisionWeights?.[d.id] === 'number' ? e.divisionWeights[d.id] : null,

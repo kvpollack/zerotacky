@@ -7,9 +7,10 @@ export interface MeetRow {
   join_code?: string; admin_pin: string | null; run_order_method: string; tiebreaker_rule: string;
   available_plates: number[]; collar_weight_per_pair: number; stations: { id: string; label: string; eventOrder?: string[] }[];
   is_demo: boolean;
+  division_format?: string | null;   // 054; absent/null = the promoter has not chosen
   updated_at?: string;   // server-side; set by zt_publish_meet, read by pullChanges as the config watermark
 }
-export interface DivisionRow { id: string; meet_id: string; name: string; flight: string; sort_order: number }
+export interface DivisionRow { id: string; meet_id: string; name: string; flight: string; sort_order: number; weight_cap_kg?: number | string | null }
 export interface EventRow {
   id: string; meet_id: string; event_number: number; name: string; scoring_type: string;
   time_cap_seconds: number; lanes: number; loading_points: number; weight_entry_mode: string;
@@ -52,11 +53,16 @@ export function meetToRow(meet: Meet, extra: PublishExtra): MeetRow {
     collar_weight_per_pair: meet.collarWeightPerPair,
     stations: extra.stations ?? meet.stations ?? [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }],
     is_demo: extra.isDemo ?? !!meet.isDemo,
+    ...(meet.divisionFormat ? { division_format: meet.divisionFormat } : {}),
   };
 }
 
 export function divisionToRow(d: Division, meetId: string = d.meetId): DivisionRow {
-  return { id: d.id, meet_id: meetId, name: d.name, flight: d.flight, sort_order: d.sortOrder };
+  return {
+    id: d.id, meet_id: meetId, name: d.name, flight: d.flight, sort_order: d.sortOrder,
+    // 054: only sent when the division carries a cap; an absent key lets the server keep the desk's value
+    ...(d.weightCapKg !== undefined ? { weight_cap_kg: d.weightCapKg } : {}),
+  };
 }
 
 export function eventToRow(e: EventDef, meetId: string = e.meetId): EventRow {
@@ -94,6 +100,7 @@ export function rowToMeet(row: MeetRow): Meet {
     collarWeightPerPair: Number(row.collar_weight_per_pair),
     slug: row.slug,
     isDemo: !!row.is_demo,
+    ...(row.division_format === 'weight_classes' || row.division_format === 'custom' ? { divisionFormat: row.division_format } : {}),
     ...(Array.isArray(row.stations) && row.stations.length > 0
       ? {
           stations: row.stations.map((st) => ({
@@ -108,7 +115,11 @@ export function rowToMeet(row: MeetRow): Meet {
 }
 
 export function rowToDivision(row: DivisionRow): Division {
-  return { id: row.id, meetId: row.meet_id, name: row.name, flight: row.flight, sortOrder: row.sort_order };
+  const cap = row.weight_cap_kg === null || row.weight_cap_kg === undefined ? null : Number(row.weight_cap_kg);
+  return {
+    id: row.id, meetId: row.meet_id, name: row.name, flight: row.flight, sortOrder: row.sort_order,
+    ...(cap !== null && Number.isFinite(cap) ? { weightCapKg: cap } : {}),
+  };
 }
 
 export function rowToEvent(row: EventRow): EventDef {

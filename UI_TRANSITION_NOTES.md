@@ -1206,3 +1206,87 @@ Checked: tsc clean, 717 pass (same count; the nine fixture-using files repointed
 internal and renaming it would churn saved device state; comments that cite Strongfest as the design case stay; the
 "Power Plant Volt" theme name stays (reads as a theme); `audits/*evidence.json` still hold the dry-run roster and are in
 the repo (`dumps/` is gitignored).
+
+## Which group fits me? (11/10, feature gaps #13 novice group picker)
+
+Kurt: lean into strongman being open to people from the barbell / gym crowd without alienating their gyms; his sister
+and her partner trained eight weeks from zero and had a great day. The picker is for them: no strongman numbers asked.
+`lib/website/groupPicker.ts` (pure): three gym numbers (deadlift, any overhead press, "heaviest thing you can pick up
+and walk with"), each event mapped to a lane from its name first, then its spec implement (bars by scoring type: a
+max-weight axle is a press, a reps axle is a deadlift), the division's weight compared to the lane number (per-hand
+weights doubled for carries, added-plate weights plus the empty implement). Bands: reps 0.75 / 0.9, max-weight opener
+0.7 / 0.85, carries 0.8 / 1.0. A division fits when nothing is over, is a stretch when one event is over by at most 10%,
+heavy otherwise, unrated when nothing could be compared (no weights, or no number for that lane). Ranking: fits first
+with the heaviest fit on top (a capable athlete is not sent to the lightest group), then stretches lightest first, then
+heavy, unrated last. Pulls, drags, time-only events and cells the promoter left empty are listed as not compared, never
+guessed. `divisionGenderTag` reads gendered names so the panel can filter (All / Women's / Men's; unnamed groups stay in
+every view). `parseLiftInput` takes "315", "140 kg", "140kg x 3"; `numbersFromPRs` seeds from profile PRs.
+
+Surface: `components/website/GroupPickerClient.tsx` on the show page above Events & Weights, upcoming and live shows
+with 2+ divisions (completed shows have standings to read). Collapsed by default ("Try it"); inputs with lb / kg,
+gender filter when names carry one, PR seeding when signed in; ranked cards with a Suggested / Fits / A stretch / Heavy
+for now / No weights tag, one plain sentence, event chips with the weight and verdict, "Register in <group>" carrying
+`?division=<id>` into registration (RegisterClient preselects a known id, falls back to the first). Step 1 of
+registration points back to the panel ("Not sure which one?"). Every sentence names the promoter as the one who places
+athletes. Catalina-style shows with experience classes and no weights read "No target weights published for this group.
+Ask the promoter, they can place you."
+
+Checked: tsc clean, 724 pass (7 new: lanes, Riverside demo lands in Group 4 with Group 5 heavy and the truck pull not
+compared, a stretch ranks above heavy, no numbers / no weights, per-hand and added-plate maths, parsing, gender tags).
+Browser (`shots/picker1.py`, `picker2.py`, `~/Downloads/zt_ui_1110/picker_*.png`): Riverside ranked and filtered,
+kg toggle, completed show hides the panel, Iron Harbor seeded the press from the staging profile's PR, men's filter
+changed the suggestion to Novice Men with the "closest" note, Register key preselected Novice Men in step 1, hint
+present. Staging deadline bumped for the probe and put back.
+
+Left on purpose: bodyweight is not asked (weight-class names are not parsed into limits; the gender filter covers the
+first-impression problem and the promoter covers the rest); no per-promoter band tuning; teams (054) will reuse the
+panel unchanged since the unit of comparison is still one athlete's numbers.
+
+### Addendum: division format gate (11/10 afternoon, migration 054)
+
+Kurt, same day: the helper is for non-traditional classes only. A promoter sets a meet up as either standard weight
+classes (kg) or custom groups / thresholds; a traditional show never sees "Which group fits me?".
+
+- **Schema (054).** `meets.division_format` text, null or `'weight_classes'` / `'custom'`, public column grant (046
+  pattern). Null = the promoter has not chosen, which is every meet before this migration. `zt_publish_meet` (024 body)
+  and `zt_save_meet_config` (007 body) write it (`coalesce(incoming, current)`, so a phone that sends none keeps the
+  server's choice); `zt_my_meets`, `zt_get_my_meet` (053 bodies) and `zt_public_meet_by_slug` (005 body) return it. The
+  same two writers now carry `divisions.weight_cap_kg` (045): the dashboard save writes the payload value (null clears),
+  the phone publish keeps the desk's cap when the payload has none. The teams migration is renumbered to 055.
+- **Model.** `Meet.divisionFormat?`, `Division.weightCapKg?` (`lib/types.ts`); `MeetRow.division_format`,
+  `DivisionRow.weight_cap_kg` with absent-stays-absent mapping both ways (`lib/sync/mapping.ts`); `normalizeState`
+  keeps both (it rebuilds Meet and Division from an explicit key list, which is where the first probe lost the save);
+  `PUBLIC_SHOW_MEET_COLS` and the scorer's `MEET_COLS` select it; `PublicShowSummary.divisionFormat`,
+  `PublicRegistrationMeet.divisionFormat` + `divisions[].weightCapKg`.
+- **Grouping style.** `resolveDivisionGroupingStyle(format, labels)`: weight_classes is Traditional whatever the names
+  say; custom can never read as Traditional (class-like names show as Mixed); null keeps the 11/5 inference.
+- **Gate.** `showsGroupPicker(show, eventCount)` in `lib/website/groupPicker.ts`: hidden for weight_classes, shown for
+  custom, and for an unset meet shown only when the names do not read as weight classes. Completed shows and shows
+  without events stay hidden as before. The /register step-1 hint follows `divisionFormat !== 'weight_classes'`.
+  Consequence for existing meets: a show like Iron Harbor (Novice / Open / LW / HW names) hides the helper until its
+  promoter picks Custom; the Riverside demo (Group 1..5) keeps it.
+- **Promoter UI.** Meet Details step: "Division format" key group, Standard weight classes (kg) vs Custom groups /
+  thresholds, one explanation line each, and a "Not set yet" note until chosen. Divisions step: when weight classes is
+  on, each line gets a kg cap (20..300, draft input committed on blur / Enter, blank = open class, out-of-range snaps
+  back) and the add placeholder says weight class; otherwise the placeholder reads "division or group".
+- **Tests** `test/groupPicker.test.mjs` +3 (gate matrix, mapping round-trips incl. PostgREST numeric strings and the
+  explicit-null clear, normalizeState); `test/fake_supabase.mjs` grant list + division_format. 727 pass, tsc clean.
+- **Probes** (`~/.aki/tmp/zt/shots/format1.py`, `format2.py`; screenshots `~/Downloads/zt_ui_1110/format_choice_*.png`,
+  `divisions_weight_classes.png`, `picker_custom_iron_harbor.png`, `register_weight_classes_no_hint.png`): unset Iron
+  Harbor = no picker, Traditional label, no hint; dashboard pick Standard + cap 105 on Open Men LW, save, reload =
+  both persisted, picker and hint gone; pick Custom, save = picker back, label Mixed, hint back (signed in, deadline
+  open). Typing "1" into the cap is refused, "105" sticks. Staging Iron Harbor left at `custom`, caps cleared,
+  deadline back to 2026-11-07.
+
+- **Standard tables (Kurt, same afternoon).** `lib/divisions/standardClasses.ts`: Strongman Corporation 2026 (kg-only
+  since 1/1/2026: women 57 / 64 / 73 / 82 / HW, men 80 / 90 / 105 / 120 / HW; masters tables differ and are not
+  offered) and IPF (women 47 / 52 / 57 / 63 / 69 / 76 / 84 / 84+, men 59 / 66 / 74 / 83 / 93 / 105 / 120 / 120+;
+  sub-junior / junior 43 / 53 not offered), both checked against the published pages on 11/10. Divisions step, weight
+  classes on: table select + Women / Men toggles + "Add N classes"; names already on the meet are skipped (case-
+  insensitive), heavyweight lands with no cap, every generated name carries a gender word the picker's filter reads.
+  `addDivision` accepts `weightCapKg`. 4 tests in `test/standardClasses.test.mjs`; 731 pass. Probe `shots/format3.py`,
+  screenshot `divisions_standard_quickadd.png` (men-only SC add, second tap disabled, IPF men then offers the 5 missing).
+
+Left on purpose: USS and other federations' tables are not bundled (promoters type their own caps); the
+format cannot be cleared back to unset from the dashboard (once chosen, it is one of the two); the weigh-in desk still
+owns cap edits on meet day (`zt_desk_division_cap`), the Divisions step is for setup.

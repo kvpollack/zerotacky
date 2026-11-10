@@ -12,6 +12,7 @@ import {
   type ResultRow,
 } from '../sync/mapping';
 import type {
+  DivisionFormat,
   DivisionGroupingStyle,
   PublicShowRecord,
   PublicShowSummary,
@@ -20,7 +21,7 @@ import type {
 
 export const PUBLIC_SHOW_MEET_COLS =
   'id,slug,name,date,run_order_method,tiebreaker_rule,available_plates,collar_weight_per_pair,stations,is_demo,updated_at,' +
-  'competition_status,registration_status,results_status,is_public_listed,venue,federation,entry_fee_display,registration_deadline,athlete_cap,promoter_contact,host_gym_id,theme,results_submitted_at,schedule,sponsors,livestream_url,imported_from';
+  'competition_status,registration_status,results_status,is_public_listed,venue,federation,entry_fee_display,registration_deadline,athlete_cap,promoter_contact,host_gym_id,theme,results_submitted_at,schedule,sponsors,livestream_url,imported_from,division_format';
 
 const FALLBACK_VENUE: ShowVenue = {
   city: 'Not provided',
@@ -49,6 +50,20 @@ export function inferDivisionGroupingStyle(divisionLabels: string[]): DivisionGr
   if (hasInclusive && !hasWeightClass) return 'inclusive_strength_groups';
   if (hasWeightClass && !hasInclusive) return 'traditional_weight_classes';
   return 'mixed';
+}
+
+// 054: the promoter's division format wins over the name-based guess. 'weight_classes' is traditional whatever the
+// names say; 'custom' can never read as traditional (a custom meet whose names look like classes shows as Mixed);
+// unset keeps the inference above.
+export function resolveDivisionGroupingStyle(format: DivisionFormat | null | undefined, divisionLabels: string[]): DivisionGroupingStyle {
+  if (format === 'weight_classes') return 'traditional_weight_classes';
+  const inferred = inferDivisionGroupingStyle(divisionLabels);
+  if (format === 'custom' && inferred === 'traditional_weight_classes') return 'mixed';
+  return inferred;
+}
+
+export function divisionFormatOf(row: { division_format?: string | null }): DivisionFormat | undefined {
+  return row.division_format === 'weight_classes' || row.division_format === 'custom' ? row.division_format : undefined;
 }
 
 // Strips parenthetical scoring suffixes (e.g. "12\" Log Clean & Press (For Reps)" -> "12\" Log Clean & Press")
@@ -93,7 +108,8 @@ export function mapMeetRowToPublicShowSummary(
     date: meetRow.date || 'Not provided',
     venue: normalizeVenue(listing.venue),
     federation: listing.federation ?? undefined,
-    divisionGroupingStyle: inferDivisionGroupingStyle(divisionLabels),
+    divisionGroupingStyle: resolveDivisionGroupingStyle(divisionFormatOf(meetRow), divisionLabels),
+    ...(divisionFormatOf(meetRow) ? { divisionFormat: divisionFormatOf(meetRow) } : {}),
     divisionLabels,
     implementTags: deriveImplementTags(events),
     competitionStatus: listing.competitionStatus,

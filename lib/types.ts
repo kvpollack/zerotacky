@@ -10,6 +10,10 @@ export type RoleLock = 'admin' | 'judge' | 'pitcrew' | 'spectator';
 export type RisingBarStatus = 'pending' | 'good' | 'pass' | 'fail';
 export type LoadingPoints = 0 | 1 | 2 | 4;
 export type WeightEntryMode = 'total' | 'per_hand';
+// 054 (11/10): how the promoter organises divisions. 'weight_classes' = standard bodyweight classes in kg (the weigh-in
+// desk uses Division.weightCapKg); 'custom' = strength groups, experience levels, anything else (the show page offers
+// "Which group fits me?"). Absent = not chosen yet; the public pages fall back to guessing from the division names.
+export type DivisionFormat = 'weight_classes' | 'custom';
 
 export interface Station {
   id: string;
@@ -32,6 +36,7 @@ export interface Meet {
   isDemo?: boolean;
   stations?: Station[];
   slug?: string;
+  divisionFormat?: DivisionFormat;
 }
 
 export interface Division {
@@ -40,6 +45,7 @@ export interface Division {
   name: string;
   flight: string; // Station id (e.g. 'A' | 'B'); station filter also uses 'ALL'
   sortOrder: number;
+  weightCapKg?: number | null;   // 045/054: bodyweight cap for a standard weight class (20..300 kg); null/absent = none
 }
 
 export interface Athlete {

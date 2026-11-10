@@ -125,7 +125,10 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
           return;
         }
         setMeet(res.data);
-        setDivisionId((cur) => cur || res.data?.divisions[0]?.id || '');
+        // ?division=<id> from the show page's group picker (gaps #13, 11/10) preselects; unknown ids fall back to the first.
+        const wanted = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('division') : null;
+        const preselect = wanted && res.data?.divisions.some((d) => d.id === wanted) ? wanted : '';
+        setDivisionId((cur) => cur || preselect || res.data?.divisions[0]?.id || '');
         setLoadState('ready');
       })
       .catch((err: unknown) => {
@@ -448,6 +451,11 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
 
                 <div className={`${CELL} col-span-full`}>
                   <Cap id="reg-division-label" as="span">Select division / strength group *</Cap>
+                  {meet.divisions.length > 1 && meet.divisionFormat !== 'weight_classes' && (
+                    <p className="text-[12px] text-ink-muted mt-0.5">
+                      Not sure which one? <Link href={`/shows/${meet.slug}#which-group`} className={textLink}>Which group fits me</Link> ranks them from three gym numbers. The promoter can move you later either way.
+                    </p>
+                  )}
                   <div role="radiogroup" aria-labelledby="reg-division-label" className="flex flex-col gap-2 mt-0.5">
                     {meet.divisions.map((div, index) => {
                       const selected = div.id === divisionId;

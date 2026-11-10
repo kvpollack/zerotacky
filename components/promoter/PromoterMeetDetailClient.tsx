@@ -248,11 +248,11 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
   const removeStation = (stationId: string) =>
     setWorkingState((prev) => (prev ? mbRemoveStation(prev, stationId) : prev));
 
-  const addDivision = (input: { id?: string; name: string; flight?: string }) =>
+  const addDivision = (input: { id?: string; name: string; flight?: string; weightCapKg?: number | null }) =>
     setWorkingState((prev) => (prev ? mbAddDivision(prev, input) : prev));
   const updateDivision = (
     divisionId: string,
-    patch: Partial<Pick<Division, 'name' | 'flight' | 'sortOrder'>>
+    patch: Partial<Pick<Division, 'name' | 'flight' | 'sortOrder' | 'weightCapKg'>>
   ) => setWorkingState((prev) => (prev ? mbUpdateDivision(prev, divisionId, patch) : prev));
   const removeDivision = (divisionId: string) =>
     setWorkingState((prev) => (prev ? mbRemoveDivision(prev, divisionId) : prev));

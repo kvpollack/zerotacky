@@ -6,6 +6,8 @@ import FollowShowButton from './FollowShowButton';
 import ClaimResultClient from './ClaimResultClient';
 import { Cap, Key, KeyButton, WebCell, keyClass, textLink } from './sheet';
 import SponsorStrip from './SponsorStrip';
+import GroupPickerClient from './GroupPickerClient';
+import { showsGroupPicker } from '@/lib/website/groupPicker';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import { formatShowDate } from '@/lib/website/showHistory';
 import { directionsUrl, eventWeightDisplay, formatLocalDateTime } from '@/lib/website/format';
@@ -392,6 +394,11 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
           top to bottom. Scrolls sideways on phones with the event column pinned. Implement specs and rising-bar
           progressions are footnotes under the table. */}
       <section aria-labelledby="events-weights-heading">
+        {/* Which group fits me? (gaps #13, 11/10): non-traditional divisions on upcoming shows only (054: the promoter's
+            division format decides; standard weight classes never see it). */}
+        {showsGroupPicker(show, sortedEvents.length) && (
+          <GroupPickerClient slug={show.slug} divisions={show.state.divisions} events={show.state.events} canRegister={canRegisterInApp} isDemoFixture={!!show.isDemoFixture} />
+        )}
         <div className="mb-2.5 flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0">
             <h2 id="events-weights-heading" className="text-[22px] font-bold leading-tight text-ink">

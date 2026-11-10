@@ -16,6 +16,7 @@ import RosterImport from './RosterImport';
 import type { RosterPlan } from '@/lib/roster/import';
 import { CAP, Field, Key, KeyGroup, Note, NumInput, Sec, Select, TextInput, Toast } from './parts';
 import { SETUP_SECTIONS, type SetupSectionId } from './scorerModel';
+import { STANDARD_CLASS_SETS, missingStandardClasses, standardClassDivisions, type StandardClassSetId } from '@/lib/divisions/standardClasses';
 
 const TYPE_LABELS: Record<string, string> = {
   reps: 'Reps',
@@ -32,6 +33,12 @@ const stationsOf = (meet: Meet): Station[] => (Array.isArray(meet.stations) && m
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 /** A list row: a real box (not display:contents) so drag code can measure it. Children get the sheet background. */
+// 054 (Kurt 11/10): the promoter says how divisions are organised; the public pages stop guessing from the names.
+const DIVISION_FORMAT_OPTIONS: ReadonlyArray<{ value: NonNullable<Meet['divisionFormat']>; label: string; explain: string }> = [
+  { value: 'weight_classes', label: 'Standard weight classes (kg)', explain: 'Divisions are bodyweight classes. Set a cap in kg on each one in the Divisions step; the weigh-in desk checks athletes against it. The show page shows the class list as is.' },
+  { value: 'custom', label: 'Custom groups / thresholds', explain: 'Strength groups, experience levels (novice, intermediate, open), or your own thresholds. The show page offers "Which group fits me?", which ranks your groups against three gym numbers a first-timer already knows.' },
+];
+
 function Line({ cols, className = '', children, style, ...rest }: React.HTMLAttributes<HTMLDivElement> & { cols: string }) {
   return (
     <div {...rest} className={`grid gap-px !bg-rule [&>*]:bg-sheet [&>*]:min-w-0 ${className}`} style={{ gridTemplateColumns: cols, ...(style ?? {}) }}>
@@ -76,8 +83,8 @@ export type MeetSetupSheetProps = {
   addStation: (s: { label: string }) => void;
   updateStation: (id: string, patch: { label?: string; eventOrder?: string[] | null }) => void;
   removeStation: (id: string) => void;
-  addDivision: (d: { name: string; flight: string }) => void;
-  updateDivision: (id: string, patch: { name?: string; flight?: string }) => void;
+  addDivision: (d: { name: string; flight: string; weightCapKg?: number | null }) => void;
+  updateDivision: (id: string, patch: { name?: string; flight?: string; weightCapKg?: number | null }) => void;
   removeDivision: (id: string) => void;
   reorderDivisions: (ids: string[]) => void;
   addEvent: (payload: unknown) => void;
@@ -233,6 +240,14 @@ function MeetDetails(props: MeetSetupSheetProps) {
           <NumInput min={0} step={0.5} value={meet.collarWeightPerPair} onChange={(v) => updateMeetConfig({ collarWeightPerPair: Number(v) || 0 })} />
         </Field>
         <div className="col-span-full px-2 py-1.5">
+          <span className={`block text-[9px] mb-1 ${CAP}`}>Division format</span>
+          <KeyGroup ariaLabel="Division format" options={DIVISION_FORMAT_OPTIONS} value={meet.divisionFormat ?? null} onChange={(v) => updateMeetConfig({ divisionFormat: v })} />
+          {!meet.divisionFormat && <Note className="text-ink">Not set yet. Until you pick one, the public show page guesses from the division names.</Note>}
+          {DIVISION_FORMAT_OPTIONS.map(({ value, label, explain }) => (
+            <Note key={value} className={meet.divisionFormat === value ? 'text-ink' : ''}><strong>{label}:</strong> {explain}</Note>
+          ))}
+        </div>
+        <div className="col-span-full px-2 py-1.5">
           <span className={`block text-[9px] mb-1 ${CAP}`}>Athlete run order</span>
           <KeyGroup ariaLabel="Athlete run order" options={RUN_ORDER_OPTIONS} value={meet.runOrderMethod} onChange={(v) => updateMeetConfig({ runOrderMethod: v as Meet['runOrderMethod'] })} />
           <Note>The first event on a station runs by lot number. The reverse methods take over once an earlier event on that station has results.</Note>
@@ -321,6 +336,16 @@ function Divisions(props: MeetSetupSheetProps) {
   const stationLabel = (id: string) => stations.find((s) => s.id === id)?.label ?? `Missing (${id})`;
   const [armedDeleteId, setArmedDeleteId] = useState<string | null>(null);
   const sortedDivisions = [...divisions].sort((a, b) => a.sortOrder - b.sortOrder);
+  const weightClasses = meet.divisionFormat === 'weight_classes';
+  // 054 quick-add: a federation table in one tap; classes already on the meet (by name) are skipped
+  const [stdSet, setStdSet] = useState<StandardClassSetId>('strongman_corp_2026');
+  const [stdSexes, setStdSexes] = useState<{ women: boolean; men: boolean }>({ women: true, men: true });
+  const stdWanted = standardClassDivisions(stdSet, stdSexes);
+  const stdMissing = missingStandardClasses(stdWanted, sortedDivisions.map((d) => d.name));
+  const handleAddStandard = () => {
+    const flight = stations[0]?.id ?? 'A';
+    for (const c of stdMissing) addDivision({ name: c.name, flight, weightCapKg: c.weightCapKg });
+  };
 
   const handleAddDivision = (e: React.FormEvent) => {
     e.preventDefault();
@@ -341,8 +366,9 @@ function Divisions(props: MeetSetupSheetProps) {
   return (
     <>
       <Sec right={`Stations are assigned in step ${stepNo(props, 'stations')}`}>{stepNo(props, 'divisions')}. Divisions ({sortedDivisions.length})</Sec>
+      {weightClasses && <Note className="!mt-0">Standard weight classes: the cap is the heaviest bodyweight allowed, in kg (20 to 300). Leave it blank for an open or unlimited class.</Note>}
       {sortedDivisions.length === 0 ? (
-        <Empty>No divisions yet. Add your first division or weight class below.</Empty>
+        <Empty>No divisions yet. Add your first {weightClasses ? 'weight class' : 'division or group'} below.</Empty>
       ) : (
         <div className="zt-block grid-cols-1">
           {sortedDivisions.map((div, idx) => {
@@ -353,10 +379,16 @@ function Divisions(props: MeetSetupSheetProps) {
             const isArmed = armedDeleteId === div.id;
             return (
               <React.Fragment key={div.id}>
-                <Line cols="28px 28px 1fr auto 36px">
+                <Line cols={weightClasses ? '28px 28px 1fr 88px auto 36px' : '28px 28px 1fr auto 36px'}>
                   <IconKey disabled={idx === 0} onClick={() => moveDivision(idx, -1)} aria-label={`Move ${div.name} up`}><ArrowUp className="w-3.5 h-3.5" /></IconKey>
                   <IconKey disabled={idx === sortedDivisions.length - 1} onClick={() => moveDivision(idx, 1)} aria-label={`Move ${div.name} down`}><ArrowDown className="w-3.5 h-3.5" /></IconKey>
                   <C><TextInput type="text" value={div.name} onChange={(e) => updateDivision(div.id, { name: e.target.value })} aria-label="Division name" className="!text-[13px]" /></C>
+                  {weightClasses && (
+                    <C className="gap-1" title="Bodyweight cap, kg">
+                      <CapInput value={div.weightCapKg ?? null} divisionName={div.name} onCommit={(n) => updateDivision(div.id, { weightCapKg: n })} />
+                      <span className={`${CAP} text-[10px]`}>kg</span>
+                    </C>
+                  )}
                   <C className="text-[10px] whitespace-nowrap flex-col !items-end justify-center leading-tight" title="Station (set in step 4)">
                     <span className={invalidStation ? 'text-redpen font-bold' : CAP}>{stationLabel(div.flight)}</span>
                     <span className={CAP}>{divAthletes.length} ath</span>
@@ -377,11 +409,52 @@ function Divisions(props: MeetSetupSheetProps) {
           })}
         </div>
       )}
+      {weightClasses && (
+        <div className="zt-block grid-cols-1" data-testid="standard-classes">
+          <Line cols="auto 1fr auto auto auto">
+            <C className={`${CAP} text-[10px] whitespace-nowrap`}>Standard table</C>
+            <C><Select value={stdSet} onChange={(e) => setStdSet(e.target.value as StandardClassSetId)} aria-label="Standard class table" className="!text-[12px]">
+              {STANDARD_CLASS_SETS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+            </Select></C>
+            <C><Key size="sm" variant={stdSexes.women ? 'pen' : 'line'} aria-pressed={stdSexes.women} onClick={() => setStdSexes((s) => ({ ...s, women: !s.women }))}>Women</Key></C>
+            <C><Key size="sm" variant={stdSexes.men ? 'pen' : 'line'} aria-pressed={stdSexes.men} onClick={() => setStdSexes((s) => ({ ...s, men: !s.men }))}>Men</Key></C>
+            <C><Key size="sm" variant="pen" disabled={stdMissing.length === 0} onClick={handleAddStandard}>+ Add {stdMissing.length} {stdMissing.length === 1 ? 'class' : 'classes'}</Key></C>
+          </Line>
+          <Line cols="1fr"><Note className="!mt-0 px-2">{STANDARD_CLASS_SETS.find((s) => s.id === stdSet)?.note} {stdWanted.length > 0 && stdMissing.length === 0 ? 'Every class in this table is already on the meet.' : 'Edit names or caps after adding; your own kg caps work the same way.'}</Note></Line>
+        </div>
+      )}
       <form onSubmit={handleAddDivision} className="grid grid-cols-[1fr_auto] gap-2">
-        <TextInput type="text" placeholder="New division name (e.g. Men's Open 105kg)..." value={newDivName} onChange={(e) => setNewDivName(e.target.value)} className="!border-2 !border-rule !min-h-[40px]" />
+        <TextInput type="text" placeholder={weightClasses ? "New weight class (e.g. Men's Open 105kg)..." : 'New division or group (e.g. Novice Women, Group 2)...'} value={newDivName} onChange={(e) => setNewDivName(e.target.value)} className="!border-2 !border-rule !min-h-[40px]" />
         <Key variant="pen" type="submit">+ Add</Key>
       </form>
     </>
+  );
+}
+
+// 054: bodyweight cap in kg, edited as a draft so "1" on the way to "105" is not refused; committed on blur / Enter.
+// Blank clears the cap; a value outside 20..300 (the 045 check constraint) snaps back to the last saved cap.
+function CapInput({ value, divisionName, onCommit }: { value: number | null; divisionName: string; onCommit: (n: number | null) => void }) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const commit = () => {
+    if (draft === null) return;
+    const t = draft.trim();
+    const n = t === '' ? null : Number(t);
+    if (n === null || (Number.isFinite(n) && n >= 20 && n <= 300)) onCommit(n);
+    setDraft(null);
+  };
+  return (
+    <NumInput
+      min={20}
+      max={300}
+      step={0.5}
+      value={draft ?? (value ?? '')}
+      placeholder="cap"
+      aria-label={`Bodyweight cap in kg for ${divisionName}`}
+      className="!text-center !text-[13px] !px-0"
+      onChange={(v) => setDraft(v)}
+      onBlur={commit}
+      onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+    />
   );
 }
 
