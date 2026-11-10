@@ -2,7 +2,7 @@
 // Matches `lib/promoter/fixtureApi.ts` behaviour and reuses its pure validation and allowlist helpers.
 
 import { profileLabel, type ProfilePatch } from '../auth/profile';
-import { normalizeState, slugify } from '../meetBuilder';
+import { divisionCapProblems, normalizeState, slugify } from '../meetBuilder';
 import { rowsToState, stateToRows } from '../sync/mapping';
 import type { AppState } from '../types';
 import {
@@ -445,6 +445,8 @@ export function createSupabasePromoterApi(
         if (!trimmedName) {
           return { data: null, error: 'Meet name cannot be empty.' };
         }
+        const capProblem = divisionCapProblems(state.divisions ?? [])[0];   // 056 (Astra GP-04)
+        if (capProblem) return { data: null, error: capProblem };
 
         const nextSlug = slugify(state.meet?.slug || trimmedName);
         const normalized = normalizeState(state);

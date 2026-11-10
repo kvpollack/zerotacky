@@ -816,8 +816,25 @@ export function moveLot(state: AppState, divisionId: string, athleteId: string, 
 
 // ---------- Validation ----------
 
+/** 056 (Astra GP-04): the bodyweight cap range the database enforces (045 check constraint), checked here first so a
+ *  restored or imported state gets a class-specific message instead of a raw constraint failure. */
+export const WEIGHT_CAP_KG_MIN = 20;
+export const WEIGHT_CAP_KG_MAX = 300;
+export function divisionCapProblems(divisions: Array<Pick<Division, 'name' | 'weightCapKg'>>): string[] {
+  const out: string[] = [];
+  for (const d of divisions) {
+    const cap = d.weightCapKg;
+    if (cap === undefined || cap === null) continue;
+    if (!Number.isFinite(cap) || cap < WEIGHT_CAP_KG_MIN || cap > WEIGHT_CAP_KG_MAX) {
+      out.push(`Bodyweight cap for ${d.name || 'a division'} must be between ${WEIGHT_CAP_KG_MIN} and ${WEIGHT_CAP_KG_MAX} kg (it is ${cap}).`);
+    }
+  }
+  return out;
+}
+
 export function validateMeet(state: AppState): { ok: boolean; problems: string[] } {
   const problems: string[] = [];
+  problems.push(...divisionCapProblems(state.divisions ?? []));
 
   if (!state.meet?.name || !state.meet.name.trim()) {
     problems.push('Meet name is required.');

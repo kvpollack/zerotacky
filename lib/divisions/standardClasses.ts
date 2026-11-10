@@ -56,8 +56,23 @@ export function standardClassDivisions(setId: StandardClassSetId, sexes: { women
   return out;
 }
 
-/** Drops classes whose name already exists on the meet (case-insensitive), so a second tap adds nothing twice. */
-export function missingStandardClasses(wanted: StandardClassDivision[], existingNames: string[]): StandardClassDivision[] {
-  const have = new Set(existingNames.map((n) => n.trim().toLowerCase()));
-  return wanted.filter((w) => !have.has(w.name.toLowerCase()));
+/** Drops classes the meet already has, so a second tap adds nothing twice. A class is "had" when a division carries the
+ *  same name (case-insensitive), or (Astra GP-06) the same gender and the same kg cap after the promoter renamed it; a
+ *  renamed heavyweight (no cap) matches a capless division of that gender whose name reads as open / heavyweight. */
+export function missingStandardClasses(
+  wanted: StandardClassDivision[],
+  existing: Array<string | { name: string; weightCapKg?: number | null }>,
+): StandardClassDivision[] {
+  const rows = existing.map((e) => (typeof e === 'string' ? { name: e, weightCapKg: null as number | null } : { name: e.name, weightCapKg: e.weightCapKg ?? null }));
+  const names = new Set(rows.map((r) => r.name.trim().toLowerCase()));
+  const sexOf = (name: string): ClassSex | null => (/\b(women|women's|womens|female|ladies|w)\b/i.test(name) ? 'women' : /\b(men|men's|mens|male|m)\b/i.test(name) ? 'men' : null);
+  return wanted.filter((w) => {
+    if (names.has(w.name.toLowerCase())) return false;
+    const sex = sexOf(w.name);
+    return !rows.some((r) => {
+      if (sexOf(r.name) !== sex) return false;
+      if (w.weightCapKg !== null) return r.weightCapKg !== null && Math.abs(r.weightCapKg - w.weightCapKg) < 0.01;
+      return r.weightCapKg === null && /heavy|\bhw\b|\bshw\b|open|unlimited|\+/i.test(r.name);
+    });
+  });
 }

@@ -467,7 +467,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
 
                 <div className={`${CELL} col-span-full`}>
                   <Cap id="reg-division-label" as="span">Select division / strength group *</Cap>
-                  {meet.divisions.length > 1 && meet.divisionFormat !== 'weight_classes' && (
+                  {meet.groupPickerShown && (
                     <p className="text-[12px] text-ink-muted mt-0.5">
                       Not sure which one? <Link href={`/shows/${meet.slug}#which-group`} className={textLink}>Which group fits me</Link> ranks them from three gym numbers. The promoter can move you later either way.
                     </p>

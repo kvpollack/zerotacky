@@ -37,3 +37,18 @@ describe('standard weight class tables (054 quick-add)', () => {
     for (const d of st.divisions) if (d.weightCapKg !== undefined) assert.ok(d.weightCapKg >= 20 && d.weightCapKg <= 300);
   });
 });
+
+describe('standard classes: Astra GP-06 (renamed class is still the same class)', () => {
+  test('a renamed capped class and a renamed heavyweight are not re-added; a capless Novice does not block the heavyweight', () => {
+    const men = S.standardClassDivisions('ipf', { women: false, men: true });
+    const missing = S.missingStandardClasses(men, [{ name: '105kg Men', weightCapKg: 105 }, { name: 'Men Open', weightCapKg: null }, { name: 'Novice Men', weightCapKg: null }]);
+    assert.ok(!missing.some((d) => d.weightCapKg === 105), 'renamed 105 matched by gender + cap');
+    assert.ok(!missing.some((d) => d.weightCapKg === null), 'renamed heavyweight matched by gender + open name');
+    assert.equal(missing.length, 6);
+    // a women's 105 does not satisfy the men's 105; a capless novice alone does not stand in for the heavyweight
+    const m2 = S.missingStandardClasses(men, [{ name: 'Women 105kg', weightCapKg: 105 }, { name: 'Novice Men', weightCapKg: null }]);
+    assert.equal(m2.length, 8);
+    // plain strings still work (name match only, no caps known)
+    assert.equal(S.missingStandardClasses(men, ['men 120kg']).length, 7);
+  });
+});

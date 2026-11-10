@@ -43,24 +43,10 @@ export function normalizeVenue(venue: ShowVenue | null | undefined): ShowVenue {
   };
 }
 
-export function inferDivisionGroupingStyle(divisionLabels: string[]): DivisionGroupingStyle {
-  if (divisionLabels.length === 0) return 'mixed';
-  const hasInclusive = divisionLabels.some((n) => /\b(group|tier)\s*\d+/i.test(n));
-  const hasWeightClass = divisionLabels.some((n) => /\b(\d+\s*(kg|lb|lbs)|heavyweight|middleweight|lightweight|novice|open|masters)\b/i.test(n));
-  if (hasInclusive && !hasWeightClass) return 'inclusive_strength_groups';
-  if (hasWeightClass && !hasInclusive) return 'traditional_weight_classes';
-  return 'mixed';
-}
-
-// 054: the promoter's division format wins over the name-based guess. 'weight_classes' is traditional whatever the
-// names say; 'custom' can never read as traditional (a custom meet whose names look like classes shows as Mixed);
-// unset keeps the inference above.
-export function resolveDivisionGroupingStyle(format: DivisionFormat | null | undefined, divisionLabels: string[]): DivisionGroupingStyle {
-  if (format === 'weight_classes') return 'traditional_weight_classes';
-  const inferred = inferDivisionGroupingStyle(divisionLabels);
-  if (format === 'custom' && inferred === 'traditional_weight_classes') return 'mixed';
-  return inferred;
-}
+// 056: inferDivisionGroupingStyle / resolveDivisionGroupingStyle live in ./groupPicker (pure) so the registration
+// projection in lib/promoter/rules.ts can share the gate without importing this module; re-exported for existing callers.
+import { inferDivisionGroupingStyle, resolveDivisionGroupingStyle } from './groupPicker';
+export { inferDivisionGroupingStyle, resolveDivisionGroupingStyle };
 
 export function divisionFormatOf(row: { division_format?: string | null }): DivisionFormat | undefined {
   return row.division_format === 'weight_classes' || row.division_format === 'custom' ? row.division_format : undefined;

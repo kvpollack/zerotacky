@@ -69,6 +69,9 @@ const PULL_IMPLEMENTS = new Set(['truck_pull', 'arm_over_arm']);
 export function eventLane(ev: Pick<EventDef, 'name' | 'spec' | 'scoringType'>): Lane {
   const name = ev.name.toLowerCase();
   const implement = normalizeEventSpec(ev.spec)?.implement;
+  // Astra GP-07 / GP-09: holds, throws, tosses, pushes (not a push press) and bench / chest / floor presses are not a
+  // deadlift, an overhead press or a carry; they stay unrated rather than being compared to an unrelated gym number.
+  if (/\bhold\b|throw|toss|\bpush(?!\s*press)\b|bench|chest|floor press|incline/.test(name)) return 'unknown';
   if (/deadlift|\bdl\b|pull[- ]?through/.test(name) && !/truck|sled|arm/.test(name)) return 'deadlift';
   if (/press|clean|overhead|jerk|\bohp\b|viking|log\b|circus|dumbbell/.test(name)) return 'overhead';
   if (/truck|sled|arm[- ]over|drag|harness|rope/.test(name)) return 'pull';
@@ -99,9 +102,11 @@ function grade(ev: EventDef, lane: Lane, ratio: number): Verdict {
 export function divisionWeightLb(ev: EventDef, divisionId: string, lane: Lane): number | null {
   const w = ev.divisionWeights?.[divisionId];
   if (typeof w !== 'number' || w <= 0) return null;
-  if (ev.weightIsAddedPlatesOnly) return w + (ev.implementEmptyWeight || 0);
-  if (ev.weightEntryMode === 'per_hand' && lane === 'carry') return w * 2;
-  return w;
+  // Astra GP-11: the empty implement is added first, then a per-hand carry is doubled (both apply at once for farmers
+  // handles loaded with plates), matching the scorer's plate maths.
+  let total = ev.weightIsAddedPlatesOnly ? w + (ev.implementEmptyWeight || 0) : w;
+  if (ev.weightEntryMode === 'per_hand' && lane === 'carry') total *= 2;
+  return total;
 }
 
 export function gradeEvent(ev: EventDef, division: Division, nums: PickerNumbers): EventVerdict {
@@ -127,8 +132,10 @@ function fitLine(fit: Fit, events: EventVerdict[], graded: number): string {
   }
   const parts: string[] = [];
   if (fit === 'fits') parts.push(reach.length ? `${list(reach)} ${reach.length === 1 ? 'is' : 'are'} the ${reach.length === 1 ? 'one' : 'ones'} to work on; the rest is comfortable` : 'Every compared weight is comfortable');
-  if (fit === 'stretch') parts.push(`${list(heavy)} ${heavy.length === 1 ? 'is' : 'are'} over your number${reach.length ? `, ${list(reach)} close` : ''}`);
-  if (fit === 'heavy') parts.push(`${list(heavy)} ${heavy.length === 1 ? 'is' : 'are'} well over your numbers`);
+  // Astra GP-10: "above the band" is what was measured (the band sits under 1.0, so a weight can be above it and still
+  // under the athlete's number).
+  if (fit === 'stretch') parts.push(`${list(heavy)} ${heavy.length === 1 ? 'is' : 'are'} above your comparison band${reach.length ? `, ${list(reach)} close to it` : ''}`);
+  if (fit === 'heavy') parts.push(`${list(heavy)} ${heavy.length === 1 ? 'is' : 'are'} above your comparison band`);
   if (graded < events.length) {
     const rest = events.length - graded;
     parts.push(`${rest} event${rest === 1 ? '' : 's'} not compared (${list([...noWeight, ...unknown, ...events.filter((e) => e.lane === 'unknown' || e.lane === 'pull').map((e) => e.name)].filter((v, i, a) => a.indexOf(v) === i))})`);
@@ -181,9 +188,11 @@ export function pickGroups(divisions: Division[], events: EventDef[], nums: Pick
   else {
     const top = ranked[0];
     recommendedId = top.divisionId;
+    const rated = ranked.filter((f) => f.fit !== 'unrated').length;
+    const unratedNote = rated < ranked.length ? ` ${ranked.length - rated} group${ranked.length - rated === 1 ? ' has' : 's have'} no weights to compare and ${ranked.length - rated === 1 ? 'is' : 'are'} listed last, unranked.` : '';
     note = top.fit === 'fits'
-      ? `${top.name} is the heaviest group where every compared weight is inside your numbers.`
-      : `No group clears every weight; ${top.name} is the closest. Promoters expect this and will place you.`;
+      ? `${top.name} is the heaviest group where every compared weight is inside your comparison band.${unratedNote}`
+      : `No group clears every compared weight; ${top.name} is the closest of the ${rated} rated.${unratedNote} Promoters expect this and will place you.`;
   }
   return { divisions: ranked, recommendedId, note };
 }
@@ -195,7 +204,25 @@ export function parseLiftInput(text: string, unit: Unit): number | null {
   const n = Number(m[1]);
   if (!Number.isFinite(n) || n <= 0) return null;
   const isKg = /kg|kilo/i.test(text) || (unit === 'kg' && !/lb|pound/i.test(text));
-  return Math.round(isKg ? n * 2.20462 : n);
+  return Math.round(isKg ? n * LB_PER_KG : n);
+}
+
+const LB_PER_KG = 2.20462;
+
+/** Astra GP-08: the three inputs are typed in the toggle's unit, so flipping the toggle converts what is on screen and
+ *  the athlete's strength stays the same. Text with its own unit ("140 kg") is left alone: parseLiftInput reads it. */
+export function convertDisplayUnit(text: string, from: Unit, to: Unit): string {
+  if (from === to) return text;
+  const t = text.trim();
+  if (!t || /kg|kilo|lb|pound/i.test(t) || !/^\d+(\.\d+)?$/.test(t)) return text;
+  const n = Number(t);
+  return String(to === 'kg' ? Math.round(n / LB_PER_KG) : Math.round(n * LB_PER_KG));
+}
+
+/** A pounds value as the input should show it in the given unit (Astra GP-09: PR seeds are canonical pounds). */
+export function lbToDisplay(lb: number | null, unit: Unit): string {
+  if (lb === null || !Number.isFinite(lb) || lb <= 0) return '';
+  return String(unit === 'kg' ? Math.round(lb / LB_PER_KG) : Math.round(lb));
 }
 
 /** Seed the three inputs from profile PRs ("Log press" / "315 lb"): one per lane, first match wins. */
@@ -220,6 +247,25 @@ export function divisionGenderTag(name: string): 'women' | 'men' | null {
   return null;
 }
 
+export function inferDivisionGroupingStyle(divisionLabels: string[]): DivisionGroupingStyle {
+  if (divisionLabels.length === 0) return 'mixed';
+  const hasInclusive = divisionLabels.some((n) => /\b(group|tier)\s*\d+/i.test(n));
+  const hasWeightClass = divisionLabels.some((n) => /\b(\d+\s*(kg|lb|lbs)|heavyweight|middleweight|lightweight|novice|open|masters)\b/i.test(n));
+  if (hasInclusive && !hasWeightClass) return 'inclusive_strength_groups';
+  if (hasWeightClass && !hasInclusive) return 'traditional_weight_classes';
+  return 'mixed';
+}
+
+// 054: the promoter's division format wins over the name-based guess. 'weight_classes' is traditional whatever the
+// names say; 'custom' can never read as traditional (a custom meet whose names look like classes shows as Mixed);
+// unset keeps the inference above.
+export function resolveDivisionGroupingStyle(format: DivisionFormat | null | undefined, divisionLabels: string[]): DivisionGroupingStyle {
+  if (format === 'weight_classes') return 'traditional_weight_classes';
+  const inferred = inferDivisionGroupingStyle(divisionLabels);
+  if (format === 'custom' && inferred === 'traditional_weight_classes') return 'mixed';
+  return inferred;
+}
+
 /** 054 (Kurt 11/10): the helper is for non-traditional classes only. The promoter's division format decides; a meet that
  *  never chose falls back to the name-based grouping style and hides the helper when the names read as weight classes.
  *  Completed shows have standings to read instead, and the helper has nothing to compare without events. */
@@ -233,5 +279,5 @@ export function showsGroupPicker(
   return show.divisionGroupingStyle !== 'traditional_weight_classes';
 }
 
-export const VERDICT_LABELS: Record<Verdict, string> = { clear: 'Comfortable', reach: 'Within reach', heavy: 'Over', unrated: 'Not compared' };
+export const VERDICT_LABELS: Record<Verdict, string> = { clear: 'Comfortable', reach: 'Within reach', heavy: 'Above band', unrated: 'Not compared' };
 export const FIT_LABELS: Record<Fit, string> = { fits: 'Fits', stretch: 'A stretch', heavy: 'Heavy for now', unrated: 'No weights' };

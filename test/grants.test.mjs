@@ -5,7 +5,7 @@ const C = await import(`${ROOT}/client.ts`);
 const K = await import(`${ROOT}/controller.ts`);
 const P = await import(process.env.ZT_PRESETS || '../lib/presets/index.ts');
 const { getGroupsSeedState } = await import('./fixtures/groupsSeed.ts');
-import { fakeServer } from './fake_supabase.mjs';
+import { fakeServer, PUBLIC_MEET_COLS } from './fake_supabase.mjs';
 
 // 011 (Astra R-H1, 2026-10-19): the join code lets a phone read and follow a meet; writing scores needs the grant a
 // correct PIN issues. These tests run the real client + controller against the fake server's stand-in for the 011 RLS.
@@ -148,5 +148,22 @@ describe('025: athlete writes need a grant; rack pins by join code', () => {
     await joined.ctl.tick().catch(() => {});
     assert.equal(srv.db.athletes.find((a) => a.id === ath).rack_heights[ev], undefined);
     assert.equal(joined.ctl.status.pending, 1, 'kept for the retry after the code is re-entered');
+  });
+});
+
+// Astra GP-05 (11/10): the fake's allowlist is the staging anon grant on meets, exactly; the two real public selects must
+// fit inside it, or the fake would refuse a query production allows (or allow one it refuses).
+describe('public meet column grant (fake vs real selects)', () => {
+  const STAGING_ANON_MEETS_GRANT_2026_11_10 = 'athlete_cap,available_plates,collar_weight_per_pair,competition_status,created_at,date,division_format,entry_fee_display,federation,host_gym_id,id,imported_from,imported_slug,is_demo,is_public_listed,livestream_url,name,promoter_contact,registration_deadline,registration_status,results_status,results_submitted_at,run_order_method,schedule,slug,sponsors,stations,theme,tiebreaker_rule,updated_at,venue'.split(',');
+  test('the fake allowlist equals the staging grant read on 2026-11-10', () => {
+    assert.deepEqual([...PUBLIC_MEET_COLS].sort(), [...STAGING_ANON_MEETS_GRANT_2026_11_10].sort());
+  });
+  test('PUBLIC_SHOW_MEET_COLS and the scorer MEET_COLS are inside the grant', async () => {
+    const S = await import('../lib/website/supabaseShows.ts');
+    const src = await import('node:fs').then((fs) => fs.readFileSync(new URL('../lib/sync/meetApi.ts', import.meta.url), 'utf8'));
+    const meetCols = /const MEET_COLS = '([^']+)'/.exec(src)[1].split(',');
+    for (const c of S.PUBLIC_SHOW_MEET_COLS.split(',')) assert.ok(PUBLIC_MEET_COLS.includes(c), `public show select names ungranted column ${c}`);
+    for (const c of meetCols) assert.ok(PUBLIC_MEET_COLS.includes(c), `scorer meet select names ungranted column ${c}`);
+    assert.ok(!PUBLIC_MEET_COLS.includes('staff') && !PUBLIC_MEET_COLS.includes('admin_pin') && !PUBLIC_MEET_COLS.includes('join_code') && !PUBLIC_MEET_COLS.includes('owner_id'));
   });
 });

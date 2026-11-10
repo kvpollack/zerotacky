@@ -34,6 +34,8 @@ const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 /** A list row: a real box (not display:contents) so drag code can measure it. Children get the sheet background. */
 // 054 (Kurt 11/10): the promoter says how divisions are organised; the public pages stop guessing from the names.
+// 056: shown on a phone linked to a published meet (see MeetSetupSheetProps.serverConfig).
+const SERVER_CONFIG_NOTE = 'This meet is published. Division format, kg caps and team size are set in the promoter dashboard (caps also at the weigh-in desk); the phone shows them but publishing from here does not change them.';
 const DIVISION_FORMAT_OPTIONS: ReadonlyArray<{ value: NonNullable<Meet['divisionFormat']>; label: string; explain: string }> = [
   { value: 'weight_classes', label: 'Standard weight classes (kg)', explain: 'Divisions are bodyweight classes. Set a cap in kg on each one in the Divisions step; the weigh-in desk checks athletes against it. The show page shows the class list as is.' },
   { value: 'custom', label: 'Custom groups / thresholds', explain: 'Strength groups, experience levels (novice, intermediate, open), or your own thresholds. The show page offers "Which group fits me?", which ranks your groups against three gym numbers a first-timer already knows.' },
@@ -85,6 +87,9 @@ export type MeetSetupSheetProps = {
   removeStation: (id: string) => void;
   addDivision: (d: { name: string; flight: string; weightCapKg?: number | null }) => void;
   updateDivision: (id: string, patch: { name?: string; flight?: string; weightCapKg?: number | null; teamSize?: number }) => void;
+  /** 056 (Astra GP-01 / GP-03): on a phone linked to a published meet, division format, kg caps and team size are shown
+   *  but not editable; the server keeps its own values on publish. The promoter dashboard and the weigh-in desk write them. */
+  serverConfig?: boolean;
   removeDivision: (id: string) => void;
   reorderDivisions: (ids: string[]) => void;
   addEvent: (payload: unknown) => void;
@@ -241,7 +246,10 @@ function MeetDetails(props: MeetSetupSheetProps) {
         </Field>
         <div className="col-span-full px-2 py-1.5">
           <span className={`block text-[9px] mb-1 ${CAP}`}>Division format</span>
-          <KeyGroup ariaLabel="Division format" options={DIVISION_FORMAT_OPTIONS} value={meet.divisionFormat ?? null} onChange={(v) => updateMeetConfig({ divisionFormat: v })} />
+          <fieldset disabled={props.serverConfig} className="min-w-0 disabled:opacity-60">
+            <KeyGroup ariaLabel="Division format" options={DIVISION_FORMAT_OPTIONS} value={meet.divisionFormat ?? null} onChange={(v) => updateMeetConfig({ divisionFormat: v })} />
+          </fieldset>
+          {props.serverConfig && <Note className="text-ink">{SERVER_CONFIG_NOTE}</Note>}
           {!meet.divisionFormat && <Note className="text-ink">Not set yet. Until you pick one, the public show page guesses from the division names.</Note>}
           {DIVISION_FORMAT_OPTIONS.map(({ value, label, explain }) => (
             <Note key={value} className={meet.divisionFormat === value ? 'text-ink' : ''}><strong>{label}:</strong> {explain}</Note>
@@ -341,7 +349,7 @@ function Divisions(props: MeetSetupSheetProps) {
   const [stdSet, setStdSet] = useState<StandardClassSetId>('strongman_corp_2026');
   const [stdSexes, setStdSexes] = useState<{ women: boolean; men: boolean }>({ women: true, men: true });
   const stdWanted = standardClassDivisions(stdSet, stdSexes);
-  const stdMissing = missingStandardClasses(stdWanted, sortedDivisions.map((d) => d.name));
+  const stdMissing = missingStandardClasses(stdWanted, sortedDivisions.map((d) => ({ name: d.name, weightCapKg: d.weightCapKg ?? null })));
   const handleAddStandard = () => {
     const flight = stations[0]?.id ?? 'A';
     for (const c of stdMissing) addDivision({ name: c.name, flight, weightCapKg: c.weightCapKg });
@@ -367,6 +375,7 @@ function Divisions(props: MeetSetupSheetProps) {
     <>
       <Sec right={`Stations are assigned in step ${stepNo(props, 'stations')}`}>{stepNo(props, 'divisions')}. Divisions ({sortedDivisions.length})</Sec>
       {weightClasses && <Note className="!mt-0">Standard weight classes: the cap is the heaviest bodyweight allowed, in kg (20 to 300). Leave it blank for an open or unlimited class.</Note>}
+      {props.serverConfig && <Note className="!mt-0 text-ink">{SERVER_CONFIG_NOTE}</Note>}
       {sortedDivisions.some((d) => (d.teamSize ?? 1) > 1) && <Note className="!mt-0">Team divisions: each teammate registers and pays on their own, then they form the team (start one, join by code, or get matched). The team scores as one athlete.</Note>}
       {sortedDivisions.length === 0 ? (
         <Empty>No divisions yet. Add your first {weightClasses ? 'weight class' : 'division or group'} below.</Empty>
@@ -386,12 +395,12 @@ function Divisions(props: MeetSetupSheetProps) {
                   <C><TextInput type="text" value={div.name} onChange={(e) => updateDivision(div.id, { name: e.target.value })} aria-label="Division name" className="!text-[13px]" /></C>
                   {weightClasses && (
                     <C className="gap-1" title="Bodyweight cap, kg">
-                      <CapInput value={div.weightCapKg ?? null} divisionName={div.name} onCommit={(n) => updateDivision(div.id, { weightCapKg: n })} />
+                      <CapInput value={div.weightCapKg ?? null} divisionName={div.name} disabled={props.serverConfig} onCommit={(n) => updateDivision(div.id, { weightCapKg: n })} />
                       <span className={`${CAP} text-[10px]`}>kg</span>
                     </C>
                   )}
                   <C title="Individual athletes, or a team that registers one by one and scores as one">
-                    <Select value={String(div.teamSize ?? 1)} onChange={(e) => updateDivision(div.id, { teamSize: Number(e.target.value) })} aria-label={`Team size for ${div.name}`} className="!text-[12px]" data-testid="team-size">
+                    <Select value={String(div.teamSize ?? 1)} disabled={props.serverConfig} onChange={(e) => updateDivision(div.id, { teamSize: Number(e.target.value) })} aria-label={`Team size for ${div.name}`} className="!text-[12px]" data-testid="team-size">
                       <option value="1">Individual</option>
                       {[2, 3, 4, 5, 6].map((n) => <option key={n} value={String(n)}>Team of {n}</option>)}
                     </Select>
@@ -440,7 +449,7 @@ function Divisions(props: MeetSetupSheetProps) {
 
 // 054: bodyweight cap in kg, edited as a draft so "1" on the way to "105" is not refused; committed on blur / Enter.
 // Blank clears the cap; a value outside 20..300 (the 045 check constraint) snaps back to the last saved cap.
-function CapInput({ value, divisionName, onCommit }: { value: number | null; divisionName: string; onCommit: (n: number | null) => void }) {
+function CapInput({ value, divisionName, disabled, onCommit }: { value: number | null; divisionName: string; disabled?: boolean; onCommit: (n: number | null) => void }) {
   const [draft, setDraft] = useState<string | null>(null);
   const commit = () => {
     if (draft === null) return;
@@ -454,6 +463,7 @@ function CapInput({ value, divisionName, onCommit }: { value: number | null; div
       min={20}
       max={300}
       step={0.5}
+      disabled={disabled}
       value={draft ?? (value ?? '')}
       placeholder="cap"
       aria-label={`Bodyweight cap in kg for ${divisionName}`}

@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth/useAuth';
 import type { Division, EventDef } from '@/lib/types';
 import {
-  FIT_LABELS, LANE_LABELS, VERDICT_LABELS, divisionGenderTag, numbersFromPRs, parseLiftInput, pickGroups,
+  FIT_LABELS, LANE_LABELS, VERDICT_LABELS, convertDisplayUnit, divisionGenderTag, lbToDisplay, numbersFromPRs, parseLiftInput, pickGroups,
   type DivisionFit, type PickerNumbers, type Unit,
 } from '@/lib/website/groupPicker';
 import { Cap, Key, KeyButton, WebCell } from './sheet';
@@ -31,16 +31,28 @@ export default function GroupPickerClient({ slug, divisions, events, canRegister
   const gendered = useMemo(() => divisions.some((d) => divisionGenderTag(d.name) !== null), [divisions]);
   const scoped = useMemo(() => gender === 'all' || !gendered ? divisions : divisions.filter((d) => { const t = divisionGenderTag(d.name); return t === null || t === gender; }), [divisions, gender, gendered]);
 
+  // Astra GP-09: PR seeds are pounds; they are shown in whatever unit the toggle holds when they arrive.
   useEffect(() => {
     if (seeded || !auth.profile?.prs?.length) return;
     const n = numbersFromPRs(auth.profile.prs);
     setText((cur) => ({
-      deadlift: cur.deadlift || (n.deadlift ? String(n.deadlift) : ''),
-      overhead: cur.overhead || (n.overhead ? String(n.overhead) : ''),
-      carry: cur.carry || (n.carry ? String(n.carry) : ''),
+      deadlift: cur.deadlift || lbToDisplay(n.deadlift, unit),
+      overhead: cur.overhead || lbToDisplay(n.overhead, unit),
+      carry: cur.carry || lbToDisplay(n.carry, unit),
     }));
     setSeeded(true);
-  }, [auth.profile, seeded]);
+  }, [auth.profile, seeded, unit]);
+
+  // Astra GP-08: switching lb / kg converts what is on screen so the athlete's numbers keep their meaning.
+  const switchUnit = (next: Unit) => {
+    if (next === unit) return;
+    setText((cur) => ({
+      deadlift: convertDisplayUnit(cur.deadlift, unit, next),
+      overhead: convertDisplayUnit(cur.overhead, unit, next),
+      carry: convertDisplayUnit(cur.carry, unit, next),
+    }));
+    setUnit(next);
+  };
 
   const numbers = useMemo<PickerNumbers>(() => ({
     deadlift: parseLiftInput(text.deadlift, unit),
@@ -75,12 +87,7 @@ export default function GroupPickerClient({ slug, divisions, events, canRegister
             <form className="flex flex-col gap-3" onSubmit={(e) => e.preventDefault()} aria-label="Your numbers">
               <div className="flex items-center justify-between">
                 <Cap as="span">Your numbers</Cap>
-                <div role="radiogroup" aria-label="Unit" className="flex border-2 border-rule">
-                  {(['lb', 'kg'] as Unit[]).map((u) => (
-                    <button key={u} type="button" role="radio" aria-checked={unit === u} onClick={() => setUnit(u)}
-                      className={`px-3 min-h-8 text-[12px] font-bold uppercase ${unit === u ? 'bg-ink text-sheet' : 'text-ink hover:bg-ground'}`}>{u}</button>
-                  ))}
-                </div>
+                <SegmentedRadio ariaLabel="Unit" options={[['lb', 'lb'], ['kg', 'kg']]} value={unit} onChange={(v) => switchUnit(v as Unit)} uppercase />
               </div>
               <NumberField id="gp-deadlift" label="Deadlift" hint="Any bar, a single heavy rep" value={text.deadlift} unit={unit} onChange={(v) => setText((c) => ({ ...c, deadlift: v }))} />
               <NumberField id="gp-overhead" label="Overhead press" hint="Barbell, dumbbell or log, one rep" value={text.overhead} unit={unit} onChange={(v) => setText((c) => ({ ...c, overhead: v }))} />
@@ -88,12 +95,7 @@ export default function GroupPickerClient({ slug, divisions, events, canRegister
               {gendered && (
                 <div className="flex flex-col gap-1">
                   <Cap as="span" id="gp-gender-label">Groups to rank</Cap>
-                  <div role="radiogroup" aria-labelledby="gp-gender-label" className="flex border-2 border-rule w-fit">
-                    {([['all', 'All'], ['women', "Women's"], ['men', "Men's"]] as const).map(([v, label]) => (
-                      <button key={v} type="button" role="radio" aria-checked={gender === v} onClick={() => setGender(v)}
-                        className={`px-3 min-h-8 text-[12px] font-bold ${gender === v ? 'bg-ink text-sheet' : 'text-ink hover:bg-ground'}`}>{label}</button>
-                    ))}
-                  </div>
+                  <SegmentedRadio labelledBy="gp-gender-label" options={[['all', 'All'], ['women', "Women's"], ['men', "Men's"]]} value={gender} onChange={(v) => setGender(v as 'all' | 'women' | 'men')} />
                   <span className="text-[12px] text-ink-muted">Groups that do not name a gender stay in every view.</span>
                 </div>
               )}
@@ -113,15 +115,47 @@ export default function GroupPickerClient({ slug, divisions, events, canRegister
                 </button>
               )}
               <p className="mt-4 text-[12px] text-ink-muted">
-                Comfortable means the group weight is well under your number; Within reach means it is close to it; Over
-                means it is past it. Events scored on time or distance, pulls and drags, and anything the promoter left
-                without a weight are not compared.
+                Each published weight is compared to your number for that kind of lift. Comfortable means it is well
+                under (roughly three quarters or less); Within reach means it is closer to your number; Above band means
+                it is near or past it, and the group is a stretch or heavy for now. Events that are timed or measured
+                for distance are compared by their published implement weight, not by the time. Pulls and drags, holds,
+                throws, bench presses and anything the promoter left without a weight are not compared.
               </p>
             </div>
           </div>
         )}
       </WebCell>
     </section>
+  );
+}
+
+// Astra GP-12: a segmented control that behaves like a native radio group: one tab stop (the checked option), arrow keys
+// and Home / End move the selection, Space selects the focused option.
+function SegmentedRadio({ options, value, onChange, ariaLabel, labelledBy, uppercase }: {
+  options: ReadonlyArray<readonly [string, string]>; value: string; onChange: (v: string) => void; ariaLabel?: string; labelledBy?: string; uppercase?: boolean;
+}) {
+  const refs = useRef<Array<HTMLButtonElement | null>>([]);
+  const select = (i: number) => { onChange(options[i][0]); refs.current[i]?.focus(); };
+  const onKeyDown = (e: React.KeyboardEvent, i: number) => {
+    const n = options.length;
+    let next: number | null = null;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (i + 1) % n;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (i - 1 + n) % n;
+    if (e.key === 'Home') next = 0;
+    if (e.key === 'End') next = n - 1;
+    if (e.key === ' ') next = i;
+    if (next === null) return;
+    e.preventDefault();
+    select(next);
+  };
+  return (
+    <div role="radiogroup" aria-label={ariaLabel} aria-labelledby={labelledBy} className="flex border-2 border-rule w-fit">
+      {options.map(([v, label], i) => (
+        <button key={v} type="button" role="radio" aria-checked={value === v} tabIndex={value === v ? 0 : -1}
+          ref={(el) => { refs.current[i] = el; }} onClick={() => onChange(v)} onKeyDown={(e) => onKeyDown(e, i)}
+          className={`px-3 min-h-8 text-[12px] font-bold ${uppercase ? 'uppercase' : ''} ${value === v ? 'bg-ink text-sheet' : 'text-ink hover:bg-ground'}`}>{label}</button>
+      ))}
+    </div>
   );
 }
 

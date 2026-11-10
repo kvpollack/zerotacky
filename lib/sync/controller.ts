@@ -2,6 +2,7 @@
 // is attached to), the outbound queue, the "known" watermark per result, and the flush/pull cycle.
 // No timers in here; the hook decides when to call tick(). Unit-tested in test/controller.test.mjs.
 import type { AppState, Athlete, Result } from '../types';
+import { divisionCapProblems } from '../meetBuilder';
 import type { SyncClient } from './client';
 import { SyncError } from './client';
 import { mergeResults, resultToRow, athleteToRow } from './mapping';
@@ -278,6 +279,8 @@ export class SyncController {
     const gen = this.session;
     this.setStatus({ state: 'syncing', error: null });
     try {
+      const capProblem = divisionCapProblems(state.divisions ?? [])[0];   // 056 (Astra GP-04): a class-specific message before the constraint
+      if (capProblem) throw new Error(capProblem);
       const out = await publishMeet(this.o.client, state, { ...extra, meetId, deviceId: this.o.deviceId });
       if (gen !== this.session) throw new Error('Sign-in changed while publishing; this phone was not linked. Publish again.');
       const link: SyncLink = {

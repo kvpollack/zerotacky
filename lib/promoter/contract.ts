@@ -229,7 +229,8 @@ export interface PublicRegistrationMeet {
   date: string;
   listing: Pick<MeetListing, 'competitionStatus' | 'registrationStatus' | 'entryFeeDisplay' | 'registrationDeadline' | 'athleteCap' | 'federation' | 'venue' | 'promoterContact'>;
   promoterDisplayName: string;   // for the waiver's organizer line
-  divisionFormat?: DivisionFormat;   // 054: 'weight_classes' hides the "Which group fits me" hint on step 1
+  divisionFormat?: DivisionFormat;   // 054: the promoter's choice (null = not chosen)
+  groupPickerShown: boolean;         // 056 (Astra GP-02): the show page's gate, resolved server-side style; step 1 links to the helper only when true
   divisions: Array<{ id: string; name: string; weightCapKg?: number; teamSize?: number; targetWeights: Array<{ eventName: string; weight: number | null }> }>;
   acceptedCount: number;         // roster rows holding a spot (accepted requests plus hand-added athletes); compared against athleteCap
 }

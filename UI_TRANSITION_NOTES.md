@@ -1346,3 +1346,17 @@ Left on purpose: no separate promoter Teams view (the registrations list carries
 is the captain's or the SQL staff path for now); renaming the roster athlete in the scorer does not rename the team;
 the team's results and standings are the existing single-athlete ones (one row, one lot); payments stay per athlete
 with the promoter. IG-sized result cards and the gym "intro strongman sessions" tag are next.
+
+## Astra GP audit fixes (11/10 evening, migration 056)
+
+Thirteen findings on the 11/10 picker + format build, all fixed; the per-finding table is
+`audits/astra-gp-2026-11-10-disposition.md`. The shape of it: the whole-meet phone publish no longer overwrites the
+promoter's division format, the desk's kg caps or the dashboard's team sizes on an existing meet (056; a linked phone shows
+those three controls read-only with a note); the registration hint uses the show page's own picker gate
+(`groupPickerShown` in the public projection); the picker converts the on-screen numbers when lb / kg flips, keeps PR seeds
+in pounds, ignores holds / throws / pushes / bench presses, doubles a per-hand carry after adding the empty implement, says
+"above your comparison band" instead of "over your number", explains that timed events are compared by implement weight,
+and its segmented controls work like native radios. Caps outside 20..300 are named before the database refuses them; the
+fake public allowlist equals the staging grant and is asserted; a renamed standard class is not re-added. The medium-weight
+Red Hat Mono file was replaced (it had lost every letter but A). 749 pass, tsc clean; staging repros and a 390 px browser
+pass in the disposition file.

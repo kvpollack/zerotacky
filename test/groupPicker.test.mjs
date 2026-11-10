@@ -39,7 +39,7 @@ describe('group picker (gaps #13)', () => {
     assert.equal(pull.lane, 'pull');
     assert.equal(r.divisions[0].divisionId, 'sf-g4');   // ranked first
     assert.ok(r.divisions.findIndex((d) => d.divisionId === 'sf-g5') > r.divisions.findIndex((d) => d.divisionId === 'sf-g1'));
-    assert.match(byId['sf-g5'].line, /over your numbers/);
+    assert.match(byId['sf-g5'].line, /above your comparison band/);   // GP-10 wording
   });
 
   test('a stretch: one event just over the band is still offered, lightest stretch first', () => {
@@ -51,7 +51,7 @@ describe('group picker (gaps #13)', () => {
     assert.equal(r.divisions[0].fit, 'stretch');
     assert.equal(r.divisions[1].fit, 'heavy');
     assert.equal(r.recommendedId, 'a');
-    assert.match(r.note, /No group clears every weight; Light is the closest/);
+    assert.match(r.note, /No group clears every compared weight; Light is the closest/);
   });
 
   test('no numbers, or no published weights: no recommendation, a plain note', () => {
@@ -150,5 +150,79 @@ describe('divisionGenderTag', () => {
     assert.equal(st.divisions[1].weightCapKg, null);
     assert.equal('weightCapKg' in st.divisions[2], false);
     assert.equal('divisionFormat' in B.normalizeState({ ...raw, meet: { id: 'm', name: 'N', divisionFormat: 'nope' } }).meet, false);
+  });
+});
+
+describe('group picker: Astra GP fixes (11/10)', () => {
+  test('GP-07 / GP-09: holds, throws, tosses, pushes and bench presses are not compared; a push press is overhead', () => {
+    for (const n of ['Atlas Stone Hold', 'Max Time Farmer Hold', 'Car Deadlift Hold', 'Sandbag Throw', 'Sandbag Toss', 'Braemar Stone Throw', 'Bench Press', '2 Hand Sandbag Push', 'Floor Press', 'Incline Press']) {
+      assert.equal(G.eventLane(ev(n)), 'unknown', n);
+    }
+    assert.equal(G.eventLane(ev('Axle Push Press')), 'overhead');
+    assert.equal(G.eventLane(ev('Yoke Carry')), 'carry');
+    assert.equal(G.eventLane(ev('Car Deadlift')), 'deadlift');
+    const nums = G.numbersFromPRs([{ lift: 'Bench Press', value: '275 lb' }, { lift: 'Overhead', value: '135 lb' }]);
+    assert.equal(nums.overhead, 135);
+  });
+  test('GP-11: added plates and per-hand together double the loaded handle', () => {
+    const e = ev('Farmers Carry', { weightEntryMode: 'per_hand', weightIsAddedPlatesOnly: true, implementEmptyWeight: 25, divisionWeights: { d: 100 } });
+    assert.equal(G.divisionWeightLb(e, 'd', 'carry'), 250);
+    assert.equal(G.divisionWeightLb(ev('Farmers Carry', { weightEntryMode: 'per_hand', divisionWeights: { d: 100 } }), 'd', 'carry'), 200);
+    assert.equal(G.divisionWeightLb(ev('Axle Deadlift', { weightIsAddedPlatesOnly: true, implementEmptyWeight: 25, divisionWeights: { d: 100 } }), 'd', 'deadlift'), 125);
+  });
+  test('GP-08: the unit switch converts what is on screen; explicit units and blanks are left alone', () => {
+    assert.equal(G.convertDisplayUnit('315', 'lb', 'kg'), '143');
+    assert.equal(G.convertDisplayUnit('143', 'kg', 'lb'), '315');
+    assert.equal(G.convertDisplayUnit('140 kg', 'lb', 'kg'), '140 kg');
+    assert.equal(G.convertDisplayUnit('', 'lb', 'kg'), '');
+    assert.equal(G.convertDisplayUnit('315', 'lb', 'lb'), '315');
+    // the same strength parses to the same pounds either way
+    assert.equal(G.parseLiftInput(G.convertDisplayUnit('315', 'lb', 'kg'), 'kg'), 315);
+    assert.equal(G.lbToDisplay(309, 'kg'), '140');
+    assert.equal(G.lbToDisplay(null, 'kg'), '');
+  });
+  test('GP-10: a weight above the band but under the number is described as above the band, not over the number', () => {
+    const d = { id: 'd', meetId: 'm', name: 'Group A', flight: 'A', sortOrder: 0 };
+    const fit = G.fitDivision(d, [ev('Axle Deadlift', { scoringType: 'reps', divisionWeights: { d: 95 } })], { deadlift: 100, overhead: null, carry: null });
+    assert.equal(fit.fit, 'stretch');
+    assert.ok(!/over your number/.test(fit.line), fit.line);
+    assert.ok(/above your comparison band/.test(fit.line), fit.line);
+    assert.equal(G.VERDICT_LABELS.heavy, 'Above band');
+    const res = G.pickGroups([d, { ...d, id: 'u', name: 'No Weights', sortOrder: 1 }], [ev('Axle Deadlift', { scoringType: 'reps', divisionWeights: { d: 150 } })], { deadlift: 100, overhead: null, carry: null });
+    assert.equal(res.recommendedId, 'd');
+    assert.ok(/closest of the 1 rated/.test(res.note), res.note);
+    assert.ok(/1 group has no weights to compare/.test(res.note), res.note);
+    assert.equal(res.divisions.at(-1).fit, 'unrated');
+  });
+  test('GP-13: a timed carry is compared by its published implement weight (the explanation says so)', () => {
+    const d = { id: 'd', meetId: 'm', name: 'G', flight: 'A', sortOrder: 0 };
+    const v = G.gradeEvent(ev('Yoke Carry', { scoringType: 'time_or_distance', divisionWeights: { d: 400 } }), d, { deadlift: null, overhead: null, carry: 500 });
+    assert.equal(v.lane, 'carry');
+    assert.equal(v.verdict, 'clear');
+  });
+  test('GP-02: the registration projection carries the show gate', async () => {
+    const R = await import(`${ROOT}/lib/promoter/rules.ts`);
+    const MB = await import(`${ROOT}/lib/meetBuilder.ts`);
+    const blank = MB.createBlankMeet('Gate');
+    const mk = (format, names, status, events) => R.toPublicRegistrationMeet({
+      summary: { serverId: 'm', slug: 'gate', listing: { registrationStatus: 'open', competitionStatus: status, athleteCap: null } },
+      state: { ...blank, meet: { ...blank.meet, ...(format ? { divisionFormat: format } : {}) }, divisions: names.map((n, i) => ({ id: `d${i}`, meetId: 'm', name: n, flight: 'A', sortOrder: i })), events },
+    }, 'P').groupPickerShown;
+    const e = [ev('Axle Deadlift', { divisionWeights: {} })];
+    assert.equal(mk(null, ['Novice Men', 'Open Men'], 'upcoming', e), false, 'class-like names, unset format');
+    assert.equal(mk(null, ['Group 1', 'Group 2'], 'upcoming', e), true);
+    assert.equal(mk('custom', ['Novice Men', 'Open Men'], 'upcoming', e), true);
+    assert.equal(mk('weight_classes', ['Group 1', 'Group 2'], 'upcoming', e), false);
+    assert.equal(mk('custom', ['Group 1', 'Group 2'], 'completed', e), false);
+    assert.equal(mk('custom', ['Group 1', 'Group 2'], 'upcoming', []), false, 'no events');
+    assert.equal(mk('custom', ['Group 1'], 'upcoming', e), false, 'one division');
+  });
+  test('GP-04: out-of-range caps are named before the database sees them', async () => {
+    const MB = await import(`${ROOT}/lib/meetBuilder.ts`);
+    const probs = MB.divisionCapProblems([{ name: 'Men 19', weightCapKg: 19.5 }, { name: 'Men 105', weightCapKg: 105 }, { name: 'Open', weightCapKg: null }, { name: 'Men 301', weightCapKg: 300.5 }]);
+    assert.equal(probs.length, 2);
+    assert.match(probs[0], /Men 19.*20 and 300 kg/);
+    const st = MB.normalizeState({ meet: { id: 'm', name: 'N' }, divisions: [{ id: 'd', meetId: 'm', name: 'Men 19', flight: 'A', sortOrder: 0, weightCapKg: 19.5 }], events: [], athletes: [], results: [] });
+    assert.ok(MB.validateMeet(st).problems.some((p) => /Men 19/.test(p)));
   });
 });

@@ -650,6 +650,7 @@ export default function App() {
         {activeTab === 'setup' && roleLock === 'admin' && (
           <MeetSetupSheet
             state={state}
+            serverConfig={Boolean(sync.link)}
             meet={meet}
             divisions={divisions}
             events={events}
