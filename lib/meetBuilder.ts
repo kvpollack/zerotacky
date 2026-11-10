@@ -16,6 +16,7 @@ import type {
   WeightEntryMode,
 } from './types';
 import { loadingTakesCollars, normalizeCollarWeight } from './engine/plates';
+import { DEFAULT_TIEBREAKER, normalizeTiebreakerRule } from './engine/tiebreak';
 import { ALL_POSSIBLE_PLATES } from './constants';
 import { getInitialSeedState, MEET_PRESETS } from './presets';
 import { normalizeEventOrder } from './engine/eventOrder';
@@ -63,7 +64,7 @@ export function createBlankMeet(name: string, date?: string): AppState {
       isDemo: false,
       stations: DEFAULT_STATIONS.map((s) => ({ ...s })),
       runOrderMethod: 'reverse_overall',
-      tiebreakerRule: 'event_wins',
+      tiebreakerRule: DEFAULT_TIEBREAKER,
       availablePlates: [...ALL_POSSIBLE_PLATES],
       collarWeightPerPair: 0,
       adminPin: '1050',
@@ -134,7 +135,7 @@ export function normalizeState(raw: unknown): AppState {
       rawMeet.runOrderMethod === 'reverse_previous_event' || rawMeet.runOrderMethod === 'lot_order'
         ? rawMeet.runOrderMethod
         : 'reverse_overall',
-    tiebreakerRule: rawMeet.tiebreakerRule === 'final_event' ? 'final_event' : 'event_wins',
+    tiebreakerRule: normalizeTiebreakerRule(rawMeet.tiebreakerRule),
     availablePlates,
     collarWeightPerPair: Number(rawMeet.collarWeightPerPair) || 0,
     // Absent stays absent (R1, Astra rehearsal 10/17): a phone that joined by code never receives the PIN (007), and

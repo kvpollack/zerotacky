@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ALL_POSSIBLE_PLATES } from '@/lib/constants';
 import { slugify } from '@/lib/meetBuilder';
+import { TIEBREAKER_OPTIONS } from '@/lib/engine/tiebreak';
 
 // Plain-language copies of the engine rules. Keep in step with lib/engine/runOrder.ts and lib/engine/scoring.ts.
 export const RUN_ORDER_OPTIONS = [
@@ -30,18 +31,8 @@ export function runOrderShortLabel(method) {
   return opt?.short ?? (method === 'reverse_overall' ? 'Rev Overall' : 'Rev Prev Ev');
 }
 
-export const TIEBREAK_OPTIONS = [
-  {
-    value: 'event_wins',
-    label: 'Most Event Wins',
-    explain: 'The athlete with more event wins places higher. If that is level too, more points in the final event wins. Still level after both: the athletes share the place.',
-  },
-  {
-    value: 'final_event',
-    label: 'Final Event Score',
-    explain: 'The athlete with more points in the final event places higher. If that is level too, more event wins. Still level after both: the athletes share the place.',
-  },
-];
+// One source of truth with the engine (lib/engine/tiebreak.ts, 11/10 Iron Podium audit).
+export const TIEBREAK_OPTIONS = TIEBREAKER_OPTIONS;
 
 export default function MeetSection({
   meet,

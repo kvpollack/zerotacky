@@ -49,12 +49,22 @@ describe('showHistory.buildShowHistoryEntry', () => {
     assert.equal(H.formatPlace(e), '1st of 3');
   });
 
-  test('equal points and event wins: the final-event tiebreak decides, no tie flag', () => {
+  test('equal points, same 1st/2nd/3rd counts: lookback (the preset default) shares 2nd, the way Iron Podium would', () => {
     const { ids, bundle: b } = bundle();
+    assert.equal(b.meet.tiebreaker_rule, 'lookback');
     const emily = H.buildShowHistoryEntry(row(ids.emily), b);
     const jessica = H.buildShowHistoryEntry(row(ids.jessica), b);
     assert.equal(emily.totalPoints, 4.5);
     assert.equal(jessica.totalPoints, 4.5);
+    assert.equal(emily.place, 2); assert.equal(jessica.place, 2);
+    assert.equal(emily.isTied, true);
+    assert.equal(H.formatPlace(emily), 'T-2nd of 3');
+  });
+  test('the same pair under the event_wins rule: the final-event tiebreak decides, no tie flag', () => {
+    const { ids, bundle: b } = bundle();
+    b.meet = { ...b.meet, tiebreaker_rule: 'event_wins' };
+    const emily = H.buildShowHistoryEntry(row(ids.emily), b);
+    const jessica = H.buildShowHistoryEntry(row(ids.jessica), b);
     assert.equal(emily.place, 2, 'Emily placed higher on the last event');
     assert.equal(jessica.place, 3);
     assert.equal(emily.isTied, false);

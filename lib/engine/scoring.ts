@@ -7,6 +7,7 @@ import type {
   StandingRow,
   TiebreakerRule,
 } from '../types';
+import { compareTiebreak, DEFAULT_TIEBREAKER } from './tiebreak';
 
 // A result that scored something in some event. Used to decide whether a withdrawn athlete stays in the points field.
 // With the event in hand this is exactly "not a zero" under that event's rules (Astra PS-02: a 61 s time in a 60 s
@@ -147,7 +148,9 @@ export function scoreSingleEvent(
       case 'time_or_implements': {
         const time = r.timeSeconds ?? 0;
         const impl = r.implementsCompleted ?? 0;
-        const split = r.splitTimeSeconds ?? 9999;
+        // No split recorded = the last implement is scored at the cap (Iron Podium "5+0:60"), so it ties another
+        // athlete at the cap on the same count instead of sitting below everyone with a recorded split (11/10 audit).
+        const split = r.splitTimeSeconds ?? event.timeCapSeconds;
         const finished = time > 0 && time <= event.timeCapSeconds;
         isZero = !finished && impl <= 0;
         if (finished) {
@@ -156,7 +159,7 @@ export function scoreSingleEvent(
         } else {
           displayScore = isZero
             ? '0 impl'
-            : `${impl} impl${split < 9999 ? ` @ ${Number(split).toFixed(2)}s` : ''}`;
+            : `${impl} impl${r.splitTimeSeconds != null ? ` @ ${Number(split).toFixed(2)}s` : ''}`;
           return {
             athlete,
             r,
@@ -248,7 +251,7 @@ export function calculateDivisionStandings(
   divisionAthletes: Athlete[],
   events: EventDef[],
   allResults: Result[],
-  tiebreakerRule: TiebreakerRule = 'event_wins'
+  tiebreakerRule: TiebreakerRule = DEFAULT_TIEBREAKER
 ): StandingRow[] {
   const sortedEvents = [...events].sort((a, b) => a.eventNumber - b.eventNumber);
   const finalEventId = sortedEvents[sortedEvents.length - 1]?.id;
@@ -256,6 +259,8 @@ export function calculateDivisionStandings(
   // N+1 with 0 points and are never shown tied with an active athlete.
   const field = new Set(scoringField(divisionAthletes, allResults, sortedEvents).map((a) => a.id));
 
+  const lots = new Map(divisionAthletes.map((a) => [a.id, a.lotNumber] as const));
+  const lotOf = (id: string) => lots.get(id) ?? 0;
   const standingMap = new Map<string, StandingRow>();
   divisionAthletes.forEach((a) => {
     standingMap.set(a.id, {
@@ -266,6 +271,8 @@ export function calculateDivisionStandings(
       totalPoints: 0,
       eventWins: 0,
       finalEventPoints: 0,
+      placeCounts: [0, 0, 0],
+      bodyweight: a.bodyweight && a.bodyweight > 0 ? a.bodyweight : undefined,
       eventBreakdown: {},
       overallPlace: 1,
     });
@@ -281,6 +288,7 @@ export function calculateDivisionStandings(
       if (!entry) continue;
       entry.totalPoints = Math.round((entry.totalPoints + row.points) * 100) / 100;
       if (row.place === 1 && !row.isZero) entry.eventWins += 1;
+      if (!row.isZero && row.place >= 1 && row.place <= 3) entry.placeCounts[row.place - 1] += 1;
       if (ev.id === finalEventId) entry.finalEventPoints = row.points;
       entry.eventBreakdown[ev.id] = {
         points: row.points,
@@ -293,21 +301,19 @@ export function calculateDivisionStandings(
   const allRows = Array.from(standingMap.values());
   const rows = allRows.filter((r) => field.has(r.athleteId));
   const scratches = allRows.filter((r) => !field.has(r.athleteId));
+  // Tiebreak rules live in ./tiebreak.ts (11/10 Iron Podium audit): 'lookback' (1sts, 2nds, 3rds) is the default.
+  // Equal totals that the rule cannot separate keep lot order for display and share the place below.
   rows.sort((a, b) => {
     if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
-    if (tiebreakerRule === 'event_wins') {
-      if (b.eventWins !== a.eventWins) return b.eventWins - a.eventWins;
-      return b.finalEventPoints - a.finalEventPoints;
-    } else {
-      if (b.finalEventPoints !== a.finalEventPoints) return b.finalEventPoints - a.finalEventPoints;
-      return b.eventWins - a.eventWins;
-    }
+    const t = compareTiebreak(a, b, tiebreakerRule);
+    if (t !== 0) return t;
+    return lotOf(a.athleteId) - lotOf(b.athleteId);
   });
 
-  // Astra R-M5 (10/19): athletes still level after both tiebreak criteria share the place (1, 1, 3), the way the public
+  // Astra R-M5 (10/19): athletes still level after the tiebreak rule share the place (1, 1, 3), the way the public
   // results page already shows ties, instead of being split by sort order.
   const level = (a: StandingRow, b: StandingRow) =>
-    a.totalPoints === b.totalPoints && a.eventWins === b.eventWins && a.finalEventPoints === b.finalEventPoints;
+    a.totalPoints === b.totalPoints && compareTiebreak(a, b, tiebreakerRule) === 0;
   rows.forEach((row, idx) => {
     const prev = idx > 0 ? rows[idx - 1] : null;
     if (prev && level(prev, row)) {

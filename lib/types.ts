@@ -4,7 +4,10 @@
 export type ScoringType = 'reps' | 'max_weight' | 'time_or_distance' | 'time_or_implements';
 // 'lot_order' (10/21): roster order for every event, never reshuffled; for promoters who publish the order ahead of time.
 export type RunOrderMethod = 'reverse_overall' | 'reverse_previous_event' | 'lot_order';
-export type TiebreakerRule = 'event_wins' | 'final_event';
+// Overall podium tiebreak (11/10 scoring audit against Iron Podium). 'lookback' = Iron Podium's default: most event
+// 1st places, then 2nds, then 3rds; still level = shared place. 'bodyweight' = lighter athlete at weigh-in wins.
+// 'event_wins' / 'final_event' are ZeroTacky's older rules, kept as promoter options. 'none' = ties always share.
+export type TiebreakerRule = 'lookback' | 'bodyweight' | 'event_wins' | 'final_event' | 'none';
 export type AthleteStatus = 'active' | 'withdrawn';
 export type RoleLock = 'admin' | 'judge' | 'pitcrew' | 'spectator';
 export type RisingBarStatus = 'pending' | 'good' | 'pass' | 'fail';
@@ -170,9 +173,12 @@ export interface StandingRow {
   totalPoints: number;
   eventWins: number;
   finalEventPoints: number;
+  // Event 1st / 2nd / 3rd place counts (zero-score rows never count), read by the 'lookback' tiebreak.
+  placeCounts: [number, number, number];
+  bodyweight?: number;
   eventBreakdown: Record<string, { points: number; place: number; display: string }>;
   overallPlace: number;
-  isTiedOverall?: boolean; // level after both tiebreak criteria: shares overallPlace with the row(s) beside it
+  isTiedOverall?: boolean; // level after the tiebreak rule: shares overallPlace with the row(s) beside it
 }
 
 export interface RunOrderItem {

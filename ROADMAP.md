@@ -5,7 +5,7 @@
 **Where we are.** The two-track plan finished: `v2` became `main` on 11/9 (tag `v2-retired-2026-11-09`), one branch, one
 Supabase prod (`kagitbfthapxmaljsdtz`, migrations 001-053 applied) plus staging, www.zerotacky.com on Vercel Hobby, Resend
 mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 feature-gaps report ranked 22 builds;
-19 shipped. Live main `9aacc44c`, 739 tests. Jess has the gym and meet invite links and the feature email (11/10).
+19 shipped. Live main `e7ae59e8`, 762 tests local (scoring audit vs Iron Podium 11/10: lookback tiebreak default, report in audits/). Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10).
 
 **Shipped since the 10/21 entries below (newest first)**
 - 11/10 teams (055): a division can be a team of 2 to 6. Each teammate registers and pays alone, then forms the team on

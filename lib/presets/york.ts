@@ -9,7 +9,7 @@ export function getYorkSeedState(): AppState {
     name: 'York Iron Classic 2026',
     date: '2026-10-24',
     runOrderMethod: 'reverse_overall',
-    tiebreakerRule: 'event_wins',
+    tiebreakerRule: 'lookback',
     availablePlates: [100, 55, 45, 35, 25, 15, 10, 5, 2.5],
     collarWeightPerPair: 5,
     adminPin: '1050',

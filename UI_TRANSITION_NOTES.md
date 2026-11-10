@@ -1360,3 +1360,14 @@ and its segmented controls work like native radios. Caps outside 20..300 are nam
 fake public allowlist equals the staging grant and is asserted; a renamed standard class is not re-added. The medium-weight
 Red Hat Mono file was replaced (it had lost every letter but A). 749 pass, tsc clean; staging repros and a 390 px browser
 pass in the disposition file.
+
+## Scoring audit vs Iron Podium (11/10 night, no migration)
+
+Kurt: "scoring heuristics for strongman needs to match actual strongman scoring exactly ... the first question is going to be 'how do we know that the scoring is right' when all anyone has ever seen is Iron Podium." Report: `audits/slate-2026-11-10-scoring-vs-iron-podium.md`.
+
+- **Method.** Iron Podium's docs (Strongman Point System, scoring formats, tiebreakers) plus nine finished 2025 scoreboards read from `ironpodium.com/api/get_scoreboard/<id>` (raw JSON in `~/.aki/tmp/zt/ip_boards/`). SC and USS publish no scoring text of their own; SC requires results on Iron Podium.
+- **Matches already.** N-down-to-1, zero = 0, split points on event ties, distance+time, reps+time, time-only. Replayed Idaho 2025 Novice Men (6 athletes, 5 events) event-by-event: every point total equal.
+- **Was wrong: the overall tiebreak.** Iron Podium's default is "lookback" (most 1sts, then 2nds, then 3rds, still level = shared place; bodyweight is the alternative). Ours was event wins then final-event points, which reverses a real 4th/5th in Idaho and splits a real shared 2nd at Red River. Fixed: `lib/engine/tiebreak.ts` holds the five rules (`lookback` default, `bodyweight`, `event_wins`, `final_event`, `none`) with labels; the engine, builder, scorer sheet and standings headers all read it. `StandingRow.placeCounts` carries the 1st/2nd/3rd counts. Existing meets keep their stored rule; new meets get lookback.
+- **Also fixed.** `standingsAdapter` recomputed its own tie signature (points|wins|final) against its own header rule; it now reads the engine's `isTiedOverall`. `time_or_implements` scores a missing split at the cap, so "3 stones, no split" ties "3 stones @ 60.00" instead of sitting below it.
+- **Open (report, items 1-5).** Wessels attempt tiebreak on max weight, hold events (longer time wins), max-distance display suffix, kg/m entry, "impl" wording on non-medley reps+time events. Supabase column default / publish coalesce still say `event_wins` (only used on a null the app never sends); fold into the next migration.
+- **Tests.** `test/ironpodium_replay.test.mjs` (Idaho replay, Red River, QRF, bodyweight, normalisation, labels, missing split). showHistory test split into lookback default and event_wins variant. 762 pass, tsc clean.

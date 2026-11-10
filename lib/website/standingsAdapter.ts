@@ -49,17 +49,11 @@ export function buildDivisionResultsView(
     (suppliedList ?? []).map((item) => [item.athleteId, item])
   );
 
-  // Detect whether two rows have identical totalPoints, eventWins, and finalEventPoints
-  const signatureCounts = new Map<string, number>();
-  for (const row of rawStandings) {
-    const sig = `${row.totalPoints}|${row.eventWins}|${row.finalEventPoints}`;
-    signatureCounts.set(sig, (signatureCounts.get(sig) ?? 0) + 1);
-  }
-
+  // 11/10 Iron Podium audit: the engine's isTiedOverall is the only tie flag. The adapter used to recompute a
+  // points|wins|final signature here, which silently disagreed with any rule other than event_wins.
   const standings: SuppliedStandingRow[] = rawStandings.map((row) => {
     const supplied = suppliedByAthlete.get(row.athleteId);
-    const sig = `${row.totalPoints}|${row.eventWins}|${row.finalEventPoints}`;
-    const hasEngineUnbrokenTie = (signatureCounts.get(sig) ?? 0) > 1 && row.totalPoints > 0;
+    const hasEngineUnbrokenTie = Boolean(row.isTiedOverall);
 
     const breakdownWithTieFlag: SuppliedStandingRow['eventBreakdown'] = {};
     for (const [evId, entry] of Object.entries(row.eventBreakdown)) {

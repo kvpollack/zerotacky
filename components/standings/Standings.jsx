@@ -1,6 +1,7 @@
 'use client';
 
 import LayoutToggle from '@/components/shell/LayoutToggle';
+import { describeTiebreaker } from '@/lib/engine/tiebreak';
 import LeaderboardTable from './LeaderboardTable';
 
 // Phone layout: overall cards then the current event breakdown. TV layout (projector / laptop): the full
@@ -50,7 +51,7 @@ export default function Standings({
               </h2>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-zt-muted">
-                  Tiebreaker: {meet.tiebreakerRule === 'event_wins' ? 'Event Wins' : 'Final Event'}
+                  Tiebreaker: {describeTiebreaker(meet.tiebreakerRule).short}
                 </span>
                 {toggleLayout && <LayoutToggle layout={layout} onToggle={toggleLayout} />}
               </div>

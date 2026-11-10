@@ -8,6 +8,7 @@ import { Cap, Key, KeyButton, WebCell, keyClass, textLink } from './sheet';
 import SponsorStrip from './SponsorStrip';
 import GroupPickerClient from './GroupPickerClient';
 import { showsGroupPicker } from '@/lib/website/groupPicker';
+import { describeTiebreaker } from '@/lib/engine/tiebreak';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import { formatShowDate } from '@/lib/website/showHistory';
 import { directionsUrl, eventWeightDisplay, formatLocalDateTime } from '@/lib/website/format';
@@ -311,9 +312,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
             </h2>
             <p className="text-[13px] text-ink-muted mt-1">
               Read-only view computed via ZeroTacky&apos;s scoring adapter (
-              {show.state.meet.tiebreakerRule === 'event_wins'
-                ? 'Tiebreaker: Most Event Wins, then Final Event'
-                : 'Tiebreaker: Final Event Score, then Event Wins'}
+              Tiebreaker: {describeTiebreaker(show.state.meet.tiebreakerRule).short}
               ).
             </p>
           </div>

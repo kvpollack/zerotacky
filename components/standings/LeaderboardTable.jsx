@@ -2,6 +2,7 @@
 
 // Overall leaderboard for one division: place, athlete, points per event, total. Built for a TV or
 // projector (large type, full width) but renders on a phone too; Standings.jsx picks it in TV mode.
+import { describeTiebreaker } from '@/lib/engine/tiebreak';
 /**
  * @param {{ division: any, events: any[], standings: any[], meet: any, highlightEventId?: string | null, size?: 'tv' | 'phone' }} props
  */
@@ -16,7 +17,7 @@ export default function LeaderboardTable({ division, events, standings, meet, hi
           {division.name}
         </h2>
         <span className="text-xs font-bold text-zt-muted">
-          {standings.length} athletes · Tiebreaker: {meet.tiebreakerRule === 'event_wins' ? 'Event Wins' : 'Final Event'}
+          {standings.length} athletes · Tiebreaker: {describeTiebreaker(meet.tiebreakerRule).short}
         </span>
       </div>
       <table className="w-full border-collapse">
