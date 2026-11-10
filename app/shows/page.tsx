@@ -41,9 +41,9 @@ export default async function ShowsDirectoryPage() {
           )}
         </div>
         <p className="text-[15px] leading-relaxed text-ink max-w-3xl">
-          Filter competitions by status, state, or specific strongman implements. Supports both
-          inclusive strength-based groups (such as Strongfest Groups 1–5) and traditional weight
-          classes.
+          Filter competitions by status, state, or the implements they use. Shows can run traditional
+          weight classes or inclusive strength groups, where athletes are grouped by the weights they
+          move rather than by bodyweight.
         </p>
         <p className="text-[15px] leading-relaxed text-ink">
           Running a show that registers somewhere else?{' '}

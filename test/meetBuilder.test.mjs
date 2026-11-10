@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 const ROOT = process.env.ZT_ROOT || '..';
 const MB = await import(`${ROOT}/lib/meetBuilder.ts`);
 const P = await import(`${ROOT}/lib/presets/index.ts`);
+const { getGroupsSeedState } = await import('./fixtures/groupsSeed.ts');
 const { ALL_POSSIBLE_PLATES } = await import(`${ROOT}/lib/constants.ts`);
 
 describe('slugify & createBlankMeet', () => {
@@ -34,8 +35,9 @@ describe('slugify & createBlankMeet', () => {
 });
 
 describe('normalizeState', () => {
-  test('hydrates today Strongfest getInitialSeedState() JSON with isDemo/stations deleted and sets defaults', () => {
-    const raw = JSON.parse(JSON.stringify(P.getInitialSeedState('strongfest-2026')));
+  test('hydrates a groups-seed JSON with isDemo/stations deleted and sets defaults', () => {
+    const raw = JSON.parse(JSON.stringify(getGroupsSeedState()));
+    raw.meet.presetId = 'york-iron-2026';   // a real preset id, so isDemo is inferred from it
     delete raw.meet.isDemo;
     delete raw.meet.stations;
     delete raw.meet.slug;
@@ -46,13 +48,13 @@ describe('normalizeState', () => {
       { id: 'A', label: 'Station 1' },
       { id: 'B', label: 'Station 2' },
     ]);
-    assert.equal(norm.meet.slug, 'all-out-strongfest-2026-the-power-plant-gym');
+    assert.equal(norm.meet.slug, 'iron-harbor-groups-invitational-2026');
     assert.equal(norm.divisions.length, 5);
     assert.equal(norm.athletes.length, 14);
   });
 
   test('upgrades legacy "Stn n" station labels to "Station n"; custom labels untouched', () => {
-    const raw = JSON.parse(JSON.stringify(P.getInitialSeedState('strongfest-2026')));
+    const raw = JSON.parse(JSON.stringify(getGroupsSeedState()));
     raw.meet.stations = [{ id: 'A', label: 'Stn 1' }, { id: 'B', label: 'Stn 2' }, { id: 'C', label: 'Log Side' }];
     const norm = MB.normalizeState(raw);
     assert.deepEqual(norm.meet.stations, [
@@ -179,7 +181,7 @@ describe('divisions CRUD & reorder', () => {
 
 describe('events CRUD & reorder', () => {
   test('addEvent and updateEvent preserve preset pitCrewCallout stats while updating headline', () => {
-    let s = MB.normalizeState(P.getInitialSeedState('strongfest-2026'));
+    let s = MB.normalizeState(getGroupsSeedState());
     const ev2 = s.events[1];
     const patched = MB.updateEvent(s, ev2.id, {
       name: 'Keg Toss Over Bar',
@@ -325,7 +327,7 @@ describe('athletes CRUD, moveAthlete & shuffleLots', () => {
 
 describe('validateMeet (all problem types)', () => {
   test('both demo presets validate as ok: true with zero problems', () => {
-    const sf = MB.normalizeState(P.getInitialSeedState('strongfest-2026'));
+    const sf = MB.normalizeState(getGroupsSeedState());
     const yk = MB.normalizeState(P.getInitialSeedState('york-iron-2026'));
     assert.deepEqual(MB.validateMeet(sf), { ok: true, problems: [] });
     assert.deepEqual(MB.validateMeet(yk), { ok: true, problems: [] });
@@ -341,7 +343,7 @@ describe('validateMeet (all problem types)', () => {
   });
 
   test('flags division with no athletes ("Group 3 has no athletes")', () => {
-    let s = MB.normalizeState(P.getInitialSeedState('strongfest-2026'));
+    let s = MB.normalizeState(getGroupsSeedState());
     s = { ...s, athletes: s.athletes.filter((a) => a.divisionId !== 'sf-g3') };
     const v = MB.validateMeet(s);
     assert.equal(v.ok, false);
@@ -349,7 +351,7 @@ describe('validateMeet (all problem types)', () => {
   });
 
   test('flags missing division weight on event ("Ev 2 has no weight for Group 1")', () => {
-    let s = MB.normalizeState(P.getInitialSeedState('strongfest-2026'));
+    let s = MB.normalizeState(getGroupsSeedState());
     s = MB.updateEvent(s, 'sf-ev-2', {
       divisionWeights: { ...s.events[1].divisionWeights, 'sf-g1': 0 },
       pitCrewCallout: { title: 'Yoke', byDivision: {} },
@@ -360,7 +362,7 @@ describe('validateMeet (all problem types)', () => {
   });
 
   test('updateEvent lets a patch clear a division callout but keeps stats for divisions it retains', () => {
-    let s = MB.normalizeState(P.getInitialSeedState('strongfest-2026'));
+    let s = MB.normalizeState(getGroupsSeedState());
     const before = s.events.find((e) => e.id === 'sf-ev-2').pitCrewCallout.byDivision;
     s = MB.updateEvent(s, 'sf-ev-2', {
       pitCrewCallout: { title: 'Yoke', byDivision: { 'sf-g2': { headline: 'New headline' } } },
@@ -373,7 +375,7 @@ describe('validateMeet (all problem types)', () => {
   });
 
   test('flags duplicate lot numbers within a division ("Two athletes in Group 2 share lot 3")', () => {
-    let s = MB.normalizeState(P.getInitialSeedState('strongfest-2026'));
+    let s = MB.normalizeState(getGroupsSeedState());
     const g2Athletes = s.athletes.filter((a) => a.divisionId === 'sf-g2');
     s = MB.updateAthlete(s, g2Athletes[0].id, { lotNumber: 3 });
     const v = MB.validateMeet(s);
@@ -394,7 +396,7 @@ describe('validateMeet (all problem types)', () => {
   });
 
   test('flags division assigned to a station that was removed', () => {
-    let s = MB.normalizeState(P.getInitialSeedState('strongfest-2026'));
+    let s = MB.normalizeState(getGroupsSeedState());
     s = MB.removeStation(s, 'B');
     const v = MB.validateMeet(s);
     assert.equal(v.ok, false);

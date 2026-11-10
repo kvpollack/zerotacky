@@ -5,6 +5,7 @@ const C = await import(`${ROOT}/client.ts`);
 const K = await import(`${ROOT}/controller.ts`);
 const Q = await import(`${ROOT}/queue.ts`);
 const P = await import(process.env.ZT_PRESETS || '../lib/presets/index.ts');
+const { getGroupsSeedState } = await import('./fixtures/groupsSeed.ts');
 
 import { fakeServer } from './fake_supabase.mjs';
 
@@ -49,7 +50,7 @@ const clock = () => T;
 describe('SyncController: publish + join', () => {
   test('admin publishes, device joins by code and receives the same state; re-publish keeps the uuid and code', async () => {
     const srv = fakeServer();
-    const admin = phone(srv, 'admin1', P.getInitialSeedState('strongfest-2026'), clock);
+    const admin = phone(srv, 'admin1', getGroupsSeedState(), clock);
     assert.equal(admin.ctl.status.state, 'off');
     const link = await admin.ctl.publish({ slug: 'strongfest', isDemo: false });
     assert.equal(link.role, 'admin');
@@ -79,7 +80,7 @@ describe('SyncController: publish + join', () => {
   });
   test('leave then publish the same slug updates the same remote meet (uuid and join code kept)', async () => {
     const srv = fakeServer();
-    const admin = phone(srv, 'a', P.getInitialSeedState('strongfest-2026'), clock);
+    const admin = phone(srv, 'a', getGroupsSeedState(), clock);
     const first = await admin.ctl.publish({ slug: 'sf' });
     admin.ctl.unlink();
     const second = await admin.ctl.publish({ slug: 'sf' });
@@ -90,7 +91,7 @@ describe('SyncController: publish + join', () => {
   });
   test('signed-out publish -> refused before the network, no link; anon RPC -> 401; unknown join code -> null', async () => {
     const srv = fakeServer();
-    const admin = phone(srv, 'a', P.getInitialSeedState('strongfest-2026'), clock);
+    const admin = phone(srv, 'a', getGroupsSeedState(), clock);
     admin.ctl.setAccessToken(null);
     await assert.rejects(admin.ctl.publish({ slug: 's' }), /Sign in/);
     assert.equal(admin.ctl.link, null);
@@ -105,7 +106,7 @@ describe('SyncController: publish + join', () => {
 describe('SyncController: scores flow between phones', () => {
   async function pair() {
     const srv = fakeServer();
-    const admin = phone(srv, 'admin1', P.getInitialSeedState('strongfest-2026'), clock);
+    const admin = phone(srv, 'admin1', getGroupsSeedState(), clock);
     await admin.ctl.publish({ slug: 'sf' });
     const judge = phone(srv, 'judge1', { meet: {}, divisions: [], events: [], athletes: [], results: [] }, clock);
     const remote = await judge.ctl.lookupJoinCode('JC0001');
@@ -258,7 +259,7 @@ describe('SyncController: scores flow between phones', () => {
 describe('SyncController: config republish reaches judge phones', () => {
   async function pair() {
     const srv = fakeServer();
-    const admin = phone(srv, 'admin1', P.getInitialSeedState('strongfest-2026'), clock);
+    const admin = phone(srv, 'admin1', getGroupsSeedState(), clock);
     await admin.ctl.publish({ slug: 'sf', stations: [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }] });
     const judge = phone(srv, 'judge1', { meet: {}, divisions: [], events: [], athletes: [], results: [] }, clock);
     const remote = await judge.ctl.lookupJoinCode('JC0001');
@@ -323,7 +324,7 @@ describe('SyncController: config republish reaches judge phones', () => {
 describe('SyncController: resilience (verifier findings)', () => {
   async function pair() {
     const srv = fakeServer();
-    const admin = phone(srv, 'admin1', P.getInitialSeedState('strongfest-2026'), clock);
+    const admin = phone(srv, 'admin1', getGroupsSeedState(), clock);
     await admin.ctl.publish({ slug: 'sf' });
     const judge = phone(srv, 'judge1', { meet: {}, divisions: [], events: [], athletes: [], results: [] }, clock);
     const remote = await judge.ctl.lookupJoinCode('JC0001');
@@ -760,7 +761,7 @@ describe('SyncController account binding + publish errors (gate round)', () => {
   // Astra rehearsal R2 (10/17): a re-publish whose pre-pull fails must not go ahead with the stale roster.
   test('publish aborts when the pre-publish flush/pull fails; nothing reaches the server, publishError says why', async () => {
     const srv = fakeServer();
-    const admin = phone(srv, 'a-r2', P.getInitialSeedState('strongfest-2026'), clock);
+    const admin = phone(srv, 'a-r2', getGroupsSeedState(), clock);
     await admin.ctl.publish({ slug: 'r2' });
     const athletesBefore = srv.db.athletes.length;
     const calls = srv.log.length;
@@ -781,7 +782,7 @@ describe('SyncController account binding + publish errors (gate round)', () => {
   // Astra rehearsal R5 (10/17): roster removals on the admin phone survive the poll until the republish carries them.
   test('R5: a locally removed athlete is not resurrected by a pull; the republish deletes it on the server', async () => {
     const srv = fakeServer();
-    const admin = phone(srv, 'a-r5', P.getInitialSeedState('strongfest-2026'), clock);
+    const admin = phone(srv, 'a-r5', getGroupsSeedState(), clock);
     await admin.ctl.publish({ slug: 'r5' });
     const gone = admin.state.athletes[2];
     admin.mutate((s) => ({ ...s, athletes: s.athletes.filter((a) => a.id !== gone.id) }));
@@ -797,7 +798,7 @@ describe('SyncController account binding + publish errors (gate round)', () => {
   });
   test('R5: removing a scored athlete is refused by the server; publishError says so and the next pull restores the athlete', async () => {
     const srv = fakeServer();
-    const admin = phone(srv, 'a-r5b', P.getInitialSeedState('strongfest-2026'), clock);
+    const admin = phone(srv, 'a-r5b', getGroupsSeedState(), clock);
     await admin.ctl.publish({ slug: 'r5b' });
     const judge = phone(srv, 'j-r5b', P.getInitialSeedState('york-iron-2026'), clock);
     const remote = await judge.ctl.lookupJoinCode(admin.ctl.link.joinCode);
@@ -820,7 +821,7 @@ describe('SyncController account binding + publish errors (gate round)', () => {
   // the stale pre-pull state. The judge adds a walk-on; the stale admin's first healthy publish has to keep it.
   test('G2-H2: a walk-on fetched by the pre-publish pull is in the publish payload even before the host commits it', async () => {
     const srv = fakeServer();
-    const admin = phone(srv, 'a-h2', P.getInitialSeedState('strongfest-2026'), clock, { asyncIncoming: true });
+    const admin = phone(srv, 'a-h2', getGroupsSeedState(), clock, { asyncIncoming: true });
     await admin.ctl.publish({ slug: 'h2' });
     const judge = phone(srv, 'j-h2', P.getInitialSeedState('york-iron-2026'), clock);
     const remote = await judge.ctl.lookupJoinCode(admin.ctl.link.joinCode);
@@ -845,7 +846,7 @@ describe('SyncController account binding + publish errors (gate round)', () => {
   });
   test('R1: the admin phone publishes without a PIN and the server keeps its own (null admin_pin never overwrites)', async () => {
     const srv = fakeServer();
-    const admin = phone(srv, 'a-r1', P.getInitialSeedState('strongfest-2026'), clock);
+    const admin = phone(srv, 'a-r1', getGroupsSeedState(), clock);
     admin.state = { ...admin.state, meet: { ...admin.state.meet, adminPin: '7391' } };
     await admin.ctl.publish({ slug: 'r1' });
     assert.equal(srv.db.meets[0].admin_pin, '7391');

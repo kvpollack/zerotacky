@@ -4,6 +4,7 @@ const C = await import('../lib/sync/client.ts');
 const A = await import('../lib/sync/meetApi.ts');
 const PR = await import('../lib/auth/profile.ts');
 const P = await import('../lib/presets/index.ts');
+const { getGroupsSeedState } = await import('./fixtures/groupsSeed.ts');
 
 function fakeFetch(handler) {
   const calls = [];
@@ -35,7 +36,7 @@ describe('v2 auth: access token on the sync client', () => {
   test('publishMeet sends no p_key (024); the session token carries the identity', async () => {
     const { f, calls } = fakeFetch(() => ({ status: 200, json: { id: 'm1', join_code: 'ZZZ999' } }));
     const client = C.createSyncClient({ ...CFG, accessToken: 'JWT', fetchImpl: f });
-    const state = P.getInitialSeedState('strongfest-2026');
+    const state = getGroupsSeedState();
     const out = await A.publishMeet(client, state, { meetId: '11111111-1111-4111-8111-111111111111', deviceId: 'd1', slug: 'x', stations: 1, isDemo: false });
     assert.equal(out.joinCode, 'ZZZ999');
     assert.equal(calls[0].url, 'https://abc.supabase.co/rest/v1/rpc/zt_publish_meet');

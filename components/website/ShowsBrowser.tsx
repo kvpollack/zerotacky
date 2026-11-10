@@ -77,7 +77,7 @@ export default function ShowsBrowser({
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="e.g. Strongfest, Aston, York, Basket Deadlift, Circus Dumbbell..."
+              placeholder="e.g. a show name, Pennsylvania, Log Press, Circus Dumbbell..."
               className="zt-input"
             />
           </div>

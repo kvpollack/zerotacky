@@ -10,7 +10,7 @@ import {
 } from '@/lib/roster/import';
 import { CAP, Field, Key, KeyGroup, Note, Select } from './parts';
 
-const PLACEHOLDER = 'Name\tDivision\tBW\tLot\nKurt Pollack\tOpen Men\t231\t1\nDan Vance\tNovice Men\t205\t2';
+const PLACEHOLDER = 'Name\tDivision\tBW\tLot\nDan Vance\tOpen Men\t231\t1\nMarcus Trent\tNovice Men\t205\t2';
 const PREVIEW_ROWS = 12;
 
 export type RosterImportProps = {

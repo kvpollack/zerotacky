@@ -1,15 +1,13 @@
 import type { AppState, MeetPreset } from '../types';
 import { DEMO_SHOW_RECORDS } from '../website/fixtures';
-import { getStrongfestSeedState } from './strongfest';
 import { getYorkSeedState } from './york';
 
-// Fresh devices open on a fictional demo show, never the real Strongfest roster (Kurt 10/19).
+// Fresh devices open on a fictional demo show (Kurt 10/19). The real-roster preset was removed 11/10: the real meet lives
+// on the site as a published show, and demo data is fictional only.
 export const DEFAULT_PRESET_ID = 'demo-show-strongfest-2026';
 
-// Builder presets: the two meets Kurt set up by hand. Strongfest carries the real roster, so it stays out of the
-// public demo chooser on the website.
+// Builder preset: a hand-built traditional weight-class meet (fictional roster). Stays out of the website demo chooser.
 const BUILDER_PRESETS: MeetPreset[] = [
-  { id: 'strongfest-2026', label: 'All Out Strongfest 2026', sublabel: 'The Power Plant Gym' },
   { id: 'york-iron-2026', label: 'York Iron Classic 2026', sublabel: 'York, PA' },
 ];
 
@@ -52,8 +50,7 @@ function getDemoShowSeedState(presetId: string): AppState | null {
 
 export function getInitialSeedState(presetId: string = DEFAULT_PRESET_ID): AppState {
   if (presetId === 'york-iron-2026') return getYorkSeedState();
-  if (presetId === 'strongfest-2026') return getStrongfestSeedState();
   return getDemoShowSeedState(presetId) ?? (getDemoShowSeedState(DEFAULT_PRESET_ID) as AppState);
 }
 
-export { getStrongfestSeedState, getYorkSeedState };
+export { getYorkSeedState };

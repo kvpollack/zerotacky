@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 const ROOT = process.env.ZT_ROOT || '..';
 const F = await import(`${ROOT}/lib/exportFederation.ts`);
 const P = await import(`${ROOT}/lib/presets/index.ts`);
+const { getGroupsSeedState } = await import('./fixtures/groupsSeed.ts');
 
 const withResults = () => {
-  const s = P.getInitialSeedState('strongfest-2026');
+  const s = getGroupsSeedState();
   const g1 = s.athletes.filter((a) => a.divisionId === 'sf-g1');
   s.results = [
     { id: `sf-ev-1_${g1[0].id}`, eventId: 'sf-ev-1', athleteId: g1[0].id, reps: 12, updatedAt: 1 },

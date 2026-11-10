@@ -5,6 +5,7 @@ const C = await import(`${ROOT}/client.ts`);
 const A = await import(`${ROOT}/meetApi.ts`);
 const M = await import(`${ROOT}/mapping.ts`);
 const P = await import(process.env.ZT_PRESETS || '../lib/presets/index.ts');
+const { getGroupsSeedState } = await import('./fixtures/groupsSeed.ts');
 
 // Fake fetch: records every call, answers from a handler.
 function fakeFetch(handler) {
@@ -146,7 +147,7 @@ describe('readSyncEnv', () => {
 
 // ---------- meetApi ----------
 function seeded() {
-  const state = P.getInitialSeedState('strongfest-2026');
+  const state = getGroupsSeedState();
   state.results = [
     { id: `${state.events[0].id}_${state.athletes[0].id}`, eventId: state.events[0].id, athleteId: state.athletes[0].id, reps: 5, locked: true, updatedAt: 1760000000000 },
   ];

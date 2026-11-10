@@ -3,13 +3,14 @@ import assert from 'node:assert/strict';
 
 const ROOT = process.env.ZT_ROOT || '..';
 const P = await import(`${ROOT}/lib/presets/index.ts`);
+const { getGroupsSeedState } = await import('./fixtures/groupsSeed.ts');
 const FX = await import(`${ROOT}/lib/website/fixtures.ts`);
 const MB = await import(`${ROOT}/lib/meetBuilder.ts`);
 
 // Kurt 10/19: the website demo chooser offers only fictional shows, and a fresh device never opens on the real roster.
 describe('meet presets', () => {
   test('default preset is a fictional demo show, not the real Strongfest roster', () => {
-    assert.notEqual(P.DEFAULT_PRESET_ID, 'strongfest-2026');
+    assert.notEqual(P.DEFAULT_PRESET_ID, 'test-groups-2026');
     const s = MB.normalizeState(P.getInitialSeedState());
     assert.equal(s.meet.isDemo, true);
     assert.equal(s.meet.presetId, P.DEFAULT_PRESET_ID);
@@ -31,14 +32,14 @@ describe('meet presets', () => {
       assert.equal(s.meet.name, r.name);
     }
     assert.ok(!P.DEMO_SHOW_PRESETS.some((p) => p.showSlug === 'garden-state-winter-wreckage-2026'));
-    assert.ok(!P.DEMO_SHOW_PRESETS.some((p) => p.id === 'strongfest-2026'));
+    assert.ok(!P.MEET_PRESETS.some((p) => p.id === 'strongfest-2026' || /Strongfest|Power Plant/.test(p.label + p.sublabel)));
   });
   test('builder presets still load and unknown ids fall back to the default demo', () => {
-    assert.equal(P.getInitialSeedState('strongfest-2026').meet.presetId, 'strongfest-2026');
+    assert.equal(P.getInitialSeedState('strongfest-2026').meet.presetId, P.DEFAULT_PRESET_ID);   // the real-roster preset is gone (Kurt 11/10)
     assert.equal(P.getInitialSeedState('york-iron-2026').meet.presetId, 'york-iron-2026');
     assert.equal(P.getInitialSeedState('nope').meet.presetId, P.DEFAULT_PRESET_ID);
     assert.equal(P.isMeetPresetId('nope'), false);
-    assert.equal(P.MEET_PRESETS.length, 6);
+    assert.equal(P.MEET_PRESETS.length, 5);
   });
   test('demo seed state is a fresh copy each time', () => {
     const a = P.getInitialSeedState();

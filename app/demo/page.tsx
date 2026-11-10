@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 // Kurt 10/19: the demo chooser moved here from Meet Setup step 6 so the website is explicit that "run a meet" opens a
-// demo. Only the fictional /shows fixtures are offered; the real Strongfest preset stays inside the scorer.
+// demo. Only the fictional /shows fixtures are offered.
 function statusLabel(id: string): string {
   const r = DEMO_SHOW_RECORDS.find((x) => x.id === id);
   if (!r) return 'Demo';

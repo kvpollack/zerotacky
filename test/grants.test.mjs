@@ -4,6 +4,7 @@ const ROOT = process.env.ZT_SYNC || '../lib/sync';
 const C = await import(`${ROOT}/client.ts`);
 const K = await import(`${ROOT}/controller.ts`);
 const P = await import(process.env.ZT_PRESETS || '../lib/presets/index.ts');
+const { getGroupsSeedState } = await import('./fixtures/groupsSeed.ts');
 import { fakeServer } from './fake_supabase.mjs';
 
 // 011 (Astra R-H1, 2026-10-19): the join code lets a phone read and follow a meet; writing scores needs the grant a
@@ -31,7 +32,7 @@ function score(state, reps) {
 }
 async function setup() {
   const srv = fakeServer();
-  const admin = phone(srv, 'admin1', P.getInitialSeedState('strongfest-2026'));
+  const admin = phone(srv, 'admin1', getGroupsSeedState());
   await admin.ctl.publish({ slug: 'sf', stations: [], isDemo: false });
   const joined = phone(srv, 'spectator1', { meet: {}, divisions: [], events: [], athletes: [], results: [] });
   const remote = await joined.ctl.lookupJoinCode('JC0001');

@@ -1180,3 +1180,29 @@ reverted (both adopted meets deleted).
 Left on purpose: no un-import beyond the normal meet delete; no event weights or heads-up detail (the archive has none);
 imported events are typed for display only and cannot be re-scored; one adoption per archive show, first come (transfer
 or invite moves it); gym owners use the same page through the My Gym link rather than a gym-side import.
+
+## Copy scrub: no insider context (11/10 morning)
+
+Kurt, on the /shows intro ("such as Strongfest Groups 1–5"): "we need to go through and scrub the UI and copy for anything
+like this that wouldn't make sense to a new viewer. No one else will have this context on strongfest", then "we can
+delete the demo for strongfest. The actual competition on the page is there."
+
+Removed: the `strongfest-2026` scorer preset (real Iron Podium roster, "All Out Strongfest 2026 / The Power Plant Gym"
+in the Meet Setup chooser). `lib/presets/strongfest.ts` is gone; the seed lives on as `test/fixtures/groupsSeed.ts`
+("Iron Harbor Groups Invitational 2026", id `test-groups-2026`, fictional names) because nine test files used it as the
+five-group / two-station fixture. `getInitialSeedState('strongfest-2026')` now falls back to the default demo like any
+unknown id; a device still holding that preset id reopens on the default demo. MEET_PRESETS is 5 (York + four website
+demos). York preset: "Kurt Pollack" became "Cole Parrish".
+
+Copy: /shows intro now "Shows can run traditional weight classes or inclusive strength groups, where athletes are
+grouped by the weights they move rather than by bodyweight." (matches the show page's format label). Home: "whether the
+show runs traditional weight classes or inclusive strength groups"; the "Shows in the Directory" blurb no longer
+describes the demo fixtures (real shows lead the list), it says what a Demo mark means. Search placeholder "e.g. a show
+name, Pennsylvania, Log Press, Circus Dumbbell...". Roster placeholders (Meet Setup paste box, RosterImport) no longer
+start with Kurt's name.
+
+Checked: tsc clean, 717 pass (same count; the nine fixture-using files repointed, four assertions renamed), /shows and
+/website rendered copy read back. Left on purpose: the fixture id `demo-show-strongfest-2026` (Riverside Iron Fest) is
+internal and renaming it would churn saved device state; comments that cite Strongfest as the design case stay; the
+"Power Plant Volt" theme name stays (reads as a theme); `audits/*evidence.json` still hold the dry-run roster and are in
+the repo (`dumps/` is gitignored).

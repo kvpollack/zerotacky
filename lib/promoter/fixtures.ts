@@ -1,6 +1,6 @@
 // Seeded fixtures for the Promoter Dashboard and Athlete Registration flows.
 // Privacy rule: Uses only obviously fictional athlete names (Alex Sample, Blake Demo, etc.).
-// Never copies real athlete names from lib/presets/strongfest.ts or york.ts.
+// Fictional names only; never a real roster.
 
 import {
   addAthlete,

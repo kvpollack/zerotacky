@@ -700,7 +700,7 @@ function Athletes(props: MeetSetupSheetProps) {
                   <Select value={activeDivId} onChange={(e) => setTargetDivId(e.target.value)} aria-label="Select division for bulk add">{divOptions}</Select>
                 </Field>
                 <div className="col-span-full px-2 py-1.5">
-                  <textarea rows={4} placeholder={'Kurt Pollack\nDan Vance\nMarcus Trent'} value={bulkText} onChange={(e) => setBulkText(e.target.value)} className="zt-input font-sheet !border-0 !px-1 !py-1 !text-[14px] !min-h-[80px]" />
+                  <textarea rows={4} placeholder={'Dan Vance\nMarcus Trent\nSarah Jenkins'} value={bulkText} onChange={(e) => setBulkText(e.target.value)} className="zt-input font-sheet !border-0 !px-1 !py-1 !text-[14px] !min-h-[80px]" />
                 </div>
               </Form>
               <div className="grid grid-cols-[1fr_auto] gap-2">

@@ -4,12 +4,13 @@ const ROOT = process.env.ZT_SYNC || '../lib/sync';
 const M = await import(`${ROOT}/mapping.ts`);
 const Q = await import(`${ROOT}/queue.ts`);
 const PRESETS = process.env.ZT_PRESETS || '../lib/presets/index.ts';
+const { getGroupsSeedState } = await import('./fixtures/groupsSeed.ts');
 const P = await import(PRESETS);
 
 describe('mapping round-trips', () => {
-  for (const presetId of ['strongfest-2026', 'york-iron-2026']) {
+  for (const [presetId, seed] of [['test-groups-2026', getGroupsSeedState], ['york-iron-2026', () => P.getInitialSeedState('york-iron-2026')]]) {
     test(`${presetId}: state -> rows -> state is lossless`, () => {
-      const state = P.getInitialSeedState(presetId);
+      const state = seed();
       state.results = [
         { id: `${state.events[0].id}_${state.athletes[0].id}`, eventId: state.events[0].id, athleteId: state.athletes[0].id, reps: 7, tier: 'heavy', locked: true, groundTouchWarned: true, updatedAt: 1760000000000 },
         { id: `${state.events[1].id}_${state.athletes[1].id}`, eventId: state.events[1].id, athleteId: state.athletes[1].id, risingBarAttempts: { 225: 'good', 245: 'fail' }, maxWeightLbs: 0, updatedAt: 1760000001000 },
@@ -99,13 +100,13 @@ describe('queue', () => {
 
 describe('remote meet id override', () => {
   test('stateToRows stamps every row with the remote uuid while local meet.id stays', () => {
-    const state = P.getInitialSeedState('strongfest-2026');
+    const state = getGroupsSeedState();
     state.results = [{ id: 'sf-ev-1_sf-ath-1', eventId: 'sf-ev-1', athleteId: 'sf-ath-1', reps: 1, updatedAt: 5 }];
     const uuid = '11111111-2222-3333-4444-555555555555';
     const rows = M.stateToRows(state, { slug: 'x', meetId: uuid });
     assert.equal(rows.meet.id, uuid);
     for (const coll of ['divisions', 'events', 'athletes', 'results']) for (const r of rows[coll]) assert.equal(r.meet_id, uuid);
-    assert.equal(state.meet.id, 'strongfest-2026');
+    assert.equal(state.meet.id, 'test-groups-2026');
     const back = M.rowsToState(rows);
     assert.equal(back.meet.id, uuid); assert.equal(back.divisions[0].meetId, uuid);
   });

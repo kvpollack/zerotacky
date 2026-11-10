@@ -80,8 +80,8 @@ export default async function WebsiteLandingPage() {
             <Cap className="text-ink font-bold text-[15px] tracking-[0.04em]">Show Pages &amp; Results</Cap>
             <h3 className="text-base font-bold text-ink">One URL Before, During &amp; After the Meet</h3>
             <p className="text-sm leading-[1.5] text-ink-muted">
-              Upcoming shows list divisions, event rules, and target weights, supporting both
-              traditional weight classes and inclusive strength-based groups like Strongfest.
+              Upcoming shows list divisions, event rules, and target weights, whether the show runs
+              traditional weight classes or inclusive strength groups.
               Live shows link directly to the public scoreboard, and completed shows display
               finalized podiums and event-by-event breakdowns.
             </p>
@@ -121,8 +121,8 @@ export default async function WebsiteLandingPage() {
           Shows in the Directory
         </SectionCap>
         <p className="text-[13px] text-ink-muted mb-2.5 -mt-1">
-          Includes upcoming inclusive groups, a live show, a completed finalized show with a tied
-          podium, and a completed provisional show.
+          The latest listed shows. Anything marked Demo is a fictional sample of what a listing looks
+          like before, during and after a meet.
         </p>
         <ShowRows shows={shows.slice(0, 4)} ariaLabelledby="sample-shows-heading" />
       </section>

@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 const ROOT = process.env.ZT_ROOT || '..';
 const X = await import(`${ROOT}/lib/export.ts`);
 const P = await import(`${ROOT}/lib/presets/index.ts`);
+const { getGroupsSeedState } = await import('./fixtures/groupsSeed.ts');
 
 const withResults = () => {
-  const s = P.getInitialSeedState('strongfest-2026');
+  const s = getGroupsSeedState();
   const g1 = s.athletes.filter((a) => a.divisionId === 'sf-g1');
   s.results = [
     { id: `sf-ev-1_${g1[0].id}`, eventId: 'sf-ev-1', athleteId: g1[0].id, reps: 12, updatedAt: 1 },
@@ -36,19 +37,19 @@ describe('export/import', () => {
     assert.throws(() => X.parseImportedState(JSON.stringify(s2)), /unknown division/);
   });
   test('CSV: header per event, one row per athlete, scores only for scored events, quoting', () => {
-    const s = withResults(); s.athletes[0].name = 'Rucci, Jessica "JR"';
+    const s = withResults(); s.athletes[0].name = 'Rourke, Jenna "JJ"';
     const csv = X.resultsToCsv(s);
     const lines = csv.split('\r\n').filter(Boolean);
     assert.equal(lines[0], 'Division,Flight,Athlete,Lot,Status,Ev1 Basket Deadlift (For Reps),Ev1 Place,Ev1 Pts,Ev2 Keg Over Bar (For Reps),Ev2 Place,Ev2 Pts,Ev3 50ft Harness Truck Pull,Ev3 Place,Ev3 Pts,Total Pts,Event Wins,Overall Place');
     assert.equal(lines.length, 1 + s.athletes.length);
-    assert.equal(lines[1], 'Group 1,A,"Rucci, Jessica ""JR""",1,active,12 reps,1,4,,,,,,,4,1,1');
-    assert.equal(lines[3], 'Group 1,A,Amber Simcox,3,active,0 reps,4,0,,,,,,,0,0,3');
+    assert.equal(lines[1], 'Group 1,A,"Rourke, Jenna ""JJ""",1,active,12 reps,1,4,,,,,,,4,1,1');
+    assert.equal(lines[3], 'Group 1,A,Ava Sinclair,3,active,0 reps,4,0,,,,,,,0,0,3');
   });
   test('standings text lists divisions in order with places and points', () => {
     const s = withResults();
     const txt = X.standingsText(s, s.divisions.filter((d) => d.id === 'sf-g1'));
-    assert.equal(txt, ['ALL OUT STRONGFEST 2026 (THE POWER PLANT GYM)', '2026-10-24', '', 'Group 1',
-      '1. Jessica Rucci - 4 pts', '2. Emily Shaff - 3 pts', 'T-3. Amber Simcox - 0 pts', 'T-3. Grace Gullo - 0 pts'].join('\n'));   // R-M5: full ties share the place
+    assert.equal(txt, ['IRON HARBOR GROUPS INVITATIONAL 2026', '2026-10-24', '', 'Group 1',
+      '1. Jenna Rourke - 4 pts', '2. Erin Shaw - 3 pts', 'T-3. Ava Sinclair - 0 pts', 'T-3. Gia Gallo - 0 pts'].join('\n'));   // R-M5: full ties share the place
   });
   test('neutralizeFormula: formula prefixes get an apostrophe, plain numbers and words do not (BLD-05)', () => {
     assert.equal(X.neutralizeFormula('=SUM(A1)'), "'=SUM(A1)");
@@ -73,6 +74,6 @@ describe('export/import', () => {
   });
 
   test('backup filename is slug + timestamp', () => {
-    assert.equal(X.backupFilename(withResults(), new Date('2026-10-24T13:05:00Z')), 'zerotacky-all-out-strongfest-2026-the-power-plant-2026-10-24-13-05');
+    assert.equal(X.backupFilename(withResults(), new Date('2026-10-24T13:05:00Z')), 'zerotacky-iron-harbor-groups-invitational-2026-2026-10-24-13-05');
   });
 });

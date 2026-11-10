@@ -1,12 +1,14 @@
-import type { AppState, Athlete, Division, EventDef, Meet, PitCrewCalloutEntry } from '../types';
+// Test-only seed: a fictional five-group (strength-tiered) meet with two stations, used by the engine, sync, export and
+// builder tests. Not a scorer preset; nothing in the app imports it. Names and venue are made up.
+import type { AppState, Athlete, Division, EventDef, Meet, PitCrewCalloutEntry } from '../../lib/types';
 
-export function getStrongfestSeedState(): AppState {
-  const meetId = 'strongfest-2026';
+export function getGroupsSeedState(): AppState {
+  const meetId = 'test-groups-2026';
 
   const meet: Meet = {
     id: meetId,
-    presetId: 'strongfest-2026',
-    name: 'All Out Strongfest 2026 (The Power Plant Gym)',
+    presetId: 'test-groups-2026',
+    name: 'Iron Harbor Groups Invitational 2026',
     date: '2026-10-24',
     runOrderMethod: 'reverse_overall',
     tiebreakerRule: 'event_wins',
@@ -23,22 +25,22 @@ export function getStrongfestSeedState(): AppState {
     { id: 'sf-g5', meetId, name: 'Group 5', flight: 'B', sortOrder: 5 },
   ];
 
-  // Real roster from Iron Podium (director view, 2026-10-16). Lot numbers = listed order.
+  // Fictional roster. Lot numbers = listed order.
   const athletes: Athlete[] = [
-    { id: 'sf-ath-1', divisionId: 'sf-g1', name: 'Jessica Rucci', lotNumber: 1, status: 'active', rackHeights: {} },
-    { id: 'sf-ath-2', divisionId: 'sf-g1', name: 'Emily Shaff', lotNumber: 2, status: 'active', rackHeights: {} },
-    { id: 'sf-ath-3', divisionId: 'sf-g1', name: 'Amber Simcox', lotNumber: 3, status: 'active', rackHeights: {} },
-    { id: 'sf-ath-4', divisionId: 'sf-g1', name: 'Grace Gullo', lotNumber: 4, status: 'active', rackHeights: {} },
-    { id: 'sf-ath-5', divisionId: 'sf-g2', name: 'Josh Palange', lotNumber: 1, status: 'active', rackHeights: {} },
-    { id: 'sf-ath-6', divisionId: 'sf-g2', name: 'Jennifer Slagus', lotNumber: 2, status: 'active', rackHeights: {} },
-    { id: 'sf-ath-7', divisionId: 'sf-g2', name: 'Hannah Litchfield', lotNumber: 3, status: 'active', rackHeights: {} },
-    { id: 'sf-ath-8', divisionId: 'sf-g2', name: 'Nadia Hall', lotNumber: 4, status: 'active', rackHeights: {} },
-    { id: 'sf-ath-9', divisionId: 'sf-g2', name: 'Sarah Daniel', lotNumber: 5, status: 'active', rackHeights: {} },
-    { id: 'sf-ath-10', divisionId: 'sf-g2', name: 'Edward Anderson', lotNumber: 6, status: 'active', rackHeights: {} },
-    { id: 'sf-ath-11', divisionId: 'sf-g3', name: 'Yen Chun Huang', lotNumber: 1, status: 'active', rackHeights: {} },
-    { id: 'sf-ath-12', divisionId: 'sf-g4', name: 'Hyden Zhang', lotNumber: 1, status: 'active', rackHeights: {} },
-    { id: 'sf-ath-13', divisionId: 'sf-g4', name: 'Kurt Pollack', lotNumber: 2, status: 'active', rackHeights: { 'sf-ev-2': '48" Bar (Std)' } },
-    { id: 'sf-ath-14', divisionId: 'sf-g5', name: 'Marcus Potter', lotNumber: 1, status: 'active', rackHeights: {} },
+    { id: 'sf-ath-1', divisionId: 'sf-g1', name: 'Jenna Rourke', lotNumber: 1, status: 'active', rackHeights: {} },
+    { id: 'sf-ath-2', divisionId: 'sf-g1', name: 'Erin Shaw', lotNumber: 2, status: 'active', rackHeights: {} },
+    { id: 'sf-ath-3', divisionId: 'sf-g1', name: 'Ava Sinclair', lotNumber: 3, status: 'active', rackHeights: {} },
+    { id: 'sf-ath-4', divisionId: 'sf-g1', name: 'Gia Gallo', lotNumber: 4, status: 'active', rackHeights: {} },
+    { id: 'sf-ath-5', divisionId: 'sf-g2', name: 'Jonah Price', lotNumber: 1, status: 'active', rackHeights: {} },
+    { id: 'sf-ath-6', divisionId: 'sf-g2', name: 'Jules Sandoval', lotNumber: 2, status: 'active', rackHeights: {} },
+    { id: 'sf-ath-7', divisionId: 'sf-g2', name: 'Harper Linden', lotNumber: 3, status: 'active', rackHeights: {} },
+    { id: 'sf-ath-8', divisionId: 'sf-g2', name: 'Nora Hale', lotNumber: 4, status: 'active', rackHeights: {} },
+    { id: 'sf-ath-9', divisionId: 'sf-g2', name: 'Sloane Darby', lotNumber: 5, status: 'active', rackHeights: {} },
+    { id: 'sf-ath-10', divisionId: 'sf-g2', name: 'Evan Archer', lotNumber: 6, status: 'active', rackHeights: {} },
+    { id: 'sf-ath-11', divisionId: 'sf-g3', name: 'Wen Liang', lotNumber: 1, status: 'active', rackHeights: {} },
+    { id: 'sf-ath-12', divisionId: 'sf-g4', name: 'Hayes Zane', lotNumber: 1, status: 'active', rackHeights: {} },
+    { id: 'sf-ath-13', divisionId: 'sf-g4', name: 'Cole Parrish', lotNumber: 2, status: 'active', rackHeights: { 'sf-ev-2': '48" Bar (Std)' } },
+    { id: 'sf-ath-14', divisionId: 'sf-g5', name: 'Mason Pruitt', lotNumber: 1, status: 'active', rackHeights: {} },
   ];
 
   const truckCallout = (vehicle: string): PitCrewCalloutEntry => ({

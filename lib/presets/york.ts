@@ -23,7 +23,7 @@ export function getYorkSeedState(): AppState {
   ];
 
   const athletes: Athlete[] = [
-    { id: 'ath-1', divisionId: 'div-m105', name: 'Kurt Pollack', bodyweight: 104.2, lotNumber: 1, status: 'active', rackHeights: { 'ev-1': 'Pin 14 (6\'4")', 'ev-4': 'Pin 16 (High)' } },
+    { id: 'ath-1', divisionId: 'div-m105', name: 'Cole Parrish', bodyweight: 104.2, lotNumber: 1, status: 'active', rackHeights: { 'ev-1': 'Pin 14 (6\'4")', 'ev-4': 'Pin 16 (High)' } },
     { id: 'ath-2', divisionId: 'div-m105', name: 'Dan Vance', bodyweight: 103.8, lotNumber: 2, status: 'active', rackHeights: { 'ev-1': 'Pin 11', 'ev-4': 'Pin 13' } },
     { id: 'ath-3', divisionId: 'div-m105', name: 'Marcus Trent', bodyweight: 104.9, lotNumber: 3, status: 'active', rackHeights: { 'ev-1': 'Pin 10', 'ev-4': 'Pin 12' } },
     { id: 'ath-4', divisionId: 'div-m105', name: 'Luke Mercer', bodyweight: 101.5, lotNumber: 4, status: 'active', rackHeights: { 'ev-1': 'Pin 12', 'ev-4': 'Pin 14' } },
