@@ -5,9 +5,12 @@
 **Where we are.** The two-track plan finished: `v2` became `main` on 11/9 (tag `v2-retired-2026-11-09`), one branch, one
 Supabase prod (`kagitbfthapxmaljsdtz`, migrations 001-053 applied) plus staging, www.zerotacky.com on Vercel Hobby, Resend
 mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 feature-gaps report ranked 22 builds;
-18 shipped. Live main `1fa331b5`, 731 tests. Jess has the gym and meet invite links and the feature email (11/10).
+19 shipped. Live main `9aacc44c`, 739 tests. Jess has the gym and meet invite links and the feature email (11/10).
 
 **Shipped since the 10/21 entries below (newest first)**
+- 11/10 teams (055): a division can be a team of 2 to 6. Each teammate registers and pays alone, then forms the team on
+  the registration page: start one (name, join code, share link), join by code, or opt in to the partner board and team
+  up. The team is one roster row; the promoter sees the team under each entry and can rename it.
 - 11/10 "Which group fits me?" (#13) + division format (054): the promoter marks a meet as standard weight classes
   (kg, with per-class caps and one-tap Strongman Corporation / IPF tables) or custom groups / thresholds; only custom shows get the helper, which ranks the groups
   from a deadlift, a press and a carry number. Register step 1 preselects the suggested group.

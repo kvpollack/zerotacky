@@ -358,6 +358,7 @@ export function toPublicRegistrationMeet(
       id: d.id,
       name: d.name,
       ...(typeof d.weightCapKg === 'number' ? { weightCapKg: d.weightCapKg } : {}),
+      ...(typeof d.teamSize === 'number' && d.teamSize > 1 ? { teamSize: d.teamSize } : {}),
       targetWeights: state.events.map((e) => ({
         eventName: e.name,
         weight: typeof e.divisionWeights?.[d.id] === 'number' ? e.divisionWeights[d.id] : null,

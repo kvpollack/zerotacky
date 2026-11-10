@@ -62,6 +62,14 @@ const PROMOTER_API_METHODS = [
   'listMyClaims',
   'listMeetClaims',
   'resolveClaim',
+  // 055 teams
+  'getMyRegistration',
+  'teamCreate',
+  'teamJoin',
+  'teamLeave',
+  'teamRename',
+  'setPartnerFlag',
+  'teamUp',
 ] as const;
 
 // Compile-time check: adding a method to PromoterApi without listing it here is a type error.

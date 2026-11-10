@@ -46,6 +46,9 @@ import {
   validateRegistrationInput,
 } from './rules';
 
+// 055: the preview backend has no accounts, so teams are a real-backend feature only.
+const PREVIEW_TEAMS = 'Teams need a signed-in account; the preview has none.';
+
 // The pure rules moved to ./rules (Astra H1, 10/17); re-exported so existing imports and tests keep working.
 export {
   ageOnDate,
@@ -971,6 +974,15 @@ export function createFixturePromoterApi(
 
       return { data: { id: newReg.id, status: outcome.status }, error: null };
     },
+
+    // 055 teams: the preview backend has no accounts, so there is no entry to attach a team to
+    async getMyRegistration() { return { data: null, error: null }; },
+    async teamCreate() { return { data: null, error: PREVIEW_TEAMS }; },
+    async teamJoin() { return { data: null, error: PREVIEW_TEAMS }; },
+    async teamLeave() { return { data: null, error: PREVIEW_TEAMS }; },
+    async teamRename() { return { data: null, error: PREVIEW_TEAMS }; },
+    async setPartnerFlag() { return { data: null, error: PREVIEW_TEAMS }; },
+    async teamUp() { return { data: null, error: PREVIEW_TEAMS }; },
   };
 }
 

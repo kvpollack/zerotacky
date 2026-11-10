@@ -16,6 +16,7 @@ import {
   type DeskPatch,
   type DeskState,
   type MyAthleteMeet,
+  type MyRegistration,
   type MeetListing,
   type ImportedFrom,
   type PromoterApi,
@@ -25,6 +26,7 @@ import {
   type PublicRegistrationMeet,
   type RegistrationRequest,
   type RegistrationSubmission,
+  type Team,
 } from './contract';
 import type {
   MeetListingColumns,
@@ -211,6 +213,9 @@ export function rowToRegistrationRequest(row: RegistrationRow): RegistrationRequ
     guardian: row.guardian_name ? { name: row.guardian_name, contact: row.guardian_contact ?? '' } : null,
     paid: Boolean(row.paid),
     createdAt: row.created_at,
+    teamId: row.team_id ?? null,
+    teamName: row.team_name ?? null,
+    lookingForPartner: Boolean(row.looking_for_partner),
   };
 }
 
@@ -925,6 +930,8 @@ export function createSupabasePromoterApi(
                 : null,
               waiverAccepted: input.waiverAccepted,
               waiverVersion: input.waiverVersion,   // C6: zt_submit_registration refuses a submission without it
+              ...(input.teamCode?.trim() ? { teamCode: input.teamCode.trim() } : {}),
+              ...(input.lookingForPartner !== undefined ? { lookingForPartner: input.lookingForPartner } : {}),
             },
           }
         );
@@ -948,6 +955,42 @@ export function createSupabasePromoterApi(
         }
         return { data: null, error: msg };
       }
+    },
+
+    // ---- 055 teams: thin RPC wrappers; the rules live in supabase/055_teams.sql and the messages come back verbatim
+    async getMyRegistration(slug: string): Promise<ApiResult<MyRegistration | null>> {
+      try {
+        const authCheck = await requireSignedInUser();
+        if (!authCheck.user) return { data: null, error: null };
+        const out = await db.rpc<MyRegistration | null>('zt_my_registration', { p_slug: slug });
+        return { data: out ?? null, error: null };
+      } catch (e) {
+        return { data: null, error: errMessage(e) };
+      }
+    },
+    async teamCreate(registrationId: string, name: string): Promise<ApiResult<Team>> {
+      try { return { data: await db.rpc<Team>('zt_team_create', { p_registration_id: registrationId, p_name: name }), error: null }; }
+      catch (e) { return { data: null, error: errMessage(e) }; }
+    },
+    async teamJoin(registrationId: string, code: string): Promise<ApiResult<Team>> {
+      try { return { data: await db.rpc<Team>('zt_team_join', { p_registration_id: registrationId, p_code: code }), error: null }; }
+      catch (e) { return { data: null, error: errMessage(e) }; }
+    },
+    async teamLeave(registrationId: string): Promise<ApiResult<{ left: boolean }>> {
+      try { return { data: await db.rpc<{ left: boolean }>('zt_team_leave', { p_registration_id: registrationId }), error: null }; }
+      catch (e) { return { data: null, error: errMessage(e) }; }
+    },
+    async teamRename(teamId: string, name: string): Promise<ApiResult<Team>> {
+      try { return { data: await db.rpc<Team>('zt_team_rename', { p_team_id: teamId, p_name: name }), error: null }; }
+      catch (e) { return { data: null, error: errMessage(e) }; }
+    },
+    async setPartnerFlag(registrationId: string, flag: boolean): Promise<ApiResult<{ lookingForPartner: boolean }>> {
+      try { return { data: await db.rpc<{ lookingForPartner: boolean }>('zt_set_partner_flag', { p_registration_id: registrationId, p_flag: flag }), error: null }; }
+      catch (e) { return { data: null, error: errMessage(e) }; }
+    },
+    async teamUp(registrationId: string, otherRegistrationId: string): Promise<ApiResult<Team>> {
+      try { return { data: await db.rpc<Team>('zt_team_up', { p_registration_id: registrationId, p_other_registration_id: otherRegistrationId }), error: null }; }
+      catch (e) { return { data: null, error: errMessage(e) }; }
     },
   };
 }

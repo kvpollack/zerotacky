@@ -152,6 +152,47 @@ export interface RegistrationRequest {
   guardian: RegistrationGuardian | null; // 009: set when the athlete is under 18 on meet day and a parent/guardian registered them; owner-only, never public
   paid: boolean;
   createdAt: string;
+  teamId?: string | null;          // 055: the team this entry is on (team divisions only)
+  teamName?: string | null;
+  lookingForPartner?: boolean;     // 055: on the division's partner board
+}
+
+// 055: teams. A team competes as one roster row; members register one at a time and form up afterwards.
+export interface TeamMember {
+  registrationId: string;
+  name: string;            // full for teammates and the promoter; "Pat M." on the partner board
+  status: 'pending' | 'accepted';
+  isCaptain: boolean;
+}
+export interface Team {
+  id: string;
+  meetId: string;
+  divisionId: string;
+  name: string;
+  joinCode: string | null;   // only for members and the promoter
+  captainUserId: string | null;
+  athleteId: string | null;  // the shared roster row once a member is accepted
+  teamSize: number;
+  activeCount: number;
+  members: TeamMember[];
+}
+export interface PartnerBoardEntry {
+  registrationId: string;
+  name: string;              // short form
+  teamName: string | null;   // on a team with space, or solo
+  spotsOpen: number;
+}
+// The signed-in athlete's live entry for one show (zt_my_registration); null when they have none.
+export interface MyRegistration {
+  registrationId: string;
+  status: 'pending' | 'accepted';
+  waitlisted: boolean;
+  divisionId: string;
+  divisionName: string;
+  teamSize: number;
+  lookingForPartner: boolean;
+  team: Team | null;
+  board: PartnerBoardEntry[];
 }
 
 // 045 (feature gaps #8): check-in desk. One row per roster athlete the desk has touched; everything else is absent.
@@ -189,7 +230,7 @@ export interface PublicRegistrationMeet {
   listing: Pick<MeetListing, 'competitionStatus' | 'registrationStatus' | 'entryFeeDisplay' | 'registrationDeadline' | 'athleteCap' | 'federation' | 'venue' | 'promoterContact'>;
   promoterDisplayName: string;   // for the waiver's organizer line
   divisionFormat?: DivisionFormat;   // 054: 'weight_classes' hides the "Which group fits me" hint on step 1
-  divisions: Array<{ id: string; name: string; weightCapKg?: number; targetWeights: Array<{ eventName: string; weight: number | null }> }>;
+  divisions: Array<{ id: string; name: string; weightCapKg?: number; teamSize?: number; targetWeights: Array<{ eventName: string; weight: number | null }> }>;
   acceptedCount: number;         // roster rows holding a spot (accepted requests plus hand-added athletes); compared against athleteCap
 }
 
@@ -209,6 +250,8 @@ export interface RegistrationSubmission {
   guardian: RegistrationGuardian | null; // required when the athlete is under 18 on meet day, ignored otherwise
   waiverAccepted: true;          // the form cannot submit without it
   waiverVersion: string;         // identifies the waiver text shown (first 12 hex chars of sha-256 of legal/WAIVER.md as rendered); stored with the request
+  teamCode?: string;             // 055: join this team at submit (team divisions; same division, space left)
+  lookingForPartner?: boolean;   // 055: list me on the division's partner board (team divisions)
 }
 
 export interface ApiResult<T> {
@@ -309,6 +352,15 @@ export interface PromoterApi {
   // 'waitlist' is returned when registrationStatus is 'waitlist' (the request is stored pending with waitlisted=true);
   // closed/not_provided/day_of_only/not_applicable, a passed deadline under 'open', or a full roster under 'open' are errors.
   submitRegistration(input: RegistrationSubmission): Promise<ApiResult<{ id: string; status: 'pending' | 'waitlist' | 'accepted' }>>;
+
+  // 055 teams (signed in). Every call is the athlete acting on their own entry, except teamRename which the promoter may call too.
+  getMyRegistration(slug: string): Promise<ApiResult<MyRegistration | null>>;
+  teamCreate(registrationId: string, name: string): Promise<ApiResult<Team>>;
+  teamJoin(registrationId: string, code: string): Promise<ApiResult<Team>>;
+  teamLeave(registrationId: string): Promise<ApiResult<{ left: boolean }>>;
+  teamRename(teamId: string, name: string): Promise<ApiResult<Team>>;
+  setPartnerFlag(registrationId: string, flag: boolean): Promise<ApiResult<{ lookingForPartner: boolean }>>;
+  teamUp(registrationId: string, otherRegistrationId: string): Promise<ApiResult<Team>>;
 }
 
 // Helper every implementation shares.

@@ -70,6 +70,9 @@ export interface RegistrationRow {
   date_of_birth?: string | null;    // 009; absent from rows read before the migration
   guardian_name?: string | null;    // 009; absent from rows read before the migration
   guardian_contact?: string | null;
+  team_id?: string | null;             // 055
+  team_name?: string | null;           // 055; zt_list_meet_registrations only
+  looking_for_partner?: boolean;       // 055
   created_at: string;
   updated_at: string;
 }

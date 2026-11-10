@@ -41,6 +41,7 @@ export default function RegistrationsSection({
   const [rowNotices, setRowNotices] = useState<Record<string, string>>({});
 
   const divisionNameById = new Map(divisions.map((d) => [d.id, d.name]));
+  const teamSizeById = new Map(divisions.map((d) => [d.id, d.teamSize ?? 1]));   // 055
 
   // Roster rows are linked by athleteId only (contract); names are never used for matching.
   const rosterRowFor = (reg: RegistrationRequest): Athlete | undefined =>
@@ -159,6 +160,14 @@ export default function RegistrationsSection({
                       {rosterEntry && rosterEntry.divisionId !== reg.divisionId && (
                         <span className="block text-[10px] font-extrabold text-amber-300">
                           competing in {divisionNameById.get(rosterEntry.divisionId) ?? rosterEntry.divisionId}
+                        </span>
+                      )}
+                      {/* 055: team divisions. The team name is the roster row; a member without a team is still forming up. */}
+                      {(teamSizeById.get(reg.divisionId) ?? 1) > 1 && (
+                        <span className={`block mt-0.5 text-[10px] font-extrabold ${reg.teamName ? 'text-zt-primary-2' : 'text-amber-300'}`} data-testid="reg-team">
+                          <Users className="w-3 h-3 inline mr-1 align-[-2px]" aria-hidden="true" />
+                          {reg.teamName ? `Team: ${reg.teamName}` : `Team of ${teamSizeById.get(reg.divisionId)}, no team yet`}
+                          {reg.lookingForPartner && !reg.teamName ? ' · looking for a partner' : ''}
                         </span>
                       )}
                     </td>

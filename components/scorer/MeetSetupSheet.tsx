@@ -84,7 +84,7 @@ export type MeetSetupSheetProps = {
   updateStation: (id: string, patch: { label?: string; eventOrder?: string[] | null }) => void;
   removeStation: (id: string) => void;
   addDivision: (d: { name: string; flight: string; weightCapKg?: number | null }) => void;
-  updateDivision: (id: string, patch: { name?: string; flight?: string; weightCapKg?: number | null }) => void;
+  updateDivision: (id: string, patch: { name?: string; flight?: string; weightCapKg?: number | null; teamSize?: number }) => void;
   removeDivision: (id: string) => void;
   reorderDivisions: (ids: string[]) => void;
   addEvent: (payload: unknown) => void;
@@ -367,6 +367,7 @@ function Divisions(props: MeetSetupSheetProps) {
     <>
       <Sec right={`Stations are assigned in step ${stepNo(props, 'stations')}`}>{stepNo(props, 'divisions')}. Divisions ({sortedDivisions.length})</Sec>
       {weightClasses && <Note className="!mt-0">Standard weight classes: the cap is the heaviest bodyweight allowed, in kg (20 to 300). Leave it blank for an open or unlimited class.</Note>}
+      {sortedDivisions.some((d) => (d.teamSize ?? 1) > 1) && <Note className="!mt-0">Team divisions: each teammate registers and pays on their own, then they form the team (start one, join by code, or get matched). The team scores as one athlete.</Note>}
       {sortedDivisions.length === 0 ? (
         <Empty>No divisions yet. Add your first {weightClasses ? 'weight class' : 'division or group'} below.</Empty>
       ) : (
@@ -379,7 +380,7 @@ function Divisions(props: MeetSetupSheetProps) {
             const isArmed = armedDeleteId === div.id;
             return (
               <React.Fragment key={div.id}>
-                <Line cols={weightClasses ? '28px 28px 1fr 88px auto 36px' : '28px 28px 1fr auto 36px'}>
+                <Line cols={weightClasses ? '28px 28px 1fr 88px auto auto 36px' : '28px 28px 1fr auto auto 36px'}>
                   <IconKey disabled={idx === 0} onClick={() => moveDivision(idx, -1)} aria-label={`Move ${div.name} up`}><ArrowUp className="w-3.5 h-3.5" /></IconKey>
                   <IconKey disabled={idx === sortedDivisions.length - 1} onClick={() => moveDivision(idx, 1)} aria-label={`Move ${div.name} down`}><ArrowDown className="w-3.5 h-3.5" /></IconKey>
                   <C><TextInput type="text" value={div.name} onChange={(e) => updateDivision(div.id, { name: e.target.value })} aria-label="Division name" className="!text-[13px]" /></C>
@@ -389,9 +390,15 @@ function Divisions(props: MeetSetupSheetProps) {
                       <span className={`${CAP} text-[10px]`}>kg</span>
                     </C>
                   )}
+                  <C title="Individual athletes, or a team that registers one by one and scores as one">
+                    <Select value={String(div.teamSize ?? 1)} onChange={(e) => updateDivision(div.id, { teamSize: Number(e.target.value) })} aria-label={`Team size for ${div.name}`} className="!text-[12px]" data-testid="team-size">
+                      <option value="1">Individual</option>
+                      {[2, 3, 4, 5, 6].map((n) => <option key={n} value={String(n)}>Team of {n}</option>)}
+                    </Select>
+                  </C>
                   <C className="text-[10px] whitespace-nowrap flex-col !items-end justify-center leading-tight" title="Station (set in step 4)">
                     <span className={invalidStation ? 'text-redpen font-bold' : CAP}>{stationLabel(div.flight)}</span>
-                    <span className={CAP}>{divAthletes.length} ath</span>
+                    <span className={CAP}>{divAthletes.length} {(div.teamSize ?? 1) > 1 ? (divAthletes.length === 1 ? 'team' : 'teams') : 'ath'}</span>
                   </C>
                   <IconKey red={isArmed} onClick={() => setArmedDeleteId(isArmed ? null : div.id)} aria-label={`Remove ${div.name}`}><X /></IconKey>
                 </Line>

@@ -1290,3 +1290,59 @@ classes (kg) or custom groups / thresholds; a traditional show never sees "Which
 Left on purpose: USS and other federations' tables are not bundled (promoters type their own caps); the
 format cannot be cleared back to unset from the dashboard (once chosen, it is one of the two); the weigh-in desk still
 owns cap edits on meet day (`zt_desk_division_cap`), the Divisions step is for setup.
+
+## Teams (11/10 late afternoon, migration 055)
+
+Kurt: a division can be a team of N (the Catalina Strongman Mixer 4 partner format is the reference). Each teammate
+registers and pays on their own; the team forms after registration. Defaults Kurt approved: start a team / join by code /
+"find me a partner" opt-in on by default; the captain names the team, the promoter can rename it.
+
+- **Schema (055).** `divisions.team_size` int 1..6 (1 = individual, the default for every existing division). `teams`
+  (meet, division, name 2..60, join code unique per meet, 6 characters without 0 / O / 1 / I, captain, `athlete_id` =
+  the one roster row the team competes as). `registrations.team_id` (set null on team delete) and
+  `registrations.looking_for_partner`. RLS: staff and members read teams; every write goes through an RPC.
+- **Rules (SQL, `supabase/055_teams.sql`).** `zt_team_create` (name the team, become captain), `zt_team_join` (code,
+  same division, space left), `zt_team_leave` (refused once the entry is accepted: "ask the promoter"; the captaincy
+  passes to the next member), `zt_team_rename` (captain or staff; the roster row is renamed with it),
+  `zt_set_partner_flag`, `zt_team_up` (both athletes flagged; my team with space wins, then theirs, otherwise a new team
+  named "First & First"), `zt_my_registration(slug)` (the signed-in athlete's live entry, team, and the partner board
+  with first name + last initial; a team-division entry wins over an individual one in the same show). The 034 submit
+  body takes `teamCode` and `lookingForPartner`; auto-accept shares the team's roster row. The 007 status body reuses the
+  team row on accept (no second cap slot), clears `team_id` on decline / withdraw and deletes the row only when no other
+  member is accepted. `zt_list_meet_registrations` returns `team_id`, `team_name`, `looking_for_partner`. Publish and
+  config save carry `team_size`; save refuses shrinking a division below its largest active team. An individual with
+  results cannot be moved onto a team. Checked on staging as two accounts (create, join, bad code, leave after accept
+  refused, rename by non-captain refused, withdraw keeps / deletes the shared row, team up both ways, full team refused).
+- **Model and API.** `Division.teamSize?` (2..6 kept, 1 dropped on load; the save sends a missing value as 1, so
+  shrinking back to individual sticks). `RegistrationRequest.teamId / teamName / lookingForPartner`;
+  `RegistrationSubmission.teamCode? / lookingForPartner?`; `Team`, `TeamMember`, `PartnerBoardEntry`,
+  `MyRegistration`; seven `PromoterApi` methods (`getMyRegistration`, `teamCreate`, `teamJoin`, `teamLeave`,
+  `teamRename`, `setPartnerFlag`, `teamUp`) as thin RPC wrappers, listed in the lazy-fixture method table. The preview
+  backend has no accounts, so it answers "no entry" and refuses the actions with one line.
+- **Promoter UI.** Divisions step: an Individual / Team of 2..6 select on every line, the athlete count reads "teams"
+  for a team division, and one note explains the flow when any division is a team. Registrations list: under the
+  division, "Team: <name>" or "Team of N, no team yet" (+ "looking for a partner").
+- **Athlete UI.** Register step 1: the division radio reads "· team of N"; a team division adds a cell with the flow in
+  one sentence, an optional join code (prefilled from a teammate's share link `?team=<code>`, uppercased) and the
+  "Find me a partner" box (on). Step 3 review gets a Team row. After submit, and again at the top of the form on a
+  return visit, `components/register/TeamPanel.tsx` (`zt_my_registration`): with a team, the card (name, Rename for
+  the captain, "1 of 2 spots filled", code + Copy code / Copy link / Share… via the Web Share API when the browser has
+  it, members with status, Leave while pending; accepted reads "ask the promoter"); without one, Start a team / Join a
+  team / Find a partner (the flag, the board with Team up; Team up is disabled until the box is ticked).
+- **Tests.** `test/teams.test.mjs` (8: mapping both ways incl. the explicit 1, normalizeState 2..6, updateDivision
+  patch, public projection, registration row fields, the seven wrappers' parameter names, signed-out = null, preview
+  refusal, share link) and the submit payload assertion in `test/supabaseApi.test.mjs`. 739 pass, tsc clean.
+- **Probes** (`~/.aki/tmp/zt/shots/teams1.py`, `teams2.py`, `teams3.py`; screenshots `~/Downloads/zt_ui_1110/`
+  `divisions_team_of.png`, `register_team_cell.png`, `team_panel_no_team.png`, `team_panel_captain.png`,
+  `team_panel_member_full.png`, `team_panel_return_visit.png`, `team_panel_board.png`,
+  `registrations_team_column.png`): temp division "Tag Team Open" (team of 2) on staging Iron Harbor; the select shows
+  Team of 2; A registered, started Harbor Hogs, code issued; B opened the share link with the code prefilled, registered
+  and landed on the full team (both auto-accepted, so Leave was hidden as designed); with B set back to pending: return
+  visit shows the panel above the form, Leave worked, the board listed "Slate S. · Harbor Hogs, 1 open", a bad code
+  surfaced the SQL message, Team up rejoined, the captain renamed to Harbor Hogs II, the promoter list shows the team on
+  both rows sharing Lot #1. Temp rows removed, deadline back to 2026-11-07.
+
+Left on purpose: no separate promoter Teams view (the registrations list carries the team; renaming from the dashboard
+is the captain's or the SQL staff path for now); renaming the roster athlete in the scorer does not rename the team;
+the team's results and standings are the existing single-athlete ones (one row, one lot); payments stay per athlete
+with the promoter. IG-sized result cards and the gym "intro strongman sessions" tag are next.

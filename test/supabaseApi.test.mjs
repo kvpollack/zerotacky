@@ -865,6 +865,18 @@ describe('supabaseApi: getPublicMeetBySlug H1 secret check & submitRegistration'
     expect(stored.dateOfBirth).toBe('1990-05-02');
     expect(rpc.params.p_input.dateOfBirth).toBe('1990-05-02');
     expect(rpc.params.p_input.guardian).toBeNull();
+    // 055: no team fields unless the form sends them (individual divisions never do)
+    expect('teamCode' in rpc.params.p_input).toBe(false);
+    expect('lookingForPartner' in rpc.params.p_input).toBe(false);
+    const teamSub = await api.submitRegistration({
+      slug: 'iron-furnace-classic-2026', divisionId: 'ifc-g1', athleteName: 'Teammate Public (Fake)', email: 'teammate.public@example.com',
+      emergencyContact: 'Jordan Public 717-555-0199', dateOfBirth: '1990-05-02', guardian: null, waiverAccepted: true, waiverVersion: 'testwaiver01',
+      teamCode: ' k7pq2m ', lookingForPartner: false,
+    });
+    expect(teamSub.error).toBeNull();
+    const teamRpc = fakeDb.rpcCalls.filter((c) => c.fn === 'zt_submit_registration').at(-1);
+    expect(teamRpc.params.p_input.teamCode).toBe('k7pq2m');
+    expect(teamRpc.params.p_input.lookingForPartner).toBe(false);
 
     // 009: a minor's guardian travels in the RPC payload, trimmed, and comes back on the stored request
     fakeDb.setSignedOut(true);

@@ -46,6 +46,7 @@ export interface Division {
   flight: string; // Station id (e.g. 'A' | 'B'); station filter also uses 'ALL'
   sortOrder: number;
   weightCapKg?: number | null;   // 045/054: bodyweight cap for a standard weight class (20..300 kg); null/absent = none
+  teamSize?: number;             // 055: 2..6 = a team division (one roster row per team); absent/1 = individual
 }
 
 export interface Athlete {

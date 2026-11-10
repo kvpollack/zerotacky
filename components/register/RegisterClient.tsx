@@ -25,6 +25,7 @@ import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import { describeEmailResult, requestRegistrationEmail } from '@/lib/email/client';
 import { listMyCards, showWantsMembershipCard } from '@/lib/website/membershipCards';
 import SignInForm from '@/components/auth/SignInForm';
+import TeamPanel from '@/components/register/TeamPanel';
 
 interface RegisterClientProps {
   slug: string;
@@ -84,6 +85,11 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
   const [guardianName, setGuardianName] = useState('');
   const [guardianContact, setGuardianContact] = useState('');
   const [waiverAccepted, setWaiverAccepted] = useState(false);
+  // 055 teams: a join code (from a teammate's share link, ?team=<code>) and the partner-board opt-in, both only sent
+  // for a team division. The team itself forms after submit, in TeamPanel.
+  const [teamCode, setTeamCode] = useState('');
+  const [lookingForPartner, setLookingForPartner] = useState(true);
+  const [teamRefresh, setTeamRefresh] = useState(0);
 
   // 035: a sanctioned show and no membership card on the account -> one-line nudge on step 1. Never blocks; one cheap
   // query, errors swallowed (the nudge simply does not show).
@@ -129,6 +135,8 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
         const wanted = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('division') : null;
         const preselect = wanted && res.data?.divisions.some((d) => d.id === wanted) ? wanted : '';
         setDivisionId((cur) => cur || preselect || res.data?.divisions[0]?.id || '');
+        const code = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('team') : null;
+        if (code) setTeamCode((cur) => cur || code.trim().toUpperCase());
         setLoadState('ready');
       })
       .catch((err: unknown) => {
@@ -194,6 +202,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
   const regOpen = isRegistrationOpen(meet.listing.registrationStatus);
   const gate = decideRegistrationOutcome(meet);
   const selectedDivision = meet.divisions.find((d) => d.id === divisionId);
+  const teamDivision = (selectedDivision?.teamSize ?? 1) > 1;
   const promoterContactDisplay = meet.listing.promoterContact ?? 'contact not provided';
 
   const venueDisplay = meet.listing.venue
@@ -266,6 +275,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
       guardian: guardianOrNull,
       waiverAccepted: true,
       waiverVersion,
+      ...(teamDivision ? { teamCode: teamCode.trim() || undefined, lookingForPartner } : {}),
     });
     setSubmitting(false);
 
@@ -276,6 +286,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
 
     setSubmitted(res.data);
     setStep(4);
+    setTeamRefresh((n) => n + 1);
     // 031: confirmation to the athlete and a notice to the promoter. Best effort: the registration is already in.
     if (isLiveBackend()) {
       requestRegistrationEmail(getSupabase(), res.data.id, 'received').then((r) => setEmailNote(describeEmailResult(r, 'athlete')));
@@ -433,6 +444,11 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
             </section>
           )}
 
+          {/* 055: a returning athlete with a live entry in a team division manages the team here; renders nothing otherwise. */}
+          {step === 1 && !needsAccount && !(isLiveBackend() && auth.loading) && isLiveBackend() && (
+            <TeamPanel slug={meet.slug} refreshKey={teamRefresh} />
+          )}
+
           {/* STEP 1: DIVISION & ATHLETE DETAILS */}
           {step === 1 && !needsAccount && !(isLiveBackend() && auth.loading) && (
             <form onSubmit={goToStep2} className="flex flex-col gap-4">
@@ -478,7 +494,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                           onKeyDown={(e) => onRadioKeyDown(e, index)}
                           className={keyClass(selected ? 'ink' : 'line', 'w-full min-h-12 flex-col items-start gap-0 leading-tight py-2 text-left')}
                         >
-                          <span>{div.name}</span>
+                          <span>{div.name}{(div.teamSize ?? 1) > 1 ? ` · team of ${div.teamSize}` : ''}</span>
                           {weightSummary && (
                             <span className="text-[12px] normal-case font-normal tracking-normal opacity-80">Target weights: {weightSummary}</span>
                           )}
@@ -487,6 +503,30 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                     })}
                   </div>
                 </div>
+
+                {teamDivision && (
+                  <div className={`${CELL} col-span-full`} data-testid="team-entry">
+                    <Cap as="span">Team of {selectedDivision?.teamSize}</Cap>
+                    <p className={NOTE}>
+                      Register yourself here; every teammate does the same and pays their own entry. After you submit you can start a team, join one by code, or find a partner.
+                    </p>
+                    <label htmlFor="reg-team-code" className={`${NOTE} mt-1`}>Have a join code from a teammate? (optional)</label>
+                    <input
+                      id="reg-team-code"
+                      type="text"
+                      value={teamCode}
+                      onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
+                      placeholder="e.g. K7PQ2M"
+                      maxLength={8}
+                      autoComplete="off"
+                      className={`${INPUT} max-w-[12rem] font-mono uppercase tracking-[0.12em]`}
+                    />
+                    <label className="flex items-start gap-2 cursor-pointer mt-1">
+                      <input type="checkbox" className="mt-1 accent-[var(--pen)]" checked={lookingForPartner} onChange={(e) => setLookingForPartner(e.target.checked)} />
+                      <span className={BODY}>Find me a partner: list me for other athletes in this division who are also looking (first name and last initial only).</span>
+                    </label>
+                  </div>
+                )}
 
                 <div className={CELL}>
                   <label htmlFor="reg-athlete-name"><Cap as="span">Athlete full name *</Cap></label>
@@ -674,6 +714,12 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                 <dl className="contents">
                   <ReviewRow label="Competition">{meet.name} ({meet.date ? longIsoDate(meet.date) : 'date TBD'})</ReviewRow>
                   <ReviewRow label="Selected division" pen>{selectedDivision?.name ?? divisionId}</ReviewRow>
+                  {teamDivision && (
+                    <ReviewRow label="Team">
+                      Team of {selectedDivision?.teamSize}; {teamCode.trim() ? <>joining with code <code className="font-mono">{teamCode.trim()}</code></> : 'form your team after submitting'}
+                      {lookingForPartner ? '; listed on the partner board' : ''}
+                    </ReviewRow>
+                  )}
                   <ReviewRow label="Athlete name">{athleteName}</ReviewRow>
                   <ReviewRow label="Email">{email}</ReviewRow>
                   <ReviewRow label="Emergency contact">{emergencyContact}</ReviewRow>
@@ -745,6 +791,9 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                 )}
               </div>
             </section>
+          )}
+          {step === 4 && submitted && teamDivision && isLiveBackend() && (
+            <TeamPanel slug={meet.slug} refreshKey={teamRefresh} />
           )}
         </>
       )}

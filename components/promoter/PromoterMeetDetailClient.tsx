@@ -252,7 +252,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
     setWorkingState((prev) => (prev ? mbAddDivision(prev, input) : prev));
   const updateDivision = (
     divisionId: string,
-    patch: Partial<Pick<Division, 'name' | 'flight' | 'sortOrder' | 'weightCapKg'>>
+    patch: Partial<Pick<Division, 'name' | 'flight' | 'sortOrder' | 'weightCapKg' | 'teamSize'>>
   ) => setWorkingState((prev) => (prev ? mbUpdateDivision(prev, divisionId, patch) : prev));
   const removeDivision = (divisionId: string) =>
     setWorkingState((prev) => (prev ? mbRemoveDivision(prev, divisionId) : prev));

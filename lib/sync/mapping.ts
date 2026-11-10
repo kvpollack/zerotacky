@@ -10,7 +10,7 @@ export interface MeetRow {
   division_format?: string | null;   // 054; absent/null = the promoter has not chosen
   updated_at?: string;   // server-side; set by zt_publish_meet, read by pullChanges as the config watermark
 }
-export interface DivisionRow { id: string; meet_id: string; name: string; flight: string; sort_order: number; weight_cap_kg?: number | string | null }
+export interface DivisionRow { id: string; meet_id: string; name: string; flight: string; sort_order: number; weight_cap_kg?: number | string | null; team_size?: number | null }
 export interface EventRow {
   id: string; meet_id: string; event_number: number; name: string; scoring_type: string;
   time_cap_seconds: number; lanes: number; loading_points: number; weight_entry_mode: string;
@@ -62,6 +62,8 @@ export function divisionToRow(d: Division, meetId: string = d.meetId): DivisionR
     id: d.id, meet_id: meetId, name: d.name, flight: d.flight, sort_order: d.sortOrder,
     // 054: only sent when the division carries a cap; an absent key lets the server keep the desk's value
     ...(d.weightCapKg !== undefined ? { weight_cap_kg: d.weightCapKg } : {}),
+    // 055: sent only when set; the server keeps its value otherwise (phone publish) or defaults to 1 (new rows)
+    ...(d.teamSize !== undefined ? { team_size: d.teamSize } : {}),
   };
 }
 
@@ -119,6 +121,7 @@ export function rowToDivision(row: DivisionRow): Division {
   return {
     id: row.id, meetId: row.meet_id, name: row.name, flight: row.flight, sortOrder: row.sort_order,
     ...(cap !== null && Number.isFinite(cap) ? { weightCapKg: cap } : {}),
+    ...(typeof row.team_size === 'number' && row.team_size > 1 ? { teamSize: row.team_size } : {}),
   };
 }
 

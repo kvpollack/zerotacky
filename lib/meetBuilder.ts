@@ -159,6 +159,8 @@ export function normalizeState(raw: unknown): AppState {
       sortOrder: typeof d.sortOrder === 'number' ? d.sortOrder : idx + 1,
       // 054: a finite cap is kept, an explicit null is kept (it clears the server's cap), anything else is dropped
       ...(d.weightCapKg === null || (typeof d.weightCapKg === 'number' && Number.isFinite(d.weightCapKg)) ? { weightCapKg: d.weightCapKg } : {}),
+      // 055: 2..6 kept; 1, absent or junk = individual (key dropped)
+      ...(typeof d.teamSize === 'number' && Number.isInteger(d.teamSize) && d.teamSize >= 2 && d.teamSize <= 6 ? { teamSize: d.teamSize } : {}),
     }))
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map((d, idx) => ({ ...d, sortOrder: idx + 1 }));
@@ -341,7 +343,7 @@ export function addDivision(
 export function updateDivision(
   state: AppState,
   divisionId: string,
-  patch: Partial<Pick<Division, 'name' | 'flight' | 'sortOrder' | 'weightCapKg'>>
+  patch: Partial<Pick<Division, 'name' | 'flight' | 'sortOrder' | 'weightCapKg' | 'teamSize'>>
 ): AppState {
   if (!state.divisions.some((d) => d.id === divisionId)) return state;
   const divisions = state.divisions.map((d) => {
@@ -353,6 +355,8 @@ export function updateDivision(
       ...(patch.sortOrder !== undefined ? { sortOrder: patch.sortOrder } : {}),
       // 054: null clears the cap (the row keeps the key so the save sends the clear); undefined leaves it alone
       ...(patch.weightCapKg !== undefined ? { weightCapKg: patch.weightCapKg } : {}),
+      // 055: 1 means individual and is stored as no key, so the row sends team_size 1 explicitly below only when it changed
+      ...(patch.teamSize !== undefined ? { teamSize: patch.teamSize } : {}),
     };
   });
   return { ...state, divisions };
