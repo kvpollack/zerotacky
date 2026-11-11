@@ -10,6 +10,7 @@ const nextConfig = {
   outputFileTracingIncludes: {
     '/shows/[slug]/opengraph-image': ['./lib/website/fonts/*.ttf'],
     '/m/[slug]/opengraph-image': ['./lib/website/fonts/*.ttf'],
+    '/shows/[slug]/card/[athleteId]/route': ['./lib/website/fonts/*.ttf'],
   },
   // dev only: lets a second "phone" (127.0.0.1) hit the same dev server for sync smoke tests
   allowedDevOrigins: ['127.0.0.1'],

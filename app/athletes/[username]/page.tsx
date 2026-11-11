@@ -11,6 +11,7 @@ import { competitionStatusLabel, splitShows } from '@/lib/website/profileLinks';
 import { SOCIAL_KEYS, socialUrl } from '@/lib/auth/profile';
 import { athleteJsonLd, canonical } from '@/lib/website/seo';
 import JsonLd from '@/components/website/JsonLd';
+import ResultCardButton from '@/components/website/ResultCardButton';
 
 // Profiles change when people edit them; 60 s keeps the page close to live without a query per visit.
 export const revalidate = 60;
@@ -200,6 +201,9 @@ export default async function AthleteProfilePage({ params }: AthletePageProps) {
                         <div className="text-[12px] text-ink-muted">
                           {h.totalPoints} pts · {h.eventWins} event {h.eventWins === 1 ? 'win' : 'wins'} of {h.eventCount}
                         </div>
+                      )}
+                      {h.cardSlug && (
+                        <ResultCardButton slug={h.cardSlug} athleteId={h.athleteId} athleteName={h.athleteName} meetName={h.name} className="sm:items-end mt-1" />
                       )}
                     </div>
                   </li>

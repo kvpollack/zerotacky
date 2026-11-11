@@ -50,6 +50,9 @@ export interface ShowHistoryEntry {
   eventWins: number;
   eventCount: number;
   withdrawn: boolean;
+  /** 11/10 IG result card: the meet slug when the show is listed and the athlete placed, else null. */
+  cardSlug: string | null;
+  athleteId: string;
   /** 11/8 (#9 PR board): this athlete's scored result on each event, with the load they faced. Empty when withdrawn. */
   events: HistoryEventResult[];
 }
@@ -158,6 +161,8 @@ export function buildShowHistoryEntry(row: ShowHistoryRow, bundle: ShowHistoryBu
     eventWins: mine?.eventWins ?? 0,
     eventCount: state.events.length,
     withdrawn,
+    cardSlug: row.is_public_listed && mine && !withdrawn && scored > 0 ? row.slug : null,
+    athleteId: athlete.id,
     events,
   };
 }

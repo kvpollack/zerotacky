@@ -7,6 +7,7 @@ import ClaimResultClient from './ClaimResultClient';
 import { Cap, Key, KeyButton, WebCell, keyClass, textLink } from './sheet';
 import SponsorStrip from './SponsorStrip';
 import GroupPickerClient from './GroupPickerClient';
+import { ResultCardSizes, ResultCardToggle } from './ResultCardButton';
 import { showsGroupPicker } from '@/lib/website/groupPicker';
 import { describeTiebreaker } from '@/lib/engine/tiebreak';
 import { describeShowLifecycle } from '@/lib/website/filters';
@@ -59,6 +60,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
   const trainHref = trainForShowHref(show, showTrainingNeeds(sortedEvents));
 
   const [selectedDivId, setSelectedDivId] = useState<string>(sortedDivisions[0]?.id ?? 'ALL');
+  const [cardFor, setCardFor] = useState<string | null>(null); // standings row whose result-card strip is open (11/10)
 
   const life = describeShowLifecycle(
     show.competitionStatus,
@@ -344,11 +346,13 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                         ))}
                         <th scope="col" className={`${TH} text-right`}>Wins</th>
                         <th scope="col" className={`${TH} text-right`}>Total Pts</th>
+                        <th scope="col" className={TH}><span className="sr-only">Share</span></th>
                       </tr>
                     </thead>
                     <tbody>
                       {divView.standings.map((row) => (
-                        <tr key={row.athleteId}>
+                        <React.Fragment key={row.athleteId}>
+                        <tr>
                           <td className={`${TD} ${NUM} text-xl leading-none whitespace-nowrap`}>
                             {row.isTiedOverall ? `T${row.overallPlace}` : row.overallPlace}
                           </td>
@@ -377,12 +381,30 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                           })}
                           <td className={`${TD} text-right ${NUM} text-base`}>{row.eventWins}</td>
                           <td className={`${TD} text-right ${NUM} text-xl leading-none`}>{row.totalPoints}</td>
+                          <td className={`${TD} align-middle`}>
+                            {/* IG result card (11/10): the athlete's own finish as a PNG for the share sheet. */}
+                            {!(row.status === 'withdrawn' && row.totalPoints === 0) && (
+                              <ResultCardToggle open={cardFor === row.athleteId} onToggle={() => setCardFor((v) => (v === row.athleteId ? null : row.athleteId))} athleteId={row.athleteId} />
+                            )}
+                          </td>
                         </tr>
+                        </React.Fragment>
                       ))}
                     </tbody>
                   </table>
                 </div>
               )}
+              {/* Result-card strip for the row whose Share card key is open; outside the table so it never scrolls
+                  sideways with the events (11/10). */}
+              {(() => {
+                const open = cardFor ? divView.standings.find((r) => r.athleteId === cardFor) : undefined;
+                return open ? (
+                  <div className="border-2 border-t-0 border-rule bg-sheet px-3 py-2.5" data-testid="result-card-strip">
+                    <div className="text-[12px] font-bold text-ink mb-1.5">{open.athleteName}: result card</div>
+                    <ResultCardSizes slug={show.slug} athleteId={open.athleteId} athleteName={open.athleteName} meetName={show.name} />
+                  </div>
+                ) : null;
+              })()}
             </div>
           ))}
         </section>

@@ -21,10 +21,10 @@ export interface OgCard {
   badge?: string;   // e.g. "DEMO" or "LIVE"
 }
 
-const INK = '#111111', SHEET = '#ffffff', GROUND = '#d6d6d6', MUTED = '#4f4f4f', PEN = '#1d3aa8';
+export const INK = '#111111', SHEET = '#ffffff', GROUND = '#d6d6d6', MUTED = '#4f4f4f', PEN = '#1d3aa8';
 
 let fontsPromise: Promise<Array<{ name: string; data: ArrayBuffer; weight: 400 | 700; style: 'normal' }>> | null = null;
-function loadFonts() {
+export function loadFonts() {
   if (!fontsPromise) {
     const read = async (file: string) => {
       const buf = await readFile(path.join(process.cwd(), 'lib', 'website', 'fonts', file));
@@ -40,7 +40,7 @@ function loadFonts() {
 }
 
 /** Set Stone V9 at a given pixel size; same geometry as components/sheet/StoneMark.tsx (stroke 18, the wordmark weight). */
-function Stone({ size }: { size: number }) {
+export function Stone({ size }: { size: number }) {
   return (
     <svg viewBox="0 0 100 100" width={size} height={size}>
       <circle cx="50" cy="48" r="36" fill="none" stroke={INK} strokeWidth={18} />
@@ -48,6 +48,17 @@ function Stone({ size }: { size: number }) {
       <path d="M7 86 H93" fill="none" stroke={INK} strokeWidth={14} strokeLinecap="round" />
       <path d="M10 97 H90" fill="none" stroke={INK} strokeWidth={6} strokeLinecap="round" />
     </svg>
+  );
+}
+
+/** ZER0TACKY wordmark at font size `fs` (Saira Stencil One, stone as the 0), shared by the OG and result cards. */
+export function Wordmark({ fs }: { fs: number }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', fontFamily: 'Saira Stencil One', fontSize: fs, letterSpacing: fs * 0.02, lineHeight: 1 }}>
+      <span>ZER</span>
+      <div style={{ display: 'flex', margin: `0 ${fs * 0.03}px`, transform: `translateY(${-fs * 0.2}px)` }}><Stone size={fs * 0.76} /></div>
+      <span>TACKY</span>
+    </div>
   );
 }
 
@@ -99,11 +110,7 @@ export async function renderOgCard(card: OgCard): Promise<ImageResponse> {
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, background: SHEET, border: `4px solid ${INK}` }}>
           {/* header strip: wordmark left, status key right */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: 104, borderBottom: `4px solid ${INK}` }}>
-            <div style={{ display: 'flex', alignItems: 'flex-end', fontFamily: 'Saira Stencil One', fontSize: fs, letterSpacing: fs * 0.02, lineHeight: 1 }}>
-              <span>ZER</span>
-              <div style={{ display: 'flex', margin: `0 ${fs * 0.03}px`, transform: `translateY(${-fs * 0.2}px)` }}><Stone size={fs * 0.76} /></div>
-              <span>TACKY</span>
-            </div>
+            <Wordmark fs={fs} />
             {card.badge && (
               <div style={{ display: 'flex', alignItems: 'center', height: 56, padding: '0 22px', fontSize: 24, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', border: `4px solid ${live ? PEN : INK}`, background: live ? PEN : SHEET, color: live ? SHEET : INK }}>
                 {card.badge}

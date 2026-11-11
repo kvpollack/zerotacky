@@ -46,6 +46,9 @@ describe('showHistory.buildShowHistoryEntry', () => {
     assert.equal(e.href, '/shows/strongfest');
     assert.equal(e.venue, 'Hershey, PA');
     assert.equal(e.athleteName, b.athletes.find((a) => a.id === ids.grace).name);
+    // 11/10 IG result card: listed show + placed athlete = card available
+    assert.equal(e.cardSlug, 'strongfest'); assert.equal(e.athleteId, ids.grace);
+    assert.equal(H.buildShowHistoryEntry(row(ids.grace, { is_public_listed: false }), b).cardSlug, null);
     assert.equal(H.formatPlace(e), '1st of 3');
   });
 
