@@ -3,12 +3,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { loadingTakesCollars } from '@/lib/engine/plates';
 import { EQUIPMENT_RULES, IMPLEMENTS, SPEC_LIMITS, normalizeEventSpec, validateEventSpec } from '@/lib/events/spec';
+import { IMPLEMENT_LABEL_MAX, normalizeImplementLabel } from '@/lib/engine/eventKinds';
 
 const SCORING_OPTIONS = [
   { id: 'reps', label: 'Reps', help: 'Most reps in time cap; optional Heavy/Light trump bar.' },
   { id: 'max_weight', label: 'Max Weight', help: 'Heaviest good lift (Rising Bar grid or exact weight).' },
-  { id: 'time_or_distance', label: 'Time or Distance (ft)', help: 'Fastest finish time; DNF scored by distance in feet.' },
+  { id: 'time_or_distance', label: 'Time or Distance (ft)', help: 'Fastest finish time; DNF scored by distance in feet. Tick "distance only" for a toss or a carry for distance.' },
   { id: 'time_or_implements', label: 'Time or Implements', help: 'Stones/Medley: fastest all-in time, or count + split.' },
+  { id: 'max_time', label: 'Max Time (Hold)', help: 'Hercules hold, crucifix, hammer hold: the longest hold wins. The clock stops when the athlete drops; the cap is a safety limit only.' },
 ];
 
 // `defaultCollarWeightPerPair`: the meet's default, prefilled on a new event (collars are per event since 10/26).
@@ -33,6 +35,10 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
   const [maxFormat, setMaxFormat] = useState(ev.maxFormat === 'rising_bar' ? 'rising_bar' : 'none');
   const [risingBarText, setRisingBarText] = useState((ev.risingBarWeights || []).join(', '));
   const [implementCount, setImplementCount] = useState(ev.implementCount ?? 5);
+  // 11/11 scoring audit: Wessels attempt tiebreak, max-distance events, the word for one implement
+  const [wessels, setWessels] = useState(ev.maxTiebreak === 'attempts');
+  const [distanceOnly, setDistanceOnly] = useState(!!ev.distanceOnly);
+  const [implementLabel, setImplementLabel] = useState(ev.implementLabel || '');
 
   // Height & Pit Crew callout fields
   const [hasHeightCallout, setHasHeightCallout] = useState(!!ev.hasHeightCallout);
@@ -156,7 +162,10 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
       groundTouchWarning: scoringType === 'reps' ? groundTouchWarning : false,
       maxFormat: scoringType === 'max_weight' && maxFormat === 'rising_bar' ? 'rising_bar' : undefined,
       risingBarWeights: parsedRising,
+      maxTiebreak: scoringType === 'max_weight' && wessels ? 'attempts' : undefined,
+      distanceOnly: scoringType === 'time_or_distance' && distanceOnly ? true : undefined,
       implementCount: scoringType === 'time_or_implements' ? Math.max(1, Number(implementCount) || 5) : undefined,
+      implementLabel: scoringType === 'time_or_implements' ? normalizeImplementLabel(implementLabel) : undefined,
       hasHeightCallout,
       heightLabel: hasHeightCallout ? heightLabel.trim() || 'Rack / Pin Height' : undefined,
       divisionDefaultHeights: hasHeightCallout ? cleanHeights : undefined,
@@ -210,7 +219,7 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
       {/* Time Cap, Lanes & Loading Points */}
       <div className="grid grid-cols-3 gap-2">
         <div>
-          <label className="text-[10px] font-extrabold uppercase text-zt-muted">Time Cap (s)</label>
+          <label className="text-[10px] font-extrabold uppercase text-zt-muted">{scoringType === 'max_time' || (scoringType === 'time_or_distance' && distanceOnly) ? 'Clock Limit (s)' : 'Time Cap (s)'}</label>
           <input
             type="number"
             value={timeCapSeconds}
@@ -361,19 +370,51 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
               />
             </div>
           )}
+          <label className="flex items-center gap-1.5 text-xs font-bold text-zt-text">
+            <input type="checkbox" checked={wessels} onChange={(e) => setWessels(e.target.checked)} />
+            Wessels rule: a tie on weight goes to the earlier attempt
+          </label>
+          {wessels && (
+            <p className="text-[10px] font-bold text-zt-muted">
+              The pad counts attempts from its tape (good and no-lift presses). If a judge types the max by hand, they also type the attempt number.
+            </p>
+          )}
+        </div>
+      )}
+
+      {scoringType === 'time_or_distance' && (
+        <div className="pt-1">
+          <label className="flex items-center gap-1.5 text-xs font-bold text-zt-text">
+            <input type="checkbox" checked={distanceOnly} onChange={(e) => setDistanceOnly(e.target.checked)} />
+            Distance only (sandbag toss, carry for distance): furthest mark wins, no finish time
+          </label>
         </div>
       )}
 
       {scoringType === 'time_or_implements' && (
-        <div>
-          <label className="text-[10px] font-extrabold uppercase text-zt-muted">Implement / Stone Count</label>
-          <input
-            type="number"
-            min={1}
-            value={implementCount}
-            onChange={(e) => setImplementCount(e.target.value)}
-            className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-lg px-2.5 py-1.5 text-xs font-bold"
-          />
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-[10px] font-extrabold uppercase text-zt-muted">Implement / Stone Count</label>
+            <input
+              type="number"
+              min={1}
+              value={implementCount}
+              onChange={(e) => setImplementCount(e.target.value)}
+              className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-lg px-2.5 py-1.5 text-xs font-bold"
+            />
+          </div>
+          <div>
+            <label className="text-[10px] font-extrabold uppercase text-zt-muted">Word for one (standings)</label>
+            <input
+              type="text"
+              maxLength={IMPLEMENT_LABEL_MAX}
+              value={implementLabel}
+              onChange={(e) => setImplementLabel(e.target.value)}
+              placeholder="impl"
+              className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-lg px-2.5 py-1.5 text-xs font-bold"
+            />
+            <p className="text-[10px] font-bold text-zt-muted mt-1">stones, bags, kegs. Blank = "impl".</p>
+          </div>
         </div>
       )}
 

@@ -56,6 +56,8 @@ function rank(e: HistoryEventResult): number[] {
       return e.finished ? [1, e.weightLbs, -e.timeSeconds] : [0, e.weightLbs, e.distanceFeet];
     case 'time_or_implements':
       return e.finished || e.implementsCompleted > 0 ? [e.weightLbs, e.implementsCompleted, e.finished ? -e.timeSeconds : -Infinity] : [-1];
+    case 'max_time':
+      return e.timeSeconds > 0 ? [e.weightLbs, e.timeSeconds] : [-1];
     default:
       return [-1];
   }
@@ -94,6 +96,8 @@ export function formatBestResult(e: HistoryEventResult): string {
       const n = `${e.implementsCompleted} implement${e.implementsCompleted === 1 ? '' : 's'}`;
       return e.finished ? `${formatSeconds(e.timeSeconds)}${load}` : `${n}${load}`;
     }
+    case 'max_time':
+      return e.timeSeconds > 0 ? `${formatSeconds(e.timeSeconds)} hold${load}` : '';
     default:
       return '';
   }

@@ -1,7 +1,10 @@
 // Shared data model for ZeroTacky. Type-only file: no runtime code.
 // Shapes are derived from how the original monolith reads and writes state.
 
-export type ScoringType = 'reps' | 'max_weight' | 'time_or_distance' | 'time_or_implements';
+// 'max_time' (11/11 scoring audit item 2): a hold, the longer time ranks first (Hercules hold, crucifix, hammer hold).
+export type ScoringType = 'reps' | 'max_weight' | 'time_or_distance' | 'time_or_implements' | 'max_time';
+// 11/11 audit item 1 (Wessels): on a max-weight tie the lift made on an earlier attempt wins. 'none' = ties split.
+export type MaxTiebreak = 'none' | 'attempts';
 // 'lot_order' (10/21): roster order for every event, never reshuffled; for promoters who publish the order ahead of time.
 export type RunOrderMethod = 'reverse_overall' | 'reverse_previous_event' | 'lot_order';
 // Overall podium tiebreak (11/10 scoring audit against Iron Podium). 'lookback' = Iron Podium's default: most event
@@ -104,6 +107,14 @@ export interface EventDef {
   scoringType: ScoringType;
   maxFormat?: 'rising_bar' | 'none';
   risingBarWeights?: number[];
+  // max_weight only: 'attempts' = Wessels rule, the athlete who made the tied weight on an earlier attempt places higher.
+  maxTiebreak?: MaxTiebreak;
+  // time_or_distance only: a max-distance event (sandbag toss, carry for distance). Furthest mark wins, there is no finish
+  // time and the standings never print "(DNF)". The clock is ignored.
+  distanceOnly?: boolean;
+  // time_or_implements only: the word the standings and the pad use for one implement ("stones", "bags", "kegs");
+  // absent = "impl". 1 to 12 characters, kept by lib/engine/eventKinds normalizeImplementLabel.
+  implementLabel?: string;
   timeCapSeconds: number;
   lanes: number; // 1 or 2
   loadingPoints: LoadingPoints;
@@ -142,6 +153,10 @@ export interface Result {
   implementsCompleted?: number;
   splitTimeSeconds?: number;
   maxWeightLbs?: number;
+  // Attempt number (1-based) on which the best good lift was made, typed by the judge when the tape does not have it.
+  // Read only when the event's maxTiebreak is 'attempts'; lib/engine/scoring bestLiftAttempt derives it from attemptLog
+  // or risingBarAttempts when this is absent.
+  maxWeightAttempt?: number;
   risingBarAttempts?: Record<string, RisingBarStatus>; // keyed by weight
   didNotStart?: boolean;
   locked?: boolean;

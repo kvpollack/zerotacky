@@ -8,6 +8,7 @@
 // and a new one agree on the score.
 import type { EventDef, Result, RisingBarStatus, ScoringType } from '@/lib/types';
 import { effectiveMaxWeight } from '@/lib/engine/scoring';
+import { implementWord } from '@/lib/engine/eventKinds';
 
 export type AttemptKind = 'good' | 'no';
 export type AttemptEntry = { kind: AttemptKind; at: number; split?: number; weight?: number };
@@ -131,6 +132,9 @@ export function pressPatch(ev: Pick<EventDef, 'scoringType' | 'implementCount' |
     case 'time_or_distance':
       // good = finish at the clock; no = DNF (time cleared, distance decides)
       return kind === 'good' ? { timeSeconds: split, didNotStart: false } : { timeSeconds: 0, didNotStart: false };
+    case 'max_time':
+      // hold: good = the athlete dropped, stamp the clock as the hold; no = no hold (zero)
+      return kind === 'good' ? { timeSeconds: split, didNotStart: false } : { timeSeconds: 0, didNotStart: false };
     default:
       return {};
   }
@@ -163,6 +167,7 @@ export function undoPatch(ev: Pick<EventDef, 'scoringType'>, r: Partial<Result>)
       return { attemptLog: rest, risingBarAttempts: attempts } as Partial<Result>;
     }
     case 'time_or_distance':
+    case 'max_time':
       return { timeSeconds: 0 };
     default:
       return {};
@@ -175,7 +180,8 @@ export function canUndo(ev: Pick<EventDef, 'scoringType'>, r: Partial<Result>): 
   switch (ev.scoringType) {
     case 'time_or_implements': return (r.implementsCompleted ?? 0) > 0;
     case 'reps': return (r.reps ?? 0) > 0;
-    case 'time_or_distance': return (r.timeSeconds ?? 0) > 0;
+    case 'time_or_distance':
+    case 'max_time': return (r.timeSeconds ?? 0) > 0;
     default: return false;
   }
 }
@@ -190,13 +196,17 @@ export function hasEntry(r: Partial<Result>): boolean {
 // ---------- labels ----------
 
 export type KeyLabels = { good: string; no: string; qtyCap: string };
-export function keyLabels(type: ScoringType): KeyLabels {
+/** `ev` (optional) carries the per-kind flags: a max-distance event has no finish key, a named implement renames the
+ *  quantity cap ("stones" stays the default word on the pad; the standings say "impl" unless the promoter named it). */
+export function keyLabels(type: ScoringType, ev?: Partial<Pick<EventDef, 'distanceOnly' | 'implementLabel'>>): KeyLabels {
   switch (type) {
     case 'reps': return { good: 'Good rep', no: 'No rep', qtyCap: 'reps' };
     case 'max_weight': return { good: 'Good lift', no: 'No lift', qtyCap: 'best' };
-    case 'time_or_distance': return { good: 'Finish', no: 'DNF', qtyCap: 'finish' };
+    case 'time_or_distance':
+      return ev?.distanceOnly ? { good: 'Mark', no: 'No mark', qtyCap: 'mark' } : { good: 'Finish', no: 'DNF', qtyCap: 'finish' };
+    case 'max_time': return { good: 'Drop', no: 'No hold', qtyCap: 'hold' };
     case 'time_or_implements':
-    default: return { good: 'Good lift', no: 'No lift', qtyCap: 'stones' };
+    default: return { good: 'Good lift', no: 'No lift', qtyCap: ev?.implementLabel ? implementWord({ scoringType: 'time_or_implements', implementLabel: ev.implementLabel }) : 'stones' };
   }
 }
 

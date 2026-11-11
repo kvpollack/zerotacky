@@ -17,6 +17,7 @@ import type {
 } from './types';
 import { loadingTakesCollars, normalizeCollarWeight } from './engine/plates';
 import { DEFAULT_TIEBREAKER, normalizeTiebreakerRule } from './engine/tiebreak';
+import { normalizeImplementLabel, normalizeMaxTiebreak, normalizeScoringType } from './engine/eventKinds';
 import { ALL_POSSIBLE_PLATES } from './constants';
 import { getInitialSeedState, MEET_PRESETS } from './presets';
 import { normalizeEventOrder } from './engine/eventOrder';
@@ -191,12 +192,7 @@ export function normalizeState(raw: unknown): AppState {
   const events: EventDef[] = rawEvents
     .filter((e): e is Record<string, unknown> => Boolean(e && typeof e === 'object'))
     .map((e, idx) => {
-      const scoringType: ScoringType =
-        e.scoringType === 'max_weight' ||
-        e.scoringType === 'time_or_distance' ||
-        e.scoringType === 'time_or_implements'
-          ? e.scoringType
-          : 'reps';
+      const scoringType: ScoringType = normalizeScoringType(e.scoringType);
 
       const loadingPoints: LoadingPoints = [0, 1, 2, 4].includes(Number(e.loadingPoints))
         ? (Number(e.loadingPoints) as LoadingPoints)
@@ -228,6 +224,7 @@ export function normalizeState(raw: unknown): AppState {
         ev.implementCount =
           typeof e.implementCount === 'number' && e.implementCount > 0 ? e.implementCount : 5;
       }
+      applyKindFlags(ev, e as Partial<EventDef>);
       return ev;
     })
     .sort((a, b) => a.eventNumber - b.eventNumber)
@@ -445,6 +442,16 @@ export function reorderDivisions(state: AppState, orderedIds: string[]): AppStat
 
 // ---------- Events ----------
 
+// 11/11 scoring audit items 1, 3, 5: the per-kind flags only exist on the kind they belong to and arrive normalised, so
+// a flag left behind by a type change (max_weight -> reps) never leaks into the engine or the sync payload.
+function applyKindFlags(target: EventDef, src: Partial<EventDef>): void {
+  const tb = target.scoringType === 'max_weight' ? normalizeMaxTiebreak(src.maxTiebreak) : undefined;
+  if (tb && tb !== 'none') target.maxTiebreak = tb; else delete target.maxTiebreak;
+  if (target.scoringType === 'time_or_distance' && src.distanceOnly === true) target.distanceOnly = true; else delete target.distanceOnly;
+  const word = target.scoringType === 'time_or_implements' ? normalizeImplementLabel(src.implementLabel) : undefined;
+  if (word) target.implementLabel = word; else delete target.implementLabel;
+}
+
 function sanitizeEventFields(
   base: EventDef,
   patch: Partial<EventDef>
@@ -475,6 +482,7 @@ function sanitizeEventFields(
         ? Math.round(result.implementCount)
         : 5;
   }
+  applyKindFlags(result, merged);
 
   // The patch's byDivision is authoritative (a division left out is cleared); only carry forward the
   // previous stats for divisions the patch keeps, so editing a headline does not drop its stat chips.

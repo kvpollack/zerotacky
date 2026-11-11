@@ -10,6 +10,7 @@ import GroupPickerClient from './GroupPickerClient';
 import { ResultCardSizes, ResultCardToggle } from './ResultCardButton';
 import { showsGroupPicker } from '@/lib/website/groupPicker';
 import { describeTiebreaker } from '@/lib/engine/tiebreak';
+import { scoringTypeLabel, usesTimeCap } from '@/lib/engine/eventKinds';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import { formatShowDate } from '@/lib/website/showHistory';
 import { directionsUrl, eventWeightDisplay, formatLocalDateTime } from '@/lib/website/format';
@@ -32,12 +33,6 @@ interface ShowDetailClientProps {
   divisionResults: DivisionResultsView[];
 }
 
-const SCORING_TYPE_LABELS: Record<string, string> = {
-  reps: 'For Reps',
-  max_weight: 'Max Weight',
-  time_or_distance: 'Fastest Time / Distance if Capped',
-  time_or_implements: 'Implements + Time / Split Tiebreaker',
-};
 
 const GROUPING_LABELS: Record<PublicShowRecord['divisionGroupingStyle'], string> = {
   inclusive_strength_groups: 'Inclusive strength groups',
@@ -459,7 +454,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                         <span className="font-bold text-[15px] text-ink">{ev.name}</span>
                       </div>
                       <div className="text-[12px] text-ink-muted mt-1">
-                        {SCORING_TYPE_LABELS[ev.scoringType] || ev.scoringType} · {ev.timeCapSeconds}s cap
+                        {scoringTypeLabel(ev, 'long')}{usesTimeCap(ev) ? ` · ${ev.timeCapSeconds}s cap` : ''}
                         {ev.lanes === 2 ? ' · 2 lanes' : ''}
                       </div>
                       {/* Event spec starter (11/4): implement, course and equipment rules, with a video link when given */}

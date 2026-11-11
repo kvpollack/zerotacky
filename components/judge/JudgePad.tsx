@@ -9,7 +9,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { Athlete, Division, EventDef, Meet, Result, RunOrderItem } from '@/lib/types';
 import type { Mode } from '@/lib/theme/promoter';
-import { stationById, stationForDivision } from '@/lib/engine';
+import { bestLiftAttempt, stationById, stationForDivision } from '@/lib/engine';
 import { revFor } from '@/lib/tv/model';
 import { RuledBlock, Cell, TitleBlock, NoLiftKey, GoodLiftKey } from '@/components/sheet';
 import PadClock from './PadClock';
@@ -131,7 +131,8 @@ export default function JudgePad(p: JudgePadProps) {
   const ev = currentEvent;
   const r = currentResult;
   const type = ev.scoringType;
-  const labels = keyLabels(type);
+  const labels = keyLabels(type, ev);
+  const distanceOnly = type === 'time_or_distance' && !!ev.distanceOnly;
   const log = logOf(r);
   const entered = hasEntry(r);
   const station = stationById(meet, stationFlight) ?? stationForDivision(meet, currentDivision);
@@ -162,7 +163,8 @@ export default function JudgePad(p: JudgePadProps) {
 
   const press = (kind: 'good' | 'no') => {
     if (isLocked) return;
-    if (type === 'time_or_distance') {
+    if (distanceOnly) return;   // a max-distance event is scored by the typed mark, the keys do nothing
+    if (type === 'time_or_distance' || type === 'max_time') {
       if (kind === 'good' && timerRunning) { stopAndStampFinish(); return; }
       saveResultPatch(currentAthlete.id, pressPatch(ev, r, kind, getElapsedSeconds()));
       return;
@@ -181,7 +183,7 @@ export default function JudgePad(p: JudgePadProps) {
     if (type === 'time_or_implements' && kind === 'good' && timerRunning && (patch.implementsCompleted ?? 0) >= stoneCount) stopAndStampFinish();
   };
   const undo = () => { if (!isLocked && canUndo(ev, r)) saveResultPatch(currentAthlete.id, undoPatch(ev, r)); };
-  const keysLive = !isLocked && !(type === 'max_weight' && barWeight === null) && !(type === 'time_or_implements' && done >= stoneCount);
+  const keysLive = !isLocked && !distanceOnly && !(type === 'max_weight' && barWeight === null) && !(type === 'time_or_implements' && done >= stoneCount);
 
   // ---------- count cell ----------
   let count: React.ReactNode; let countCap: React.ReactNode;
@@ -193,7 +195,15 @@ export default function JudgePad(p: JudgePadProps) {
     countCap = <>Qty<br />{labels.qtyCap}{noReps > 0 && <><br /><span className="text-redpen">&#x2715; {noReps} no rep{noReps === 1 ? '' : 's'}</span></>}</>;
   } else if (type === 'max_weight') {
     const best = bestWeight(r);
-    count = <span className={best > 0 ? 'text-pen' : ''}>{best || 0}</span>; countCap = <>{labels.qtyCap}<br />lb</>;
+    const att = ev.maxTiebreak === 'attempts' && best > 0 ? bestLiftAttempt(r as Result) : 0;
+    count = <span className={best > 0 ? 'text-pen' : ''}>{best || 0}</span>;
+    countCap = <>{labels.qtyCap}<br />lb{att > 0 && <><br />att {att}</>}</>;
+  } else if (type === 'max_time') {
+    const t = r.timeSeconds ?? 0;
+    count = t > 0 ? <span className="text-pen">{Number(t).toFixed(2)}</span> : <span>--</span>; countCap = <>{labels.qtyCap}<br />seconds</>;
+  } else if (distanceOnly) {
+    const d = r.distanceFeet ?? 0;
+    count = d > 0 ? <span className="text-pen">{d}</span> : <span>--</span>; countCap = <>Distance<br />ft</>;
   } else {
     const t = r.timeSeconds ?? 0; const d = r.distanceFeet ?? 0;
     if (t > 0) { count = <span className="text-pen">{Number(t).toFixed(2)}</span>; countCap = <>{labels.qtyCap}<br />seconds</>; }
@@ -402,12 +412,31 @@ export default function JudgePad(p: JudgePadProps) {
               </>
             )}
             {type === 'max_weight' && (
-              <Field label="Exact max weight override (lb)">
-                <NumInput value={r.maxWeightLbs} disabled={isLocked} placeholder="Or type the exact max lift" ariaLabel="Exact max weight in pounds" onChange={(v) => saveResultPatch(currentAthlete.id, { maxWeightLbs: v ?? 0, didNotStart: false })} />
+              <Row>
+                <Field label="Exact max weight override (lb)">
+                  <NumInput value={r.maxWeightLbs} disabled={isLocked} placeholder="Or type the exact max lift" ariaLabel="Exact max weight in pounds" onChange={(v) => saveResultPatch(currentAthlete.id, { maxWeightLbs: v ?? 0, didNotStart: false })} />
+                </Field>
+                {ev.maxTiebreak === 'attempts' && (
+                  <Field label="Attempt # of best lift (Wessels)">
+                    <NumInput step="1" placeholder="from the tape" value={r.maxWeightAttempt} disabled={isLocked} ariaLabel="Attempt number of the best lift" onChange={(v) => saveResultPatch(currentAthlete.id, { maxWeightAttempt: v && v > 0 ? Math.round(v) : undefined })} />
+                  </Field>
+                )}
+              </Row>
+            )}
+
+            {type === 'max_time' && (
+              <Field label="Hold time (s)">
+                <NumInput step="0.01" placeholder="0.00" value={r.timeSeconds} disabled={isLocked} ariaLabel="Hold time seconds" onChange={(v) => saveResultPatch(currentAthlete.id, { timeSeconds: v ?? 0, didNotStart: false })} />
               </Field>
             )}
 
-            {type === 'time_or_distance' && (
+            {distanceOnly && (
+              <Field label="Distance (ft)">
+                <NumInput step="0.5" placeholder="e.g. 42.5" value={r.distanceFeet} disabled={isLocked} ariaLabel="Distance in feet" onChange={(v) => saveResultPatch(currentAthlete.id, { distanceFeet: v ?? 0, didNotStart: false })} />
+              </Field>
+            )}
+
+            {type === 'time_or_distance' && !distanceOnly && (
               <Row>
                 <Field label={lane2 ? 'Lane 1 finish (s)' : 'Finish time (s)'}>
                   <NumInput step="0.01" placeholder="0.00" value={r.timeSeconds} disabled={isLocked} ariaLabel="Finish time seconds" onChange={(v) => saveResultPatch(currentAthlete.id, { timeSeconds: v ?? 0, didNotStart: false })} />
@@ -440,18 +469,24 @@ export default function JudgePad(p: JudgePadProps) {
               </select>
             </div>
             <div className="col-span-2 p-2 grid grid-cols-2 gap-2">
-              <Field label="Lane 2 finish (s)">
-                <NumInput step="0.01" placeholder="0.00" value={lane2Result.timeSeconds} disabled={isLocked} ariaLabel="Lane 2 finish seconds" onChange={(v) => saveResultPatch(lane2Athlete.id, { timeSeconds: v ?? 0 })} />
-              </Field>
-              <Field label="If DNF: distance (ft)">
+              {!distanceOnly && (
+                <Field label="Lane 2 finish (s)">
+                  <NumInput step="0.01" placeholder="0.00" value={lane2Result.timeSeconds} disabled={isLocked} ariaLabel="Lane 2 finish seconds" onChange={(v) => saveResultPatch(lane2Athlete.id, { timeSeconds: v ?? 0 })} />
+                </Field>
+              )}
+              <Field label={distanceOnly ? 'Lane 2 distance (ft)' : 'If DNF: distance (ft)'}>
                 <NumInput step="0.5" placeholder="e.g. 51.0" value={lane2Result.distanceFeet} disabled={isLocked} ariaLabel="Lane 2 distance in feet" onChange={(v) => saveResultPatch(lane2Athlete.id, { distanceFeet: v ?? 0 })} />
               </Field>
-              <button type="button" disabled={isLocked} onClick={() => saveResultPatch(lane2Athlete.id, { timeSeconds: getElapsedSeconds() })} className={`${lineKey(!isLocked)} text-[13px] min-h-[44px]`}>
-                Lane 2 finish at clock
-              </button>
-              <button type="button" disabled={isLocked} onClick={() => saveResultPatch(lane2Athlete.id, { timeSeconds: 0 })} className={`${KEY} text-[13px] min-h-[44px] ${isLocked ? 'zt-key-off' : 'bg-sheet text-redpen border-[3px] border-redpen'}`}>
-                <span aria-hidden="true" className="font-normal">&#x2715;</span> Lane 2 DNF
-              </button>
+              {!distanceOnly && (
+                <>
+                  <button type="button" disabled={isLocked} onClick={() => saveResultPatch(lane2Athlete.id, { timeSeconds: getElapsedSeconds() })} className={`${lineKey(!isLocked)} text-[13px] min-h-[44px]`}>
+                    Lane 2 finish at clock
+                  </button>
+                  <button type="button" disabled={isLocked} onClick={() => saveResultPatch(lane2Athlete.id, { timeSeconds: 0 })} className={`${KEY} text-[13px] min-h-[44px] ${isLocked ? 'zt-key-off' : 'bg-sheet text-redpen border-[3px] border-redpen'}`}>
+                    <span aria-hidden="true" className="font-normal">&#x2715;</span> Lane 2 DNF
+                  </button>
+                </>
+              )}
             </div>
           </RuledBlock>
         )}

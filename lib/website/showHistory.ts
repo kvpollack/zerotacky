@@ -122,7 +122,8 @@ export function buildShowHistoryEntry(row: ShowHistoryRow, bundle: ShowHistoryBu
     const r = state.results.find((x) => x.eventId === ev.id && x.athleteId === athlete.id);
     if (!r || r.didNotStart) return [];
     const time = r.timeSeconds ?? 0;
-    const finished = time > 0 && time <= ev.timeCapSeconds;
+    // a hold's time always counts; a max-distance event never has a finish
+    const finished = ev.scoringType === 'max_time' ? time > 0 : ev.distanceOnly ? false : time > 0 && time <= ev.timeCapSeconds;
     const light = r.tier === 'light' && ev.hasTrumpWeight ? ev.divisionLightWeights?.[division.id] : undefined;
     const weight = typeof light === 'number' && light > 0 ? light : (ev.divisionWeights?.[division.id] ?? 0);
     const out: HistoryEventResult = {

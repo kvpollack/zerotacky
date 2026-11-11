@@ -18,7 +18,8 @@ export interface AuthState {
   profile: Profile | null;
   error: string | null;
   signInWithPassword: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, displayName: string) => Promise<'signed_in' | 'check_email'>;
+  // `dateOfBirth` = 'YYYY-MM-DD', validated by lib/auth/age before the call; stored on the profile by the auth trigger (057).
+  signUp: (email: string, password: string, displayName: string, dateOfBirth?: string) => Promise<'signed_in' | 'check_email'>;
   sendMagicLink: (email: string) => Promise<void>;
   // Password reset (Kurt 10/19): the email link lands on /website/account with a recovery session; `recovery` is true
   // until updatePassword succeeds or clearRecovery runs, so the page can lead with "Set a new password".
@@ -106,13 +107,16 @@ export function useAuth(): AuthState {
     if (e) throw new Error(e.message);
   }, [sb]);
 
-  const signUp = useCallback(async (email: string, password: string, displayName: string) => {
+  const signUp = useCallback(async (email: string, password: string, displayName: string, dateOfBirth?: string) => {
     if (!sb) throw new Error(NOT_CONFIGURED);
     setError(null);
     const { data, error: e } = await sb.auth.signUp({
       email: email.trim(),
       password,
-      options: { data: { display_name: displayName.trim() }, emailRedirectTo: accountRedirectUrl() },
+      options: {
+        data: { display_name: displayName.trim(), ...(dateOfBirth ? { date_of_birth: dateOfBirth } : {}) },
+        emailRedirectTo: accountRedirectUrl(),
+      },
     });
     if (e) throw new Error(e.message);
     return data.session ? 'signed_in' : 'check_email';

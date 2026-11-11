@@ -50,6 +50,8 @@ Not changed: Supabase `meets.tiebreaker_rule` column default and the publish fun
 
 ## Open items (not fixed today)
 
+**Update 11/11:** items 1, 2, 3 and 5 shipped (UI_TRANSITION_NOTES.md "Scoring audit follow-ups", tests `test/scoring_formats.test.mjs`); item 4 stays open as its own build (unit-named payload fields). Original list kept below.
+
 1. **Max weight with attempt tiebreak (Wessels).** Needs an event option (`maxTiebreak: 'attempts'`) and the attempt number of the best good lift from the judge pad's `attemptLog`. Common at US meets; the Idaho promoter wrote "Wessels rules" and still used plain lbs on Iron Podium, so plain split is a defensible default.
 2. **Hold events (longer time wins).** Hercules hold, crucifix and hammer hold need a new scoring type (`max_time`) where the pad enters one time and the longer time ranks first.
 3. **Max distance display.** A pure distance event run as `time_or_distance` prints "N ft (DNF)". Needs an event flag (`distanceForMax`) that drops the suffix and relabels the pad.

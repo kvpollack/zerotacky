@@ -375,7 +375,8 @@ export default function App() {
   const showStopStamp =
     timerRunning &&
     !isLocked &&
-    (currentEvent?.scoringType === 'time_or_distance' ||
+    (currentEvent?.scoringType === 'max_time' ||
+      (currentEvent?.scoringType === 'time_or_distance' && !currentEvent?.distanceOnly) ||
       currentEvent?.scoringType === 'time_or_implements');
 
   const statusActions = currentAthlete

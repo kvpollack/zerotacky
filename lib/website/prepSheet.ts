@@ -6,14 +6,16 @@ import type { Division, EventDef } from '@/lib/types';
 import { implementLabel, normalizeEventSpec, ruleLabel, safeVideoUrl, specNotes } from '@/lib/events/spec';
 import { toCsv } from '@/lib/export';
 import { eventWeightDisplay } from './format';
+import { scoringTypeLabel } from '../engine/eventKinds';
+
+// Sentence-case version of the shared label ('For reps' kept from the first prep sheet).
+function prepScoringLabel(ev: EventDef): string {
+  if (ev.scoringType === 'reps') return 'For reps';
+  const l = scoringTypeLabel(ev, 'long');
+  return l.charAt(0) + l.slice(1).replace(/([A-Z])([a-z])/g, (m, a: string, b: string) => a.toLowerCase() + b);
+}
 import type { PublicShowRecord } from './types';
 
-export const SCORING_LABELS: Record<string, string> = {
-  reps: 'For reps',
-  max_weight: 'Max weight',
-  time_or_distance: 'Fastest time / distance if capped',
-  time_or_implements: 'Implements + time',
-};
 
 export interface PrepWeight {
   divisionId: string;
@@ -64,7 +66,7 @@ export function buildPrepRow(ev: EventDef, divisions: Division[]): PrepRow {
   return {
     eventNumber: ev.eventNumber,
     name: ev.name,
-    scoring: SCORING_LABELS[ev.scoringType] ?? ev.scoringType,
+    scoring: prepScoringLabel(ev),
     timeCapSeconds: ev.timeCapSeconds,
     implement: implementText(ev),
     courseFeet: spec?.courseFeet ?? null,

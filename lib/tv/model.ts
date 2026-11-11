@@ -6,7 +6,7 @@
 // Idle: no station is live and the meet is not completed.
 import type { AppState, Athlete, Division, EventDef, Result, StandingRow, Station } from '../types';
 import type { LiveStateRow } from '../sync/meetApi';
-import { calculateDivisionStandings, scoreSingleEvent, generateEventRunOrder, describeSetup, stationEvents, nextEventOnStation, stationPosition } from '../engine';
+import { calculateDivisionStandings, scoreSingleEvent, generateEventRunOrder, describeSetup, stationEvents, nextEventOnStation, stationPosition, implementWord, usesTimeCap } from '../engine';
 import { revFromCount } from '../../components/sheet/TitleBlock';
 
 export type TvSheet = 'a' | 'b';
@@ -65,12 +65,14 @@ export function formatCap(seconds: number | undefined): string {
 export function eventSpec(ev: EventDef, divisionId: string): string {
   const setup = describeSetup(ev, divisionId);
   const bits: string[] = [];
-  if (ev.scoringType === 'time_or_implements' && ev.implementCount) bits.push(`${ev.implementCount} implements`);
+  if (ev.scoringType === 'time_or_implements' && ev.implementCount) bits.push(`${ev.implementCount} ${ev.implementLabel ? implementWord(ev) : 'implements'}`);
   if (setup && setup !== '—') bits.push(setup);
   if (ev.scoringType === 'max_weight' && ev.maxFormat === 'rising_bar') bits.push('rising bar');
+  if (ev.scoringType === 'max_weight' && ev.maxTiebreak === 'attempts') bits.push('Wessels tiebreak');
   if (ev.scoringType === 'reps') bits.push('reps');
-  if (ev.scoringType === 'time_or_distance') bits.push('time / distance');
-  const cap = formatCap(ev.timeCapSeconds);
+  if (ev.scoringType === 'time_or_distance') bits.push(ev.distanceOnly ? 'max distance' : 'time / distance');
+  if (ev.scoringType === 'max_time') bits.push('longest hold');
+  const cap = usesTimeCap(ev) ? formatCap(ev.timeCapSeconds) : '';
   if (cap) bits.push(cap);
   return bits.join(' · ');
 }

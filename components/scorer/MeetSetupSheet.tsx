@@ -17,13 +17,8 @@ import type { RosterPlan } from '@/lib/roster/import';
 import { CAP, Field, Key, KeyGroup, Note, NumInput, Sec, Select, TextInput, Toast } from './parts';
 import { SETUP_SECTIONS, type SetupSectionId } from './scorerModel';
 import { STANDARD_CLASS_SETS, missingStandardClasses, standardClassDivisions, type StandardClassSetId } from '@/lib/divisions/standardClasses';
+import { scoringTypeLabel } from '@/lib/engine/eventKinds';
 
-const TYPE_LABELS: Record<string, string> = {
-  reps: 'Reps',
-  max_weight: 'Max Wt',
-  time_or_distance: 'Time / Dist',
-  time_or_implements: 'Stones / Impl',
-};
 
 const DEFAULT_STATIONS = [
   { id: 'A', label: 'Station 1' },
@@ -527,7 +522,7 @@ function Events(props: MeetSetupSheetProps) {
                   <IconKey disabled={idx === sortedEvents.length - 1} onClick={() => moveEvent(idx, 1)} aria-label={`Move ${ev.name} down`}><ArrowDown className="w-3.5 h-3.5" /></IconKey>
                   <button type="button" onClick={() => setEditingId(isEditing ? null : ev.id)} aria-label={`Edit ${ev.name}`} className={`text-left px-2 py-1 min-h-[44px] flex flex-col justify-center ${isEditing ? '!bg-ink text-sheet' : ''}`}>
                     <span className={`block text-[9px] whitespace-nowrap overflow-hidden text-ellipsis ${isEditing ? 'text-sheet/80' : CAP}`}>
-                      Ev {ev.eventNumber} · {TYPE_LABELS[ev.scoringType] || ev.scoringType} · {ev.timeCapSeconds}s • {ev.lanes === 2 ? '2 Lanes' : '1 Lane'} • {ev.loadingPoints}pt
+                      Ev {ev.eventNumber} · {scoringTypeLabel(ev, 'setup')} · {ev.timeCapSeconds}s • {ev.lanes === 2 ? '2 Lanes' : '1 Lane'} • {ev.loadingPoints}pt
                     </span>
                     <span className={`block text-[14px] font-bold whitespace-nowrap overflow-hidden text-ellipsis ${isEditing ? '' : 'text-pen'}`}>{ev.name}</span>
                   </button>

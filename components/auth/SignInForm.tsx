@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Cap, keyClass, textLink } from '@/components/website/sheet';
 import type { AuthState } from '@/lib/auth/useAuth';
+import { MIN_ACCOUNT_AGE, dobProblem, latestAllowedDob, parseDob } from '@/lib/auth/age';
 
 // Sign in / create account / magic link, lifted out of AccountClient (10/21) so the registration page can ask for an
 // account without sending the athlete away. `returnTo` is remembered only before an email round trip (confirmation,
@@ -71,6 +72,7 @@ export default function SignInForm({ auth, defaultMode = 'signin', returnTo, idP
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [dob, setDob] = useState('');
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ text: string; tone: 'ok' | 'warn' } | null>(null);
 
@@ -93,8 +95,10 @@ export default function SignInForm({ auth, defaultMode = 'signin', returnTo, idP
     if (mode === 'signup') {
       return run(async () => {
         if (password.length < 8) throw new Error('Password needs at least 8 characters.');
+        const dobErr = dobProblem(dob);
+        if (dobErr) throw new Error(dobErr);
         rememberReturnTo(returnTo);
-        const r = await auth.signUp(email, password, name || email.split('@')[0]);
+        const r = await auth.signUp(email, password, name || email.split('@')[0], parseDob(dob) ?? undefined);
         if (r === 'signed_in') clearReturnTo();
         return r === 'check_email' ? `Check ${email.trim()} for a confirmation link. Opening it signs you in and brings you back here.` : undefined;
       });
@@ -131,6 +135,23 @@ export default function SignInForm({ auth, defaultMode = 'signin', returnTo, idP
             <div className={CELL}>
               <label htmlFor={`${idPrefix}-name`}><Cap as="span">Display name</Cap></label>
               <input id={`${idPrefix}-name`} value={name} onChange={(e) => setName(e.target.value)} className={INPUT} maxLength={80} autoComplete="name" />
+            </div>
+          )}
+          {mode === 'signup' && (
+            <div className={CELL}>
+              <label htmlFor={`${idPrefix}-dob`}><Cap as="span">Date of birth</Cap></label>
+              <input
+                id={`${idPrefix}-dob`}
+                type="date"
+                required
+                value={dob}
+                max={latestAllowedDob()}
+                onChange={(e) => setDob(e.target.value)}
+                className={INPUT}
+                autoComplete="bday"
+                aria-describedby={`${idPrefix}-dob-note`}
+              />
+              <span id={`${idPrefix}-dob-note`} className={NOTE}>Accounts are for ages {MIN_ACCOUNT_AGE} and up. Not shown on your profile.</span>
             </div>
           )}
           <div className={CELL}>
@@ -171,7 +192,7 @@ export default function SignInForm({ auth, defaultMode = 'signin', returnTo, idP
         {mode === 'signup' && (
           <p className={NOTE}>
             By creating an account you agree to the <Link href="/legal/terms" className={textLink}>Terms of Use</Link> and{' '}
-            <Link href="/legal/privacy" className={textLink}>Privacy Policy</Link>. You must be 13 or older; under 18 needs a
+            <Link href="/legal/privacy" className={textLink}>Privacy Policy</Link>. You must be {MIN_ACCOUNT_AGE} or older; under 18 needs a
             parent or guardian&apos;s agreement.
           </p>
         )}

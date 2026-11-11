@@ -5,7 +5,7 @@
 **Where we are.** The two-track plan finished: `v2` became `main` on 11/9 (tag `v2-retired-2026-11-09`), one branch, one
 Supabase prod (`kagitbfthapxmaljsdtz`, migrations 001-053 applied) plus staging, www.zerotacky.com on Vercel Hobby, Resend
 mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 feature-gaps report ranked 22 builds;
-20 shipped. Live main `854b2d33` (scoring audit vs Iron Podium 11/10: lookback tiebreak default, report in audits/); IG result cards built locally, 772 tests. Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10).
+21 shipped. Live main `5a47f337` (scoring audit vs Iron Podium 11/10: lookback tiebreak default, report in audits/; IG result cards: square/story/link PNG per athlete, share or download). 11/11 local, push pending: scoring audit items 1/2/3/5 (Wessels tiebreak, hold events, max distance, implement word), sign-up date of birth with the 13 rule (057), `lookback` column default. 792 tests. Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10).
 
 **Shipped since the 10/21 entries below (newest first)**
 - 11/10 teams (055): a division can be a team of 2 to 6. Each teammate registers and pays alone, then forms the team on
@@ -34,12 +34,13 @@ mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 
 - #18 Instagram embeds: needs a Meta app review. #22 federation membership verification: no partner API, watch only.
 
 **Kurt's set-up items still open** (each blocks something live)
-1. `CRON_SECRET` on Vercel, then redeploy and one test send: until then the reminder emails (#10) never fire.
-2. Vercel deployment retention (1 day preview / 7 days prod): Functions storage was at 75% of the Hobby limit on 11/9.
-3. Delete the Supabase `zerotacky-upgrade-test` project (`yqqdbokdjwrcwwdsntgw`); optional: drop the old v2 preview
-   URL from Supabase Auth redirects.
+1. ~~`CRON_SECRET`~~ set and redeployed 11/11; test call of `/api/cron/reminders` returned 200 `{queued: 0}` with the bearer and 401 without. Reminders run daily at 13:00 UTC from here.
+2. ~~Vercel deployment retention~~ done 11/11; check Usage > Functions Storage trends down after 48 h.
+3. ~~Delete the Supabase `zerotacky-upgrade-test` project~~ done 11/11; optional: drop the old v2 preview URL from
+   Supabase Auth redirects.
 4. admin@zerotacky.com forwarding in Namecheap, and one claim-approved email read in a real inbox on prod.
-5. Age / parent-account rule after counsel (terms say 13, sign-up has no date of birth).
+5. Age rule: sign-up asks for a date of birth and refuses under 13 (057, 11/11). Parent-account handling for 13 to 17
+   still waits on counsel.
 
 **Infrastructure still held**
 - Weekly archive refresh (GitHub Actions) needs a long-lived, scoped prod DB role; today the loader runs by hand.

@@ -1382,3 +1382,42 @@ Newcomer strategy step after teams: an athlete posts her finish to Instagram the
 - **UI** `components/website/ResultCardButton.tsx`: `ResultCardToggle` ("Share card" / "Close") in a new last column of every standings row on the show page; the size strip (`ResultCardSizes`) renders under the table, outside the horizontal scroller, for the open row. Tap a size: fetch the PNG, `navigator.share({ files })` when the browser can share files (that is what lands in Instagram on a phone), otherwise a download with a note. Profile history rows carry the in-place button when the show is listed and the athlete placed (`ShowHistoryEntry.cardSlug`, `athleteId`).
 - **Tests** `test/resultCard.test.mjs` (every placed athlete on every completed demo show matches the table; field size; T- label; nulls; sizes, hrefs, file names, ordinals; fitMono / clip). showHistory asserts `cardSlug`. 772 pass, tsc clean. Browser probe at 390 px (`shots/cards_probe.py`): 4 toggles, 3 keys, story download 104,808 bytes, note text; screenshots `~/Downloads/zt_ui_1110/card_*.png`, `show_row_*.png`.
 - **Not done** a card on the live board (`/m/<slug>`), the promoter's "all podiums" sheet, and the profile button could not be probed locally (demo profiles carry no show history).
+
+## Scoring audit follow-ups + account age rule (11/11, migration 057)
+
+Closes items 1, 2, 3 and 5 of `audits/slate-2026-11-10-scoring-vs-iron-podium.md` and roadmap set-up item 5 (Kurt 11/11:
+"13 rule and date of birth in sign-up, as a precaution"). Item 4 (kg / m entry) stays open on purpose: `maxWeightLbs`,
+`distanceFeet` and the PR board / group picker / archive conversions are all unit-named, so a unit switch is its own build
+with a payload migration, not a label swap.
+
+- **`lib/engine/eventKinds.ts` (new)**: `SCORING_TYPES`, `normalizeScoringType`, `normalizeMaxTiebreak`,
+  `normalizeImplementLabel` (1..12 chars, control characters out, "impl" = absent), `implementWord`, `usesTimeCap`,
+  `scoringTypeLabel(ev, 'short'|'long'|'setup')`, `scoringRuleText`. The four private label maps (MeetSetupSheet,
+  ShowDetailClient, prepSheet, briefing) and the TV spec line now read from here, so a new kind shows up everywhere at once.
+- **Hold events** (`scoringType: 'max_time'`): one time, longer wins, cap ignored by the engine (the form calls it "Clock
+  limit"). Pad: good = Drop (stamps the clock), no = No hold, "Hold time (s)" field; stop-and-stamp works like a finish.
+  PR board ranks a hold by time ("41.30 s hold"); show history marks it finished whenever time > 0.
+- **Wessels rule** (`EventDef.maxTiebreak: 'attempts'`): on a weight tie the earlier attempt wins. `bestLiftAttempt(r)`:
+  typed `Result.maxWeightAttempt` > tape (`attemptLog` good + no-lift presses with a weight) > rising-bar grid (good/fail
+  keys up to the best weight) > 0 = unknown, which ranks below any known attempt and ties another unknown. Display
+  "270 lbs (att 2)" only when the rule is on. Pad shows "att n" under BEST and an "Attempt # of best lift" field.
+- **Max distance** (`EventDef.distanceOnly` on time_or_distance): furthest mark wins, no "(DNF)", clock ignored, keys
+  dead on the pad (the typed mark is the entry); lane 2 keeps only its distance field. Form checkbox under Time or Distance.
+- **Implement word** (`EventDef.implementLabel`): standings print "3 stones @ 41.20s" / "0 stones"; pad qty cap takes the
+  word; TV spec line "5 stones". Form field "Word for one (standings)" beside the count.
+- `meetBuilder.applyKindFlags` runs on parse, add and update: each flag exists only on its own kind and arrives normalised,
+  so a type change never leaves a stale flag in `events.config`. No new columns: flags ride in `config`, the attempt in
+  the result payload.
+- **Account age**: `lib/auth/age.ts` (`parseDob`, `ageOn`, `dobProblem`, `latestAllowedDob`, `isMinor`). Sign-up has a
+  required date-of-birth input with `max` = today minus 13 years (the browser refuses younger dates before submit; the
+  JS check is the fallback for a browser without date validation), sent as `date_of_birth` in the sign-up metadata.
+  057: `profiles.date_of_birth date`, check `profiles_min_age` (13..120 years), owner update grant, `handle_new_user`
+  stores it and raises "You must be 13 or older" on an under-age value (unparseable = null). Not in `zt_public_profiles`
+  or `PROFILE_COLUMNS`; magic-link first sign-ins stay null. Privacy table row updated. Terms unchanged (already 13).
+- 057 also sets `meets.tiebreaker_rule` default to `'lookback'` and re-creates `zt_publish_meet` (056 body) with the
+  same fallback; `zt_save_meet_config`'s literal is unreachable and left.
+- Staging: 057 applied; verify queries pass; constraint refused a 12-year-old date; the auth trigger stored 1990-05-05 and
+  refused 2020-01-01 (probe inside a rolled-back DO block, 0 leftovers). Browser (`shots/formats_dob.py`,
+  `Downloads/zt_ui_1111/`): sign-up DOB input max 2013-11-11, 2020 blocked (`rangeOverflow`), 2010 valid; event form
+  shows the hold type, Wessels note, distance-only toggle and the word field, cancels with no draft, no page errors.
+- Tests: `test/scoring_formats.test.mjs` (16), `test/age.test.mjs` (4). 792 pass, tsc clean.

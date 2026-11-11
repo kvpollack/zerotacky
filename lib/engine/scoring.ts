@@ -8,6 +8,7 @@ import type {
   TiebreakerRule,
 } from '../types';
 import { compareTiebreak, DEFAULT_TIEBREAKER } from './tiebreak';
+import { implementWord } from './eventKinds';
 
 // A result that scored something in some event. Used to decide whether a withdrawn athlete stays in the points field.
 // With the event in hand this is exactly "not a zero" under that event's rules (Astra PS-02: a 61 s time in a 60 s
@@ -24,9 +25,10 @@ export function resultHasScore(r: Result, event?: EventDef): boolean {
   const finished = time > 0 && time <= event.timeCapSeconds;
   switch (event.scoringType) {
     case 'reps': return (r.reps ?? 0) > 0;
-    case 'time_or_distance': return finished || (r.distanceFeet ?? 0) > 0;
+    case 'time_or_distance': return event.distanceOnly ? (r.distanceFeet ?? 0) > 0 : finished || (r.distanceFeet ?? 0) > 0;
     case 'time_or_implements': return finished || (r.implementsCompleted ?? 0) > 0;
     case 'max_weight': return effectiveMaxWeight(r) > 0;
+    case 'max_time': return time > 0;
     default: return false;
   }
 }
@@ -40,6 +42,36 @@ export function effectiveMaxWeight(r: Result | undefined): number {
       .filter(([, status]) => status === 'good')
       .map(([w]) => Number(w));
     return goodWeights.length > 0 ? Math.max(...goodWeights) : 0;
+  }
+  return 0;
+}
+
+// Wessels rule (11/11 audit item 1): the attempt number, 1-based, on which the best good lift was made. A typed
+// `maxWeightAttempt` wins; else the judge pad's tape (good and no-lift presses count, passes are not on the tape); else
+// the rising-bar grid (every good or failed weight up to the best is one attempt). 0 = unknown, which ranks below any
+// known attempt at the same weight so a tie never resolves on a guess.
+export function bestLiftAttempt(r: Result | undefined): number {
+  if (!r || r.didNotStart) return 0;
+  if (typeof r.maxWeightAttempt === 'number' && r.maxWeightAttempt > 0) return Math.round(r.maxWeightAttempt);
+  const best = effectiveMaxWeight(r);
+  if (best <= 0) return 0;
+  const log = Array.isArray(r.attemptLog) ? r.attemptLog : [];
+  if (log.length > 0) {
+    let n = 0;
+    for (const e of log) {
+      if (typeof e.weight !== 'number') continue;
+      n += 1;
+      if (e.kind === 'good' && e.weight === best) return n;
+    }
+    // the tape never reached the scored weight (a typed override above the bar): unknown
+    return 0;
+  }
+  if (r.risingBarAttempts) {
+    const tried = Object.entries(r.risingBarAttempts)
+      .map(([w, st]) => [Number(w), st] as const)
+      .filter(([w, st]) => w <= best && (st === 'good' || st === 'fail'))
+      .sort((a, b) => a[0] - b[0]);
+    return tried.length;
   }
   return 0;
 }
@@ -134,6 +166,12 @@ export function scoreSingleEvent(
       case 'time_or_distance': {
         const time = r.timeSeconds ?? 0;
         const dist = r.distanceFeet ?? 0;
+        // Max-distance event (audit item 3): the mark is the score, the clock means nothing, no "(DNF)" suffix.
+        if (event.distanceOnly) {
+          isZero = dist <= 0;
+          displayScore = isZero ? '0 ft' : `${dist} ft`;
+          return { athlete, r, isZero, displayScore, sortTuple: isZero ? [0, 0, 0] : [1, dist, 0] };
+        }
         const finished = time > 0 && time <= event.timeCapSeconds;
         isZero = !finished && dist <= 0;
         if (finished) {
@@ -152,14 +190,15 @@ export function scoreSingleEvent(
         // athlete at the cap on the same count instead of sitting below everyone with a recorded split (11/10 audit).
         const split = r.splitTimeSeconds ?? event.timeCapSeconds;
         const finished = time > 0 && time <= event.timeCapSeconds;
+        const word = implementWord(event);   // "impl" unless the promoter named it (audit item 5)
         isZero = !finished && impl <= 0;
         if (finished) {
           displayScore = `All in ${Number(time).toFixed(2)}s`;
           return { athlete, r, isZero: false, displayScore, sortTuple: [2, 10000 - time, 0] };
         } else {
           displayScore = isZero
-            ? '0 impl'
-            : `${impl} impl${r.splitTimeSeconds != null ? ` @ ${Number(split).toFixed(2)}s` : ''}`;
+            ? `0 ${word}`
+            : `${impl} ${word}${r.splitTimeSeconds != null ? ` @ ${Number(split).toFixed(2)}s` : ''}`;
           return {
             athlete,
             r,
@@ -173,8 +212,19 @@ export function scoreSingleEvent(
       case 'max_weight': {
         const maxW = getEffectiveMaxWeight(r);
         isZero = maxW <= 0;
-        displayScore = isZero ? 'No Lift' : `${maxW} lbs`;
-        return { athlete, r, isZero, displayScore, sortTuple: isZero ? [0, 0, 0] : [2, maxW, 0] };
+        // Wessels rule: fewer attempts to the weight ranks first; the attempt rides in the display so the tie reads.
+        const wessels = event.maxTiebreak === 'attempts';
+        const att = wessels && !isZero ? bestLiftAttempt(r) : 0;
+        displayScore = isZero ? 'No Lift' : `${maxW} lbs${wessels && att > 0 ? ` (att ${att})` : ''}`;
+        return { athlete, r, isZero, displayScore, sortTuple: isZero ? [0, 0, 0] : [2, maxW, wessels ? (att > 0 ? 1000 - att : 0) : 0] };
+      }
+
+      case 'max_time': {
+        // Hold event (audit item 2): one time, the longer hold wins; the cap is not a scoring boundary.
+        const time = r.timeSeconds ?? 0;
+        isZero = time <= 0;
+        displayScore = isZero ? '0.00s' : `${Number(time).toFixed(2)}s`;
+        return { athlete, r, isZero, displayScore, sortTuple: isZero ? [0, 0, 0] : [2, time, 0] };
       }
 
       default: {

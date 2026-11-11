@@ -5,6 +5,7 @@
 // document the editor opens in a new tab and prints. Pure functions, no React.
 import type { Division, EventDef, Station } from '../types';
 import { stationEvents } from '../engine/eventOrder';
+import { scoringTypeLabel, usesTimeCap } from '../engine/eventKinds';
 import { kgLabel, safeVideoUrl, specNotes, specSegments } from '../events/spec';
 import { staffByStation, staffRoleLabel, type MeetStaff } from './extras';
 import type { MeetSchedule } from './schedule';
@@ -40,14 +41,10 @@ export interface BriefingCard {
   floating: boolean;
 }
 
-const SCORING: Record<EventDef['scoringType'], string> = {
-  reps: 'Reps', max_weight: 'Max weight', time_or_distance: 'Time or distance', time_or_implements: 'Time or implements',
-};
-
 export function scoringLabel(e: EventDef): string {
-  const base = SCORING[e.scoringType] ?? 'Scored';
-  if (e.scoringType === 'max_weight' && e.maxFormat === 'rising_bar') return 'Max weight (rising bar)';
-  return e.timeCapSeconds > 0 ? `${base}, ${e.timeCapSeconds} s cap` : base;
+  const base = scoringTypeLabel(e, 'short');
+  if (e.scoringType === 'max_weight' && e.maxFormat === 'rising_bar') return base;
+  return usesTimeCap(e) && e.timeCapSeconds > 0 ? `${base}, ${e.timeCapSeconds} s cap` : base;
 }
 
 function loadLines(e: EventDef, divs: Division[]): string[] {
