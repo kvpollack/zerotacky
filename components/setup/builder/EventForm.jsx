@@ -3,19 +3,24 @@
 import { useEffect, useRef, useState } from 'react';
 import { loadingTakesCollars } from '@/lib/engine/plates';
 import { EQUIPMENT_RULES, IMPLEMENTS, SPEC_LIMITS, normalizeEventSpec, validateEventSpec } from '@/lib/events/spec';
+import { COURSE_MAX, distanceUnit, weightUnit } from '@/lib/units';
 import { IMPLEMENT_LABEL_MAX, normalizeImplementLabel } from '@/lib/engine/eventKinds';
 
 const SCORING_OPTIONS = [
   { id: 'reps', label: 'Reps', help: 'Most reps in time cap; optional Heavy/Light trump bar.' },
   { id: 'max_weight', label: 'Max Weight', help: 'Heaviest good lift (Rising Bar grid or exact weight).' },
-  { id: 'time_or_distance', label: 'Time or Distance (ft)', help: 'Fastest finish time; DNF scored by distance in feet. Tick "distance only" for a toss or a carry for distance.' },
+  { id: 'time_or_distance', label: 'Time or Distance', help: 'Fastest finish time; DNF scored by distance. Tick "distance only" for a toss or a carry for distance.' },
   { id: 'time_or_implements', label: 'Time or Implements', help: 'Stones/Medley: fastest all-in time, or count + split.' },
   { id: 'max_time', label: 'Max Time (Hold)', help: 'Hercules hold, crucifix, hammer hold: the longest hold wins. The clock stops when the athlete drops; the cap is a safety limit only.' },
 ];
 
 // `defaultCollarWeightPerPair`: the meet's default, prefilled on a new event (collars are per event since 10/26).
-export default function EventForm({ divisions, initialEvent, onSave, onCancel, defaultCollarWeightPerPair = 0 }) {
+export default function EventForm({ divisions, initialEvent, onSave, onCancel, defaultCollarWeightPerPair = 0, units = 'imperial' }) {
   const ev = initialEvent || {};
+  // 059: labels only; every number is typed and stored in the meet's unit
+  const LB = weightUnit(units);
+  const LBS = weightUnit(units, { plural: true });
+  const FT = distanceUnit(units);
   const [name, setName] = useState(ev.name || '');
   const [scoringType, setScoringType] = useState(ev.scoringType || 'reps');
   const [timeCapSeconds, setTimeCapSeconds] = useState(ev.timeCapSeconds ?? 60);
@@ -96,7 +101,7 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
       setError('Time cap must be greater than 0 seconds.');
       return;
     }
-    const specError = validateEventSpec(spec);
+    const specError = validateEventSpec(spec, units);
     if (specError) {
       setError(specError);
       return;
@@ -173,7 +178,7 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
         calloutTitle.trim() || Object.keys(byDivisionCallout).length > 0
           ? { title: calloutTitle.trim() || 'Setup Callout', byDivision: byDivisionCallout }
           : undefined,
-      spec: normalizeEventSpec(spec),
+      spec: normalizeEventSpec(spec, units),
     };
 
     onSave(payload);
@@ -283,14 +288,14 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
             type="text"
             value={fixedImplementDescription}
             onChange={(e) => setFixedImplementDescription(e.target.value)}
-            placeholder="e.g. 240, 260, 285, 310, 330 lb Stones"
+            placeholder={`e.g. 240, 260, 285, 310, 330 ${LB} Stones`}
             className="w-full mt-1 bg-zt-inset border border-zt-border-strong rounded-lg px-2.5 py-1.5 text-xs font-bold"
           />
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-2 items-end">
           <div>
-            <label className="text-[10px] font-extrabold uppercase text-zt-muted">Empty Implement Tare (lb)</label>
+            <label className="text-[10px] font-extrabold uppercase text-zt-muted">Empty Implement Tare ({LB})</label>
             <input
               type="number"
               value={implementEmptyWeight}
@@ -300,7 +305,7 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
           </div>
           {takesCollars && (
             <div>
-              <label className="text-[10px] font-extrabold uppercase text-zt-muted">Collar Weight / Pair (lb)</label>
+              <label className="text-[10px] font-extrabold uppercase text-zt-muted">Collar Weight / Pair ({LB})</label>
               <input
                 type="number"
                 min="0"
@@ -359,7 +364,7 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
           {maxFormat === 'rising_bar' && (
             <div>
               <label className="text-[10px] font-extrabold uppercase text-zt-muted">
-                Rising Bar Weights (lbs, comma-separated ascending)
+                Rising Bar Weights ({LBS}, comma-separated ascending)
               </label>
               <input
                 type="text"
@@ -459,7 +464,7 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
               <div className="text-xs font-black text-zt-text">{d.name}</div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] font-bold text-zt-muted">Target Weight (lb)</label>
+                  <label className="text-[10px] font-bold text-zt-muted">Target Weight ({LB})</label>
                   <input
                     type="number"
                     value={divisionWeights[d.id] ?? 0}
@@ -469,7 +474,7 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
                 </div>
                 {scoringType === 'reps' && hasTrumpWeight && (
                   <div>
-                    <label className="text-[10px] font-bold text-zt-muted">Light Tier Wt (lb)</label>
+                    <label className="text-[10px] font-bold text-zt-muted">Light Tier Wt ({LB})</label>
                     <input
                       type="number"
                       value={divisionLightWeights[d.id] ?? 0}
@@ -507,7 +512,7 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
       <div className="space-y-2 pt-2 border-t border-zt-border">
         <div className="text-[10px] font-extrabold uppercase text-zt-primary">Event Spec (What Athletes Train For)</div>
         <p className="text-[10px] text-zt-muted">
-          Optional. Printed on the public show page under this event, with kilograms beside every weight. Weights stay in the division table above.
+          Optional. Printed on the public show page under this event, with {units === 'metric' ? 'pounds' : 'kilograms'} beside every weight. Weights stay in the division table above.
         </p>
         <div className="grid grid-cols-2 gap-2 items-end">
           <div>
@@ -535,11 +540,12 @@ export default function EventForm({ divisions, initialEvent, onSave, onCancel, d
             />
           </div>
           <div>
-            <label htmlFor="ev-spec-course" className="text-[10px] font-extrabold uppercase text-zt-muted">Course Distance (ft)</label>
+            <label htmlFor="ev-spec-course" className="text-[10px] font-extrabold uppercase text-zt-muted">Course Distance ({FT})</label>
             <input
               id="ev-spec-course"
               type="number"
               min="1"
+              max={COURSE_MAX[units]}
               step="0.5"
               value={spec.courseFeet}
               onChange={(e) => setSpecField('courseFeet', e.target.value)}

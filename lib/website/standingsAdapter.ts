@@ -30,7 +30,7 @@ export function buildDivisionResultsView(
       (r) => r.eventId === ev.id && divisionAthletes.some((a) => a.id === r.athleteId)
     );
     if (hasAnyResult) {
-      eventScoreboards[ev.id] = scoreSingleEvent(ev, divisionAthletes, results, sortedEvents);
+      eventScoreboards[ev.id] = scoreSingleEvent(ev, divisionAthletes, results, sortedEvents, state.meet.units);
     } else {
       eventScoreboards[ev.id] = [];
     }
@@ -41,7 +41,8 @@ export function buildDivisionResultsView(
     divisionAthletes,
     sortedEvents,
     results,
-    state.meet.tiebreakerRule
+    state.meet.tiebreakerRule,
+    state.meet.units   // 059: unit labels in displayScore
   );
 
   const suppliedList = show.suppliedDivisionPlacements?.[division.id];

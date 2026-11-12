@@ -3,10 +3,11 @@
 // rules) and notes, plus the meet-wide standards the head judge sets at the rules meeting. A last card lists the
 // floating crew (scorer, emcee, medic, state rep) and the promoter's contact. `briefingHtml` is a self-contained
 // document the editor opens in a new tab and prints. Pure functions, no React.
-import type { Division, EventDef, Station } from '../types';
+import type { Division, EventDef, MeetUnits, Station } from '../types';
+import { mirrorWeightLabel, weightUnit } from '../units';
 import { stationEvents } from '../engine/eventOrder';
 import { scoringTypeLabel, usesTimeCap } from '../engine/eventKinds';
-import { kgLabel, safeVideoUrl, specNotes, specSegments } from '../events/spec';
+import { safeVideoUrl, specNotes, specSegments } from '../events/spec';
 import { staffByStation, staffRoleLabel, type MeetStaff } from './extras';
 import type { MeetSchedule } from './schedule';
 
@@ -20,13 +21,14 @@ export interface BriefingInput {
   divisions: Division[];
   events: EventDef[];
   staff: MeetStaff[] | null | undefined;
+  units?: MeetUnits;             // 059: absent = imperial
 }
 
 export interface BriefingEventLine {
   number: number;
   name: string;
   scoring: string;               // 'Reps in 60 s', 'Max weight', ...
-  loads: string[];               // 'Novice Women: 180 lb (82 kg)'
+  loads: string[];               // 'Novice Women: 180 lb (82 kg)'; on a metric meet '82 kg (181 lb)'
   spec: string[];                // specSegments
   notes: string;
   videoUrl: string | null;
@@ -47,15 +49,17 @@ export function scoringLabel(e: EventDef): string {
   return usesTimeCap(e) && e.timeCapSeconds > 0 ? `${base}, ${e.timeCapSeconds} s cap` : base;
 }
 
-function loadLines(e: EventDef, divs: Division[]): string[] {
+function loadLines(e: EventDef, divs: Division[], units: MeetUnits = 'imperial'): string[] {
   const out: string[] = [];
+  const u = weightUnit(units);
   for (const d of divs) {
     const lb = e.divisionWeights?.[d.id];
     if (typeof lb !== 'number' || !Number.isFinite(lb) || lb <= 0) continue;
     const light = e.divisionLightWeights?.[d.id];
-    const kg = kgLabel(lb);
-    let s = `${d.name}: ${lb} lb${kg ? ` (${kg})` : ''}`;
-    if (e.hasTrumpWeight && typeof light === 'number' && light > 0) s += `, light ${light} lb${kgLabel(light) ? ` (${kgLabel(light)})` : ''}`;
+    const kg = mirrorWeightLabel(lb, units);
+    let s = `${d.name}: ${lb} ${u}${kg ? ` (${kg})` : ''}`;
+    const lightMirror = typeof light === 'number' ? mirrorWeightLabel(light, units) : '';
+    if (e.hasTrumpWeight && typeof light === 'number' && light > 0) s += `, light ${light} ${u}${lightMirror ? ` (${lightMirror})` : ''}`;
     const h = e.divisionDefaultHeights?.[d.id];
     if (h) s += `, ${e.heightLabel || 'height'} ${h}`;
     out.push(s);
@@ -82,8 +86,8 @@ export function briefingCards(input: BriefingInput): BriefingCard[] {
         number: e.eventNumber,
         name: e.name,
         scoring: scoringLabel(e),
-        loads: loadLines(e, divs),
-        spec: specSegments(e.spec),
+        loads: loadLines(e, divs, input.units),
+        spec: specSegments(e.spec, input.units),
         notes: specNotes(e.spec),
         videoUrl: safeVideoUrl(e.spec?.videoUrl),
         heightLabel: e.hasHeightCallout ? e.heightLabel || 'Height' : undefined,

@@ -15,6 +15,7 @@ import { describeShowLifecycle } from '@/lib/website/filters';
 import { formatShowDate } from '@/lib/website/showHistory';
 import { directionsUrl, eventWeightDisplay, formatLocalDateTime } from '@/lib/website/format';
 import { specSegments } from '@/lib/events/spec';
+import { normalizeUnits, weightUnit } from '@/lib/units';
 import { showTrainingNeeds, trainForShowHref } from '@/lib/website/trainFor';
 import { prepSheetHref } from '@/lib/website/prepSheet';
 import { reportHref } from '@/lib/website/meetReport';
@@ -50,6 +51,7 @@ const DT = 'text-xs tracking-[0.06em] uppercase text-ink-muted';
 const DD = 'text-[15px] text-ink leading-snug';
 
 export default function ShowDetailClient({ show, divisionResults }: ShowDetailClientProps) {
+  const units = normalizeUnits(show.state.meet.units);   // 059: lb/ft or kg/m labels throughout this page
   const sortedDivisions = [...show.state.divisions].sort((a, b) => a.sortOrder - b.sortOrder);
   const sortedEvents = [...show.state.events].sort((a, b) => a.eventNumber - b.eventNumber);
   const trainHref = trainForShowHref(show, showTrainingNeeds(sortedEvents));
@@ -458,12 +460,12 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                         {ev.lanes === 2 ? ' · 2 lanes' : ''}
                       </div>
                       {/* Event spec starter (11/4): implement, course and equipment rules, with a video link when given */}
-                      {(specSegments(ev.spec).length > 0 || safeVideoUrl(ev.spec?.videoUrl)) && (
+                      {(specSegments(ev.spec, units).length > 0 || safeVideoUrl(ev.spec?.videoUrl)) && (
                         <div className="text-[12px] text-ink mt-1 whitespace-normal">
-                          {specSegments(ev.spec).join(' · ')}
+                          {specSegments(ev.spec, units).join(' · ')}
                           {safeVideoUrl(ev.spec?.videoUrl) && (
                             <>
-                              {specSegments(ev.spec).length > 0 ? ' · ' : ''}
+                              {specSegments(ev.spec, units).length > 0 ? ' · ' : ''}
                               <a href={safeVideoUrl(ev.spec?.videoUrl) ?? undefined} target="_blank" rel="noopener noreferrer" className={textLink}>Video</a>
                             </>
                           )}
@@ -471,7 +473,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                       )}
                     </th>
                     {sortedDivisions.map((div) => {
-                      const w = eventWeightDisplay(ev, div.id);
+                      const w = eventWeightDisplay(ev, div.id, units);
                       return (
                         <td key={div.id} className={TD}>
                           <div className={w.main ? `${NUM} text-[22px] leading-none` : 'text-ink-muted'}>{w.main || 'Not provided'}</div>
@@ -496,7 +498,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                     <li><span className="text-ink-muted">Ev {ev.eventNumber} notes:</span> {specNotes(ev.spec)}</li>
                   )}
                   {ev.maxFormat === 'rising_bar' && ev.risingBarWeights && (
-                    <li><span className="text-ink-muted">Ev {ev.eventNumber} rising bar:</span> <span className={NUM}>{ev.risingBarWeights.join(' lb → ')}</span> lb</li>
+                    <li><span className="text-ink-muted">Ev {ev.eventNumber} rising bar:</span> <span className={NUM}>{ev.risingBarWeights.join(` ${weightUnit(units)} → `)}</span> {weightUnit(units)}</li>
                   )}
                 </React.Fragment>
               ))}

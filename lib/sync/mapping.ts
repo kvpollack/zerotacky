@@ -1,6 +1,7 @@
 // Pure AppState <-> Supabase row mapping. No I/O. Unit-tested in test/sync.test.mjs.
 import type { AppState, Athlete, Division, EventDef, Meet, Result } from '../types';
 import { normalizeCollarWeight } from '../engine/plates';
+import { normalizeUnits } from '../units';
 
 export interface MeetRow {
   id: string; slug: string; name: string; date: string | null; owner_id?: string | null;
@@ -8,6 +9,7 @@ export interface MeetRow {
   available_plates: number[]; collar_weight_per_pair: number; stations: { id: string; label: string; eventOrder?: string[] }[];
   is_demo: boolean;
   division_format?: string | null;   // 054; absent/null = the promoter has not chosen
+  units?: string | null;   // 059: 'imperial' | 'metric'; absent/null = imperial
   updated_at?: string;   // server-side; set by zt_publish_meet, read by pullChanges as the config watermark
 }
 export interface DivisionRow { id: string; meet_id: string; name: string; flight: string; sort_order: number; weight_cap_kg?: number | string | null; team_size?: number | null }
@@ -54,6 +56,7 @@ export function meetToRow(meet: Meet, extra: PublishExtra): MeetRow {
     stations: extra.stations ?? meet.stations ?? [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }],
     is_demo: extra.isDemo ?? !!meet.isDemo,
     ...(meet.divisionFormat ? { division_format: meet.divisionFormat } : {}),
+    units: normalizeUnits(meet.units),   // 059
   };
 }
 
@@ -103,6 +106,7 @@ export function rowToMeet(row: MeetRow): Meet {
     slug: row.slug,
     isDemo: !!row.is_demo,
     ...(row.division_format === 'weight_classes' || row.division_format === 'custom' ? { divisionFormat: row.division_format } : {}),
+    ...(row.units === 'metric' ? { units: 'metric' as const } : {}),   // 059: absent = imperial
     ...(Array.isArray(row.stations) && row.stations.length > 0
       ? {
           stations: row.stations.map((st) => ({

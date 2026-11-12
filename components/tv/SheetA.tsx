@@ -116,7 +116,7 @@ export default function SheetA({ m, title }: { m: SheetAModel; title: TitleData 
           <TField cap="Venue" value={title.venue} colStart={2} colEnd={4} className={CELL} />
           <TField cap="Date" value={title.date} className={CELL} />
           <TField cap="Division" value={m.division?.name ?? '—'} className={CELL} />
-          <TField cap="Units" value="lb" className={CELL} />
+          <TField cap="Units" value={title.units} className={CELL} />
           <TField cap="Sheet" value={`A · E${m.eventIndex} of ${m.eventCount}`} className={CELL} />
           <TField cap="Rev" value={`${m.rev} ${title.resultsWord}`} className={CELL} />
           <TField cap="Status" value={title.statusLine} className={CELL} />

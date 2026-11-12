@@ -1,4 +1,5 @@
-import type { EventDef, PlateLoad, PlateStack } from '../types';
+import type { EventDef, MeetUnits, PlateLoad, PlateStack } from '../types';
+import { weightUnit } from '../units';
 
 // Which loading modes take collars at all: two sleeves, or four sleeves loaded per hand. Pins, fixed implements and
 // four-post total loads (yoke) never do (Astra PS-01), so the form hides the field and stores 0 for them.
@@ -21,8 +22,11 @@ export function calculatePlateLoading(
   availablePlates: number[],
   meetCollarWeightPerPair = 0,
   overrideTargetWeight?: number | string,
-  useLightTier = false
+  useLightTier = false,
+  units: MeetUnits = 'imperial'   // 059: warning text only; plates and targets are numbers in the meet's unit
 ): PlateLoad {
+  const lbs = weightUnit(units, { plural: true });
+  const lb = weightUnit(units);
   const rawTarget =
     overrideTargetWeight !== undefined &&
     overrideTargetWeight !== '' &&
@@ -102,12 +106,12 @@ export function calculatePlateLoading(
   let warningMessage: string | undefined;
 
   if (rawTarget < event.implementEmptyWeight) {
-    warningMessage = `Target weight (${rawTarget} lbs) is lighter than empty implement (${event.implementEmptyWeight} lbs).`;
+    warningMessage = `Target weight (${rawTarget} ${lbs}) is lighter than empty implement (${event.implementEmptyWeight} ${lbs}).`;
   } else if (remainderUnloadedTotal > 0) {
     warningMessage =
       event.loadingPoints === 4 && event.weightEntryMode === 'total'
-        ? `Uneven 4-Post Load: ${remainderUnloadedTotal} lbs left over. Put a ${remainderUnloadedTotal} lb plate in the center crossbar or adjust target weight.`
-        : `Unloaded remainder: ${remainderUnloadedTotal} lbs total (${remainingPerPoint} lbs per point) cannot be made with selected plate inventory.`;
+        ? `Uneven 4-Post Load: ${remainderUnloadedTotal} ${lbs} left over. Put a ${remainderUnloadedTotal} ${lb} plate in the center crossbar or adjust target weight.`
+        : `Unloaded remainder: ${remainderUnloadedTotal} ${lbs} total (${remainingPerPoint} ${lbs} per point) cannot be made with selected plate inventory.`;
   }
 
   return {

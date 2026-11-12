@@ -3,7 +3,8 @@
 // block: target, load per point, the plate stack as ink keys; the rack / pin callout; the next-group transition list
 // (Astra DR-05: the next lifter and the next group's setup change stay labelled apart). Copy unchanged.
 import React from 'react';
-import type { Athlete, Division, EventDef, RunOrderItem } from '@/lib/types';
+import type { Athlete, Division, EventDef, MeetUnits, RunOrderItem } from '@/lib/types';
+import { weightUnit } from '@/lib/units';
 import { RuledBlock } from '@/components/sheet';
 import { CAP, Field, Key, KeyGroup, LH, LR, Note, Sec, TextInput, NumInput, Toast, Val } from './parts';
 
@@ -38,10 +39,12 @@ export type PitCrewSheetProps = {
   upNowPinHeight?: string | null;
   updateAthleteRackPin: (athleteId: string, eventId: string, v: string) => void;
   readOnly?: boolean;
+  units?: MeetUnits;   // 059: labels only; absent = imperial
 };
 
 export default function PitCrewSheet(p: PitCrewSheetProps) {
   const { currentAthlete, currentDivision, currentEvent: ev, plateLoad, nextRunItem, nextSetup, readOnly = false } = p;
+  const LB = weightUnit(p.units); const LBS = weightUnit(p.units, { plural: true });
   const tv = p.layout === 'tv';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const e = ev as any;
@@ -68,7 +71,7 @@ export default function PitCrewSheet(p: PitCrewSheetProps) {
           </>
         )}
 
-        <Sec right={<>Empty Tare <span className="text-pen font-bold">{e.implementEmptyWeight} lbs</span></>}>{plateLoad.callOutLabel} &middot; {ev.name}</Sec>
+        <Sec right={<>Empty Tare <span className="text-pen font-bold">{e.implementEmptyWeight} {LBS}</span></>}>{plateLoad.callOutLabel} &middot; {ev.name}</Sec>
         {e.hasTrumpWeight && (
           <KeyGroup
             ariaLabel="Bar tier"
@@ -76,8 +79,8 @@ export default function PitCrewSheet(p: PitCrewSheetProps) {
             value={p.pitCrewUseLightTier ? 'light' : 'heavy'}
             onChange={(v) => { p.setPitCrewUseLightTier(v === 'light'); p.setPitCrewCustomWeight(''); }}
             options={[
-              { value: 'heavy', label: `Heavy Bar (${e.divisionWeights?.[currentDivision.id]} lbs)` },
-              { value: 'light', label: `Light Bar (${e.divisionLightWeights?.[currentDivision.id]} lbs)` },
+              { value: 'heavy', label: `Heavy Bar (${e.divisionWeights?.[currentDivision.id]} ${LBS})` },
+              { value: 'light', label: `Light Bar (${e.divisionLightWeights?.[currentDivision.id]} ${LBS})` },
             ]}
           />
         )}
@@ -97,17 +100,17 @@ export default function PitCrewSheet(p: PitCrewSheetProps) {
         {e.loadingPoints === 0 ? (
           p.pitCrewCallout ? null : (
             <RuledBlock columns="minmax(0,1fr)">
-              <Field label="Fixed Implement Layout (No Plate Math)"><Val className="!text-[16px] !whitespace-normal">{e.fixedImplementDescription || `Load ${plateLoad.targetInputWeight} lb Implement`}</Val></Field>
+              <Field label="Fixed Implement Layout (No Plate Math)"><Val className="!text-[16px] !whitespace-normal">{e.fixedImplementDescription || `Load ${plateLoad.targetInputWeight} ${LB} Implement`}</Val></Field>
             </RuledBlock>
           )
         ) : (
           <>
             <RuledBlock columns="minmax(0,1fr) minmax(0,1fr)">
-              <Field label={e.weightIsAddedPlatesOnly ? 'Added Plate Weight' : e.weightEntryMode === 'per_hand' ? 'Target Per Hand' : 'Target Total Weight'} note={plateLoad.collarWeightApplied > 0 ? `Includes ${plateLoad.collarWeightApplied} lb collars` : undefined}>
-                <Val className={`${big} !text-ink`}>{plateLoad.targetInputWeight} lbs</Val>
+              <Field label={e.weightIsAddedPlatesOnly ? 'Added Plate Weight' : e.weightEntryMode === 'per_hand' ? 'Target Per Hand' : 'Target Total Weight'} note={plateLoad.collarWeightApplied > 0 ? `Includes ${plateLoad.collarWeightApplied} ${LB} collars` : undefined}>
+                <Val className={`${big} !text-ink`}>{plateLoad.targetInputWeight} {LBS}</Val>
               </Field>
-              <Field label={`Load ${plateLoad.callOutLabel}`} note={`Total System: ${plateLoad.totalSystemWeight} lbs`}>
-                <Val className={big}>{plateLoad.weightPerLoadingPoint} lbs</Val>
+              <Field label={`Load ${plateLoad.callOutLabel}`} note={`Total System: ${plateLoad.totalSystemWeight} ${LBS}`}>
+                <Val className={big}>{plateLoad.weightPerLoadingPoint} {LBS}</Val>
               </Field>
               <div className="col-span-full px-2 py-2">
                 <div className={`text-[10px] mb-1.5 ${CAP}`}>Plates on EACH Loading Point ({plateLoad.loadingPoints} Points Total):</div>
@@ -117,7 +120,7 @@ export default function PitCrewSheet(p: PitCrewSheetProps) {
                   <div className="flex flex-wrap gap-2">
                     {plateLoad.platesPerPoint.map((pl) => (
                       <span key={pl.weight} className={`bg-ink text-sheet font-bold px-3 flex items-baseline gap-1.5 ${tv ? 'text-[26px] min-h-[56px]' : 'text-[20px] min-h-[48px]'}`}>
-                        <span>{pl.count}&times;</span><span className="text-[0.8em]">{pl.weight} lb</span>
+                        <span>{pl.count}&times;</span><span className="text-[0.8em]">{pl.weight} {LB}</span>
                       </span>
                     ))}
                   </div>
@@ -126,7 +129,7 @@ export default function PitCrewSheet(p: PitCrewSheetProps) {
               {!readOnly && (
                 <Field wide label="Custom Target Weight Override (Test Rising Bar / Odd Yoke Jumps)">
                   <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
-                    <NumInput placeholder="Enter any target weight in lbs..." value={p.pitCrewCustomWeight} onChange={p.setPitCrewCustomWeight} aria-label="Custom target weight in lbs" />
+                    <NumInput placeholder={`Enter any target weight in ${LBS}...`} value={p.pitCrewCustomWeight} onChange={p.setPitCrewCustomWeight} aria-label={`Custom target weight in ${LBS}`} />
                     {p.pitCrewCustomWeight && <Key size="sm" onClick={() => p.setPitCrewCustomWeight('')}>Clear</Key>}
                   </div>
                 </Field>

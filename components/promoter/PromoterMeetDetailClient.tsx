@@ -903,6 +903,7 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
             stations={workingState.meet.stations ?? []}
             divisions={workingState.divisions}
             events={workingState.events}
+            units={workingState.meet.units}
             onSaveListing={handleSaveListing}
             onDirtyChange={setStaffDirty}
           />

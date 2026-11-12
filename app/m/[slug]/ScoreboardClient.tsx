@@ -347,10 +347,10 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
             <StandingsSheet
               currentDivision={d}
               currentEvent={ev}
-              eventScores={scoreSingleEvent(ev, divAth, state.results, state.events)}
+              eventScores={scoreSingleEvent(ev, divAth, state.results, state.events, state.meet.units)}
               events={state.events}
               meet={state.meet}
-              overallStandings={calculateDivisionStandings(d, divAth, state.events, state.results, state.meet.tiebreakerRule)}
+              overallStandings={calculateDivisionStandings(d, divAth, state.events, state.results, state.meet.tiebreakerRule, state.meet.units)}
             />
           </div>
         );

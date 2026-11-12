@@ -1,4 +1,4 @@
-import type { Athlete, Division, EventDef, Result, RunOrderItem, RunOrderMethod, Station } from '../types';
+import type { MeetUnits, Athlete, Division, EventDef, Result, RunOrderItem, RunOrderMethod, Station } from '../types';
 import { calculateDivisionStandings, scoreSingleEvent } from './scoring';
 import { priorEventsOnStation } from './eventOrder';
 
@@ -22,7 +22,8 @@ export function generateEventRunOrder(
   allEvents: EventDef[],
   allResults: Result[],
   method: RunOrderMethod,
-  stations?: Station[]
+  stations?: Station[],
+  units: MeetUnits = 'imperial'   // 059: the previous-event score shown beside each name carries the unit label
 ): RunOrderItem[] {
   const activeAthletes = divisionAthletes.filter((a) => a.status === 'active');
   // "Prior" means earlier on this division's station (10/21), so Reverse Previous Event follows the floor, not the
@@ -48,7 +49,7 @@ export function generateEventRunOrder(
     orderedAthletes = [...activeAthletes].sort((a, b) => a.lotNumber - b.lotNumber);
   } else if (method === 'reverse_previous_event') {
     const prevEvent = completedPriorEvents[completedPriorEvents.length - 1];
-    const prevScored = scoreSingleEvent(prevEvent, divisionAthletes, allResults, allEvents);
+    const prevScored = scoreSingleEvent(prevEvent, divisionAthletes, allResults, allEvents, units);
     prevScored.forEach((s) => prevScoreLookup.set(s.athleteId, s.displayScore));
     // Astra R-M5 (10/19): athletes tied in the previous event share a place, so compare places (not array index) and
     // let the documented fallbacks decide: lower overall points first, then lot number. Worst place in the previous

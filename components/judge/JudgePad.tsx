@@ -10,6 +10,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import type { Athlete, Division, EventDef, Meet, Result, RunOrderItem } from '@/lib/types';
 import type { Mode } from '@/lib/theme/promoter';
 import { bestLiftAttempt, stationById, stationForDivision } from '@/lib/engine';
+import { distanceUnit, distanceUnitWord, weightUnit, weightUnitWord } from '@/lib/units';
 import { revFor } from '@/lib/tv/model';
 import { RuledBlock, Cell, TitleBlock, NoLiftKey, GoodLiftKey } from '@/components/sheet';
 import PadClock from './PadClock';
@@ -133,6 +134,7 @@ export default function JudgePad(p: JudgePadProps) {
   const type = ev.scoringType;
   const labels = keyLabels(type, ev);
   const distanceOnly = type === 'time_or_distance' && !!ev.distanceOnly;
+  const LB = weightUnit(meet.units); const FT = distanceUnit(meet.units);   // 059: labels only
   const log = logOf(r);
   const entered = hasEntry(r);
   const station = stationById(meet, stationFlight) ?? stationForDivision(meet, currentDivision);
@@ -197,17 +199,17 @@ export default function JudgePad(p: JudgePadProps) {
     const best = bestWeight(r);
     const att = ev.maxTiebreak === 'attempts' && best > 0 ? bestLiftAttempt(r as Result) : 0;
     count = <span className={best > 0 ? 'text-pen' : ''}>{best || 0}</span>;
-    countCap = <>{labels.qtyCap}<br />lb{att > 0 && <><br />att {att}</>}</>;
+    countCap = <>{labels.qtyCap}<br />{LB}{att > 0 && <><br />att {att}</>}</>;
   } else if (type === 'max_time') {
     const t = r.timeSeconds ?? 0;
     count = t > 0 ? <span className="text-pen">{Number(t).toFixed(2)}</span> : <span>--</span>; countCap = <>{labels.qtyCap}<br />seconds</>;
   } else if (distanceOnly) {
     const d = r.distanceFeet ?? 0;
-    count = d > 0 ? <span className="text-pen">{d}</span> : <span>--</span>; countCap = <>Distance<br />ft</>;
+    count = d > 0 ? <span className="text-pen">{d}</span> : <span>--</span>; countCap = <>Distance<br />{FT}</>;
   } else {
     const t = r.timeSeconds ?? 0; const d = r.distanceFeet ?? 0;
     if (t > 0) { count = <span className="text-pen">{Number(t).toFixed(2)}</span>; countCap = <>{labels.qtyCap}<br />seconds</>; }
-    else if (d > 0) { count = <span className="text-pen">{d}</span>; countCap = <>Distance<br />ft · DNF</>; }
+    else if (d > 0) { count = <span className="text-pen">{d}</span>; countCap = <>Distance<br />{FT} · DNF</>; }
     else { count = <span>--</span>; countCap = <>{labels.qtyCap}<br />seconds</>; }
   }
 
@@ -366,7 +368,7 @@ export default function JudgePad(p: JudgePadProps) {
                   const w = t === 'heavy' ? ev.divisionWeights[currentDivision.id] : ev.divisionLightWeights?.[currentDivision.id];
                   return (
                     <button key={t} type="button" aria-pressed={on} disabled={isLocked} onClick={() => saveResultPatch(currentAthlete.id, { tier: t })} className={`${on ? INK : LINE} text-[13px] disabled:opacity-50`}>
-                      {t === 'heavy' ? 'Heavy bar' : 'Light bar'}{w ? ` ${w} lb` : ''}
+                      {t === 'heavy' ? 'Heavy bar' : 'Light bar'}{w ? ` ${w} ${LB}` : ''}
                     </button>
                   );
                 })}
@@ -393,7 +395,7 @@ export default function JudgePad(p: JudgePadProps) {
                     const isCur = barWeight === w;
                     return (
                       <button key={w} type="button" disabled={isLocked} onClick={() => setPickedWeight(w)} className="contents text-left font-sheet uppercase" aria-current={isCur ? 'true' : undefined}>
-                        <R className={isCur ? 'font-bold' : ''}>{isCur && <span aria-hidden="true" className="mr-1.5">&#x25B8;</span>}{w} lb</R>
+                        <R className={isCur ? 'font-bold' : ''}>{isCur && <span aria-hidden="true" className="mr-1.5">&#x25B8;</span>}{w} {LB}</R>
                         <R className={st === 'good' ? 'text-pen' : st === 'pending' ? 'text-ink-muted' : ''}>
                           {st === 'good' ? 'Good' : st === 'fail' ? <NoMark>No</NoMark> : st === 'pass' ? 'Pass' : isCur ? 'Next' : 'Pending'}
                         </R>
@@ -407,14 +409,14 @@ export default function JudgePad(p: JudgePadProps) {
                   onClick={() => { if (barWeight !== null) { saveResultPatch(currentAthlete.id, { risingBarAttempts: { ...(r.risingBarAttempts ?? {}), [barWeight]: 'pass' }, didNotStart: false }); setPickedWeight(null); } }}
                   className={`${lineKey(!isLocked && barWeight !== null)} w-full text-[13px]`}
                 >
-                  {barWeight !== null ? `Pass ${barWeight} lb` : 'Pass'}
+                  {barWeight !== null ? `Pass ${barWeight} ${LB}` : 'Pass'}
                 </button>
               </>
             )}
             {type === 'max_weight' && (
               <Row>
-                <Field label="Exact max weight override (lb)">
-                  <NumInput value={r.maxWeightLbs} disabled={isLocked} placeholder="Or type the exact max lift" ariaLabel="Exact max weight in pounds" onChange={(v) => saveResultPatch(currentAthlete.id, { maxWeightLbs: v ?? 0, didNotStart: false })} />
+                <Field label={`Exact max weight override (${LB})`}>
+                  <NumInput value={r.maxWeightLbs} disabled={isLocked} placeholder="Or type the exact max lift" ariaLabel={`Exact max weight in ${weightUnitWord(meet.units)}`} onChange={(v) => saveResultPatch(currentAthlete.id, { maxWeightLbs: v ?? 0, didNotStart: false })} />
                 </Field>
                 {ev.maxTiebreak === 'attempts' && (
                   <Field label="Attempt # of best lift (Wessels)">
@@ -431,8 +433,8 @@ export default function JudgePad(p: JudgePadProps) {
             )}
 
             {distanceOnly && (
-              <Field label="Distance (ft)">
-                <NumInput step="0.5" placeholder="e.g. 42.5" value={r.distanceFeet} disabled={isLocked} ariaLabel="Distance in feet" onChange={(v) => saveResultPatch(currentAthlete.id, { distanceFeet: v ?? 0, didNotStart: false })} />
+              <Field label={`Distance (${FT})`}>
+                <NumInput step="0.5" placeholder="e.g. 42.5" value={r.distanceFeet} disabled={isLocked} ariaLabel={`Distance in ${distanceUnitWord(meet.units)}`} onChange={(v) => saveResultPatch(currentAthlete.id, { distanceFeet: v ?? 0, didNotStart: false })} />
               </Field>
             )}
 
@@ -441,8 +443,8 @@ export default function JudgePad(p: JudgePadProps) {
                 <Field label={lane2 ? 'Lane 1 finish (s)' : 'Finish time (s)'}>
                   <NumInput step="0.01" placeholder="0.00" value={r.timeSeconds} disabled={isLocked} ariaLabel="Finish time seconds" onChange={(v) => saveResultPatch(currentAthlete.id, { timeSeconds: v ?? 0, didNotStart: false })} />
                 </Field>
-                <Field label="If DNF: distance (ft)">
-                  <NumInput step="0.5" placeholder="e.g. 42.5" value={r.distanceFeet} disabled={isLocked} ariaLabel="Distance in feet" onChange={(v) => saveResultPatch(currentAthlete.id, { distanceFeet: v ?? 0, didNotStart: false })} />
+                <Field label={`If DNF: distance (${FT})`}>
+                  <NumInput step="0.5" placeholder="e.g. 42.5" value={r.distanceFeet} disabled={isLocked} ariaLabel={`Distance in ${distanceUnitWord(meet.units)}`} onChange={(v) => saveResultPatch(currentAthlete.id, { distanceFeet: v ?? 0, didNotStart: false })} />
                 </Field>
               </Row>
             )}
@@ -474,8 +476,8 @@ export default function JudgePad(p: JudgePadProps) {
                   <NumInput step="0.01" placeholder="0.00" value={lane2Result.timeSeconds} disabled={isLocked} ariaLabel="Lane 2 finish seconds" onChange={(v) => saveResultPatch(lane2Athlete.id, { timeSeconds: v ?? 0 })} />
                 </Field>
               )}
-              <Field label={distanceOnly ? 'Lane 2 distance (ft)' : 'If DNF: distance (ft)'}>
-                <NumInput step="0.5" placeholder="e.g. 51.0" value={lane2Result.distanceFeet} disabled={isLocked} ariaLabel="Lane 2 distance in feet" onChange={(v) => saveResultPatch(lane2Athlete.id, { distanceFeet: v ?? 0 })} />
+              <Field label={distanceOnly ? `Lane 2 distance (${FT})` : `If DNF: distance (${FT})`}>
+                <NumInput step="0.5" placeholder="e.g. 51.0" value={lane2Result.distanceFeet} disabled={isLocked} ariaLabel={`Lane 2 distance in ${distanceUnitWord(meet.units)}`} onChange={(v) => saveResultPatch(lane2Athlete.id, { distanceFeet: v ?? 0 })} />
               </Field>
               {!distanceOnly && (
                 <>

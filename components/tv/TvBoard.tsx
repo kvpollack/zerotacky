@@ -24,6 +24,7 @@ export type TitleData = {
   demo: boolean;
   statusLine: string;      // status with the demo marker, for the title block
   resultsWord: string;     // Provisional | Final | Not started
+  units: string;           // 'lb · ft' | 'kg · m' (059)
   subline: string;         // band right-hand text when nothing is on platform
   onPlatform: string;
   then: string;
@@ -99,6 +100,7 @@ export default function TvBoard({ meet, state, live, control, clientName, error,
     demo,
     statusLine: demo ? `${status} · Demo` : status,
     resultsWord,
+    units: state.meet.units === 'metric' ? 'kg · m' : 'lb · ft',
     subline: error ? 'Reconnecting' : completed ? (meet.resultsStatus === 'final' ? 'Official results' : 'Provisional until the promoter marks final') : updatedAt ? `Updated ${new Date(updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })}` : '',
     onPlatform: a?.athlete ? `Lot ${a.athlete.lotNumber} ${surname(a.athlete.name)}${a.lane2 ? ` + ${surname(a.lane2.name)}` : ''}` : '',
     then: then ? `Lot ${then.lotNumber} ${surname(then.name)}` : '—',

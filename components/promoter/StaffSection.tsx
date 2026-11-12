@@ -9,7 +9,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, CheckCircle2, Printer, Plus, Trash2, Users } from 'lucide-react';
 import type { MeetListing } from '@/lib/promoter/contract';
-import type { Division, EventDef, Station } from '@/lib/types';
+import type { Division, EventDef, MeetUnits, Station } from '@/lib/types';
 import { STAFF_LIMITS, STAFF_MAX, STAFF_ROLES, cleanStaff, staffRoleLabel, type MeetStaff, type StaffRole } from '@/lib/website/extras';
 import { briefingHtml } from '@/lib/website/briefing';
 
@@ -20,6 +20,7 @@ interface StaffSectionProps {
   stations: Station[];
   divisions: Division[];
   events: EventDef[];
+  units?: MeetUnits;   // 059
   onSaveListing: (patch: Partial<MeetListing>) => Promise<{ error: string | null }>;
   // MD-06: the parent folds this into its unsaved-work guard (dirty bar + beforeunload)
   onDirtyChange?: (dirty: boolean) => void;
@@ -41,7 +42,7 @@ function rowsKey(rows: StaffRow[]): string {
     .filter((r) => r.name || r.station || r.contact || r.note));
 }
 
-export default function StaffSection({ meetName, meetDate, listing, stations, divisions, events, onSaveListing, onDirtyChange }: StaffSectionProps) {
+export default function StaffSection({ meetName, meetDate, listing, stations, divisions, events, units, onSaveListing, onDirtyChange }: StaffSectionProps) {
   const [rows, setRows] = useState<StaffRow[]>(() => toRows(listing.staff));
   const [savedKey, setSavedKey] = useState(() => rowsKey(toRows(listing.staff)));
   const [saving, setSaving] = useState(false);
@@ -99,7 +100,7 @@ export default function StaffSection({ meetName, meetDate, listing, stations, di
     if (c.problem) { setError(c.problem); return; }
     const html = briefingHtml({
       meetName, meetDate, federation: listing.federation, promoterContact: listing.promoterContact, schedule: listing.schedule,
-      stations, divisions, events, staff: c.staff,
+      stations, divisions, events, staff: c.staff, units,
     });
     const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
     // MD-13: with 'noopener' Chrome returns null even when the tab opened, so open first and cut the opener link after

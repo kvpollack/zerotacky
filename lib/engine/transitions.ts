@@ -1,12 +1,13 @@
-import type { EventDef, PitCrewStat, TransitionRow } from '../types';
+import type { EventDef, MeetUnits, PitCrewStat, TransitionRow } from '../types';
+import { weightUnit } from '../units';
 
-export function describeSetup(event: EventDef, divisionId: string): string {
+export function describeSetup(event: EventDef, divisionId: string, units: MeetUnits = 'imperial'): string {
   const callout = event.pitCrewCallout?.byDivision?.[divisionId];
   if (callout?.headline) return callout.headline;
   if (event.fixedImplementDescription) return event.fixedImplementDescription;
   const w = event.divisionWeights?.[divisionId];
   if (w === undefined) return '—';
-  return `${w} lb${event.weightIsAddedPlatesOnly ? ' added plates' : ''}`;
+  return `${w} ${weightUnit(units)}${event.weightIsAddedPlatesOnly ? ' added plates' : ''}`;
 }
 
 export function parseMeasure(value: string): { num: number; unit: string } | null {
@@ -23,14 +24,16 @@ export function buildTransitionDeltas(
   curEvent: EventDef,
   curDivId: string,
   nextEvent: EventDef,
-  nextDivId: string
+  nextDivId: string,
+  units: MeetUnits = 'imperial'   // 059: labels only
 ): TransitionRow[] {
+  const lb = weightUnit(units);
   if (curEvent.id !== nextEvent.id) {
     return [
       {
         label: 'Event Changeover',
-        from: describeSetup(curEvent, curDivId),
-        to: describeSetup(nextEvent, nextDivId),
+        from: describeSetup(curEvent, curDivId, units),
+        to: describeSetup(nextEvent, nextDivId, units),
         delta: `Strike Ev ${curEvent.eventNumber} → Build Ev ${nextEvent.eventNumber}`,
         changed: true,
       },
@@ -46,12 +49,12 @@ export function buildTransitionDeltas(
     const pointLabel = curEvent.loadingPoints === 2 ? 'side' : 'point';
     rows.push({
       label: curEvent.weightIsAddedPlatesOnly ? 'Added Plates' : 'Implement Weight',
-      from: `${curW} lb`,
-      to: `${nextW} lb`,
+      from: `${curW} ${lb}`,
+      to: `${nextW} ${lb}`,
       delta:
         diff === 0
           ? 'No plate change'
-          : `${diff > 0 ? 'ADD' : 'REMOVE'} ${perPoint} lb per ${pointLabel} (${Math.abs(diff)} lb total)`,
+          : `${diff > 0 ? 'ADD' : 'REMOVE'} ${perPoint} ${lb} per ${pointLabel} (${Math.abs(diff)} ${lb} total)`,
       changed: diff !== 0,
     });
   }
@@ -111,9 +114,9 @@ export function buildTransitionDeltas(
     const diff = nextW - curW;
     rows.push({
       label: 'Implement',
-      from: `${curW} lb`,
-      to: `${nextW} lb`,
-      delta: diff === 0 ? 'No change' : formatSigned(diff, 'lb'),
+      from: `${curW} ${lb}`,
+      to: `${nextW} ${lb}`,
+      delta: diff === 0 ? 'No change' : formatSigned(diff, lb),
       changed: diff !== 0,
     });
   }

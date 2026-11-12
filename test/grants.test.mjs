@@ -154,8 +154,8 @@ describe('025: athlete writes need a grant; rack pins by join code', () => {
 // Astra GP-05 (11/10): the fake's allowlist is the staging anon grant on meets, exactly; the two real public selects must
 // fit inside it, or the fake would refuse a query production allows (or allow one it refuses).
 describe('public meet column grant (fake vs real selects)', () => {
-  const STAGING_ANON_MEETS_GRANT_2026_11_10 = 'athlete_cap,available_plates,collar_weight_per_pair,competition_status,created_at,date,division_format,entry_fee_display,federation,host_gym_id,id,imported_from,imported_slug,is_demo,is_public_listed,livestream_url,name,promoter_contact,registration_deadline,registration_status,results_status,results_submitted_at,run_order_method,schedule,slug,sponsors,stations,theme,tiebreaker_rule,updated_at,venue'.split(',');
-  test('the fake allowlist equals the staging grant read on 2026-11-10', () => {
+  const STAGING_ANON_MEETS_GRANT_2026_11_10 = 'athlete_cap,available_plates,collar_weight_per_pair,competition_status,created_at,date,division_format,entry_fee_display,federation,host_gym_id,id,imported_from,imported_slug,is_demo,is_public_listed,livestream_url,name,promoter_contact,registration_deadline,registration_status,results_status,results_submitted_at,run_order_method,schedule,slug,sponsors,stations,theme,tiebreaker_rule,units,updated_at,venue'.split(',');   // re-read 2026-11-12 after 059 (units)
+  test('the fake allowlist equals the staging grant read on 2026-11-12', () => {
     assert.deepEqual([...PUBLIC_MEET_COLS].sort(), [...STAGING_ANON_MEETS_GRANT_2026_11_10].sort());
   });
   test('PUBLIC_SHOW_MEET_COLS and the scorer MEET_COLS are inside the grant', async () => {

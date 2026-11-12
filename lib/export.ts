@@ -80,8 +80,8 @@ export function resultsToCsv(state: AppState): string {
   for (const div of divisions) {
     const athletes = state.athletes.filter((a) => a.divisionId === div.id);
     if (athletes.length === 0) continue;
-    const standings = calculateDivisionStandings(div, athletes, state.events, state.results, state.meet.tiebreakerRule);
-    const perEvent = new Map(events.map((e) => [e.id, new Map(scoreSingleEvent(e, athletes, state.results, state.events).map((r) => [r.athleteId, r]))]));
+    const standings = calculateDivisionStandings(div, athletes, state.events, state.results, state.meet.tiebreakerRule, state.meet.units);
+    const perEvent = new Map(events.map((e) => [e.id, new Map(scoreSingleEvent(e, athletes, state.results, state.events, state.meet.units).map((r) => [r.athleteId, r]))]));
     const scoredEventIds = new Set(events.filter((e) => state.results.some((r) => r.eventId === e.id)).map((e) => e.id));
     for (const st of standings) {
       const a = athletes.find((x) => x.id === st.athleteId)!;
@@ -108,7 +108,7 @@ export function standingsText(state: AppState, divisionsFilter?: Division[]): st
     const athletes = state.athletes.filter((a) => a.divisionId === div.id);
     if (athletes.length === 0) continue;
     lines.push('', `${div.name}`);
-    const standings = calculateDivisionStandings(div, athletes, events, state.results, state.meet.tiebreakerRule);
+    const standings = calculateDivisionStandings(div, athletes, events, state.results, state.meet.tiebreakerRule, state.meet.units);
     for (const st of standings) {
       const scratched = st.status === 'withdrawn' ? ' (scratched)' : '';
       lines.push(`${st.isTiedOverall ? 'T-' : ''}${st.overallPlace}. ${st.athleteName}${scratched} - ${st.totalPoints} pts`);

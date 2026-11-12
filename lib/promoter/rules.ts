@@ -15,6 +15,7 @@ import { cleanTheme } from '../website/theme';
 import { cleanSchedule } from '../website/schedule';
 import { cleanLivestreamUrl, cleanSponsors, cleanStaff } from '../website/extras';
 import { resolveDivisionGroupingStyle, showsGroupPicker } from '../website/groupPicker';
+import { normalizeUnits } from '../units';
 
 export const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -355,6 +356,7 @@ export function toPublicRegistrationMeet(
     },
     promoterDisplayName,
     ...(state.meet.divisionFormat ? { divisionFormat: state.meet.divisionFormat } : {}),
+    units: normalizeUnits(state.meet.units),   // 059
     // Astra GP-02: the same decision the show page makes (format, name-based style, status, events, 2+ divisions), so the
     // registration hint never points at a helper that is not there.
     groupPickerShown: state.divisions.length >= 2 && showsGroupPicker(

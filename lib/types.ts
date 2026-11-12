@@ -20,6 +20,9 @@ export type WeightEntryMode = 'total' | 'per_hand';
 // desk uses Division.weightCapKg); 'custom' = strength groups, experience levels, anything else (the show page offers
 // "Which group fits me?"). Absent = not chosen yet; the public pages fall back to guessing from the division names.
 export type DivisionFormat = 'weight_classes' | 'custom';
+// 059: the unit system a meet is run in. Every stored weight / distance number in the meet is in this unit (lb + ft, or
+// kg + m); the result keys maxWeightLbs / distanceFeet keep their historical names and hold the meet's unit.
+export type MeetUnits = 'imperial' | 'metric';
 
 export interface Station {
   id: string;
@@ -43,6 +46,7 @@ export interface Meet {
   stations?: Station[];
   slug?: string;
   divisionFormat?: DivisionFormat;
+  units?: MeetUnits;   // 059: every weight / distance number in this meet is in this unit; absent = imperial (only 'metric' is ever stored on the object)
 }
 
 export interface Division {
@@ -149,10 +153,10 @@ export interface Result {
   tier?: 'heavy' | 'light';
   reps?: number;
   timeSeconds?: number;
-  distanceFeet?: number;
+  distanceFeet?: number;        // in the meet's distance unit (ft, or m on a metric meet, 059); the name is historical
   implementsCompleted?: number;
   splitTimeSeconds?: number;
-  maxWeightLbs?: number;
+  maxWeightLbs?: number;        // in the meet's weight unit (lb, or kg on a metric meet, 059); the name is historical
   // Attempt number (1-based) on which the best good lift was made, typed by the judge when the tape does not have it.
   // Read only when the event's maxTiebreak is 'attempts'; lib/engine/scoring bestLiftAttempt derives it from attemptLog
   // or risingBarAttempts when this is absent.

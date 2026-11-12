@@ -6,6 +6,7 @@ import { Cap, WebCell, keyClass, textLink } from '@/components/website/sheet';
 import { longIsoDate } from '@/lib/website/sheetFormat';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import type { PublicRegistrationMeet } from '@/lib/promoter/contract';
+import { weightUnit } from '@/lib/units';
 import {
   ADULT_AGE,
   ageOnDate,
@@ -477,7 +478,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                       const selected = div.id === divisionId;
                       const weightSummary = div.targetWeights
                         .filter((t) => t.weight !== null)
-                        .map((t) => `${t.eventName}: ${t.weight} lb`)
+                        .map((t) => `${t.eventName}: ${t.weight} ${weightUnit(meet.units)}`)
                         .join(' · ');
 
                       return (

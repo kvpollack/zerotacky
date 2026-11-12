@@ -3,12 +3,12 @@
 // Used by test/controller.test.mjs and, via `bun test/fake_supabase.mjs`, as a local HTTP server for browser
 // smoke tests (set NEXT_PUBLIC_SUPABASE_URL=http://localhost:3078 and any anon key).
 // mirrors the anon SELECT column grant on meets (030, +schedule 044, +sponsors/livestream_url 046, +results_submitted_at 048,
-// +imported_from/imported_slug 053, +division_format 054): a select naming any other column is refused like PostgREST would.
+// +imported_from/imported_slug 053, +division_format 054, +units 059): a select naming any other column is refused like PostgREST would.
 // Astra GP-05 (11/10): this is the exact staging grant list as read from information_schema.column_privileges on 11/10;
 // test/grants.test.mjs asserts the real public selects stay inside it. Add a column here only when the migration grants it.
 export const PUBLIC_MEET_COLS = ['id', 'slug', 'name', 'date', 'run_order_method', 'tiebreaker_rule', 'available_plates', 'collar_weight_per_pair', 'stations', 'is_demo', 'created_at', 'updated_at',
   'competition_status', 'registration_status', 'results_status', 'is_public_listed', 'venue', 'federation', 'entry_fee_display', 'registration_deadline', 'athlete_cap', 'promoter_contact', 'host_gym_id', 'theme', 'schedule', 'sponsors', 'livestream_url', 'division_format',
-  'results_submitted_at', 'imported_from', 'imported_slug'];
+  'results_submitted_at', 'imported_from', 'imported_slug', 'units'];
 
 export function fakeServer() {
   const db = { meets: [], divisions: [], events: [], athletes: [], results: [], live_state: [], grants: [] };   // grants: 011 meet_grants

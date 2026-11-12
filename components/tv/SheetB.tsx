@@ -91,7 +91,7 @@ export default function SheetB({ p, title, pageIn, onDeck, upcoming }: { p: Shee
         <TField cap="Division" value={p.division.name} className={CELL} />
         <TField cap="Sheet" value={p.pages > 1 ? `B · ${p.page} of ${p.pages}` : 'B'} className={CELL} />
         <TField cap="Rev" value={`${p.rev} ${title.resultsWord}`} className={CELL} />
-        <TField cap="Units" value="lb" className={CELL} />
+        <TField cap="Units" value={title.units} className={CELL} />
         <TField cap="Venue" value={title.venue} className={CELL} />
         <TField cap="Status" value={title.statusLine} className={CELL} />
         <TField cap="On deck" value={onDeck} className={CELL} />

@@ -4,7 +4,8 @@
 // Sheet A, the drawing: one station, its current event and athlete, the running order as a parts list.
 // Sheet B, the card: one division's standings, 12 items a page, the pages rotate.
 // Idle: no station is live and the meet is not completed.
-import type { AppState, Athlete, Division, EventDef, Result, StandingRow, Station } from '../types';
+import type { AppState, Athlete, Division, EventDef, MeetUnits, Result, StandingRow, Station } from '../types';
+import { normalizeUnits, weightUnit } from '../units';
 import type { LiveStateRow } from '../sync/meetApi';
 import { calculateDivisionStandings, scoreSingleEvent, generateEventRunOrder, describeSetup, stationEvents, nextEventOnStation, stationPosition, implementWord, usesTimeCap } from '../engine';
 import { revFromCount } from '../../components/sheet/TitleBlock';
@@ -62,8 +63,8 @@ export function formatCap(seconds: number | undefined): string {
 }
 
 /** One line describing what the event asks of a division: "5 stones 250-350 lb · 60 s cap". */
-export function eventSpec(ev: EventDef, divisionId: string): string {
-  const setup = describeSetup(ev, divisionId);
+export function eventSpec(ev: EventDef, divisionId: string, units: MeetUnits = 'imperial'): string {
+  const setup = describeSetup(ev, divisionId, units);
   const bits: string[] = [];
   if (ev.scoringType === 'time_or_implements' && ev.implementCount) bits.push(`${ev.implementCount} ${ev.implementLabel ? implementWord(ev) : 'implements'}`);
   if (setup && setup !== '—') bits.push(setup);
@@ -117,10 +118,11 @@ export function buildSheetA(state: AppState, live: LiveStateRow[], station: Stat
   const athlete = divAth.find((a) => a.id === l.current_athlete_id) ?? null;
   const lane2 = divAth.find((a) => a.id === l.lane2_athlete_id) ?? null;
   const onStation = stationEvents(station, state.events);
-  const scored = scoreSingleEvent(event, divAth, state.results, state.events);
+  const units = normalizeUnits(state.meet.units);   // 059
+  const scored = scoreSingleEvent(event, divAth, state.results, state.events, units);
   const byAth = new Map(scored.map((r) => [r.athleteId, r]));
   const hasResult = (id: string) => state.results.some((r) => r.eventId === event.id && r.athleteId === id && (r.locked || resultFilled(r)));
-  const order = generateEventRunOrder(event, division, divAth, state.events, state.results, state.meet.runOrderMethod, state.meet.stations);
+  const order = generateEventRunOrder(event, division, divAth, state.events, state.results, state.meet.runOrderMethod, state.meet.stations, normalizeUnits(state.meet.units));
   let runPosition = 0;
   const parts: PartsRow[] = order.map((o, i) => {
     const sr = byAth.get(o.athlete.id);
@@ -154,10 +156,10 @@ export function buildSheetA(state: AppState, live: LiveStateRow[], station: Stat
   const mine = athlete ? state.results.find((r) => r.eventId === event.id && r.athleteId === athlete.id) : undefined;
   const mySr = athlete ? byAth.get(athlete.id) : undefined;
   const scoredNow = !!athlete && hasResult(athlete.id) && !!mySr;
-  const target = describeSetup(event, division.id);
+  const target = describeSetup(event, division.id, units);
   const mark = scoredNow
     ? { value: mySr!.displayScore, cap: mine?.locked ? 'Result · locked' : 'Result', pen: true }
-    : { value: target === '—' ? eventSpec(event, division.id) : target, cap: 'Target', pen: false };
+    : { value: target === '—' ? eventSpec(event, division.id, units) : target, cap: 'Target', pen: false };
   const status = !athlete ? 'Idle' : scoredNow ? 'Scored' : 'On platform';
 
   // the ladder: rising-bar attempts when the event has them, else the per-division spec
@@ -167,10 +169,10 @@ export function buildSheetA(state: AppState, live: LiveStateRow[], station: Stat
     ladderTitle = 'Rising bar';
     ladder = event.risingBarWeights.map((w) => {
       const st = mine?.risingBarAttempts?.[String(w)];
-      return { label: `${w} lb`, value: st === 'good' ? 'Good' : st === 'fail' ? 'No lift' : st === 'pass' ? 'Pass' : 'Pending', state: st === 'good' ? 'good' : st === 'fail' ? 'fail' : st === 'pass' ? 'pass' : 'pending' };
+      return { label: `${w} ${weightUnit(units)}`, value: st === 'good' ? 'Good' : st === 'fail' ? 'No lift' : st === 'pass' ? 'Pass' : 'Pending', state: st === 'good' ? 'good' : st === 'fail' ? 'fail' : st === 'pass' ? 'pass' : 'pending' };
     });
   } else {
-    ladder = state.divisions.filter((d) => d.flight === station.id).map((d) => ({ label: d.name, value: eventSpec(event, d.id) || '—', state: 'spec' as const }));
+    ladder = state.divisions.filter((d) => d.flight === station.id).map((d) => ({ label: d.name, value: eventSpec(event, d.id, units) || '—', state: 'spec' as const }));
   }
 
   const next = nextEventOnStation(station, state.events, event.id) ?? null;
@@ -178,9 +180,9 @@ export function buildSheetA(state: AppState, live: LiveStateRow[], station: Stat
     station, division, event,
     eventIndex: Math.max(1, stationPosition(station, state.events, event.id)),
     eventCount: onStation.length,
-    spec: eventSpec(event, division.id),
+    spec: eventSpec(event, division.id, units),
     athlete, lane2, mark, status, ladder, ladderTitle, parts, runPosition, onDeck, next,
-    nextSpec: next ? eventSpec(next, division.id) : '',
+    nextSpec: next ? eventSpec(next, division.id, units) : '',
     rev: revFor(state.results, divAth),
   };
 }
@@ -231,7 +233,8 @@ export function buildSheetB(state: AppState, live: LiveStateRow[], division: Div
   const divAth = state.athletes.filter((a) => a.divisionId === division.id);
   if (divAth.length === 0) return [];
   const events = [...state.events].sort((a, b) => a.eventNumber - b.eventNumber);
-  const standings: StandingRow[] = calculateDivisionStandings(division, divAth, events, state.results, state.meet.tiebreakerRule);
+  const units = normalizeUnits(state.meet.units);   // 059
+  const standings: StandingRow[] = calculateDivisionStandings(division, divAth, events, state.results, state.meet.tiebreakerRule, units);
   const st = live.find((l) => l.station === division.flight);
   const liveEventId = st?.current_division_id === division.id ? st.current_event_id : null;
   const liveAthleteIds = st?.current_division_id === division.id ? [st.current_athlete_id, st.lane2_athlete_id].filter((x): x is string => !!x) : [];
@@ -240,7 +243,7 @@ export function buildSheetB(state: AppState, live: LiveStateRow[], division: Div
   const afterEvent = scoredEvents[scoredEvents.length - 1] ?? null;
   const winners = new Map<string, Set<string>>();
   for (const e of scoredEvents) {
-    const top = scoreSingleEvent(e, divAth, state.results, events).filter((r) => r.place === 1 && !r.isZero).map((r) => r.athleteId);
+    const top = scoreSingleEvent(e, divAth, state.results, events, units).filter((r) => r.place === 1 && !r.isZero).map((r) => r.athleteId);
     winners.set(e.id, new Set(top));
   }
   const rows: CardRow[] = standings.map((s) => {
@@ -296,7 +299,7 @@ export function buildIdle(state: AppState): IdleModel {
     schedule: events.map((e) => {
       const divs = state.divisions.filter((d) => e.divisionWeights?.[d.id] !== undefined || Object.keys(e.divisionWeights ?? {}).length === 0);
       const first = divs[0] ?? state.divisions[0];
-      return { event: e, divisions: divs.map((d) => d.name), spec: first ? eventSpec(e, first.id) : '' };
+      return { event: e, divisions: divs.map((d) => d.name), spec: first ? eventSpec(e, first.id, normalizeUnits(state.meet.units)) : '' };
     }),
     stations: defaultStations(state),
     rev: revFor(state.results),

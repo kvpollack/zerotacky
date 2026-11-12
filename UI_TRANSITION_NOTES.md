@@ -1447,3 +1447,40 @@ flag) is a different thing and stays held.
   on, one card with the "Intro sessions" chip; on_request shows "Intro on request"; reset to not_provided afterwards (row
   verified back to defaults). No page errors.
 - Tests: `test/introSessions.test.mjs` (5: normaliser, filter, patch cleaning). 797 pass, tsc clean.
+
+## kg / m units, session 1 (11/12, migration 059)
+
+Kurt 11/12: "Build kg/m, option B, start session 1." Scope note in `audits/slate-2026-11-12-kg-m-scope.md`. Option B: a
+meet picks its unit once and every number in that meet is stored in that unit; the engine never converts. Normalising to
+one unit happens only where meets are compared (PR board, show history, trainFor), which is session 2.
+
+- Model: `Meet.units?: 'imperial' | 'metric'`, present on the object only when metric (absent = imperial, like
+  `divisionFormat`). Field names `distanceFeet`, `maxWeightLbs`, `courseFeet` keep their historical names; comments say
+  "in the meet's unit". `lib/units.ts` holds everything unit-shaped: labels (`weightUnit`, `distanceUnit`, words),
+  `DEFAULT_PLATES` (metric 25 / 20 / 15 / 10 / 5 / 2.5 / 1.25), `COURSE_MAX` (5280 ft, 1610 m), mirror helpers
+  (`mirrorWeightLabel`: kg beside lb on an imperial meet, lb beside kg on a metric one), converters at 1 decimal.
+- 059: `meets.units text not null default 'imperial'`, check `meets_units_chk`, select granted to anon and authenticated.
+  `zt_publish_meet` and `zt_save_meet_config` validate the value and refuse a change when the meet has results;
+  `my_meets`, `get_my_meet`, `public_meet_by_slug` return it. `meetToRow` always sends the normalised value, so rows never
+  carry null. SQL guard 041 still caps course at 5280 as a backstop (1610 m fits under it).
+- Engine: `scoreSingleEvent`, `calculateDivisionStandings`, `generateEventRunOrder`, `calculatePlateLoading`,
+  `describeSetup`, `buildTransitionDeltas`, `normalizeEventSpec`, `validateEventSpec`, `specSegments`,
+  `eventWeightDisplay`, TV `eventSpec`, prep sheet rows and the briefing all take `units` (default imperial) and only
+  change their labels. Callers (`strongman-app.jsx`, Scoreboard, standings adapter, exports, TV model, show page,
+  register page, prep sheet, pit crew) pass `meet.units`. Course validation on a metric meet: 1 to 1610, half-meter steps.
+- Meet setup (`MeetSetupSheet.tsx`): new "Units" radiogroup under the collar field, inside a fieldset that is disabled once
+  the meet has results ("Locked: this meet has results. Weights and marks stay in pounds and feet."). Switching converts
+  nothing and resets the plate inventory to that unit's default set; the note says so. Collar label, plate buttons,
+  `EventForm` labels (tare, collar, target, light tier, rising bar, course distance with `max`), `JudgePad` caps and
+  override labels, `PitCrewSheet`, TV title "Units" field (lb · ft / kg · m), prep sheet CSV header all follow the unit.
+- Tests: `test/units.test.mjs` (14): helpers, model and mapping round trip, engine labels in kg / m, metric plate load
+  47.5 = 25 + 20 + 2.5, transitions, spec range, mirror label, TV spec line. Fixtures updated for the new column
+  (`fake_supabase`, `grants` staging string re-read 11/12, `register` shape). 811 pass, tsc clean.
+- Staging: 059 applied, default and grants verified, all ten meets `imperial`. Browser (`shots/units1.py`,
+  `Downloads/zt_ui_1112/`): Iron Harbor (0 results) flipped to metric, kg plates and kg collar label, saved, metric
+  after reload, Add Event shows kg / m with course max 1610; dryrun (39 results) fieldset locked with the lock note;
+  Harbor reverted to imperial, row and plates back to the imperial defaults. One fix from the shots: the event-spec
+  help text said "kilograms beside every weight" on a metric meet; it now names the mirror unit.
+- Not in this session (session 2): PR board, athlete group picker, show history, result cards and `trainFor` still
+  assume pounds and feet when they compare across meets; 053 adopt-result path needs the kg case. Session 3: metric meet
+  end to end (register, judge, TV, show page, exports) in the browser, then an Astra audit.

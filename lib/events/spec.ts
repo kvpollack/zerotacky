@@ -1,7 +1,8 @@
 // Structured event spec helpers (11/4, starter). Pure: the promoter's event form validates and normalizes with these,
 // the show page describes with them, tests cover them. The implement list carries the gym-directory equipment ids it
 // maps to, so the later "train for this show" filter can join a show's events to gyms without a second vocabulary.
-import type { EquipmentRule, EventSpec, ImplementKind } from '@/lib/types';
+import type { EquipmentRule, EventSpec, ImplementKind, MeetUnits } from '@/lib/types';
+import { COURSE_MAX, distanceUnit, distanceUnitWord } from '@/lib/units';
 
 export const IMPLEMENTS: ReadonlyArray<{ id: ImplementKind; label: string; gymEquipment: string[] }> = [
   { id: 'log', label: 'Log', gymEquipment: ['log'] },
@@ -38,7 +39,9 @@ export const EQUIPMENT_RULES: ReadonlyArray<{ id: EquipmentRule; label: string }
   { id: 'suit', label: 'Suit' },
 ];
 
-export const SPEC_LIMITS = { implementNote: 80, notes: 280, videoUrl: 500, courseFeetMax: 5280 } as const;
+// courseFeetMax is the imperial cap (a mile); a metric meet caps at COURSE_MAX.metric meters (059). The spec key stays
+// `courseFeet` and holds the meet's distance unit.
+export const SPEC_LIMITS = { implementNote: 80, notes: 280, videoUrl: 500, courseFeetMax: COURSE_MAX.imperial } as const;
 
 const IMPLEMENT_IDS = new Set<string>(IMPLEMENTS.map((i) => i.id));
 const RULE_IDS = new Set<string>(EQUIPMENT_RULES.map((r) => r.id));
@@ -78,7 +81,7 @@ function cleanRules(list: unknown): EquipmentRule[] {
 }
 
 /** Returns a spec with only the filled fields, or undefined when nothing is filled. Does not refuse; validate first. */
-export function normalizeEventSpec(input: EventSpecInput | EventSpec | null | undefined): EventSpec | undefined {
+export function normalizeEventSpec(input: EventSpecInput | EventSpec | null | undefined, units: MeetUnits = 'imperial'): EventSpec | undefined {
   if (!input) return undefined;
   const out: EventSpec = {};
   const impl = str(input.implement);
@@ -88,7 +91,7 @@ export function normalizeEventSpec(input: EventSpecInput | EventSpec | null | un
   const rawFeet = input.courseFeet;
   const feet = typeof rawFeet === 'number' ? rawFeet : typeof rawFeet === 'string' && rawFeet.trim() !== '' ? Number(rawFeet) : NaN;
   // Half-foot steps, the form's own step (Astra BR-08): what validation accepts is what normalization keeps.
-  if (Number.isFinite(feet) && feet >= 1 && feet <= SPEC_LIMITS.courseFeetMax) out.courseFeet = Math.round(feet * 2) / 2;
+  if (Number.isFinite(feet) && feet >= 1 && feet <= COURSE_MAX[units]) out.courseFeet = Math.round(feet * 2) / 2;
   const allowed = cleanRules(input.allowed);
   const notAllowed = cleanRules(input.notAllowed).filter((r) => !allowed.includes(r));
   if (allowed.length) out.allowed = allowed;
@@ -101,7 +104,7 @@ export function normalizeEventSpec(input: EventSpecInput | EventSpec | null | un
 }
 
 /** Null when the input is acceptable, else the message the form shows. Checked on the raw input, before normalize. */
-export function validateEventSpec(input: EventSpecInput | null | undefined): string | null {
+export function validateEventSpec(input: EventSpecInput | null | undefined, units: MeetUnits = 'imperial'): string | null {
   if (!input) return null;
   for (const k of ['implement', 'implementNote', 'videoUrl', 'notes'] as const) {
     const v = (input as Record<string, unknown>)[k];
@@ -118,8 +121,8 @@ export function validateEventSpec(input: EventSpecInput | null | undefined): str
   const rawFeet = input.courseFeet;
   if (rawFeet !== '' && rawFeet !== undefined && rawFeet !== null) {
     const feet = Number(rawFeet);
-    if (!Number.isFinite(feet) || feet < 1 || feet > SPEC_LIMITS.courseFeetMax) return `Course distance is in feet, between 1 and ${SPEC_LIMITS.courseFeetMax}.`;
-    if (Math.abs(feet * 2 - Math.round(feet * 2)) > 1e-9) return 'Course distance is in half-foot steps (50 or 50.5).';
+    if (!Number.isFinite(feet) || feet < 1 || feet > COURSE_MAX[units]) return `Course distance is in ${distanceUnitWord(units)}, between 1 and ${COURSE_MAX[units]}.`;
+    if (Math.abs(feet * 2 - Math.round(feet * 2)) > 1e-9) return `Course distance is in half-${units === 'metric' ? 'meter' : 'foot'} steps (50 or 50.5).`;
   }
   const allowed = cleanRules(input.allowed);
   const both = cleanRules(input.notAllowed).filter((r) => allowed.includes(r));
@@ -160,15 +163,15 @@ export function kgLabel(lb: number | null | undefined): string {
 /** Short segments for one line under the event name: implement, course, equipment. The video link is separate.
  *  The spec is normalized first, so a malformed object that reached the database by another path (a null rule member,
  *  Astra recheck 11/5) renders as whatever is valid in it instead of crashing the show page. */
-export function specSegments(raw: EventSpec | undefined): string[] {
-  const spec = normalizeEventSpec(raw);
+export function specSegments(raw: EventSpec | undefined, units: MeetUnits = 'imperial'): string[] {
+  const spec = normalizeEventSpec(raw, units);
   if (!spec) return [];
   const out: string[] = [];
   if (spec.implement) {
     const label = spec.implement === 'other' ? (spec.implementNote || 'Other implement') : implementLabel(spec.implement);
     out.push(spec.implement !== 'other' && spec.implementNote ? `${label} (${spec.implementNote})` : label);
   } else if (spec.implementNote) out.push(spec.implementNote);
-  if (spec.courseFeet) out.push(`${spec.courseFeet} ft course`);
+  if (spec.courseFeet) out.push(`${spec.courseFeet} ${distanceUnit(units)} course`);
   if (spec.allowed?.length) out.push(`${spec.allowed.map(ruleLabel).join(', ')} allowed`);
   if (spec.notAllowed?.length) out.push(`No ${spec.notAllowed.map((r) => ruleLabel(r).toLowerCase()).join(', ')}`);
   return out;

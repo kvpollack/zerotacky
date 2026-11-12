@@ -6,7 +6,7 @@
 // Vocabulary: a "meet" here is the same object the meet-day scorer runs (AppState: meet, divisions, events,
 // athletes, results). The dashboard adds listing/lifecycle fields that live on the server row, not in AppState.
 
-import type { AppState, DivisionFormat, Meet } from '../types';
+import type { AppState, DivisionFormat, Meet, MeetUnits } from '../types';
 import type {
   ShowCompetitionStatus,
   ShowRegistrationStatus,
@@ -230,6 +230,7 @@ export interface PublicRegistrationMeet {
   listing: Pick<MeetListing, 'competitionStatus' | 'registrationStatus' | 'entryFeeDisplay' | 'registrationDeadline' | 'athleteCap' | 'federation' | 'venue' | 'promoterContact'>;
   promoterDisplayName: string;   // for the waiver's organizer line
   divisionFormat?: DivisionFormat;   // 054: the promoter's choice (null = not chosen)
+  units: MeetUnits;                  // 059: the unit the target weights are in
   groupPickerShown: boolean;         // 056 (Astra GP-02): the show page's gate, resolved server-side style; step 1 links to the helper only when true
   divisions: Array<{ id: string; name: string; weightCapKg?: number; teamSize?: number; targetWeights: Array<{ eventName: string; weight: number | null }> }>;
   acceptedCount: number;         // roster rows holding a spot (accepted requests plus hand-added athletes); compared against athleteCap

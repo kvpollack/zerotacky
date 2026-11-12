@@ -6,8 +6,10 @@ import type {
   ScoredRow,
   StandingRow,
   TiebreakerRule,
+  MeetUnits,
 } from '../types';
 import { compareTiebreak, DEFAULT_TIEBREAKER } from './tiebreak';
+import { distanceUnit, weightUnit } from '../units';
 import { implementWord } from './eventKinds';
 
 // A result that scored something in some event. Used to decide whether a withdrawn athlete stays in the points field.
@@ -91,8 +93,11 @@ export function scoreSingleEvent(
   event: EventDef,
   divisionAthletes: Athlete[],
   results: Result[],
-  allEvents?: EventDef[]   // the meet's events, so the points field judges every result by its own event (PS-02)
+  allEvents?: EventDef[],   // the meet's events, so the points field judges every result by its own event (PS-02)
+  units: MeetUnits = 'imperial'   // 059: labels only ("ft" / "m", "lbs" / "kg"); the numbers are compared as stored
 ): ScoredRow[] {
+  const ftU = distanceUnit(units);
+  const lbU = weightUnit(units, { plural: true });
   const field = new Set(scoringField(divisionAthletes, results, allEvents ?? [event]).map((a) => a.id));
   const N = field.size;
   const resultMap = new Map<string, Result>();
@@ -169,7 +174,7 @@ export function scoreSingleEvent(
         // Max-distance event (audit item 3): the mark is the score, the clock means nothing, no "(DNF)" suffix.
         if (event.distanceOnly) {
           isZero = dist <= 0;
-          displayScore = isZero ? '0 ft' : `${dist} ft`;
+          displayScore = isZero ? `0 ${ftU}` : `${dist} ${ftU}`;
           return { athlete, r, isZero, displayScore, sortTuple: isZero ? [0, 0, 0] : [1, dist, 0] };
         }
         const finished = time > 0 && time <= event.timeCapSeconds;
@@ -178,7 +183,7 @@ export function scoreSingleEvent(
           displayScore = `${Number(time).toFixed(2)}s`;
           return { athlete, r, isZero: false, displayScore, sortTuple: [2, 10000 - time, 0] };
         } else {
-          displayScore = isZero ? '0 ft' : `${dist} ft (DNF)`;
+          displayScore = isZero ? `0 ${ftU}` : `${dist} ${ftU} (DNF)`;
           return { athlete, r, isZero, displayScore, sortTuple: isZero ? [0, 0, 0] : [1, dist, 0] };
         }
       }
@@ -215,7 +220,7 @@ export function scoreSingleEvent(
         // Wessels rule: fewer attempts to the weight ranks first; the attempt rides in the display so the tie reads.
         const wessels = event.maxTiebreak === 'attempts';
         const att = wessels && !isZero ? bestLiftAttempt(r) : 0;
-        displayScore = isZero ? 'No Lift' : `${maxW} lbs${wessels && att > 0 ? ` (att ${att})` : ''}`;
+        displayScore = isZero ? 'No Lift' : `${maxW} ${lbU}${wessels && att > 0 ? ` (att ${att})` : ''}`;
         return { athlete, r, isZero, displayScore, sortTuple: isZero ? [0, 0, 0] : [2, maxW, wessels ? (att > 0 ? 1000 - att : 0) : 0] };
       }
 
@@ -230,7 +235,7 @@ export function scoreSingleEvent(
       default: {
         const dist = r.distanceFeet ?? 0;
         isZero = dist <= 0;
-        displayScore = isZero ? '0 ft' : `${dist} ft`;
+        displayScore = isZero ? `0 ${ftU}` : `${dist} ${ftU}`;
         return { athlete, r, isZero, displayScore, sortTuple: isZero ? [0, 0, 0] : [2, dist, 0] };
       }
     }
@@ -301,7 +306,8 @@ export function calculateDivisionStandings(
   divisionAthletes: Athlete[],
   events: EventDef[],
   allResults: Result[],
-  tiebreakerRule: TiebreakerRule = DEFAULT_TIEBREAKER
+  tiebreakerRule: TiebreakerRule = DEFAULT_TIEBREAKER,
+  units: MeetUnits = 'imperial'   // 059
 ): StandingRow[] {
   const sortedEvents = [...events].sort((a, b) => a.eventNumber - b.eventNumber);
   const finalEventId = sortedEvents[sortedEvents.length - 1]?.id;
@@ -332,7 +338,7 @@ export function calculateDivisionStandings(
     const evHasAnyResult = allResults.some((r) => r.eventId === ev.id);
     if (!evHasAnyResult) continue;
 
-    const scored = scoreSingleEvent(ev, divisionAthletes, allResults, sortedEvents);
+    const scored = scoreSingleEvent(ev, divisionAthletes, allResults, sortedEvents, units);
     for (const row of scored) {
       const entry = standingMap.get(row.athleteId);
       if (!entry) continue;

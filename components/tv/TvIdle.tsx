@@ -56,7 +56,7 @@ export default function TvIdle({ m, title, divisions, athletes, sponsors = null 
         <TField cap="Venue" value={title.venue} colStart={2} colEnd={4} className={CELL} />
         <TField cap="Date" value={title.date} className={CELL} />
         <TField cap="Divisions" value={divisions.join(' · ') || '—'} className={CELL} />
-        <TField cap="Units" value="lb" className={CELL} />
+        <TField cap="Units" value={title.units} className={CELL} />
         <TField cap="Sheet" value="Idle" className={CELL} />
         <TField cap="Rev" value={`${m.rev} · ${title.resultsWord}`} className={CELL} />
         <TField cap="Status" value={title.statusLine} className={CELL} />

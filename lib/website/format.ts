@@ -1,5 +1,5 @@
-import type { EventDef } from '@/lib/types';
-import { kgLabel, lbToKg } from '@/lib/events/spec';
+import type { EventDef, MeetUnits } from '@/lib/types';
+import { mirrorWeight, mirrorWeightLabel, weightUnit } from '@/lib/units';
 
 // Reader-facing formatting for the public site (MS-14, 10/26).
 
@@ -33,7 +33,7 @@ export function directionsUrl(v: { facilityName?: string; streetAddress?: string
 /** What an athlete in `divisionId` lifts in `ev`, as the show page prints it. Mirrors the pit-crew callout when the
  *  promoter wrote one, else the division weight (with unit mode and light tier), else a height-only setup, else the
  *  fixed implement description. '' when the promoter provided nothing (the caller labels that explicitly). */
-export function eventWeightDisplay(ev: EventDef, divisionId: string): { main: string; setup?: string; kg?: string } {
+export function eventWeightDisplay(ev: EventDef, divisionId: string, units: MeetUnits = 'imperial'): { main: string; setup?: string; kg?: string } {
   const mainWeight = ev.divisionWeights?.[divisionId];
   const lightWeight = ev.divisionLightWeights?.[divisionId];
   const defaultHeight = ev.divisionDefaultHeights?.[divisionId];
@@ -42,10 +42,11 @@ export function eventWeightDisplay(ev: EventDef, divisionId: string): { main: st
   let kg: string | undefined;
   if (callout) main = callout;
   else if (typeof mainWeight === 'number' && mainWeight > 0) {
-    main = `${mainWeight} lbs${ev.weightIsAddedPlatesOnly ? ' added' : ev.weightEntryMode === 'per_hand' ? ' / hand' : ''}`;
+    main = `${mainWeight} ${weightUnit(units, { plural: true })}${ev.weightIsAddedPlatesOnly ? ' added' : ev.weightEntryMode === 'per_hand' ? ' / hand' : ''}`;
     if (ev.hasTrumpWeight && typeof lightWeight === 'number' && lightWeight > 0) main += ` (light ${lightWeight})`;
     // Event spec starter (11/4): kilograms beside the pound figure, light tier included. Not for callouts or heights.
-    kg = kgLabel(mainWeight) + (ev.hasTrumpWeight && typeof lightWeight === 'number' && lightWeight > 0 ? ` (light ${lbToKg(lightWeight)})` : '');
+    // 059: on a metric meet the mirror is pounds beside the kilogram figure; the field keeps its `kg` name.
+    kg = mirrorWeightLabel(mainWeight, units) + (ev.hasTrumpWeight && typeof lightWeight === 'number' && lightWeight > 0 ? ` (light ${mirrorWeight(lightWeight, units)})` : '');
   } else if (ev.weightIsAddedPlatesOnly && mainWeight === 0 && defaultHeight) main = defaultHeight;
   else if (ev.fixedImplementDescription) main = ev.fixedImplementDescription;
   const setup = defaultHeight && defaultHeight !== main ? `${ev.heightLabel || 'Setup'}: ${defaultHeight}` : undefined;

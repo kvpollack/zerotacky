@@ -15,13 +15,15 @@ function prepScoringLabel(ev: EventDef): string {
   return l.charAt(0) + l.slice(1).replace(/([A-Z])([a-z])/g, (m, a: string, b: string) => a.toLowerCase() + b);
 }
 import type { PublicShowRecord } from './types';
+import type { MeetUnits } from '../types';
+import { distanceUnit, normalizeUnits, weightUnit } from '../units';
 
 
 export interface PrepWeight {
   divisionId: string;
   divisionName: string;
   main: string;   // "230 lbs", "230 lbs / hand", a height, a callout, or '' when the promoter left it out
-  kg: string;     // "104 kg" or ''
+  kg: string;     // mirror in the other unit: "104 kg" beside lb, "220 lb" beside kg (059), or ''
   setup: string;  // "Bar height: 18 in" or ''
 }
 
@@ -31,7 +33,7 @@ export interface PrepRow {
   scoring: string;
   timeCapSeconds: number;
   implement: string;      // label, with the note in parentheses; '' when not given
-  courseFeet: number | null;
+  courseFeet: number | null;   // in the meet's distance unit (059)
   allowed: string;        // "Tacky, Belt" or ''
   notAllowed: string;
   risingBar: string;      // "200 → 240 → 280 lb" or ''
@@ -47,6 +49,7 @@ export interface PrepSheet {
   division: Pick<Division, 'id' | 'name'> | null;
   divisions: Array<Pick<Division, 'id' | 'name'>>; // every division, sorted, for the picker
   rows: PrepRow[];
+  units: MeetUnits;      // 059: labels for the CSV header and the page
 }
 
 const sortDivs = (divs: Division[]) => [...divs].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -59,8 +62,8 @@ function implementText(ev: EventDef): string {
   return spec.implementNote ? `${implementLabel(spec.implement)} (${spec.implementNote})` : implementLabel(spec.implement);
 }
 
-export function buildPrepRow(ev: EventDef, divisions: Division[]): PrepRow {
-  const spec = normalizeEventSpec(ev.spec);
+export function buildPrepRow(ev: EventDef, divisions: Division[], units: MeetUnits = 'imperial'): PrepRow {
+  const spec = normalizeEventSpec(ev.spec, units);
   const notes = [specNotes(ev.spec), !spec?.implement && ev.fixedImplementDescription ? ev.fixedImplementDescription : '']
     .filter(Boolean).join(' ');
   return {
@@ -72,11 +75,11 @@ export function buildPrepRow(ev: EventDef, divisions: Division[]): PrepRow {
     courseFeet: spec?.courseFeet ?? null,
     allowed: (spec?.allowed ?? []).map(ruleLabel).join(', '),
     notAllowed: (spec?.notAllowed ?? []).map(ruleLabel).join(', '),
-    risingBar: ev.maxFormat === 'rising_bar' && ev.risingBarWeights?.length ? `${ev.risingBarWeights.join(' \u2192 ')} lb` : '',
+    risingBar: ev.maxFormat === 'rising_bar' && ev.risingBarWeights?.length ? `${ev.risingBarWeights.join(' \u2192 ')} ${weightUnit(units)}` : '',
     notes,
     videoUrl: safeVideoUrl(spec?.videoUrl) ?? '',
     weights: divisions.map((d) => {
-      const w = eventWeightDisplay(ev, d.id);
+      const w = eventWeightDisplay(ev, d.id, units);
       return { divisionId: d.id, divisionName: d.name, main: w.main, kg: w.kg ?? '', setup: w.setup ?? '' };
     }),
   };
@@ -93,14 +96,16 @@ export function buildPrepSheet(show: PublicShowRecord, divisionId: string | null
     showSlug: show.slug,
     division: chosen ? { id: chosen.id, name: chosen.name } : null,
     divisions: divisions.map((d) => ({ id: d.id, name: d.name })),
-    rows: sortEvents(show.state.events).map((ev) => buildPrepRow(ev, scope)),
+    rows: sortEvents(show.state.events).map((ev) => buildPrepRow(ev, scope, normalizeUnits(show.state.meet?.units))),
+    units: normalizeUnits(show.state.meet?.units),
   };
 }
 
 /** One row per event. One division: a Weight / kg / Setup trio. Every division: a Weight column per division (lb with kg). */
 export function prepSheetCsv(sheet: PrepSheet): string {
-  const head: unknown[] = ['Event', 'Name', 'Scoring', 'Time cap (s)', 'Implement', 'Course (ft)', 'Allowed', 'Not allowed', 'Rising bar'];
-  if (sheet.division) head.push(`Weight (${sheet.division.name})`, 'kg', 'Setup');
+  const u = sheet.units ?? 'imperial';
+  const head: unknown[] = ['Event', 'Name', 'Scoring', 'Time cap (s)', 'Implement', `Course (${distanceUnit(u)})`, 'Allowed', 'Not allowed', 'Rising bar'];
+  if (sheet.division) head.push(`Weight (${sheet.division.name})`, u === 'metric' ? 'lb' : 'kg', 'Setup');
   else for (const d of sheet.divisions) head.push(`Weight (${d.name})`);
   head.push('Notes', 'Video');
   const rows: unknown[][] = [head];

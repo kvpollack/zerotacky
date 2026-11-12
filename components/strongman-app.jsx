@@ -157,7 +157,8 @@ export default function App() {
           events,
           results,
           meet.runOrderMethod,
-          meet.stations
+          meet.stations,
+          meet.units
         )
       : [];
 
@@ -479,7 +480,8 @@ export default function App() {
           currentEvent,
           currentDivision.id,
           nextSetup.event,
-          nextSetup.division.id
+          nextSetup.division.id,
+          meet.units
         )
       : [];
 
@@ -491,19 +493,21 @@ export default function App() {
           meet.availablePlates,
           meet.collarWeightPerPair,
           pitCrewCustomWeight,
-          pitCrewUseLightTier
+          pitCrewUseLightTier,
+          meet.units
         )
       : null;
 
   const eventScores =
-    currentEvent && currentDivision ? scoreSingleEvent(currentEvent, divisionAthletes, results, events) : [];
+    currentEvent && currentDivision ? scoreSingleEvent(currentEvent, divisionAthletes, results, events, meet.units) : [];
   const overallStandings = currentDivision
     ? calculateDivisionStandings(
         currentDivision,
         divisionAthletes,
         events,
         results,
-        meet.tiebreakerRule
+        meet.tiebreakerRule,
+        meet.units
       )
     : [];
 
@@ -609,6 +613,7 @@ export default function App() {
             publishKey={roleLock === 'admin' ? <CloudSync sync={syncForPanel} meet={meet} compact /> : null}
           />
           <PitCrewSheet
+            units={meet.units}
             layout={layout}
             toggleLayout={toggleLayout}
             currentAthlete={currentAthlete}

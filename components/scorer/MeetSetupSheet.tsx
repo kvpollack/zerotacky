@@ -4,8 +4,9 @@
 // builder files stay because the promoter editor still uses them. EventForm is reused as-is inside the events list.
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
-import type { Athlete, Division, EventDef, Meet, Result, Station } from '@/lib/types';
-import { ALL_POSSIBLE_PLATES, THEMES } from '@/lib/constants';
+import type { Athlete, Division, EventDef, Meet, MeetUnits, Result, Station } from '@/lib/types';
+import { THEMES } from '@/lib/constants';
+import { DEFAULT_PLATES, UNITS_OPTIONS, normalizeUnits, weightUnit } from '@/lib/units';
 import { slugify, validateMeet } from '@/lib/meetBuilder';
 import { DEFAULT_PRESET_ID, MEET_PRESETS } from '@/lib/presets';
 import { hasCustomEventOrder, moveEventInOrder, stationEvents } from '@/lib/engine';
@@ -31,6 +32,9 @@ const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 // 054 (Kurt 11/10): the promoter says how divisions are organised; the public pages stop guessing from the names.
 // 056: shown on a phone linked to a published meet (see MeetSetupSheetProps.serverConfig).
 const SERVER_CONFIG_NOTE = 'This meet is published. Division format, kg caps and team size are set in the promoter dashboard (caps also at the weigh-in desk); the phone shows them but publishing from here does not change them.';
+// 059: the meet's unit system. Every number typed in this meet (division weights, rising bar, tare, collars, plates, course,
+// judged marks) is in it; flipping it converts nothing, so it is locked once a result exists.
+const UNITS_KEY_OPTIONS: ReadonlyArray<{ value: MeetUnits; label: string; explain: string }> = UNITS_OPTIONS.map((o) => ({ value: o.id, label: o.label, explain: o.help }));
 const DIVISION_FORMAT_OPTIONS: ReadonlyArray<{ value: NonNullable<Meet['divisionFormat']>; label: string; explain: string }> = [
   { value: 'weight_classes', label: 'Standard weight classes (kg)', explain: 'Divisions are bodyweight classes. Set a cap in kg on each one in the Divisions step; the weigh-in desk checks athletes against it. The show page shows the class list as is.' },
   { value: 'custom', label: 'Custom groups / thresholds', explain: 'Strength groups, experience levels (novice, intermediate, open), or your own thresholds. The show page offers "Which group fits me?", which ranks your groups against three gym numbers a first-timer already knows.' },
@@ -174,6 +178,8 @@ function SectionStrip({ section, setSection }: { section: SetupSectionId; setSec
 function MeetDetails(props: MeetSetupSheetProps) {
   const { meet, updateMeetConfig, toggleGymPlate, sync, clearResults, loadMeetPreset, resetConfirmOpen, setResetConfirmOpen, themeId, selectTheme, host = 'scorer', slugLocked = false } = props;
   const isDemo = Boolean(meet.isDemo);
+  const units = normalizeUnits(meet.units);   // 059
+  const unitsLocked = props.results.length > 0;
   // promoter host: a published meet's slug is its public URL (QR codes, the federation results link), so typing in the
   // name never rewrites it there; the slug field itself stays editable. The scorer keeps deriving it from the name.
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(host === 'promoter');
@@ -236,9 +242,31 @@ function MeetDetails(props: MeetSetupSheetProps) {
             className="normal-case"
           />
         </Field>
-        <Field label="Default Collar Weight / Pair (lbs)" wide note="Prefilled on new events. Each event sets its own collar weight in the event form.">
+        <Field label={`Default Collar Weight / Pair (${weightUnit(units, { plural: true })})`} wide note="Prefilled on new events. Each event sets its own collar weight in the event form.">
           <NumInput min={0} step={0.5} value={meet.collarWeightPerPair} onChange={(v) => updateMeetConfig({ collarWeightPerPair: Number(v) || 0 })} />
         </Field>
+        <div className="col-span-full px-2 py-1.5">
+          <span className={`block text-[9px] mb-1 ${CAP}`}>Units</span>
+          <fieldset disabled={unitsLocked} className="min-w-0 disabled:opacity-60">
+            <KeyGroup
+              ariaLabel="Units"
+              options={UNITS_KEY_OPTIONS}
+              value={units}
+              onChange={(v) => {
+                const next = normalizeUnits(v);
+                if (next === units) return;
+                // numbers are re-typed, never converted; the plate inventory starts over in the new unit
+                updateMeetConfig({ units: next, availablePlates: [...DEFAULT_PLATES[next]] });
+              }}
+            />
+          </fieldset>
+          {unitsLocked
+            ? <Note className="text-ink">Locked: this meet has results. Weights and marks stay in {units === 'metric' ? 'kilograms and meters' : 'pounds and feet'}.</Note>
+            : <Note>Every weight, course and mark in this meet is typed in these units. Switching converts nothing and resets the plate inventory.</Note>}
+          {UNITS_KEY_OPTIONS.map(({ value, label, explain }) => (
+            <Note key={value} className={units === value ? 'text-ink' : ''}><strong>{label}:</strong> {explain}</Note>
+          ))}
+        </div>
         <div className="col-span-full px-2 py-1.5">
           <span className={`block text-[9px] mb-1 ${CAP}`}>Division format</span>
           <fieldset disabled={props.serverConfig} className="min-w-0 disabled:opacity-60">
@@ -269,11 +297,11 @@ function MeetDetails(props: MeetSetupSheetProps) {
         <div className="col-span-full px-2 py-1.5">
           <span className={`block text-[9px] mb-1 ${CAP}`}>Available Gym Plates (Tap to Enable/Disable)</span>
           <div role="group" aria-label="Available Gym Plates" className="zt-block grid-cols-5">
-            {ALL_POSSIBLE_PLATES.map((plate) => {
+            {DEFAULT_PLATES[units].map((plate) => {
               const active = meet.availablePlates.includes(plate);
               return (
                 <button key={plate} type="button" aria-pressed={active} onClick={() => toggleGymPlate(plate)} className={`min-h-[36px] font-sheet font-bold text-[12px] ${active ? '!bg-ink text-sheet' : 'text-ink-muted'}`}>
-                  {plate} lb
+                  {plate} {weightUnit(units)}
                 </button>
               );
             })}
@@ -501,6 +529,7 @@ function Events(props: MeetSetupSheetProps) {
           <EventForm
             divisions={sortedDivisions}
             defaultCollarWeightPerPair={defaultCollarWeightPerPair}
+            units={meet.units}
             initialEvent={null}
             onSave={(payload: unknown) => { addEvent(payload); setEditingId(null); }}
             onCancel={() => setEditingId(null)}
@@ -540,6 +569,7 @@ function Events(props: MeetSetupSheetProps) {
                       <EventForm
                         divisions={sortedDivisions}
                         defaultCollarWeightPerPair={defaultCollarWeightPerPair}
+                        units={meet.units}
                         initialEvent={ev}
                         onSave={(patch: unknown) => { updateEvent(ev.id, patch); setEditingId(null); }}
                         onCancel={() => setEditingId(null)}

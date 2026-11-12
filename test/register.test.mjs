@@ -27,7 +27,8 @@ describe('register: public meet shape (H1)', () => {
     assert.equal(pub.promoterDisplayName, 'Keystone Iron Promotions (Demo)');
     assert.equal(pub.listing.promoterContact, 'promoter.demo@zerotacky.example');
     assert.equal(pub.acceptedCount, 2);
-    assert.deepEqual(Object.keys(pub).sort(), ['acceptedCount', 'date', 'divisions', 'groupPickerShown', 'listing', 'name', 'promoterDisplayName', 'slug']);   // +groupPickerShown (056, GP-02)
+    assert.deepEqual(Object.keys(pub).sort(), ['acceptedCount', 'date', 'divisions', 'groupPickerShown', 'listing', 'name', 'promoterDisplayName', 'slug', 'units']);   // +groupPickerShown (056, GP-02), +units (059)
+    assert.equal(pub.units, 'imperial');
     assert.deepEqual(Object.keys(pub.listing).sort(), ['athleteCap', 'competitionStatus', 'entryFeeDisplay', 'federation', 'promoterContact', 'registrationDeadline', 'registrationStatus', 'venue']);
     assert.equal(pub.divisions.length, 3);
     assert.deepEqual(pub.divisions[0].targetWeights[0], { eventName: '12" Log Clean & Press (For Reps)', weight: 185 });

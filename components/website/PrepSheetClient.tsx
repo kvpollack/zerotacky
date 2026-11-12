@@ -9,6 +9,7 @@ import { prepSheetCsv, prepSheetFilename, prepSheetHref, timeCapLabel, type Prep
 import { longIsoDate, venueLine } from '@/lib/website/sheetFormat';
 import { shareOrDownloadText } from '@/lib/download';
 import type { PublicShowSummary } from '@/lib/website/types';
+import { distanceUnit } from '@/lib/units';
 
 const TH = 'text-left text-xs tracking-[0.06em] uppercase font-normal text-ink-muted px-3 py-2 border border-rule bg-sheet align-bottom print:px-1.5 print:py-1 print:text-[9px] print:min-w-0';
 const TD = 'px-3 py-2.5 border border-rule align-top text-[13px] text-ink print:px-1.5 print:py-1.5 print:text-[10px]';
@@ -95,7 +96,7 @@ export default function PrepSheetClient({ sheet, venue, isDemo }: { sheet: PrepS
                     {hasRules && (
                       <td className={TD}>
                         {r.implement && <div>{r.implement}</div>}
-                        {r.courseFeet !== null && <div className="text-ink-muted">{r.courseFeet} ft course</div>}
+                        {r.courseFeet !== null && <div className="text-ink-muted">{r.courseFeet} {distanceUnit(sheet.units)} course</div>}
                         {r.risingBar && <div className="text-ink-muted">Rising bar: <span className={NUM}>{r.risingBar}</span></div>}
                         {r.allowed && <div className="text-ink-muted">{r.allowed} allowed</div>}
                         {r.notAllowed && <div className="text-redpen">No {r.notAllowed.toLowerCase()}</div>}
