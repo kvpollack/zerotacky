@@ -17,3 +17,7 @@ node_modules
 
 # Meet backups (scripts/dump_meet.py); may hold join codes and admin PINs
 dumps/
+
+# Archive loader working files (scripts/archive/load_sr.py); snapshots are kept as workflow artifacts
+scripts/archive/snapshots/
+scripts/archive/.batch.sql

@@ -1621,3 +1621,31 @@ board, dashboard stand-in). Migration 061 applied to staging; prod pending Kurt'
   stand-in. Fixture note: the two results on `metric-test-open-2026` were deleted so a flip was legal; the meet ends
   metric. Probe limitation: after an event change the pad shows the run order again, so the E1 bar labels were read
   before the flip and the E2 "Best kg / lb" label after it.
+
+## Archive refresh role (11/12, migration 062)
+
+The weekly strongmanresults.com rebuild no longer needs the Management API PAT or a hand run. `supabase/062_archive_loader_role.sql`
+creates `zt_archive_loader`: a login role (noinherit, connection limit 3, `statement_timeout` 15 min, `search_path`
+public) with select / insert / update / delete on `archive_sources`, `archive_competitions`, `archive_placements`,
+`archive_results` and usage on their id sequences, nothing on `archive_links` or any other table. RLS policies
+`<table>_loader` let the role through on those four tables. The matview refresh runs through
+`zt_refresh_archive_athletes()` (security definer, execute granted only to the loader) because refreshing a matview
+needs ownership. Applied to staging and prod 11/12; the password is set out of band (`alter role ... password`), not in
+the migration.
+
+Scope checked live as the role on both projects: reads and writes on the four tables and the refresh call succeed;
+`meets`, `profiles`, `archive_links` and `zt_publish_meet` all return "permission denied".
+
+- `scripts/archive/load_sr.py` (copy of the loader that lived in Slate's `tmp/zt/archive/`): with `ZT_ARCHIVE_DSN` set,
+  every statement runs over one psycopg connection as the loader and `refresh materialized view archive_athletes` is
+  rewritten to `select zt_refresh_archive_athletes()`. Without the DSN it falls back to `sql.py` beside it (Slate's
+  laptop path) or exits with a message saying which to set. Staging run over the DSN with the 11/9 snapshot: 1,714
+  competitions, 59,772 placements, 291,248 results in 54 s.
+- `.github/workflows/archive-refresh.yml`: Sundays 08:00 UTC and on demand; `concurrency: archive-refresh`; fails
+  early if the secret is missing; `uv run --with "psycopg[binary]"`; the downloaded snapshot is uploaded as an artifact
+  (90 days) since the CC BY licence is irrevocable but the upstream weekly rebuild is not.
+- `.gitignore`: `scripts/archive/snapshots/`, `scripts/archive/.batch.sql`.
+
+Kurt's one action: add the GitHub repo secret `ZT_ARCHIVE_DSN` (Settings > Secrets and variables > Actions) with the
+`prod_dsn` line from Slate's `tmp/zt/archive_loader_role.txt`, then Actions > Archive refresh > Run workflow and check
+it is green. Until then the loader keeps running by hand from the laptop.

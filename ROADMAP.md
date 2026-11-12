@@ -1,13 +1,16 @@
 # ZeroTacky roadmap to "final state" (drafted 10/16 evening, Slate; Kurt to edit)
 
-## Status, 2026-11-10 (Slate; the sections below are the 10/16 plan and its running log)
+## Status, 2026-11-12 (Slate; the sections below are the 10/16 plan and its running log)
 
 **Where we are.** The two-track plan finished: `v2` became `main` on 11/9 (tag `v2-retired-2026-11-09`), one branch, one
-Supabase prod (`kagitbfthapxmaljsdtz`, migrations 001-053 applied) plus staging, www.zerotacky.com on Vercel Hobby, Resend
+Supabase prod (`kagitbfthapxmaljsdtz`, migrations 001-062 applied) plus staging, www.zerotacky.com on Vercel Hobby, Resend
 mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 feature-gaps report ranked 22 builds;
-22 shipped. Live main `2501a10d` (11/12: kg / m sessions 1 and 2, 059 + 060: a meet picks pounds and feet or kilograms and meters once, locked after the first result; labels follow it everywhere; numbers stored as entered; PR board and group picker normalise across shows; adopted kg-only archive shows stay metric; scope note `audits/slate-2026-11-12-kg-m-scope.md`). 11/12 session 3 browser probe of a metric meet passed end to end (notes); Astra kg / m audit closed, 10 of 10 + D1 / D2 (061, notes "kg / m audit fixes"). 837 tests. Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10).
+22 shipped. Live main `c86ee6b1` (11/12: kg / m, 059 to 061: a meet picks pounds and feet or kilograms and meters once, locked after the first result; labels follow it everywhere; numbers stored as entered; PR board and group picker normalise across shows; adopted kg-only archive shows stay metric; scope note `audits/slate-2026-11-12-kg-m-scope.md`). Astra kg / m audit closed, 10 of 10 + D1 / D2 (061, notes "kg / m audit fixes"); live multi-device recheck 30 of 30 on 5 browser contexts (phone, tablet, desktop). 837 tests. Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10). The product is feature-complete against this plan; what is left is Kurt's set-up list and the held items, so the next step is a dry run, not a build.
 
 **Shipped since the 10/21 entries below (newest first)**
+- 11/12 archive refresh role (062): `zt_archive_loader`, a login role that can only write the four `archive_*` tables and
+  call `zt_refresh_archive_athletes()`; `scripts/archive/load_sr.py` runs over it when `ZT_ARCHIVE_DSN` is set;
+  `.github/workflows/archive-refresh.yml` runs it Sundays 08:00 UTC and keeps the snapshot as an artifact.
 - 11/12 kg / m audit fixes (061): results carry their unit and a mismatch is held on the phone; stale-config publishes
   refused; admin phones and boards follow dashboard changes; unit-aware course guard and plate defaults; picker precision;
   PR mirrors both ways; unit flip clears stored numbers after a confirm.
@@ -44,7 +47,7 @@ mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 
 
 **Kurt's set-up items still open** (each blocks something live)
 1. ~~`CRON_SECRET`~~ set and redeployed 11/11; test call of `/api/cron/reminders` returned 200 `{queued: 0}` with the bearer and 401 without. Reminders run daily at 13:00 UTC from here.
-2. ~~Vercel deployment retention~~ done 11/11; check Usage > Functions Storage trends down after 48 h.
+2. ~~Vercel deployment retention~~ done 11/11; check Usage > Functions Storage trends down on 11/13 (the 48 h mark).
 3. ~~Delete the Supabase `zerotacky-upgrade-test` project~~ done 11/11; optional: drop the old v2 preview URL from
    Supabase Auth redirects.
 4. admin@zerotacky.com forwarding in Namecheap, and one claim-approved email read in a real inbox on prod.
@@ -52,15 +55,18 @@ mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 
    still waits on counsel.
 
 **Infrastructure still held**
-- Weekly archive refresh (GitHub Actions) needs a long-lived, scoped prod DB role; today the loader runs by hand.
+- ~~Weekly archive refresh~~ built 11/12 (062 + workflow above). One Kurt action: add the GitHub repo secret
+  `ZT_ARCHIVE_DSN` (Settings > Secrets and variables > Actions; value in Slate's `tmp/zt/archive_loader_role.txt`,
+  `prod_dsn` line), then Actions > Archive refresh > Run workflow once and check the run is green.
 - M6 leftover: `/` is still the three-button splash (Scorer / Website / Join). Promote `/website` to `/` once the first
   outside promoter has been through the site, so their feedback shapes the landing page.
 - iOS / Google Play: Capacitor shell around the scorer, Android first; nothing started.
 
-**Recommended next (one path).** Stop adding features for a week and run the site the way Jess will: a fresh account
-takes the gym invite, imports Power Plant's past shows, builds the next meet, opens registration, sends a broadcast,
-runs a dry meet day on two phones. Fix what snags, in the order it snags. In parallel Kurt clears set-up items 1 and 2
-(an hour, and both are live-affecting). Stripe (#5) starts the day a promoter asks to charge.
+**Recommended next (one path).** The Jess dry run on staging, and nothing new until it is done: a fresh account takes
+the gym invite, imports Power Plant's past shows, builds the next meet, opens registration, sends a broadcast, runs a dry
+meet day on two phones, exports the federation pack. Slate drives it in the browser and logs every snag; Kurt covers the
+two parts a script cannot (the emails landing in a real inbox, and how the scorer feels on a real phone). Fix what snags,
+in the order it snags. Set-up item 4 and the `ZT_ARCHIVE_DSN` secret are Kurt's; item 5 waits on counsel. Stripe (#5) starts the day a promoter asks to charge.
 
 
 Two tracks run at once. `main` stays the meet-day build for 10/24 and only takes the five sprint items plus bug fixes. A `v2` branch takes everything that needs accounts. They merge after the meet.
