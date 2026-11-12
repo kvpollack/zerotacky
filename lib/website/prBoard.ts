@@ -9,11 +9,12 @@
 // performance alone. Two shows at different loads are not the same test, so the row names the load with the result.
 //
 // 059 session 2: a show's numbers are stored in its own unit. Ranking converts every load and distance to pounds and
-// feet first (`toLb` / `toFt`) so a 115 kg log beats a 250 lb one; the printed result keeps the show's unit and adds the
-// pound figure beside a metric one, since the board sits next to imperial rows.
+// feet first, unrounded (`toLbExact` / `toFtExact`, KM-10) so a 115 kg log beats a 250 lb one and 100.025 kg beats
+// 220.5 lb; the printed result keeps the show's unit and adds the other system beside every load and course (D2), so a
+// mixed history reads in either unit.
 
 import { implementLabel } from '@/lib/events/spec';
-import { distanceUnit, mirrorWeightLabel, toFt, toLb, weightUnit } from '@/lib/units';
+import { distanceUnit, mirrorDistanceLabel, mirrorWeightLabel, toFtExact, toLbExact, weightUnit } from '@/lib/units';
 import type { MeetUnits, ScoringType } from '../types';
 import type { HistoryEventResult, ShowHistoryEntry } from './showHistory';
 import { formatShowDate } from './showHistory';
@@ -54,14 +55,14 @@ function groupKey(e: HistoryEventResult): { key: string; label: string } {
 
 /** Sort tuple: bigger is better, compared lexicographically. Loads in pounds, distances in feet, whatever the show used. */
 function rank(e: HistoryEventResult): number[] {
-  const w = toLb(e.weightLbs, e.units);
+  const w = toLbExact(e.weightLbs, e.units);
   switch (e.scoringType) {
     case 'max_weight':
-      return [toLb(e.maxWeightLbs, e.units)];
+      return [toLbExact(e.maxWeightLbs, e.units)];
     case 'reps':
       return [e.reps > 0 ? w : -1, e.reps];
     case 'time_or_distance':
-      return e.finished ? [1, w, -e.timeSeconds] : [0, w, toFt(e.distanceFeet, e.units)];
+      return e.finished ? [1, w, -e.timeSeconds] : [0, w, toFtExact(e.distanceFeet, e.units)];
     case 'time_or_implements':
       return e.finished || e.implementsCompleted > 0 ? [w, e.implementsCompleted, e.finished ? -e.timeSeconds : -Infinity] : [-1];
     case 'max_time':
@@ -89,24 +90,28 @@ export function formatSeconds(s: number): string {
 }
 
 const num = (w: number) => (Number.isInteger(w) ? String(w) : w.toFixed(1));
-/** "250 lb" on an imperial show; "115 kg (254 lb)" on a metric one. */
+/** "250 lb (113 kg)" on an imperial show; "115 kg (254 lb)" on a metric one (D2: both directions). */
 function load(w: number, units: MeetUnits): string {
-  const mirror = units === 'metric' ? ` (${mirrorWeightLabel(w, units)})` : '';
-  return `${num(w)} ${weightUnit(units)}${mirror}`;
+  const mirror = mirrorWeightLabel(w, units);
+  return `${num(w)} ${weightUnit(units)}${mirror ? ` (${mirror})` : ''}`;
+}
+/** "50 ft (15 m)" / "20 m (66 ft)". */
+function dist(d: number, units: MeetUnits): string {
+  const mirror = mirrorDistanceLabel(d, units);
+  return `${d} ${distanceUnit(units)}${mirror ? ` (${mirror})` : ''}`;
 }
 
 export function formatBestResult(e: HistoryEventResult): string {
   const u = e.units ?? 'imperial';
-  const ft = distanceUnit(u);
   const load_ = e.weightLbs > 0 ? ` at ${load(e.weightLbs, u)}` : '';
-  const course = e.courseFeet ? ` (${e.courseFeet} ${ft})` : '';
+  const course = e.courseFeet ? ` over ${dist(e.courseFeet, u)}` : '';   // "over 50 ft (15 m)": no nested brackets beside the load mirror
   switch (e.scoringType) {
     case 'max_weight':
       return load(e.maxWeightLbs, u);
     case 'reps':
       return `${e.reps} rep${e.reps === 1 ? '' : 's'}${load_}`;
     case 'time_or_distance':
-      return e.finished ? `${formatSeconds(e.timeSeconds)}${load_}${course}` : `${e.distanceFeet} ${ft}${load_}${course ? ` of ${e.courseFeet}` : ''}`;
+      return e.finished ? `${formatSeconds(e.timeSeconds)}${load_}${course}` : `${e.courseFeet ? `${e.distanceFeet} of ${dist(e.courseFeet, u)}` : dist(e.distanceFeet, u)}${load_}`;   // "20 of 30 m (98 ft)"
     case 'time_or_implements': {
       const n = `${e.implementsCompleted} implement${e.implementsCompleted === 1 ? '' : 's'}`;
       return e.finished ? `${formatSeconds(e.timeSeconds)}${load_}` : `${n}${load_}`;

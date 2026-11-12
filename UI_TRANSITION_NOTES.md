@@ -1551,3 +1551,73 @@ change came out of it; the Astra audit is the other half of session 3 and is sti
 - For the Astra audit (Kurt's Astra thread): every print point from sessions 1 to 3, the lock rule (results exist =
   units frozen), the plate-inventory reset on flip, `COURSE_MAX` 1610 m under SQL guard 041's 5280, the 060 kg-only
   rule for adopted shows (mixed shows stay imperial), PR board mirror text, group picker ratio on metric shows.
+
+## kg / m audit fixes (11/12, migration 061)
+
+Kurt 11/12: "Fix these first: KM-01, KM-02, KM-03." Astra's kg / m audit (`audits/astra-2026-11-12-kg-m.md`, exact
+`86514d46` snapshot) found 10 findings and answered 2 design questions. Every finding is fixed here; the three device
+and upload gaps are fixed together, as asked, and re-probed live on staging with four contexts (judge phone, admin phone,
+board, dashboard stand-in). Migration 061 applied to staging; prod pending Kurt's word.
+
+**Disposition, per finding**
+
+- KM-01 (judge keeps `units: 'metric'` after a metric -> imperial refresh): fixed. The server object omits optional keys
+  that hold the default, and a spread cannot clear them. `applyServerMeet(prev, server)` in `lib/sync/mapping.ts`
+  removes `units` and `divisionFormat` when the server does not send them; the hook uses it (`hooks/useMeetSync.js`).
+  Probe: judge pad "Light bar 50 kg" / "Best kg" -> "Best lb" after the dashboard flip -> "kg" again after the flip back.
+- KM-02 (admin phones skip config refreshes and can republish stale units): fixed in three layers. (1) The link records
+  `configAt`, the `meets.updated_at` this phone last published or applied; `pull()` re-reads the config for an admin
+  when the server stamp differs (a pre-061 admin link with no stamp only records it, as before). (2) `publish()` sends
+  that stamp as `updated_at`; `zt_publish_meet` (061) takes the meet row `for update` and refuses with `STALE_CONFIG:`
+  when the stamp is not the current one; the phone then re-reads instead of overwriting. (3) `publish()` stops when its
+  own pre-pull just found a config change (React has only scheduled the setState, so the payload would carry the old
+  setup under the new stamp). An applied config sets `skipRepublish` so the hook does not echo it back. Probe: admin
+  Setup radio and plate list followed the flip within one tick; the server stayed imperial for 16 s.
+- KM-03 (offline results upload without unit provenance): fixed. `resultToRow` stamps `payload.units` with the meet's
+  unit at enqueue time; 061 trigger `zt_results_check_units` refuses a row whose stamp differs from the meet
+  (`UNITS_MISMATCH:` P0001); `flush()` keeps such rows in the queue (`status.held`, the server text in `status.error`),
+  never drops or relabels them; the judge pad shows "Units changed · 1 score held on this phone" with the message and a
+  Retry key, the header reads "Held 1". `rowToResult` strips the stamp so result objects stay unit-free. Probe: a 3-rep
+  score locked offline in lb, dashboard flipped to kg, phone back online: server count 0, notice shown.
+  Found in the re-probe: the trigger ran as invoker, and a judge phone (anon + grant) has no UPDATE privilege on `meets`,
+  which `select ... for share` needs, so the phone saw 42501 and reported a code/PIN refusal. Both 061 trigger functions
+  are now `security definer set search_path = public`; staging re-applied and re-probed.
+- KM-04 (board / TV keep stale config): fixed. `ScoreboardClient` keeps the config stamp and re-fetches
+  `fetchMeetConfig` when the poll's `meetUpdatedAt` moves. Probe: board footer "kg · m" -> "lb · ft" -> "kg · m".
+- KM-05 (picker text conversion and parse disagree on expressions like "225 x 3"): fixed. One grammar:
+  `convertDisplayUnit` is now `lbToDisplay(parseLiftInput(text, from), to)`, so the toggle re-renders exactly what the
+  ratio reads, which is the lift alone; unreadable text is left alone.
+- KM-06 (ratio recomputed from rounded display text): fixed. `GroupPickerClient` keeps unrounded canonical pounds in
+  state (`lb`), typing parses into it, the toggle only re-renders `text` from it; PR seeds set it directly.
+  `parseLiftInput` returns unrounded pounds; `gradeEvent` uses `toLbExact`.
+- KM-07 (metric courses accepted by SQL but hidden by the UI): fixed. `zt_check_event_spec(p_spec, p_units)` (061)
+  checks the course against the meet's unit (1..1610 m in half-meter steps) with the unit in the error text, trigger
+  `zt_events_check_spec` reads the meet; `validateMeet` runs `validateEventSpec(spec, units)` per event so an imported
+  or restored state reports the problem instead of dropping the course.
+- KM-08 (imperial plate defaults on metric ingestion paths): fixed in `zt_publish_meet`, `zt_adopt_archive_competition`
+  (061) and `normalizeState` / the blank meet in `lib/meetBuilder.ts`: default inventory follows the unit.
+- KM-09 (federation Bodyweight column unlabeled pounds): fixed, header `Bodyweight (lb)`.
+- KM-10 (PR ranking precision): fixed. Ranking uses `toLbExact` / `toFtExact`; 100.025 kg beats 220.5 lb, 10 m beats
+  32.8 ft (tests).
+- D1 (flip resets): built. `planUnitFlip(meet, events, next)` in `lib/meetBuilder.ts` lists and clears the default
+  collar weight, each event's empty implement weight, division and light weights, rising-bar steps, event collar weight
+  and course length, plus the plate inventory. The Units control in Meet Setup shows an in-sheet confirm listing what
+  goes ("Switch and clear" / "Keep lb") when anything is stored, flips at once when nothing is, and leaves a note naming
+  what was cleared and that callouts and fixed-implement text may still say the old unit. Help text updated.
+- D2 (PR mirrors on imperial rows): built. Imperial rows read "250 lb (113 kg)", courses "50 ft (15 m)"; the course now
+  follows the load as "over 50 ft (15 m)" and a DNF reads "20 of 30 m (98 ft)", so no brackets nest.
+- Design answers kept: engine / plate maths / pad inputs unchanged; SQL lock unchanged; 060 kg-only rule kept.
+
+**Other changes in this build**
+
+- `lib/types.ts`: `courseFeet` and `divisionWeights` comments say "the meet's unit" (the field names predate kg / m).
+- `tsconfig.json` excludes `audits/` (Astra's evidence `.tsx` files are not part of the app).
+- Tests: `test/units3.test.mjs` (18 new: applyServerMeet, result stamping and stripping, held rows through the fake
+  server, admin re-read, pre-pull stop, STALE_CONFIG race, plate defaults, metric course guard, federation header, exact
+  ranking, flip plan); `test/fake_supabase.mjs` models the 061 trigger and the stale-config refusal and returns
+  `updated_at` from publish; string expectations in `prBoard`, `units2`, `groupPicker`, `exportFederation`, `pad`
+  updated. 837 pass, typecheck clean.
+- Probe: `shots/units4.py` (shots `Downloads/zt_ui_1112/s4_*.png`), server-side flips by `sql.py` as the dashboard
+  stand-in. Fixture note: the two results on `metric-test-open-2026` were deleted so a flip was legal; the meet ends
+  metric. Probe limitation: after an event change the pad shows the run order again, so the E1 bar labels were read
+  before the flip and the E2 "Best kg / lb" label after it.

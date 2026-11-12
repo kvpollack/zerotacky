@@ -14,7 +14,7 @@ export type AttemptKind = 'good' | 'no';
 export type AttemptEntry = { kind: AttemptKind; at: number; split?: number; weight?: number };
 
 export type SyncState = 'off' | 'idle' | 'syncing' | 'offline' | 'error';
-export type SyncStatus = { state: SyncState; pending: number; lastSyncAt: number | null; error: string | null; denied?: boolean };
+export type SyncStatus = { state: SyncState; pending: number; lastSyncAt: number | null; error: string | null; denied?: boolean; held?: number };
 
 export const IMPLEMENT_DEFAULT = 5;
 
@@ -215,7 +215,7 @@ export function syncLabel(enabled: boolean, status: SyncStatus | undefined): { f
   if (!enabled || !status) return { filled: false, text: 'Local' };
   const n = status.pending > 0 ? ` ${status.pending}` : '';
   switch (status.state) {
-    case 'idle': return { filled: true, text: `Live${n}` };
+    case 'idle': return status.held ? { filled: false, text: `Held${n}` } : { filled: true, text: `Live${n}` };   // KM-03: rows the server refused on units
     case 'syncing': return { filled: true, text: `Syncing${n}` };
     case 'offline': return { filled: false, text: `Offline${n}` };
     case 'error': return { filled: false, text: `Error${n}` };

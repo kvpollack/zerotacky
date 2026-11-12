@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createSyncClient, readSyncEnv } from '@/lib/sync/client';
-import { fetchMeetBySlug, pullChanges, getLiveState, getTvControl, getGymName } from '@/lib/sync/meetApi';
+import { fetchMeetBySlug, pullChanges, getLiveState, getTvControl, getGymName, fetchMeetConfig } from '@/lib/sync/meetApi';
 import type { LiveStateRow, RemoteMeet, TvControlRow } from '@/lib/sync/meetApi';
 import TvBoard from '@/components/tv/TvBoard';
 import { mergeResults } from '@/lib/sync/mapping';
@@ -43,6 +43,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [division, setDivision] = useState<string>('ALL');
   const since = useRef<string | null>(null);
+  const configAt = useRef<string | null>(null);   // KM-04: meets.updated_at the current config came from
   const [themeOverride, setThemeOverride] = useState<string | null>(null);   // from ?theme=, dropped once the user picks
   // #7b "you're up": the athlete this phone follows (device-local), and whether the browser may buzz on deck / up.
   const [followId, setFollowId] = useState<string | null>(null);
@@ -117,6 +118,7 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
         setMeet(r);
         setState(r.state);
         since.current = r.latestServerAt;
+        configAt.current = r.updatedAt ?? null;
         const [ls, tc] = await Promise.all([getLiveState(client, r.state.meet.id), getTvControl(client, r.state.meet.id)]);
         if (cancelled) return;
         setLive(ls);
@@ -142,6 +144,13 @@ export default function ScoreboardClient({ slug }: { slug: string }) {
       try {
         const [chg, ls, tc] = await Promise.all([pullChanges(client, meetId, since.current), getLiveState(client, meetId), getTvControl(client, meetId)]);
         since.current = chg.latestIso;
+        // KM-04: the setup (units, weights, events, plates) can change while this board is open; re-read it when the
+        // meets.updated_at watermark moves, and replace the config wholesale so an absent `units` reads as imperial.
+        if (chg.meetUpdatedAt && chg.meetUpdatedAt !== configAt.current) {
+          configAt.current = chg.meetUpdatedAt;
+          const cfg = await fetchMeetConfig(client, meetId);
+          if (cfg) setState((prev) => (prev ? { ...prev, meet: { ...cfg.meet, id: prev.meet.id }, divisions: cfg.divisions, events: cfg.events } : prev));
+        }
         setLive(ls);
         setControl(tc);
         setMeet((prev) => prev && (prev.competitionStatus !== chg.competitionStatus || prev.resultsStatus !== chg.resultsStatus)

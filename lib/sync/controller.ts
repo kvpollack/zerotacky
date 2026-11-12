@@ -6,6 +6,7 @@ import { divisionCapProblems } from '../meetBuilder';
 import type { SyncClient } from './client';
 import { SyncError } from './client';
 import { mergeResults, resultToRow, athleteToRow } from './mapping';
+import { normalizeUnits } from '../units';
 import type { PublishExtra } from './mapping';
 import { enqueue, groupByTable, removeFlushed, readQueue, writeQueue } from './queue';
 import type { QueueItem } from './queue';
@@ -33,7 +34,7 @@ export interface SyncLink {
   // same phone does not resume this link's queue; they unlink (or the owner signs back in).
   userId?: string | null;
   since: string | null;  // results watermark for incremental pulls
-  configAt?: string | null;  // meets.updated_at last applied on this phone (device role only)
+  configAt?: string | null;  // meets.updated_at last applied on this phone (device) or last published / applied (admin, KM-02)
   // meets.competition_status as of the last pull. The root splash reads it so a phone that carries a
   // completed or cancelled meet stops offering Resume (10/26); null/absent until the first pull after this shipped.
   competitionStatus?: string | null;
@@ -46,6 +47,9 @@ export interface SyncStatus {
   lastSyncAt: number | null;
   error: string | null;
   dropped: number;        // rows the server rejected for good (4xx) and we gave up on; see flush()
+  // KM-03: scores entered under a unit system the meet no longer uses. Kept in the queue (never dropped, never
+  // relabelled) and retried each tick; `error` carries the explanation until the meet's units match again.
+  held?: number;
   // Astra gate LOW (10/17 pm): the last publish/re-publish refusal. Survives successful ticks (which only clear
   // `error`) until the next publish succeeds, so an auto re-publish the server refused stays visible in Setup.
   publishError?: string | null;
@@ -114,6 +118,12 @@ export function mergeAthletes(local: Athlete[], incoming: Athlete[]): { merged: 
 export function athleteSig(a: Athlete): string {
   const o = a as unknown as Record<string, unknown>;
   return JSON.stringify(Object.keys(o).sort().map((k) => [k, o[k]]));
+}
+
+/** KM-03: the 061 results trigger refuses a score whose stamped units differ from the meet's (message starts with
+ *  `UNITS_MISMATCH:`). Such rows are held in the queue with the server's explanation, never dropped or relabelled. */
+function isUnitsMismatch(e: unknown): boolean {
+  return e instanceof SyncError && /UNITS_MISMATCH/.test(e.message);
 }
 
 export function isNetworkError(e: unknown): boolean {
@@ -268,6 +278,14 @@ export class SyncController {
         throw new Error(msg);
       }
     }
+    // KM-02: the pre-pull found a setup change on the server (dashboard or another admin). onIncoming has only just
+    // scheduled it into React state, so a publish built from getState() now would carry this phone's OLD setup under
+    // the NEW stamp and the server could not tell. Stop here; the admin sees the fresh setup and publishes again.
+    if (pulled?.config) {
+      const msg = 'Not published: the setup changed on the server (the dashboard or another admin) and this phone has just loaded it. Review the setup, then publish again.';
+      this.setStatus({ publishError: msg });
+      throw new Error(msg);
+    }
     // G2-H2 (Astra gate 2): what the pull merged is handed to the host through onIncoming, which in React is a
     // scheduled setState; getState() here still returns the pre-pull state, so the payload would omit the walk-ons the
     // pull just fetched and the publish would delete them (reproduced live). Build the payload from the merged rows.
@@ -281,7 +299,7 @@ export class SyncController {
     try {
       const capProblem = divisionCapProblems(state.divisions ?? [])[0];   // 056 (Astra GP-04): a class-specific message before the constraint
       if (capProblem) throw new Error(capProblem);
-      const out = await publishMeet(this.o.client, state, { ...extra, meetId, deviceId: this.o.deviceId });
+      const out = await publishMeet(this.o.client, state, { ...extra, meetId, deviceId: this.o.deviceId, configAt: this.link?.meetId === meetId ? this.link.configAt ?? null : null });
       if (gen !== this.session) throw new Error('Sign-in changed while publishing; this phone was not linked. Publish again.');
       const link: SyncLink = {
         meetId: out.id, localMeetId: state.meet.id, slug: extra.slug, joinCode: out.joinCode, role: 'admin',
@@ -289,6 +307,7 @@ export class SyncController {
         userId: this.userId,
         since: this.link?.meetId === out.id ? this.link.since : null,
         grant: this.link?.meetId === out.id && this.link.joinCode === out.joinCode ? this.link.grant ?? null : null,
+        configAt: out.updatedAt,   // KM-02: what this phone's setup now matches on the server
       };
       this.setLink(link);
       this.seedKnown(state);
@@ -304,7 +323,11 @@ export class SyncController {
       return this.link ?? link;
     } catch (e) {
       this.fail(e);
-      this.setStatus({ publishError: e instanceof Error ? e.message : String(e) });
+      const why = e instanceof Error ? e.message : String(e);
+      this.setStatus({ publishError: why });
+      // KM-02: the server refused a stale setup; re-read it now so this phone shows what the dashboard chose. The
+      // refused local edit stays visible in publishError until the admin redoes it on the fresh setup.
+      if (/STALE_CONFIG/.test(why) && this.link) { this.link = { ...this.link, configAt: 'stale' }; try { await this.pull(); } catch { /* next tick */ } }   // 'stale' never equals a server stamp, so pull() re-reads
       // The server refused (scored athlete, accepted registration, cap...): stop shielding local deletions so the
       // next pull restores the server's roster on this phone. A network failure keeps them pending for the retry.
       if (!isNetworkError(e)) this.removedAthletes.clear();
@@ -368,7 +391,8 @@ export class SyncController {
     for (const r of state.results) {
       const seen = this.known.get(r.id) ?? -1;
       if ((r.updatedAt ?? 0) > seen) {
-        this.queue = enqueue(this.queue, { table: 'results', id: r.id, row: resultToRow(r, this.link.meetId, this.o.deviceId) as unknown as Record<string, unknown> }, this.now());
+        // KM-03: stamp the unit system this phone shows right now; the server refuses the row if the meet has moved
+        this.queue = enqueue(this.queue, { table: 'results', id: r.id, row: resultToRow(r, this.link.meetId, this.o.deviceId, normalizeUnits(state.meet.units)) as unknown as Record<string, unknown> }, this.now());
         this.known.set(r.id, r.updatedAt ?? 0);
         added++;
       }
@@ -445,6 +469,7 @@ export class SyncController {
     const groups = groupByTable(this.queue);
     const tables = [...SyncController.FLUSH_ORDER, ...Object.keys(groups).filter((t) => !SyncController.FLUSH_ORDER.includes(t))];
     let lastRejection: SyncError | null = null;
+    let held = 0; let heldMessage: string | null = null;
     for (const table of tables) {
       const items = groups[table];
       if (!items?.length) continue;
@@ -467,6 +492,7 @@ export class SyncController {
           } catch (e2) {
             if (gen !== this.session) return;
             if (isNetworkError(e2)) { this.persistQueue(); throw e2; }
+            if (isUnitsMismatch(e2)) { held++; heldMessage = (e2 as SyncError).message; continue; }   // KM-03: keep it, say why
             this.queue = removeFlushed(this.queue, [item]);
             dropped++;
             lastRejection = e2 as SyncError;
@@ -476,6 +502,8 @@ export class SyncController {
       }
       this.persistQueue();
     }
+    if (held) this.setStatus({ held, error: heldMessage });
+    else if (this.status.held) this.setStatus({ held: 0 });
     if (lastRejection) this.setStatus({ error: `server rejected ${this.status.dropped} row(s): ${lastRejection.message}` });
   }
 
@@ -491,10 +519,13 @@ export class SyncController {
     if (competitionStatus !== (this.link.competitionStatus ?? null)) { this.link = { ...this.link, competitionStatus }; writeLink(this.o.storage, this.link); }
     const state = this.o.getState();
     const patch: IncomingPatch = {};
-    // Admin republished (weights, events, stations, demo flag): judge phones re-read the config. The admin phone
-    // is the source of that config, so it only records the stamp.
+    // Config moved on the server (weights, events, stations, units, demo flag): judge phones re-read it. An admin phone
+    // used to only record the stamp; since KM-02 it re-reads too when the stamp is not the one it published or last
+    // applied (the dashboard or another admin changed the setup). An admin that has never recorded a stamp (link
+    // from before 061) only records it: it cannot tell its own publish from a stranger's.
     if (meetUpdatedAt && meetUpdatedAt !== (this.link.configAt ?? null)) {
-      if (this.link.role === 'device') {
+      const reread = this.link.role === 'device' || (this.link.role === 'admin' && !!this.link.configAt);
+      if (reread) {
         const cfg = await fetchMeetConfig(this.o.client, this.link.meetId);
         if (!this.link || gen !== this.session) return null;
         if (cfg) patch.config = cfg;
@@ -540,7 +571,7 @@ export class SyncController {
           if (flushError && isNetworkError(flushError)) throw flushError;
           await this.pull();                       // a rejected write must not stop us reading
           if (flushError) throw flushError;
-          if (this.link && !this.paused) this.setStatus({ state: 'idle', error: this.status.dropped ? this.status.error : null, lastSyncAt: this.now(), denied: false });
+          if (this.link && !this.paused) this.setStatus({ state: 'idle', error: this.status.dropped || this.status.held ? this.status.error : null, lastSyncAt: this.now(), denied: false });
         } catch (e) {
           if (this.link && !this.paused) this.fail(e);
         }

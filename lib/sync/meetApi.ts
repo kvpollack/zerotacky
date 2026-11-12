@@ -1,5 +1,5 @@
 // Meet-level operations on top of the PostgREST client. Pure except for the network.
-import type { AppState, Result } from '../types';
+import type { AppState, Result, MeetUnits } from '../types';
 import type { SyncClient } from './client';
 import { stateToRows, rowsToState, rowToResult, rowToAthlete, resultToRow, athleteToRow } from './mapping';
 import type { MeetRow, DivisionRow, EventRow, AthleteRow, ResultRow, PublishExtra } from './mapping';
@@ -107,16 +107,16 @@ export async function fetchMeetByJoinCode(client: SyncClient, code: string): Pro
 // server-side from the client's access token (auth.uid(); 024 retired the legacy publish key), upserts meet +
 // divisions + events + athletes (authoritative: stale children are removed) and merges results last-writer-wins.
 // Returns the remote meet id and its join code.
-export async function publishMeet(client: SyncClient, state: AppState, extra: PublishExtra): Promise<{ id: string; joinCode: string }> {
+export async function publishMeet(client: SyncClient, state: AppState, extra: PublishExtra): Promise<{ id: string; joinCode: string; updatedAt: string | null }> {
   const rows = stateToRows(state, extra);
-  const out = await client.rpc<{ id: string; join_code: string }>('zt_publish_meet', {
+  const out = await client.rpc<{ id: string; join_code: string; updated_at?: string | null }>('zt_publish_meet', {
     p_meet: rows.meet,
     p_divisions: rows.divisions,
     p_events: rows.events,
     p_athletes: rows.athletes,
     p_results: rows.results,
   });
-  return { id: out.id, joinCode: out.join_code };
+  return { id: out.id, joinCode: out.join_code, updatedAt: out.updated_at ?? null };   // 061 returns the new config stamp
 }
 
 // 007: a joined phone verifies the admin PIN server-side (throttled per join code). Older servers (main) still return
@@ -133,9 +133,9 @@ export async function revokeGrant(client: SyncClient, token: string): Promise<vo
 
 const CHILD_KEY = 'meet_id,id';
 
-export async function pushResults(client: SyncClient, meetId: string, results: Result[], deviceId: string): Promise<void> {
+export async function pushResults(client: SyncClient, meetId: string, results: Result[], deviceId: string, units?: MeetUnits): Promise<void> {
   if (results.length === 0) return;
-  await client.upsert('results', results.map((r) => resultToRow(r, meetId, deviceId)) as unknown as Record<string, unknown>[], CHILD_KEY);
+  await client.upsert('results', results.map((r) => resultToRow(r, meetId, deviceId, units)) as unknown as Record<string, unknown>[], CHILD_KEY);
 }
 
 export async function pushAthletes(client: SyncClient, meetId: string, athletes: AppState['athletes']): Promise<void> {

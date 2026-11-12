@@ -10,7 +10,7 @@
 import type { Division, DivisionFormat, EventDef, MeetUnits } from '@/lib/types';
 import type { DivisionGroupingStyle } from './types';
 import { normalizeEventSpec } from '@/lib/events/spec';
-import { toLb } from '@/lib/units';
+import { LB_PER_KG, toLbExact } from '@/lib/units';
 import { eventWeightDisplay } from './format';
 
 export type Lane = 'deadlift' | 'overhead' | 'carry' | 'pull' | 'unknown';
@@ -116,7 +116,7 @@ export function divisionWeightLb(ev: EventDef, divisionId: string, lane: Lane): 
 export function gradeEvent(ev: EventDef, division: Division, nums: PickerNumbers, units: MeetUnits = 'imperial'): EventVerdict {
   const lane = eventLane(ev);
   const stored = divisionWeightLb(ev, division.id, lane);
-  const weightLb = stored === null ? null : toLb(stored, units);
+  const weightLb = stored === null ? null : toLbExact(stored, units);   // KM-10: unrounded for the ratio
   const weightText = eventWeightDisplay(ev, division.id, units).main;
   const mine = laneNumber(nums, lane);
   const base = { eventId: ev.id, eventNumber: ev.eventNumber, name: ev.name, lane, weightLb, weightText };
@@ -202,29 +202,30 @@ export function pickGroups(divisions: Division[], events: EventDef[], nums: Pick
   return { divisions: ranked, recommendedId, note };
 }
 
-/** Form text to pounds. "315", "315 lb", "140 kg", "140kg x 3" (first number), unit from the text or the toggle. */
+/** The one grammar for the three inputs (KM-05): the first number is the lift ("315", "315 lb", "140 kg", "140kg x 3");
+ *  a unit written in the text wins over the toggle. Returns unrounded canonical pounds (KM-06); callers that print it
+ *  go through `lbToDisplay`. */
 export function parseLiftInput(text: string, unit: Unit): number | null {
   const m = /(\d+(?:\.\d+)?)/.exec(text);
   if (!m) return null;
   const n = Number(m[1]);
   if (!Number.isFinite(n) || n <= 0) return null;
   const isKg = /kg|kilo/i.test(text) || (unit === 'kg' && !/lb|pound/i.test(text));
-  return Math.round(isKg ? n * LB_PER_KG : n);
+  return isKg ? n * LB_PER_KG : n;
 }
 
-const LB_PER_KG = 2.20462;
-
-/** Astra GP-08: the three inputs are typed in the toggle's unit, so flipping the toggle converts what is on screen and
- *  the athlete's strength stays the same. Text with its own unit ("140 kg") is left alone: parseLiftInput reads it. */
+/** Astra GP-08 / KM-05: flipping the toggle re-renders what parseLiftInput read, in the new unit, so the text and the
+ *  ratio can never disagree ("225 x 3" in lb becomes "102" in kg: the lift, not the expression). Text the grammar
+ *  cannot read is left alone. Display only: the client keeps the unrounded pounds (KM-06), so a round trip
+ *  lb -> kg -> lb cannot drift the ratio. */
 export function convertDisplayUnit(text: string, from: Unit, to: Unit): string {
   if (from === to) return text;
-  const t = text.trim();
-  if (!t || /kg|kilo|lb|pound/i.test(t) || !/^\d+(\.\d+)?$/.test(t)) return text;
-  const n = Number(t);
-  return String(to === 'kg' ? Math.round(n / LB_PER_KG) : Math.round(n * LB_PER_KG));
+  const lb = parseLiftInput(text, from);
+  return lb === null ? text : lbToDisplay(lb, to);
 }
 
-/** A pounds value as the input should show it in the given unit (Astra GP-09: PR seeds are canonical pounds). */
+/** A pounds value as the input should show it in the given unit (Astra GP-09: PR seeds are canonical pounds). Whole
+ *  numbers: the inputs are gym numbers, not scale readings. */
 export function lbToDisplay(lb: number | null, unit: Unit): string {
   if (lb === null || !Number.isFinite(lb) || lb <= 0) return '';
   return String(unit === 'kg' ? Math.round(lb / LB_PER_KG) : Math.round(lb));

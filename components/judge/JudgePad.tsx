@@ -145,6 +145,9 @@ export default function JudgePad(p: JudgePadProps) {
   const syncStatus = sync?.status;
   const syncCell = syncLabel(syncOn, syncStatus);
   const syncTrouble = syncOn && (syncStatus?.state === 'offline' || syncStatus?.state === 'error');
+  // KM-03 (061): scores the server refused because they were entered under the other unit system stay on this phone
+  // with the server's explanation; nothing is dropped or relabelled.
+  const syncHeld = syncOn && !syncTrouble && !!syncStatus?.held;
   const lane2 = ev.lanes === 2;
 
   // Run order shows itself while nothing is on the sheet for this athlete and the clock is idle; a key pins it either way.
@@ -312,6 +315,16 @@ export default function JudgePad(p: JudgePadProps) {
             {syncStatus?.state === 'error'
               ? <a href="/join" className={`${LINE} border-0 text-[12px] px-3 h-full no-underline`}>Re-join</a>
               : <button type="button" onClick={() => sync?.syncNow?.()} className={`${LINE} border-0 text-[12px] px-3 h-full`}>Sync now</button>}
+          </RuledBlock>
+        )}
+
+        {syncHeld && (
+          <RuledBlock columns="minmax(0,1fr) auto" data-testid="sync-held">
+            <div className="px-2.5 py-1.5">
+              <div className={`text-[10px] ${CAP}`}>Units changed · {syncStatus?.held} score{syncStatus?.held === 1 ? '' : 's'} held on this phone</div>
+              <div className="text-[11px] leading-snug normal-case">{syncStatus?.error?.replace(/^(\d+:\s*)?UNITS_MISMATCH:\s*/, '') ?? 'The meet is now in the other unit system.'} <b>Nothing was dropped.</b></div>
+            </div>
+            <button type="button" onClick={() => sync?.syncNow?.()} className={`${LINE} border-0 text-[12px] px-3 h-full`}>Retry</button>
           </RuledBlock>
         )}
 

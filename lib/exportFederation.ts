@@ -3,6 +3,8 @@
 // within 7 days, or keeps a live results link viewable for 365 days (feature report ref 48). SC publishes no file
 // layout, so the CSV is a sheet a state rep can read: a title block (meet, date, venue, federation, promoter contact,
 // where it was scored, the results link) then one row per athlete, places first.
+// KM-09: bodyweight is canonical pounds whatever the meet's scoring units; the header says so, since the event cells
+// beside it read kg / m on a metric meet.
 import type { AppState, Division, EventDef } from './types';
 import { scoreSingleEvent, calculateDivisionStandings } from './engine';
 import { toCsv, standingsText } from './export';
@@ -39,7 +41,7 @@ export function federationResultsCsv(state: AppState, meta: FederationPackMeta):
     ['Results link', meta.resultsUrl],
     [],
   ];
-  const header: unknown[] = ['Division', 'Place', 'Athlete', 'Bodyweight', 'Status'];
+  const header: unknown[] = ['Division', 'Place', 'Athlete', 'Bodyweight (lb)', 'Status'];
   for (const e of events) header.push(`Ev${e.eventNumber} ${e.name}`, `Ev${e.eventNumber} Pts`);
   header.push('Total Pts', 'Event Wins');
   rows.push(header);

@@ -6,8 +6,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
 import type { Athlete, Division, EventDef, Meet, MeetUnits, Result, Station } from '@/lib/types';
 import { THEMES } from '@/lib/constants';
-import { DEFAULT_PLATES, UNITS_OPTIONS, normalizeUnits, weightUnit } from '@/lib/units';
-import { slugify, validateMeet } from '@/lib/meetBuilder';
+import { DEFAULT_PLATES, UNITS_OPTIONS, normalizeUnits, weightUnit, weightUnitWord, distanceUnitWord } from '@/lib/units';
+import { planUnitFlip, slugify, validateMeet } from '@/lib/meetBuilder';
 import { DEFAULT_PRESET_ID, MEET_PRESETS } from '@/lib/presets';
 import { hasCustomEventOrder, moveEventInOrder, stationEvents } from '@/lib/engine';
 import { RUN_ORDER_OPTIONS, TIEBREAK_OPTIONS } from '@/components/setup/builder/MeetSection';
@@ -180,6 +180,18 @@ function MeetDetails(props: MeetSetupSheetProps) {
   const isDemo = Boolean(meet.isDemo);
   const units = normalizeUnits(meet.units);   // 059
   const unitsLocked = props.results.length > 0;
+  // D1 (kg/m audit): a flip that would leave stored numbers behind is confirmed first and then clears them; the note
+  // under the control says what went. Nothing is converted.
+  const [pendingUnits, setPendingUnits] = useState<MeetUnits | null>(null);
+  const [flipNote, setFlipNote] = useState<string[] | null>(null);
+  const flipPlan = pendingUnits ? planUnitFlip(meet, props.events, pendingUnits) : null;
+  const applyFlip = (next: MeetUnits) => {
+    const plan = planUnitFlip(meet, props.events, next);
+    updateMeetConfig(plan.meetPatch);
+    for (const { id, patch } of plan.eventPatches) props.updateEvent(id, patch);
+    setFlipNote(plan.cleared);
+    setPendingUnits(null);
+  };
   // promoter host: a published meet's slug is its public URL (QR codes, the federation results link), so typing in the
   // name never rewrites it there; the slug field itself stays editable. The scorer keeps deriving it from the name.
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(host === 'promoter');
@@ -255,14 +267,37 @@ function MeetDetails(props: MeetSetupSheetProps) {
               onChange={(v) => {
                 const next = normalizeUnits(v);
                 if (next === units) return;
-                // numbers are re-typed, never converted; the plate inventory starts over in the new unit
-                updateMeetConfig({ units: next, availablePlates: [...DEFAULT_PLATES[next]] });
+                // numbers are re-typed, never converted; the plate inventory starts over in the new unit and every
+                // stored weight, course and rising-bar step is cleared so nothing is silently re-read in the new unit
+                const plan = planUnitFlip(meet, props.events, next);
+                if (plan.cleared.length === 0) applyFlip(next);
+                else setPendingUnits(next);
               }}
             />
           </fieldset>
           {unitsLocked
             ? <Note className="text-ink">Locked: this meet has results. Weights and marks stay in {units === 'metric' ? 'kilograms and meters' : 'pounds and feet'}.</Note>
-            : <Note>Every weight, course and mark in this meet is typed in these units. Switching converts nothing and resets the plate inventory.</Note>}
+            : <Note>Every weight, course and mark in this meet is typed in these units. Switching converts nothing: it resets the plate inventory and clears every stored weight, course and rising-bar step so they are re-entered in the new unit.</Note>}
+          {pendingUnits && flipPlan && (
+            <div role="alertdialog" aria-labelledby="units-flip-title" className="mt-2 border-2 border-ink p-2" data-testid="units-flip-confirm">
+              <p id="units-flip-title" className="text-[12px] font-bold text-ink">Switch to {weightUnitWord(pendingUnits)} and {distanceUnitWord(pendingUnits)}? These {weightUnit(units)} numbers are cleared, not converted:</p>
+              <ul className="mt-1 list-disc pl-4 text-[12px] text-ink">
+                {flipPlan.cleared.map((line) => <li key={line}>{line}</li>)}
+              </ul>
+              <p className="mt-1 text-[11px] text-ink-muted">Pit crew callouts and fixed-implement text are words, not numbers: re-read them yourself.</p>
+              <div className="mt-2 flex gap-2">
+                <Key variant="pen" onClick={() => applyFlip(pendingUnits)}>Switch and clear</Key>
+                <Key variant="line" onClick={() => setPendingUnits(null)}>Keep {weightUnit(units)}</Key>
+              </div>
+            </div>
+          )}
+          {flipNote && !pendingUnits && (
+            <p className="text-[10px] leading-snug text-ink normal-case mt-1" data-testid="units-flip-note">
+              Now in {weightUnitWord(units)} and {distanceUnitWord(units)}.{' '}
+              {flipNote.length ? `Cleared for re-entry: ${flipNote.join('; ')}.` : 'Nothing was stored in the old unit.'}{' '}
+              Callouts and fixed-implement text may still name the old unit.
+            </p>
+          )}
           {UNITS_KEY_OPTIONS.map(({ value, label, explain }) => (
             <Note key={value} className={units === value ? 'text-ink' : ''}><strong>{label}:</strong> {explain}</Note>
           ))}

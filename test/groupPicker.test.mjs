@@ -75,10 +75,11 @@ describe('group picker (gaps #13)', () => {
 
   test('parseLiftInput and numbersFromPRs', () => {
     assert.equal(G.parseLiftInput('315', 'lb'), 315);
-    assert.equal(G.parseLiftInput('140 kg', 'lb'), 309);
-    assert.equal(G.parseLiftInput('140', 'kg'), 309);
+    const near = (a, b) => assert.ok(Math.abs(a - b) < 0.01, `${a} vs ${b}`);
+    near(G.parseLiftInput('140 kg', 'lb'), 308.65);   // KM-06: unrounded pounds
+    near(G.parseLiftInput('140', 'kg'), 308.65);
     assert.equal(G.parseLiftInput('315 lb', 'kg'), 315);
-    assert.equal(G.parseLiftInput('140kg x 3', 'lb'), 309);
+    near(G.parseLiftInput('140kg x 3', 'lb'), 308.65);
     assert.equal(G.parseLiftInput('', 'lb'), null);
     assert.equal(G.parseLiftInput('heavy', 'lb'), null);
     const n = G.numbersFromPRs([{ lift: 'Log press', value: '225 lb' }, { lift: 'Deadlift', value: '405' }, { lift: 'Yoke walk', value: '500 lb' }, { lift: 'Bench press', value: '275' }]);
@@ -173,12 +174,15 @@ describe('group picker: Astra GP fixes (11/10)', () => {
   test('GP-08: the unit switch converts what is on screen; explicit units and blanks are left alone', () => {
     assert.equal(G.convertDisplayUnit('315', 'lb', 'kg'), '143');
     assert.equal(G.convertDisplayUnit('143', 'kg', 'lb'), '315');
-    assert.equal(G.convertDisplayUnit('140 kg', 'lb', 'kg'), '140 kg');
+    assert.equal(G.convertDisplayUnit('140 kg', 'lb', 'kg'), '140');   // KM-05: one grammar; the explicit unit is read, then re-rendered
+    assert.equal(G.convertDisplayUnit('225 x 3', 'lb', 'kg'), '102');   // the first number is the lift, as parseLiftInput reads it
+    assert.equal(G.convertDisplayUnit('heavy', 'lb', 'kg'), 'heavy');
     assert.equal(G.convertDisplayUnit('', 'lb', 'kg'), '');
     assert.equal(G.convertDisplayUnit('315', 'lb', 'lb'), '315');
-    // the same strength parses to the same pounds either way
-    assert.equal(G.parseLiftInput(G.convertDisplayUnit('315', 'lb', 'kg'), 'kg'), 315);
+    // re-reading the displayed kg lands within a pound; the client never does this (KM-06: it keeps the parsed pounds)
+    assert.ok(Math.abs(G.parseLiftInput(G.convertDisplayUnit('315', 'lb', 'kg'), 'kg') - 315) < 1);
     assert.equal(G.lbToDisplay(309, 'kg'), '140');
+    assert.equal(G.lbToDisplay(308.65, 'kg'), '140');
     assert.equal(G.lbToDisplay(null, 'kg'), '');
   });
   test('GP-10: a weight above the band but under the number is described as above the band, not over the number', () => {

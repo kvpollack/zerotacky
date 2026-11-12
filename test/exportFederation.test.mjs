@@ -27,7 +27,7 @@ describe('federation results pack', () => {
     assert.equal(lines[3], 'Federation,Strongman Corporation');
     assert.equal(lines[6], 'Results link,https://www.zerotacky.com/shows/strongfest-2026');
     assert.equal(lines[7], '');
-    assert.match(lines[8], /^Division,Place,Athlete,Bodyweight,Status,Ev1 /);
+    assert.match(lines[8], /^Division,Place,Athlete,Bodyweight \(lb\),Status,Ev1 /);   // KM-09: the column names its unit
     assert.match(lines[8], /,Total Pts,Event Wins$/);
     const g1 = lines.slice(9).filter((l) => l.startsWith(`${s.divisions.find((d) => d.id === 'sf-g1').name},`));
     assert.equal(g1[0].split(',')[1], '1');            // the 12-rep athlete leads

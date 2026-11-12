@@ -39,7 +39,7 @@ describe('prBoard across units', () => {
     const [b] = B.competitionBests(h);
     assert.equal(b.showName, 'Show lb');
     assert.equal(b.units, 'imperial');
-    assert.equal(b.result, '3 reps at 250 lb');
+    assert.equal(b.result, '3 reps at 250 lb (113 kg)');   // D2: the imperial row now mirrors kg too
   });
   test('max weight: 200 kg beats 440 lb (440.9 lb); printed "200 kg (441 lb)"', () => {
     const h = [
@@ -56,12 +56,12 @@ describe('prBoard across units', () => {
     ];
     const [b] = B.competitionBests(h);
     assert.equal(b.showName, 'Show kg');
-    assert.equal(b.result, '20 m of 30');
+    assert.equal(b.result, '20 of 30 m (98 ft)');
   });
   test('an event result without `units` (older callers) is read as imperial', () => {
     const e = ev({ reps: 2, weightLbs: 300 });
     delete e.units;
-    assert.equal(B.formatBestResult(e), '2 reps at 300 lb');
+    assert.equal(B.formatBestResult(e), '2 reps at 300 lb (136 kg)');
   });
 });
 
@@ -92,7 +92,7 @@ describe('group picker on a metric show', () => {
   const evd = (extra = {}) => ({ id: 'e1', meetId: 'm', eventNumber: 1, name: 'Axle Deadlift for Reps', scoringType: 'reps', timeCapSeconds: 60, lanes: 1, loadingPoints: 1, weightEntryMode: 'total', implementEmptyWeight: 0, divisionWeights: { a: 100 }, ...extra });
   test('a 100 kg division weight is 220.5 lb for the ratio and prints "100 kg"', () => {
     const v = G.gradeEvent(evd(), div, { deadlift: 315, overhead: null, carry: null }, 'metric');
-    assert.equal(v.weightLb, 220.5);
+    assert.ok(Math.abs(v.weightLb - 220.462) < 0.001);   // KM-10: unrounded for the ratio (100 kg = 220.462 lb)
     assert.equal(v.weightText, '100 kg');
     assert.equal(v.verdict, 'clear');   // 220.5 / 315 = 0.70
     const imperial = G.gradeEvent(evd(), div, { deadlift: 315, overhead: null, carry: null });

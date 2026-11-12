@@ -72,12 +72,26 @@ export function mirrorWeightLabel(w: number | null | undefined, units: MeetUnits
   return other === 0 ? `<1 ${u}` : `${other} ${u}`;
 }
 
-/** Canonical pounds / feet for a stored number, used where meets are compared. One decimal. */
+/** Canonical pounds / feet for a stored number, used where meets are compared. One decimal, for display. For ranking
+ *  and ratios use the exact forms below (KM-10): rounding before a comparison turns a real difference into a tie. */
 export function toLb(w: number, units: MeetUnits | undefined): number {
   return units === 'metric' ? Math.round(w * LB_PER_KG * 10) / 10 : w;
 }
 export function toFt(d: number, units: MeetUnits | undefined): number {
   return units === 'metric' ? Math.round(d * FT_PER_M * 10) / 10 : d;
+}
+export function toLbExact(w: number, units: MeetUnits | undefined): number {
+  return units === 'metric' ? w * LB_PER_KG : w;
+}
+export function toFtExact(d: number, units: MeetUnits | undefined): number {
+  return units === 'metric' ? d * FT_PER_M : d;
+}
+/** Whole-number mirror of a stored distance: "6 m" beside 20 ft, "66 ft" beside 20 m; '' for nothing (D2). */
+export function mirrorDistanceLabel(d: number | null | undefined, units: MeetUnits | undefined): string {
+  if (typeof d !== 'number' || !Number.isFinite(d) || d <= 0) return '';
+  const other = units === 'metric' ? Math.round(d * FT_PER_M) : Math.round(d * M_PER_FT);
+  const u = units === 'metric' ? 'ft' : 'm';
+  return other === 0 ? `<1 ${u}` : `${other} ${u}`;
 }
 export function fromLb(lb: number, units: MeetUnits | undefined): number {
   return units === 'metric' ? Math.round(lb * KG_PER_LB * 10) / 10 : lb;

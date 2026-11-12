@@ -122,6 +122,7 @@ describe('labels and state', () => {
     assert.deepEqual(P.syncLabel(false, undefined), { filled: false, text: 'Local' });
     assert.deepEqual(P.syncLabel(true, { state: 'idle', pending: 0, lastSyncAt: 1, error: null }), { filled: true, text: 'Live' });
     assert.deepEqual(P.syncLabel(true, { state: 'offline', pending: 3, lastSyncAt: 1, error: null }), { filled: false, text: 'Offline 3' });
+    assert.deepEqual(P.syncLabel(true, { state: 'idle', pending: 1, lastSyncAt: 1, error: 'UNITS_MISMATCH: x', held: 1 }), { filled: false, text: 'Held 1' });   // KM-03
     assert.deepEqual(P.syncLabel(true, { state: 'error', pending: 0, lastSyncAt: 1, error: 'x' }), { filled: false, text: 'Error' });
   });
   test('hasEntry: a fresh result has none; any mark, DNS or lock counts', () => {

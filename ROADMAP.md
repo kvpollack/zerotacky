@@ -5,9 +5,12 @@
 **Where we are.** The two-track plan finished: `v2` became `main` on 11/9 (tag `v2-retired-2026-11-09`), one branch, one
 Supabase prod (`kagitbfthapxmaljsdtz`, migrations 001-053 applied) plus staging, www.zerotacky.com on Vercel Hobby, Resend
 mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 feature-gaps report ranked 22 builds;
-22 shipped. Live main `2501a10d` (11/12: kg / m sessions 1 and 2, 059 + 060: a meet picks pounds and feet or kilograms and meters once, locked after the first result; labels follow it everywhere; numbers stored as entered; PR board and group picker normalise across shows; adopted kg-only archive shows stay metric; scope note `audits/slate-2026-11-12-kg-m-scope.md`). 11/12 session 3 browser probe of a metric meet passed end to end (notes); Astra audit of the kg / m build open. 819 tests. Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10).
+22 shipped. Live main `2501a10d` (11/12: kg / m sessions 1 and 2, 059 + 060: a meet picks pounds and feet or kilograms and meters once, locked after the first result; labels follow it everywhere; numbers stored as entered; PR board and group picker normalise across shows; adopted kg-only archive shows stay metric; scope note `audits/slate-2026-11-12-kg-m-scope.md`). 11/12 session 3 browser probe of a metric meet passed end to end (notes); Astra kg / m audit closed, 10 of 10 + D1 / D2 (061, notes "kg / m audit fixes"). 837 tests. Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10).
 
 **Shipped since the 10/21 entries below (newest first)**
+- 11/12 kg / m audit fixes (061): results carry their unit and a mismatch is held on the phone; stale-config publishes
+  refused; admin phones and boards follow dashboard changes; unit-aware course guard and plate defaults; picker precision;
+  PR mirrors both ways; unit flip clears stored numbers after a confirm.
 - 11/12 kg / m session 2 (060): PR board ranks across kg and lb shows in pounds and prints each show's unit; group picker
   converts a metric show's weights for the ratio; adopted kg-only archive shows keep kg.
 - 11/12 kg / m session 1 (059): meet-level units with kg plates, metric course cap and unit labels everywhere.

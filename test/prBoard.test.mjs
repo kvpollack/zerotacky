@@ -24,7 +24,7 @@ describe('prBoard.competitionBests', () => {
     ];
     const [b] = B.competitionBests(h);
     assert.equal(b.label, 'Log');
-    assert.equal(b.result, '3 reps at 250 lb');
+    assert.equal(b.result, '3 reps at 250 lb (113 kg)');   // D2: imperial rows mirror kg
     assert.equal(b.showName, 'Show m1');
     assert.equal(b.dateLabel, 'May 2, 2026');
     assert.equal(b.appearances, 2);
@@ -36,7 +36,7 @@ describe('prBoard.competitionBests', () => {
       entry('older', '2026-01-02', [ev({ reps: 9 })]),
     ];
     const [b] = B.competitionBests(h);
-    assert.equal(b.result, '9 reps at 250 lb');
+    assert.equal(b.result, '9 reps at 250 lb (113 kg)');
     assert.equal(b.showName, 'Show older');
     const [b2] = B.competitionBests(h.slice(0, 2));
     assert.equal(b2.showName, 'Show new');
@@ -49,7 +49,7 @@ describe('prBoard.competitionBests', () => {
     const bests = B.competitionBests(h);
     assert.equal(bests.length, 1);
     assert.equal(bests[0].label, 'Axle');
-    assert.equal(bests[0].result, '300 lb');
+    assert.equal(bests[0].result, '300 lb (136 kg)');
     assert.equal(bests[0].appearances, 2);
   });
   test('time: a finished course at a heavier weight beats a faster one at a lighter weight; a DNF shows distance', () => {
@@ -59,9 +59,9 @@ describe('prBoard.competitionBests', () => {
       entry('m3', '2026-11-01', [ev({ eventName: 'Yoke', scoringType: 'time_or_distance', implement: 'yoke', weightLbs: 800, courseFeet: 50, timeSeconds: 0, finished: false, distanceFeet: 31 })]),
     ];
     const [b] = B.competitionBests(h);
-    assert.equal(b.result, '19.20 s at 700 lb (50 ft)');
+    assert.equal(b.result, '19.20 s at 700 lb (318 kg) over 50 ft (15 m)');
     const dnf = B.competitionBests([h[2]]);
-    assert.equal(dnf[0].result, '31 ft at 800 lb of 50');
+    assert.equal(dnf[0].result, '31 of 50 ft (15 m) at 800 lb (363 kg)');
   });
   test('medley: most implements, then time; over a minute formats m:ss.ss', () => {
     const h = [
@@ -80,7 +80,7 @@ describe('prBoard.competitionBests', () => {
     ];
     const bests = B.competitionBests(h);
     assert.deepEqual(bests.map((b) => b.label), ['Prowler', 'Sandbag Toss (for reps)']);
-    assert.equal(bests[1].result, '6 reps at 50 lb');
+    assert.equal(bests[1].result, '6 reps at 50 lb (23 kg)');
     assert.equal(bests[1].appearances, 2);
   });
   test('an empty history gives no rows', () => {

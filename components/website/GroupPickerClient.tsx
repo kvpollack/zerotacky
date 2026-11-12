@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth/useAuth';
 import type { Division, EventDef, MeetUnits } from '@/lib/types';
 import {
-  FIT_LABELS, LANE_LABELS, VERDICT_LABELS, convertDisplayUnit, divisionGenderTag, lbToDisplay, numbersFromPRs, parseLiftInput, pickGroups,
+  FIT_LABELS, LANE_LABELS, VERDICT_LABELS, divisionGenderTag, lbToDisplay, numbersFromPRs, parseLiftInput, pickGroups,
   type DivisionFit, type PickerNumbers, type Unit,
 } from '@/lib/website/groupPicker';
 import { Cap, Key, KeyButton, WebCell } from './sheet';
@@ -27,6 +27,9 @@ export default function GroupPickerClient({ slug, divisions, events, canRegister
   const [open, setOpen] = useState(false);
   const [unit, setUnit] = useState<Unit>(units === 'metric' ? 'kg' : 'lb');
   const [text, setText] = useState({ deadlift: '', overhead: '', carry: '' });
+  // KM-06: the ratio runs on unrounded canonical pounds kept here; `text` is only what the inputs show. Typing parses
+  // into `lb`, the toggle re-renders `text` from `lb`, so lb -> kg -> lb never moves the number under the ranking.
+  const [lb, setLb] = useState<PickerNumbers>({ deadlift: null, overhead: null, carry: null });
   const [seeded, setSeeded] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [gender, setGender] = useState<'all' | 'women' | 'men'>('all');
@@ -37,6 +40,7 @@ export default function GroupPickerClient({ slug, divisions, events, canRegister
   useEffect(() => {
     if (seeded || !auth.profile?.prs?.length) return;
     const n = numbersFromPRs(auth.profile.prs);
+    setLb((cur) => ({ deadlift: cur.deadlift ?? n.deadlift, overhead: cur.overhead ?? n.overhead, carry: cur.carry ?? n.carry }));
     setText((cur) => ({
       deadlift: cur.deadlift || lbToDisplay(n.deadlift, unit),
       overhead: cur.overhead || lbToDisplay(n.overhead, unit),
@@ -45,22 +49,25 @@ export default function GroupPickerClient({ slug, divisions, events, canRegister
     setSeeded(true);
   }, [auth.profile, seeded, unit]);
 
-  // Astra GP-08: switching lb / kg converts what is on screen so the athlete's numbers keep their meaning.
+  // One grammar (KM-05): what the athlete types is parsed once, in the toggle's unit, into canonical pounds.
+  const edit = (lane: 'deadlift' | 'overhead' | 'carry', v: string) => {
+    setText((c) => ({ ...c, [lane]: v }));
+    setLb((c) => ({ ...c, [lane]: parseLiftInput(v, unit) }));
+  };
+
+  // Astra GP-08: switching lb / kg re-renders the parsed lifts in the new unit; the canonical pounds do not move.
+  // Text the grammar could not read stays as typed.
   const switchUnit = (next: Unit) => {
     if (next === unit) return;
     setText((cur) => ({
-      deadlift: convertDisplayUnit(cur.deadlift, unit, next),
-      overhead: convertDisplayUnit(cur.overhead, unit, next),
-      carry: convertDisplayUnit(cur.carry, unit, next),
+      deadlift: lb.deadlift === null ? cur.deadlift : lbToDisplay(lb.deadlift, next),
+      overhead: lb.overhead === null ? cur.overhead : lbToDisplay(lb.overhead, next),
+      carry: lb.carry === null ? cur.carry : lbToDisplay(lb.carry, next),
     }));
     setUnit(next);
   };
 
-  const numbers = useMemo<PickerNumbers>(() => ({
-    deadlift: parseLiftInput(text.deadlift, unit),
-    overhead: parseLiftInput(text.overhead, unit),
-    carry: parseLiftInput(text.carry, unit),
-  }), [text, unit]);
+  const numbers = lb;
   const result = useMemo(() => pickGroups(scoped, events, numbers, units), [scoped, events, numbers, units]);
   const hasNumbers = !!(numbers.deadlift || numbers.overhead || numbers.carry);
   const shown = showAll || !result.recommendedId ? result.divisions : result.divisions.slice(0, 3);
@@ -91,9 +98,9 @@ export default function GroupPickerClient({ slug, divisions, events, canRegister
                 <Cap as="span">Your numbers</Cap>
                 <SegmentedRadio ariaLabel="Unit" options={[['lb', 'lb'], ['kg', 'kg']]} value={unit} onChange={(v) => switchUnit(v as Unit)} uppercase />
               </div>
-              <NumberField id="gp-deadlift" label="Deadlift" hint="Any bar, a single heavy rep" value={text.deadlift} unit={unit} onChange={(v) => setText((c) => ({ ...c, deadlift: v }))} />
-              <NumberField id="gp-overhead" label="Overhead press" hint="Barbell, dumbbell or log, one rep" value={text.overhead} unit={unit} onChange={(v) => setText((c) => ({ ...c, overhead: v }))} />
-              <NumberField id="gp-carry" label="Pick up and walk" hint="Heaviest thing you can lift to your chest or hands and walk 20 steps with (both hands together)" value={text.carry} unit={unit} onChange={(v) => setText((c) => ({ ...c, carry: v }))} />
+              <NumberField id="gp-deadlift" label="Deadlift" hint="Any bar, a single heavy rep" value={text.deadlift} unit={unit} onChange={(v) => edit('deadlift', v)} />
+              <NumberField id="gp-overhead" label="Overhead press" hint="Barbell, dumbbell or log, one rep" value={text.overhead} unit={unit} onChange={(v) => edit('overhead', v)} />
+              <NumberField id="gp-carry" label="Pick up and walk" hint="Heaviest thing you can lift to your chest or hands and walk 20 steps with (both hands together)" value={text.carry} unit={unit} onChange={(v) => edit('carry', v)} />
               {gendered && (
                 <div className="flex flex-col gap-1">
                   <Cap as="span" id="gp-gender-label">Groups to rank</Cap>

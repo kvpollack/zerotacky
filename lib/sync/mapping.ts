@@ -1,5 +1,5 @@
 // Pure AppState <-> Supabase row mapping. No I/O. Unit-tested in test/sync.test.mjs.
-import type { AppState, Athlete, Division, EventDef, Meet, Result } from '../types';
+import type { AppState, Athlete, Division, EventDef, Meet, MeetUnits, Result } from '../types';
 import { normalizeCollarWeight } from '../engine/plates';
 import { normalizeUnits } from '../units';
 
@@ -40,6 +40,9 @@ export interface PublishExtra {
   stations?: MeetRow['stations'];
   isDemo?: boolean;
   deviceId?: string;
+  /** KM-02: meets.updated_at this phone last applied. Sent as `updated_at`; zt_publish_meet refuses the publish when the
+   *  server row has moved on (the dashboard or another admin changed the setup), instead of overwriting it. */
+  configAt?: string | null;
 }
 
 export function meetToRow(meet: Meet, extra: PublishExtra): MeetRow {
@@ -56,7 +59,8 @@ export function meetToRow(meet: Meet, extra: PublishExtra): MeetRow {
     stations: extra.stations ?? meet.stations ?? [{ id: 'A', label: 'Station 1' }, { id: 'B', label: 'Station 2' }],
     is_demo: extra.isDemo ?? !!meet.isDemo,
     ...(meet.divisionFormat ? { division_format: meet.divisionFormat } : {}),
-    units: normalizeUnits(meet.units),   // 059
+    units: normalizeUnits(meet.units),
+    ...(extra.configAt ? { updated_at: extra.configAt } : {}),   // KM-02: optimistic stamp, see PublishExtra   // 059
   };
 }
 
@@ -87,8 +91,12 @@ export function athleteToRow(a: Athlete, meetId: string): AthleteRow {
   };
 }
 
-export function resultToRow(r: Result, meetId: string, deviceId: string | null = null): ResultRow {
-  const { id, eventId, athleteId, locked, updatedAt, ...payload } = r;
+/** KM-03: `units` names the unit system the score was entered under. The server (061 trigger) refuses a row whose
+ *  units differ from the meet's, so a score queued offline in lb can never land as kg after a legal pre-score flip. */
+export function resultToRow(r: Result, meetId: string, deviceId: string | null = null, units?: MeetUnits): ResultRow {
+  const { id, eventId, athleteId, locked, updatedAt, ...rest } = r;
+  const payload: Record<string, unknown> = { ...rest };
+  if (units) payload.units = normalizeUnits(units);
   return {
     id, meet_id: meetId, event_id: eventId, athlete_id: athleteId, payload,
     locked: !!locked, updated_at: new Date(updatedAt || Date.now()).toISOString(), updated_by: deviceId,
@@ -96,6 +104,18 @@ export function resultToRow(r: Result, meetId: string, deviceId: string | null =
 }
 
 // ---------- from rows ----------
+/** KM-01: apply a server meet config to this phone's meet. Keeps the local id and PIN (public columns carry no
+ *  admin_pin). Optional keys that are absent on the server object hold the default there (units = imperial,
+ *  divisionFormat unset); a spread cannot clear them, so they are removed explicitly: a metric phone would otherwise keep
+ *  `units: 'metric'` after the dashboard flipped the meet back. Pure, shared by the hook and its tests. */
+export function applyServerMeet(prev: Meet, server: Meet): Meet {
+  const { adminPin: _drop, ...meetPublic } = server;
+  void _drop;
+  const merged: Meet = { ...prev, ...meetPublic, id: prev.id };
+  for (const k of ['units', 'divisionFormat'] as const) if (!(k in meetPublic)) delete merged[k];
+  return merged;
+}
+
 export function rowToMeet(row: MeetRow): Meet {
   return {
     id: row.id, name: row.name, date: row.date ?? '', adminPin: row.admin_pin ?? undefined,
@@ -156,8 +176,10 @@ export function rowToAthlete(row: AthleteRow): Athlete {
 }
 
 export function rowToResult(row: ResultRow): Result {
+  const { units: _units, ...payload } = (row.payload ?? {}) as Partial<Result> & { units?: unknown };   // provenance stays on the row
+  void _units;
   return {
-    ...(row.payload as Partial<Result>),
+    ...payload,
     id: row.id, eventId: row.event_id, athleteId: row.athlete_id,
     ...(row.locked ? { locked: true } : {}),
     updatedAt: new Date(row.updated_at).getTime(),
@@ -171,7 +193,7 @@ export function stateToRows(state: AppState, extra: PublishExtra) {
     divisions: state.divisions.map((d) => divisionToRow(d, meetId)),
     events: state.events.map((e) => eventToRow(e, meetId)),
     athletes: state.athletes.map((a) => athleteToRow(a, meetId)),
-    results: state.results.map((r) => resultToRow(r, meetId, extra.deviceId ?? null)),
+    results: state.results.map((r) => resultToRow(r, meetId, extra.deviceId ?? null, normalizeUnits(state.meet.units))),
   };
 }
 

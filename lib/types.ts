@@ -86,7 +86,8 @@ export interface PitCrewCallout {
 
 // Structured event spec (11/4, research brief build 3 "structured event specs", starter): what an athlete or coach
 // needs to train for the event, beside the scoring config above. Every field optional; rides in events.config on the
-// server like the other extras (no migration). Weights stay in divisionWeights (lb); the website shows kg beside them.
+// server like the other extras (no migration). Weights stay in divisionWeights, in the meet's unit (059: lb or kg); the
+// website mirrors the other unit beside them.
 export type ImplementKind =
   | 'log' | 'axle' | 'barbell' | 'circus_dumbbell' | 'viking_press'
   | 'yoke' | 'farmers' | 'frame' | 'husafell' | 'sandbag' | 'keg'
@@ -96,7 +97,7 @@ export type EquipmentRule = 'tacky' | 'straps' | 'belt' | 'sleeves' | 'wraps' | 
 export interface EventSpec {
   implement?: ImplementKind;
   implementNote?: string;      // "12 in log", "Rogue axle, 1.9 in" (80 chars)
-  courseFeet?: number;         // carry / pull / medley distance in feet
+  courseFeet?: number;         // carry / pull / medley distance in the meet's unit (ft or m, 059); the name predates kg/m
   allowed?: EquipmentRule[];
   notAllowed?: EquipmentRule[];
   videoUrl?: string;           // http(s), 500 chars; a demo or rules video

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createSyncClient, readSyncEnv } from '@/lib/sync/client';
 import { SyncController, getDeviceId, mergeAthletes, PUBLISH_KEY_KEY } from '@/lib/sync/controller';
-import { mergeResults } from '@/lib/sync/mapping';
+import { applyServerMeet, mergeResults } from '@/lib/sync/mapping';
 import { useAuth } from '@/lib/auth/useAuth';
 import { profileLabel } from '@/lib/auth/profile';
 
@@ -74,14 +74,11 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
           // phone has none and keeps none, so `adminPin` stays absent rather than becoming undefined-as-key).
           if (patch.config) {
             const { meet, divisions, events } = patch.config;
-            const { adminPin: _drop, ...meetPublic } = meet;
-            void _drop;
-            next = {
-              ...next,
-              meet: { ...prev.meet, ...meetPublic, id: prev.meet.id },
-              divisions,
-              events,
-            };
+            // KM-01: units / divisionFormat absent on the server mean "default": applyServerMeet clears them here too
+            const merged = applyServerMeet(prev.meet, meet);
+            // KM-02: an admin phone applying someone else's config must not republish it straight back
+            if (ctlRef.current?.link?.role === 'admin') skipRepublish.current = true;
+            next = { ...next, meet: merged, divisions, events };
           }
           return next;
         }),
@@ -167,9 +164,11 @@ export function useMeetSync({ state, setState, applyNewState, roleLock, station,
   // zt_publish_meet, so the ids are in the signature (not the rows: a pit-crew rack-height edit is not a republish).
   const configSig = JSON.stringify({ m: state.meet, d: state.divisions, e: state.events, a: state.athletes.map((x) => x.id) });
   const prevSig = useRef(configSig);
+  const skipRepublish = useRef(false);
   useEffect(() => {
     if (prevSig.current === configSig) return;   // key paste, StrictMode double-run, etc. are not config changes
     prevSig.current = configSig;
+    if (skipRepublish.current) { skipRepublish.current = false; return; }   // KM-02: config came from the server, not an edit
     const ctl = ctlRef.current;
     if (!ctl?.link || ctl.link.role !== 'admin' || !canPublish) return;
     debounce('republish', REPUBLISH_DEBOUNCE_MS, () => {

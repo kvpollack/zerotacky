@@ -95,7 +95,11 @@ export function fakeServer() {
       const join_code = existing?.join_code ?? `JC${String(++joinCodeCounter).padStart(4, '0')}`;
       // 008: a null admin_pin keeps the server's
       if (m.admin_pin == null) m.admin_pin = existing?.admin_pin ?? '1050';
-      upsert('meets', [{ ...m, join_code, updated_at: serverNow() }]);   // RPC: updated_at = now()
+      // 061 (KM-02): a publish that names the config stamp it was built on is refused when the server has moved on
+      if (existing && typeof m.updated_at === 'string' && m.updated_at !== existing.updated_at) return reply(400, { code: 'P0001', message: `STALE_CONFIG: the setup changed on the server at ${existing.updated_at}; this phone last applied ${m.updated_at}` });
+      delete m.updated_at;
+      const stamp = serverNow();
+      upsert('meets', [{ ...m, join_code, updated_at: stamp }]);   // RPC: updated_at = now()
       for (const t of ['divisions', 'events', 'athletes']) {
         upsert(t, body[`p_${t}`].map((r) => ({ ...r, meet_id: m.id })));   // RPC stamps children with the resolved id
         const keep = new Set(body[`p_${t}`].map((r) => r.id));
@@ -103,7 +107,7 @@ export function fakeServer() {
       }
       db.results = db.results.filter((r) => db.athletes.some((a) => a.meet_id === r.meet_id && a.id === r.athlete_id));
       upsert('results', body.p_results.map((r) => ({ ...r, meet_id: m.id })));
-      return reply(200, { id: m.id, join_code });
+      return reply(200, { id: m.id, join_code, updated_at: stamp });
     }
     const table = parts[2];
     if (!db[table]) return reply(404, { message: 'no table' });
@@ -120,6 +124,16 @@ export function fakeServer() {
       const hasGrant = (r) => db.grants.some((g) => g.token === grant && g.meet_id === r.meet_id && !g.revoked_at && db.meets.some((m) => m.id === r.meet_id && m.join_code === g.join_code));
       const ok = body.every((r) => hasGrant(r));
       if (!ok) return reply(401, { message: 'new row violates row-level security policy' });
+      // 061 (KM-03) zt_results_check_units: a score stamped with the other unit system is refused, never relabelled
+      if (table === 'results') {
+        for (const r of body) {
+          const stamp = r.payload?.units;
+          if (!stamp) continue;
+          const meet = db.meets.find((m) => m.id === r.meet_id);
+          const meetUnits = meet?.units === 'metric' ? 'metric' : 'imperial';
+          if (stamp !== meetUnits) return reply(400, { code: 'P0001', message: `UNITS_MISMATCH: result ${r.id} was scored in ${stamp} but meet ${r.meet_id} is ${meetUnits}` });
+        }
+      }
       upsert(table, body);
       return reply(201, undefined);
     }

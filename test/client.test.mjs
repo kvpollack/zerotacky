@@ -161,7 +161,7 @@ describe('meetApi.publishMeet', () => {
     const c = C.createSyncClient({ ...CFG, accessToken: 'JWT', fetchImpl: f });
     const state = seeded();
     const out = await A.publishMeet(c, state, { slug: 'strongfest', meetId: UUID, isDemo: false, deviceId: 'dev1', stations: [{ id: 'A', label: 'Only' }] });
-    assert.deepEqual(out, { id: UUID, joinCode: 'ABC123' });
+    assert.deepEqual(out, { id: UUID, joinCode: 'ABC123', updatedAt: null });   // 061: the RPC also returns updated_at
     assert.equal(calls.length, 1);
     assert.equal(calls[0].url, 'https://abc.supabase.co/rest/v1/rpc/zt_publish_meet');
     const b = calls[0].body;

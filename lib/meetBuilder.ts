@@ -11,6 +11,7 @@ import type {
   Meet,
   PitCrewCallout,
   Result,
+  MeetUnits,
   ScoringType,
   Station,
   WeightEntryMode,
@@ -18,7 +19,8 @@ import type {
 import { loadingTakesCollars, normalizeCollarWeight } from './engine/plates';
 import { DEFAULT_TIEBREAKER, normalizeTiebreakerRule } from './engine/tiebreak';
 import { normalizeImplementLabel, normalizeMaxTiebreak, normalizeScoringType } from './engine/eventKinds';
-import { ALL_POSSIBLE_PLATES } from './constants';
+import { DEFAULT_PLATES, normalizeUnits } from './units';
+import { validateEventSpec } from './events/spec';
 import { getInitialSeedState, MEET_PRESETS } from './presets';
 import { normalizeEventOrder } from './engine/eventOrder';
 import type { RosterPlan } from './roster/import';
@@ -66,7 +68,7 @@ export function createBlankMeet(name: string, date?: string): AppState {
       stations: DEFAULT_STATIONS.map((s) => ({ ...s })),
       runOrderMethod: 'reverse_overall',
       tiebreakerRule: DEFAULT_TIEBREAKER,
-      availablePlates: [...ALL_POSSIBLE_PLATES],
+      availablePlates: [...DEFAULT_PLATES.imperial],   // blank meet is imperial (units default); KM-08
       collarWeightPerPair: 0,
       adminPin: '1050',
     },
@@ -125,7 +127,7 @@ export function normalizeState(raw: unknown): AppState {
         .map((p) => Number(p))
         .filter((p) => !Number.isNaN(p) && p > 0)
         .sort((a, b) => b - a)
-    : [...ALL_POSSIBLE_PLATES];
+    : [...DEFAULT_PLATES[normalizeUnits(rawMeet.units === 'metric' ? 'metric' : 'imperial')]];   // KM-08: default inventory follows the unit
 
   const meet: Meet = {
     ...(presetId ? { presetId } : {}),
@@ -550,6 +552,50 @@ export function addEvent(
   };
 }
 
+/** D1 (Astra kg/m audit): what a unit flip must clear. Numbers are never converted; a plate-only reset would leave
+ *  every stored weight, course and rising-bar step reinterpreted in the new unit (a 225 lb log becomes a 225 kg one).
+ *  Returns the meet patch, one patch per event that holds unit-bearing numbers, and a human list of what goes. Callouts
+ *  and fixed-implement text are prose and are left for the promoter to re-read. Pure; the sheet applies it on confirm. */
+export interface UnitFlipPlan {
+  meetPatch: Partial<Meet>;
+  eventPatches: Array<{ id: string; patch: Partial<EventDef> }>;
+  cleared: string[];
+}
+export function planUnitFlip(meet: Meet, events: EventDef[], next: MeetUnits): UnitFlipPlan {
+  const meetPatch: Partial<Meet> = { units: next, availablePlates: [...DEFAULT_PLATES[next]] };
+  const cleared: string[] = [];
+  if (Number(meet.collarWeightPerPair) > 0) {
+    meetPatch.collarWeightPerPair = 0;
+    cleared.push('default collar weight');
+  }
+  const eventPatches: UnitFlipPlan['eventPatches'] = [];
+  for (const ev of events) {
+    const patch: Partial<EventDef> = {};
+    const gone: string[] = [];
+    if (Number(ev.implementEmptyWeight) > 0) { patch.implementEmptyWeight = 0; gone.push('empty implement weight'); }
+    if (Object.values(ev.divisionWeights ?? {}).some((w) => Number(w) > 0)) {
+      patch.divisionWeights = Object.fromEntries(Object.keys(ev.divisionWeights).map((k) => [k, 0]));
+      gone.push('division weights');
+    }
+    if (ev.divisionLightWeights && Object.values(ev.divisionLightWeights).some((w) => Number(w) > 0)) {
+      patch.divisionLightWeights = {};
+      gone.push('light weights');
+    }
+    if (ev.risingBarWeights && ev.risingBarWeights.length > 0) { patch.risingBarWeights = []; gone.push('rising bar steps'); }
+    if (typeof ev.collarWeightPerPair === 'number' && ev.collarWeightPerPair > 0) { patch.collarWeightPerPair = 0; gone.push('collar weight'); }
+    if (ev.spec && typeof ev.spec.courseFeet === 'number') {
+      const { courseFeet: _course, ...rest } = ev.spec;
+      patch.spec = Object.keys(rest).length ? rest : undefined;
+      gone.push('course length');
+    }
+    if (gone.length) {
+      eventPatches.push({ id: ev.id, patch });
+      cleared.push(`Event ${ev.eventNumber} ${ev.name}: ${gone.join(', ')}`);
+    }
+  }
+  return { meetPatch, eventPatches, cleared };
+}
+
 export function updateEvent(
   state: AppState,
   eventId: string,
@@ -894,10 +940,15 @@ export function validateMeet(state: AppState): { ok: boolean; problems: string[]
     }
   }
 
+  const units = normalizeUnits(state.meet.units);
   for (const ev of sortedEvents) {
     if (!(ev.timeCapSeconds > 0)) {
       problems.push(`Event ${ev.eventNumber} (${ev.name}) must have a time cap greater than 0s`);
     }
+    // KM-07: the spec range depends on the meet's unit (course 1..1610 m or 1..5280 ft); an imported or restored state
+    // with an out-of-range course is reported here instead of silently losing the course on the show page.
+    const specProblem = validateEventSpec(ev.spec, units);
+    if (specProblem) problems.push(`Event ${ev.eventNumber} (${ev.name}): ${specProblem}`);
 
     const isRisingBar = ev.scoringType === 'max_weight' && ev.maxFormat === 'rising_bar';
     if (isRisingBar) {
