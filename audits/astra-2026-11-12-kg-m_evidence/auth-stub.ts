@@ -1,0 +1,1 @@
+export const useAuth=()=> (window as any).auth;

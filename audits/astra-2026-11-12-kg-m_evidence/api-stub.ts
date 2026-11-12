@@ -1,0 +1,1 @@
+export const isLiveBackend=()=>false;export const getPromoterApi=()=>({getPublicMeetBySlug:async()=>({data:(window as any).publicMeet,error:null})});

@@ -1,0 +1,86 @@
+[
+  {
+    "payload": {
+      "maxWeightLbs": 290,
+      "importedPoints": 5.5,
+      "importedDisplay": "290 kg"
+    }
+  },
+  {
+    "payload": {
+      "maxWeightLbs": 310,
+      "importedPoints": 7,
+      "importedDisplay": "310 kg"
+    }
+  },
+  {
+    "payload": {
+      "maxWeightLbs": 290,
+      "importedPoints": 5.5,
+      "importedDisplay": "290 kg"
+    }
+  },
+  {
+    "payload": {
+      "maxWeightLbs": 270,
+      "importedPoints": 3,
+      "importedDisplay": "270 kg"
+    }
+  },
+  {
+    "payload": {
+      "maxWeightLbs": 210,
+      "importedPoints": 2,
+      "importedDisplay": "210 kg"
+    }
+  },
+  {
+    "payload": {
+      "maxWeightLbs": 190,
+      "importedPoints": 1,
+      "importedDisplay": "190 kg"
+    }
+  },
+  {
+    "payload": {
+      "maxWeightLbs": 280,
+      "importedPoints": 4,
+      "importedDisplay": "280 kg"
+    }
+  },
+  {
+    "payload": {
+      "maxWeightLbs": 190,
+      "importedPoints": 2,
+      "importedDisplay": "190 kg"
+    }
+  },
+  {
+    "payload": {
+      "maxWeightLbs": 185,
+      "importedPoints": 1,
+      "importedDisplay": "185 kg"
+    }
+  },
+  {
+    "payload": {
+      "maxWeightLbs": 290,
+      "importedPoints": 2,
+      "importedDisplay": "290 kg"
+    }
+  },
+  {
+    "payload": {
+      "maxWeightLbs": 300,
+      "importedPoints": 3,
+      "importedDisplay": "300 kg"
+    }
+  },
+  {
+    "payload": {
+      "maxWeightLbs": 250,
+      "importedPoints": 1,
+      "importedDisplay": "250 kg"
+    }
+  }
+]

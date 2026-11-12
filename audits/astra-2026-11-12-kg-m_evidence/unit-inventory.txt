@@ -1,0 +1,187 @@
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\events\spec.ts:42:// courseFeetMax is the imperial cap (a mile); a metric meet caps at COURSE_MAX.metric meters (059). The spec key stays
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\events\spec.ts:92:  const feet = typeof rawFeet === 'number' ? rawFeet : typeof rawFeet === 'string' && rawFeet.trim() !== '' ? Number(rawFeet) : NaN;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\events\spec.ts:94:  if (Number.isFinite(feet) && feet >= 1 && feet <= COURSE_MAX[units]) out.courseFeet = Math.round(feet * 2) / 2;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\events\spec.ts:123:    const feet = Number(rawFeet);
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\events\spec.ts:124:    if (!Number.isFinite(feet) || feet < 1 || feet > COURSE_MAX[units]) return `Course distance is in ${distanceUnitWord(units)}, between 1 and ${COURSE_MAX[units]}.`;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\events\spec.ts:125:    if (Math.abs(feet * 2 - Math.round(feet * 2)) > 1e-9) return `Course distance is in half-${units === 'metric' ? 'meter' : 'foot'} steps (50 or 50.5).`;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\events\spec.ts:150:/** 230 -> 104 (whole kilograms; the exact conversion is 104.33). */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\events\spec.ts:151:export function lbToKg(lb: number): number {
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\events\spec.ts:152:  return Math.round(lb * 0.45359237);
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\events\spec.ts:155:/** "104 kg" for a positive pound value, "<1 kg" under half a kilogram (a positive load never reads as zero mass,
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\events\spec.ts:157:export function kgLabel(lb: number | null | undefined): string {
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\events\spec.ts:158:  if (typeof lb !== 'number' || !Number.isFinite(lb) || lb <= 0) return '';
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\events\spec.ts:159:  const kg = lbToKg(lb);
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\events\spec.ts:160:  return kg === 0 ? '<1 kg' : `${kg} kg`;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\website\GroupPickerClient.tsx:28:  const [unit, setUnit] = useState<Unit>(units === 'metric' ? 'kg' : 'lb');
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\website\GroupPickerClient.tsx:36:  // Astra GP-09: PR seeds are pounds; they are shown in whatever unit the toggle holds when they arrive.
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\website\GroupPickerClient.tsx:48:  // Astra GP-08: switching lb / kg converts what is on screen so the athlete's numbers keep their meaning.
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\website\GroupPickerClient.tsx:92:                <SegmentedRadio ariaLabel="Unit" options={[['lb', 'lb'], ['kg', 'kg']]} value={unit} onChange={(v) => switchUnit(v as Unit)} uppercase />
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\website\GroupPickerClient.tsx:168:      <input id={id} type="text" inputMode="decimal" value={value} onChange={(e) => onChange(e.target.value)} placeholder={unit === 'lb' ? 'e.g. 225' : 'e.g. 100'}
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\website\WebsiteShell.tsx:187:              <div className="font-bold">lb / kg</div>
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\auth\profile.ts:8:  value: string;  // "315 lb", "140 kg x 3"
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\tv\TvBoard.tsx:27:  units: string;           // 'lb · ft' | 'kg · m' (059)
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\tv\TvBoard.tsx:103:    units: state.meet.units === 'metric' ? 'kg · m' : 'lb · ft',
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\engine\transitions.ts:30:  const lb = weightUnit(units);
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\engine\transitions.ts:52:      from: `${curW} ${lb}`,
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\engine\transitions.ts:53:      to: `${nextW} ${lb}`,
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\engine\transitions.ts:57:          : `${diff > 0 ? 'ADD' : 'REMOVE'} ${perPoint} ${lb} per ${pointLabel} (${Math.abs(diff)} ${lb} total)`,
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\engine\transitions.ts:68:  // when the callout had no numeric stats, so a vehicle swap with an unchanged 50 ft course read "No change".
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\engine\transitions.ts:117:      from: `${curW} ${lb}`,
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\engine\transitions.ts:118:      to: `${nextW} ${lb}`,
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\engine\transitions.ts:119:      delta: diff === 0 ? 'No change' : formatSigned(diff, lb),
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\engine\scoring.ts:17:// time-or-distance event with 0 ft is a zero, not a score). Without the event, the raw-field heuristic is the fallback.
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\engine\scoring.ts:97:  units: MeetUnits = 'imperial'   // 059: labels only ("ft" / "m", "lbs" / "kg"); the numbers are compared as stored
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:2:// parsing as the scale reads it, the lb mirror, the class check against a division cap, and the federation wording
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:5:export const KG_PER_LB = 0.45359237;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:6:export const LB_PER_KG = 2.2046226218;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:10:/** '92.4', '92,4', '92.45 kg' -> 92.45 (two decimals kept as typed, never rounded up to a class). Out of range or junk = null.
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:24:/** Pounds typed at a desk that only has an lb scale: converted to kg, two decimals, same range rule. */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:25:export function lbToKg(lb: number): number {
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:26:  return Math.round(lb * KG_PER_LB * 100) / 100;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:28:export function kgToLb(kg: number): number {
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:29:  return Math.round(kg * LB_PER_KG * 10) / 10;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:37:/** Strict: the cap is inclusive (a 90.00 kg reading makes a 90 kg class), anything above it is over, no rounding. */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:44:export function formatKg(kg: number | null | undefined): string {
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:45:  if (kg === null || kg === undefined) return '';
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:46:  return `${kg.toFixed(2).replace(/\.?0+$/, '')} kg`;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:60:        'Record kilograms as the scale reads them. No rounding.',
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:69:      lines: ['Record kilograms as the scale reads them. Confirm the weigh-in window and class caps with the federation rulebook.'],
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\desk\rules.ts:75:    lines: ['Record kilograms as the scale reads them. Set a cap on any division that has a weight limit and the desk flags anyone over it.'],
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\divisions\standardClasses.ts:3:// Sources checked 11/10/2026: Strongman Corporation Athlete Info Overview (kg-only from 1/1/2026, amateur/pro open
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\divisions\standardClasses.ts:5:// sub-junior/junior 53 / 43 kg classes are not offered). Caps are the heaviest bodyweight allowed; null = heavyweight.
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\divisions\standardClasses.ts:21:    label: 'Strongman Corporation (2026, kg)',
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\divisions\standardClasses.ts:22:    note: 'Open amateur and pro classes. 57 kg women and 120 kg men are amateur-only; masters tables differ.',
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\divisions\standardClasses.ts:28:    label: 'IPF powerlifting (kg)',
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\divisions\standardClasses.ts:29:    note: 'Open classes. Sub-junior and junior lifters also have 43 kg (women) and 53 kg (men).',
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\divisions\standardClasses.ts:42:  return cap === null ? `${who} Heavyweight (${heaviestCap}kg+)` : `${who} ${cap}kg`;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\divisions\standardClasses.ts:60: *  same name (case-insensitive), or (Astra GP-06) the same gender and the same kg cap after the promoter renamed it; a
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\engine\plates.ts:28:  const lbs = weightUnit(units, { plural: true });
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\engine\plates.ts:29:  const lb = weightUnit(units);
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\engine\plates.ts:109:    warningMessage = `Target weight (${rawTarget} ${lbs}) is lighter than empty implement (${event.implementEmptyWeight} ${lbs}).`;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\engine\plates.ts:113:        ? `Uneven 4-Post Load: ${remainderUnloadedTotal} ${lbs} left over. Put a ${remainderUnloadedTotal} ${lb} plate in the center crossbar or adjust target weight.`
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\engine\plates.ts:114:        : `Unloaded remainder: ${remainderUnloadedTotal} ${lbs} total (${remainingPerPoint} ${lbs} per point) cannot be made with selected plate inventory.`;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\roster\import.ts:27:  ['bodyweight', ['bodyweight', 'body weight', 'bw', 'weigh in', 'weighin', 'weigh-in', 'bwt', 'weight lb', 'weight lbs', 'weight kg', 'weight']],
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\roster\import.ts:114:/** "231", "231 lb", "105 kg", "105kg" -> pounds, 1 decimal. Header unit (kg) applies to bare numbers. */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\roster\import.ts:115:export function parseBodyweight(raw: string, headerUnit: 'lb' | 'kg' = 'lb'): number | null {
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\roster\import.ts:118:  const m = s.match(/^(\d+(?:[.,]\d+)?)\s*(lbs?|kgs?|kilos?|pounds?)?$/);
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\roster\import.ts:122:  const unit = m[2] ? (m[2].startsWith('k') ? 'kg' : 'lb') : headerUnit;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\roster\import.ts:123:  const lb = unit === 'kg' ? n * 2.2046226218 : n;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\roster\import.ts:124:  return Math.round(lb * 10) / 10;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\roster\import.ts:134:export function headerUnit(headerCell: string | undefined): 'lb' | 'kg' {
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\roster\import.ts:135:  return /\bkgs?\b|kilo/i.test(headerCell ?? '') ? 'kg' : 'lb';
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\meetBuilder.ts:839:      out.push(`Bodyweight cap for ${d.name || 'a division'} must be between ${WEIGHT_CAP_KG_MIN} and ${WEIGHT_CAP_KG_MAX} kg (it is ${cap}).`);
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\website\ShowDetailClient.tsx:54:  const units = normalizeUnits(show.state.meet.units);   // 059: lb/ft or kg/m labels throughout this page
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\website\ShowDetailClient.tsx:480:                          {w.kg && <div className="text-[12px] text-ink-muted mt-1">{w.kg}</div>}
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\types.ts:131:  details?: string; // e.g. '10" & 12" steel logs', '140–360 lb series'
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\promoter\contract.ts:209:  caps: Record<string, number>;          // divisionId -> weight cap in kg (only divisions that have one)
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\promoter\contract.ts:323:  // a kg weigh-in into the roster's bodyweight (lb), so callers reload the meet afterwards. setDivisionCap(null) clears.
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\theme.ts:89:  const la = luminance(a), lb = luminance(b);
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\theme.ts:90:  const [hi, lo] = la >= lb ? [la, lb] : [lb, la];
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\website\PrepSheetClient.tsx:3:// implement and rules, the weight for the chosen division (lb with kg), notes and video. "All divisions" widens to a
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\website\PrepSheetClient.tsx:109:                        {w.kg && <div className="text-[12px] text-ink-muted mt-1">{w.kg}</div>}
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\presets\york.ts:115:      fixedImplementDescription: '105kg Series: 240, 260, 285, 310, 330 lbs to 52" Yoke Crossbar',
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\website\AccountClient.tsx:441:                        <input aria-label={`PR ${i + 1} result`} value={pr.value} onChange={(e) => patchPR(i, { value: e.target.value })} className={`${INPUT} font-sheet`} maxLength={40} placeholder={i === 0 ? 'Result (275 lb)' : 'Result'} />
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\promoter\fixtureApi.ts:587:          const kg = Number(patch.weighedKg);
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\promoter\fixtureApi.ts:588:          if (!Number.isFinite(kg)) return { data: null, error: 'Bodyweight must be a number in kilograms (like 92.4).' };
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\promoter\fixtureApi.ts:590:          if (Math.abs(Math.round(kg * 100) / 100 - kg) > 1e-9) return { data: null, error: 'Bodyweight is read to two decimals at most (like 92.45).' };
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\promoter\fixtureApi.ts:591:          if (kg < 20 || kg > 300) return { data: null, error: `Bodyweight ${kg} kg is outside 20 to 300. Check the scale reading.` };
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\promoter\fixtureApi.ts:592:          row.weighedKg = kg; row.weighedAt = now;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\promoter\fixtureApi.ts:593:          nextBodyweight = Math.round(kg * 2.2046226218 * 10) / 10;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\promoter\fixtureApi.ts:626:        return { data: null, error: 'Weight cap must be between 20 and 300 kg (leave it blank for no cap).' };
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\showHistory.ts:65:  /** 059 session 2: the unit system the show was run in. Every number below is in it (kg / m on a metric show); the
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\showHistory.ts:66:   *  field names keep their historical lb / ft spelling. Readers that compare shows normalise with `toLb` / `toFt`. */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:4:// weight (lb) is compared to the lane number and graded. A division fits when every graded event sits inside the band,
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:8:// 059 session 2: the athlete's numbers are canonical pounds (Astra GP-09); a metric show's division weights are stored
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:9:// in kg, so `gradeEvent` converts them to pounds before the ratio and prints the cell in the show's unit.
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:19:export type Unit = 'lb' | 'kg';
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:22:  deadlift: number | null;   // lb
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:23:  overhead: number | null;   // lb, any bar or dumbbell
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:24:  carry: number | null;      // lb, heaviest pick-up-and-walk (total, both hands)
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:32:  weightLb: number | null;   // the division's main weight when numeric, in pounds whatever the show's unit
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:205:/** Form text to pounds. "315", "315 lb", "140 kg", "140kg x 3" (first number), unit from the text or the toggle. */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:211:  const isKg = /kg|kilo/i.test(text) || (unit === 'kg' && !/lb|pound/i.test(text));
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:215:const LB_PER_KG = 2.20462;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:218: *  the athlete's strength stays the same. Text with its own unit ("140 kg") is left alone: parseLiftInput reads it. */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:222:  if (!t || /kg|kilo|lb|pound/i.test(t) || !/^\d+(\.\d+)?$/.test(t)) return text;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:224:  return String(to === 'kg' ? Math.round(n / LB_PER_KG) : Math.round(n * LB_PER_KG));
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:227:/** A pounds value as the input should show it in the given unit (Astra GP-09: PR seeds are canonical pounds). */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:228:export function lbToDisplay(lb: number | null, unit: Unit): string {
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:229:  if (lb === null || !Number.isFinite(lb) || lb <= 0) return '';
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:230:  return String(unit === 'kg' ? Math.round(lb / LB_PER_KG) : Math.round(lb));
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:233:/** Seed the three inputs from profile PRs ("Log press" / "315 lb"): one per lane, first match wins. */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:239:      if (out[lane] === null) out[lane] = parseLiftInput(pr.value, 'lb');
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\groupPicker.ts:258:  const hasWeightClass = divisionLabels.some((n) => /\b(\d+\s*(kg|lb|lbs)|heavyweight|middleweight|lightweight|novice|open|masters)\b/i.test(n));
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\types.ts:19:// 054 (11/10): how the promoter organises divisions. 'weight_classes' = standard bodyweight classes in kg (the weigh-in
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\types.ts:23:// 059: the unit system a meet is run in. Every stored weight / distance number in the meet is in this unit (lb + ft, or
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\types.ts:24:// kg + m); the result keys maxWeightLbs / distanceFeet keep their historical names and hold the meet's unit.
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\types.ts:58:  weightCapKg?: number | null;   // 045/054: bodyweight cap for a standard weight class (20..300 kg); null/absent = none
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\types.ts:89:// server like the other extras (no migration). Weights stay in divisionWeights (lb); the website shows kg beside them.
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\types.ts:99:  courseFeet?: number;         // carry / pull / medley distance in feet
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\types.ts:156:  distanceFeet?: number;        // in the meet's distance unit (ft, or m on a metric meet, 059); the name is historical
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\types.ts:159:  maxWeightLbs?: number;        // in the meet's weight unit (lb, or kg on a metric meet, 059); the name is historical
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\archive.ts:19:  unit: string | null;        // reps | lb | kg | sec | ft ...
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\archive.ts:103:/** "3 reps" / "200 lb" / "28.40 s" from the parsed value and unit; falls back to the raw text. */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\archive.ts:110:  if (u === 'lb' || u === 'lbs' || u === 'kg' || u === 'ft' || u === 'm') return `${trimNum(v)} ${u === 'lbs' ? 'lb' : u}`;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\format.ts:36:export function eventWeightDisplay(ev: EventDef, divisionId: string, units: MeetUnits = 'imperial'): { main: string; setup?: string; kg?: string } {
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\format.ts:42:  let kg: string | undefined;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\format.ts:47:    // Event spec starter (11/4): kilograms beside the pound figure, light tier included. Not for callouts or heights.
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\format.ts:48:    // 059: on a metric meet the mirror is pounds beside the kilogram figure; the field keeps its `kg` name.
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\format.ts:49:    kg = mirrorWeightLabel(mainWeight, units) + (ev.hasTrumpWeight && typeof lightWeight === 'number' && lightWeight > 0 ? ` (light ${mirrorWeight(lightWeight, units)})` : '');
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\format.ts:53:  return { main, ...(setup ? { setup } : {}), ...(kg ? { kg } : {}) };
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\tv\model.ts:65:/** One line describing what the event asks of a division: "5 stones 250-350 lb · 60 s cap". */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prepSheet.ts:3:// download both read from here. Weights come from eventWeightDisplay (lb with kg beside) and the spec readers in
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prepSheet.ts:25:  main: string;   // "230 lbs", "230 lbs / hand", a height, a callout, or '' when the promoter left it out
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prepSheet.ts:26:  kg: string;     // mirror in the other unit: "104 kg" beside lb, "220 lb" beside kg (059), or ''
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prepSheet.ts:39:  risingBar: string;      // "200 → 240 → 280 lb" or ''
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prepSheet.ts:83:      return { divisionId: d.id, divisionName: d.name, main: w.main, kg: w.kg ?? '', setup: w.setup ?? '' };
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prepSheet.ts:104:/** One row per event. One division: a Weight / kg / Setup trio. Every division: a Weight column per division (lb with kg). */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prepSheet.ts:108:  if (sheet.division) head.push(`Weight (${sheet.division.name})`, u === 'metric' ? 'lb' : 'kg', 'Setup');
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prepSheet.ts:116:      row.push(w?.main ?? '', w?.kg ?? '', w?.setup ?? '');
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prepSheet.ts:118:      for (const w of r.weights) row.push([w.main, w.kg && `(${w.kg})`, w.setup].filter(Boolean).join(' '));
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\scorer\MeetSetupSheet.tsx:34:const SERVER_CONFIG_NOTE = 'This meet is published. Division format, kg caps and team size are set in the promoter dashboard (caps also at the weigh-in desk); the phone shows them but publishing from here does not change them.';
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\scorer\MeetSetupSheet.tsx:39:  { value: 'weight_classes', label: 'Standard weight classes (kg)', explain: 'Divisions are bodyweight classes. Set a cap in kg on each one in the Divisions step; the weigh-in desk checks athletes against it. The show page shows the class list as is.' },
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\scorer\MeetSetupSheet.tsx:89:  /** 056 (Astra GP-01 / GP-03): on a phone linked to a published meet, division format, kg caps and team size are shown
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\scorer\MeetSetupSheet.tsx:264:            ? <Note className="text-ink">Locked: this meet has results. Weights and marks stay in {units === 'metric' ? 'kilograms and meters' : 'pounds and feet'}.</Note>
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\scorer\MeetSetupSheet.tsx:400:      {weightClasses && <Note className="!mt-0">Standard weight classes: the cap is the heaviest bodyweight allowed, in kg (20 to 300). Leave it blank for an open or unlimited class.</Note>}
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\scorer\MeetSetupSheet.tsx:420:                    <C className="gap-1" title="Bodyweight cap, kg">
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\scorer\MeetSetupSheet.tsx:422:                      <span className={`${CAP} text-[10px]`}>kg</span>
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\scorer\MeetSetupSheet.tsx:462:          <Line cols="1fr"><Note className="!mt-0 px-2">{STANDARD_CLASS_SETS.find((s) => s.id === stdSet)?.note} {stdWanted.length > 0 && stdMissing.length === 0 ? 'Every class in this table is already on the meet.' : 'Edit names or caps after adding; your own kg caps work the same way.'}</Note></Line>
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\scorer\MeetSetupSheet.tsx:473:// 054: bodyweight cap in kg, edited as a draft so "1" on the way to "105" is not refused; committed on blur / Enter.
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\scorer\MeetSetupSheet.tsx:492:      aria-label={`Bodyweight cap in kg for ${divisionName}`}
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\scorer\PitCrewSheet.tsx:17:/** "50 ft", "265 lbs", "44\" bar": a number stays on the same line as its unit when the cell wraps (Astra DR3-07). */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\scorer\PitCrewSheet.tsx:19:  return String(s).replace(/(\d)\s+(?=(lbs?|lb|kg|ft|in|s|sec|m|cm|mm|"|'|x|reps?)\b)/gi, '$1\u00a0');
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\briefing.ts:31:  loads: string[];               // 'Novice Women: 180 lb (82 kg)'; on a metric meet '82 kg (181 lb)'
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\briefing.ts:56:    const lb = e.divisionWeights?.[d.id];
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\briefing.ts:57:    if (typeof lb !== 'number' || !Number.isFinite(lb) || lb <= 0) continue;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\briefing.ts:59:    const kg = mirrorWeightLabel(lb, units);
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\briefing.ts:60:    let s = `${d.name}: ${lb} ${u}${kg ? ` (${kg})` : ''}`;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prBoard.ts:11:// 059 session 2: a show's numbers are stored in its own unit. Ranking converts every load and distance to pounds and
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prBoard.ts:12:// feet first (`toLb` / `toFt`) so a 115 kg log beats a 250 lb one; the printed result keeps the show's unit and adds the
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prBoard.ts:28:  /** The result in that show's unit, e.g. "8 reps at 250 lb", "455 lb", "28.40 s at 600 lb (50 ft)", "115 kg (254 lb)". */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prBoard.ts:55:/** Sort tuple: bigger is better, compared lexicographically. Loads in pounds, distances in feet, whatever the show used. */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prBoard.ts:92:/** "250 lb" on an imperial show; "115 kg (254 lb)" on a metric one. */
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prBoard.ts:100:  const ft = distanceUnit(u);
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prBoard.ts:102:  const course = e.courseFeet ? ` (${e.courseFeet} ${ft})` : '';
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\website\prBoard.ts:109:      return e.finished ? `${formatSeconds(e.timeSeconds)}${load_}${course}` : `${e.distanceFeet} ${ft}${load_}${course ? ` of ${e.courseFeet}` : ''}`;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:4:// checked in, bodyweight in kg as the scale reads it (lb mirror shown), class check against the division's cap, waiver
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:42:  const [unit, setUnit] = useState<'kg' | 'lb'>('kg');
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:104:    let kg: number | null;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:105:    if (unit === 'lb') {
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:106:      const lb = Number(raw.replace(',', '.'));
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:107:      kg = Number.isFinite(lb) && lb > 0 ? parseKg(lbToKg(lb)) : null;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:109:      kg = parseKg(raw);
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:111:    if (kg === null) { setError(`"${raw}" is not a bodyweight between 20 and 300 kg (44 to 661 lb). Type it the way the scale shows it.`); return; }
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:112:    void run(`w-${a.id}`, () => onUpdateAthlete(a.id, { weighedKg: kg }), `${a.name}: ${formatKg(kg)} recorded.`).then((ok) => {
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:120:    const kg = raw.trim() ? parseKg(raw) : null;
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:121:    if (raw.trim() && kg === null) { setError(`"${raw}" is not a cap between 20 and 300 kg.`); return; }
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:122:    void run(`cap-${d.id}`, () => onSetCap(d.id, kg), kg === null ? `${d.name}: cap cleared.` : `${d.name}: cap ${formatKg(kg)}.`).then((ok) => {
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:140:            A kg weigh-in also fills the roster bodyweight. Reclass moves an athlete to another division (before any result).
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:157:        <div className="text-[11px] font-bold uppercase text-zt-muted">Division weight caps (kg, blank = no cap)</div>
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:168:                  aria-label={`${d.name} weight cap in kg`}
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:199:          <button type="button" onClick={() => setUnit('kg')} aria-pressed={unit === 'kg'} className={unit === 'kg' ? TOGGLE_ON : TOGGLE_OFF}>Scale in kg</button>
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:200:          <button type="button" onClick={() => setUnit('lb')} aria-pressed={unit === 'lb'} className={unit === 'lb' ? TOGGLE_ON : TOGGLE_OFF}>Scale in lb</button>
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:243:                const weightValue = weightDraft[a.id] ?? (row?.weighedKg !== null && row?.weighedKg !== undefined ? (unit === 'kg' ? String(row.weighedKg) : String(kgToLb(row.weighedKg))) : '');
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\promoter\CheckInDeskSection.tsx:291:                          {row?.weighedKg !== null && row?.weighedKg !== undefined ? (unit === 'kg' ? `${kgToLb(row.weighedKg)} lb` : formatKg(row.weighedKg)) : a.bodyweight ? `${a.bodyweight} lb listed` : ''}
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\theme\color.ts:51:  const la = luminance(a), lb = luminance(b);
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\lib\theme\color.ts:52:  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
+C:/Users/kpollack/.aki/tmp/astra-units-1112/source\components\setup\builder\EventForm.jsx:515:          Optional. Printed on the public show page under this event, with {units === 'metric' ? 'pounds' : 'kilograms'} beside every weight. Weights stay in the division table above.

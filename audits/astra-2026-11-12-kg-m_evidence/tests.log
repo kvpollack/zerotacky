@@ -1,0 +1,979 @@
+bun test v1.3.13 (bf2e2cec)
+
+test\adoptArchive.test.mjs:
+(pass) imported event: published points stand, equal points share a place, zero sits last with its mark
+(pass) imported event: a missing result reads as a dash and is never rescored from reps
+(pass) native event is untouched by the imported branch [15.00ms]
+(pass) suppliedFromImported groups published places by division and keeps tie flags
+(pass) adopt helpers: place, counts, state, headline, query
+
+test\age.test.mjs:
+(pass) parseDob > accepts real ISO dates only
+(pass) ageOn and the 13-year rule > birthday today counts, tomorrow does not
+(pass) ageOn and the 13-year rule > dobProblem messages
+(pass) ageOn and the 13-year rule > latestAllowedDob is exactly 13 years back; isMinor under 18
+
+test\archive.test.mjs:
+(pass) normalizeArchiveKey matches the SQL rule
+(pass) formatArchivePlace reads "3rd of 10" and handles fields of one
+(pass) formatArchiveResult by unit, raw fallback
+(pass) summarizeArchive counts podiums and wins only in real fields
+(pass) dedupeArchive sorts newest first and drops a repeated slug+division [16.00ms]
+(pass) nameSimilarity
+(pass) sanctionLabel
+(pass) ARCHIVE_CREDIT names both the source and the original scoring platform
+
+test\athletes.test.mjs:
+(pass) username rules (mirror of zt_set_username) > normalizeUsername lowercases, trims, drops a leading @
+(pass) username rules (mirror of zt_set_username) > usernameProblem: empty is fine (clears), length, charset, reserved
+(pass) username rules (mirror of zt_set_username) > profile row carries username and is_public; patch accepts is_public but never username
+(pass) username rules (mirror of zt_set_username) > athleteProfilePath encodes
+(pass) stateFromLocation > codes, names, trailing country, nothing
+(pass) stateFromLocation > Astra AD-M2: the state is read from the end, not the first name that appears
+(pass) stateFromLocation > Astra AD-RL1: space-separated formats with a one-word state name or a glued country
+(pass) stateFromLocation > Astra AD-RL2: query-string filters validate to a known state / role or ALL [16.00ms]
+(pass) Astra 10/21 LOW follow-ups > AD-L3: malformed percent-encoding never throws
+(pass) Astra 10/21 LOW follow-ups > AD-L4: explicit non-http schemes and credentials are dropped, bare hosts still get https
+(pass) Astra 10/21 LOW follow-ups > AD-L1: route words are reserved on the client too
+(pass) mapPublicProfileRow > badges, trainer detail, labels, avatar URL, sanitised prs/socials
+(pass) mapPublicProfileRow > blank display name falls back to @username; junk prs/socials/avatars dropped
+(pass) filter, sort, states > search by name or @username, state and role filters, ALL passthrough
+(pass) filter, sort, states > sortAthletes by display name then username; collectAthleteStates sorted unique
+(pass) filter, sort, states > cleanUsernameParam only passes the database shape
+(pass) data loaders > demo mode: empty directory, null profile, no error
+(pass) data loaders > live: reads zt_public_profiles only, sorted, by-username query is cleaned
+(pass) data loaders > live: client error is reported, not thrown
+
+test\auth.test.mjs:
+(pass) v2 auth: access token on the sync client > withAccessToken swaps the bearer; apikey stays anon; null drops back to anon
+(pass) v2 auth: access token on the sync client > publishMeet sends no p_key (024); the session token carries the identity
+(pass) v2 auth: profile helpers > profileLabel prefers display name, then email local part
+(pass) v2 auth: profile helpers > roleBadges lists the flags that are on, in a fixed order
+
+test\briefing.test.mjs:
+(pass) briefing cards (046, #12) > one card per station in the station's running order, then the floating crew [15.00ms]
+(pass) briefing cards (046, #12) > standards name the federation and flag a missing state rep and medic
+(pass) briefing cards (046, #12) > briefingHtml escapes names and never leaks the contact field
+(pass) briefing cards (046, #12) > duplicate station labels keep the judge on one card and name the id (MD-15)
+(pass) briefing cards (046, #12) > a meet with no stations gets a single card holding every division
+
+test\broadcast.test.mjs:
+(pass) bodyParagraphs > blank lines split, single newlines join, CRLF tolerated
+(pass) unsubscribe urls > page link and header link share the token; none without a token
+(pass) broadcastEmail > promoter words, first-name greeting, show link, unsubscribe in body and header
+(pass) broadcastEmail > test send is marked in the subject and greets without a name
+(pass) broadcastEmail > html escapes the promoter text
+(pass) reminderEmail > 7-day: one week subject, prep sheet for the division as the key, venue and contact facts
+(pass) reminderEmail > 1-day: tomorrow subject, show page as the key, prep sheet without a division when none is known
+(pass) reminderEmail > buildMail routes by kind
+(pass) reminderDue > 7 and 1 days out, nothing otherwise, bad input null
+(pass) audienceCount > accepted dedupes by email and skips blanks; all_active adds pending and waitlist only
+(pass) describeBroadcastResult > wording for test, nobody, counts, errors
+(pass) describeBroadcastResult > BC-02: unrecorded and still-queued outcomes are named, never folded into success
+(pass) broadcastRun helpers (043) > chunk idempotency key is deterministic over the same rows in the same order [16.00ms]
+(pass) broadcastRun helpers (043) > BC-09: addresses are scrubbed from error text
+(pass) sendBatchViaResend outcome classes (043 BC-07) > 2xx -> sent with ids; idempotency header forwarded
+(pass) sendBatchViaResend outcome classes (043 BC-07) > 429 and 5xx -> retry; 4xx -> rejected; network -> retry
+(pass) sendBatchViaResend outcome classes (043 BC-07) > empty batch is a no-op; more than 100 refused
+
+test\censusMatch.test.mjs:
+(pass) censusMatchAgrees > full agreement passes
+(pass) censusMatchAgrees > wrong town with mismatching components falls through
+(pass) censusMatchAgrees > original audit mock: wrong town, no addressComponents, same number
+(pass) censusMatchAgrees > no components but matchedAddress parses and agrees
+(pass) censusMatchAgrees > no components and matchedAddress lacks state/zip is not evidence
+(pass) censusMatchAgrees > partial components: state only, zip requested but absent, fails
+(pass) censusMatchAgrees > partial components: state + zip agree, city requested but absent, fails
+(pass) censusMatchAgrees > zip not requested: state + city suffice
+(pass) censusMatchAgrees > city not requested: state + zip suffice; zip+4 tolerated
+(pass) censusMatchAgrees > right town, wrong street number fails
+(pass) censusMatchAgrees > wrong state with otherwise agreeing components fails
+(pass) censusMatchAgrees > missing match, address or coordinates fails
+
+test\claimEmail.test.mjs:
+(pass) claim-approved email (027) > builds subject, text and html with the gym and account links; escapes html in names
+(pass) claim-approved email (027) > new-listing variant changes the subject and lead; empty name falls back to a plain greeting
+(pass) claim-approved email (027) > sendClaimApprovedEmail forwards the session token and surfaces the server error text
+
+test\claims.test.mjs:
+(pass) fixtureApi: result claims > claim -> pending; status shows it; duplicate pending refused; withdraw clears it
+(pass) fixtureApi: result claims > approve links the row (shows in listAthleteAccounts and claim status); a second approve is refused
+(pass) fixtureApi: result claims > reject leaves the row unlinked and the athlete may claim another row
+(pass) fixtureApi: result claims > a promoter link by username settles the matching pending claim
+(pass) fixtureApi: result claims > refusals: upcoming show, unknown athlete, long note, signed out [15.00ms]
+
+test\client.test.mjs:
+(pass) client: headers and URLs > select builds GET with apikey + Bearer anon, trims trailing slash
+(pass) client: headers and URLs > accessToken replaces anon key in Bearer only
+(pass) client: headers and URLs > withJoinCode adds x-zt-join without mutating the original client
+(pass) client: headers and URLs > upsert: POST with on_conflict and merge-duplicates Prefer, body is the rows
+(pass) client: headers and URLs > insert returns representation
+(pass) client: headers and URLs > update is PATCH with query; del is DELETE
+(pass) client: headers and URLs > rpc posts args to /rest/v1/rpc/<fn> and parses the scalar reply
+(pass) client: responses and errors > 204 and empty bodies resolve to undefined
+(pass) client: responses and errors > non-2xx with PostgREST JSON error -> SyncError with status and message
+(pass) client: responses and errors > non-2xx with non-JSON body -> SyncError with status text
+(pass) client: responses and errors > createSyncClient throws without any fetch
+(pass) readSyncEnv > null when either var is missing; trims trailing slash when present
+(pass) meetApi.publishMeet > one RPC call with every table and no p_key (024), remote uuid stamped on every row
+(pass) meetApi.publishMeet > bad key surfaces as SyncError 401/403 from the RPC
+(pass) meetApi.fetch* > fetchMeetBySlug returns a lossless state plus meta; null on miss
+(pass) meetApi.fetch* > fetchMeetByJoinCode goes through the RPC, upper-cases the code, returns join code + null on miss
+(pass) meetApi.pullChanges / push* > pullChanges: no since -> no server_at filter; latestIso = since when nothing new
+(pass) meetApi.pullChanges / push* > pullChanges: watermark is the server clock (gte), not the phones' updated_at
+(pass) meetApi.pullChanges / push* > pushResults/pushAthletes: no-op on empty, otherwise one upsert each
+(pass) meetApi.pullChanges / push* > setLiveState stamps updated_at and upserts on meet_id,station; getLiveState filters by meet
+
+test\controller.test.mjs:
+(pass) SyncController: publish + join > admin publishes, device joins by code and receives the same state; re-publish keeps the uuid and code [15.00ms]
+(pass) SyncController: publish + join > leave then publish the same slug updates the same remote meet (uuid and join code kept)
+(pass) SyncController: publish + join > signed-out publish -> refused before the network, no link; anon RPC -> 401; unknown join code -> null
+(pass) SyncController: scores flow between phones > judge scores -> queued -> tick pushes -> admin and board pick it up; no echo re-push
+(pass) SyncController: scores flow between phones > last writer wins both directions: older offline flush loses to a newer server row
+(pass) SyncController: scores flow between phones > queue coalesces rapid edits to one row and survives a reload
+(pass) SyncController: scores flow between phones > athlete edits (scratch, rack pin) sync; local order kept, newcomers appended
+(pass) SyncController: scores flow between phones > an empty athlete list from the server never wipes the local roster
+(pass) SyncController: scores flow between phones > local reset while linked rewinds the watermark and re-pulls server scores
+(pass) SyncController: scores flow between phones > live_state is queued per station with the newest row winning
+(pass) SyncController: scores flow between phones > switching to a different local meet drops the link and the queue [16.00ms]
+(pass) SyncController: scores flow between phones > wrong join code on a write surfaces as error, not offline
+(pass) SyncController: config republish reaches judge phones > pull caches meets.competition_status on the link; a status change rewrites it
+(pass) SyncController: config republish reaches judge phones > attach records meets.updated_at; a plain tick does not re-read config
+(pass) SyncController: config republish reaches judge phones > admin republishes a weight + new station -> judge tick applies divisions/events/meet, keeps local id and PIN
+(pass) SyncController: config republish reaches judge phones > admin phone never re-reads its own config, but tracks the stamp
+(pass) SyncController: resilience (verifier findings) > walk-on + score + rack pin flushes athletes before results (FK order), one tick
+(pass) SyncController: resilience (verifier findings) > a row the server rejects (4xx, not auth) is dropped, the rest flush, pull still runs
+(pass) SyncController: resilience (verifier findings) > bad join code (401) keeps the whole queue and still pulls
+(pass) SyncController: resilience (verifier findings) > tick requested while busy runs once more instead of being dropped [16.00ms]
+(pass) SyncController: resilience (verifier findings) > admin re-publish pulls first, so a walk-on added on the floor survives
+(pass) SyncController: resilience (verifier findings) > unlink during a tick never leaves status idle without a link
+(pass) SyncController: resilience (verifier findings) > athleteSig ignores key order
+(pass) controller helpers > mergeAthletes: unchanged returns same array; order kept; removed dropped
+(pass) controller helpers > getDeviceId is sticky; newMeetUuid is v4-shaped; readLink rejects junk
+(pass) controller helpers > isNetworkError: 5xx and thrown TypeError are network; 4xx is not
+(pass) SyncController sign-out (A4) > account publish tags the link auth=account; attach tags auth=join
+(pass) SyncController sign-out (A4) > publish with no token is refused before any network call
+(pass) SyncController sign-out (A4) > sign-out pauses an account link: queue kept, nothing sent, status paused; sign-in resumes
+(pass) SyncController sign-out (A4) > legacy key links and join links are accountless by design: sign-out does not pause them
+(pass) SyncController sign-out (A4) > a publish in flight when the account signs out does not create the link (session generation)
+(pass) SyncController sign-out (A4) > a flush in flight across a sign-out leaves the queue alone and sends nothing more
+(pass) SyncController sign-out (A4) > legacy stored links without auth are treated as key (admin) or join (device)
+(pass) SyncController account binding + publish errors (gate round) > account publish records the user id on the link
+(pass) SyncController account binding + publish errors (gate round) > a different signed-in account does not resume the queue: still paused, nothing sent, clear message
+(pass) SyncController account binding + publish errors (gate round) > a link written before user ids existed (no userId) resumes for any token, as before
+(pass) SyncController account binding + publish errors (gate round) > 024: publish sends no p_key; a legacy key link re-published from a signed-in phone becomes an account link
+(pass) SyncController account binding + publish errors (gate round) > a refused publish stays visible in status.publishError across successful ticks; the next good publish clears it [265.00ms]
+(pass) SyncController account binding + publish errors (gate round) > checkAdminPin asks the server with the join code; null when not linked (R1: the hook then uses local state)
+(pass) SyncController account binding + publish errors (gate round) > publish aborts when the pre-publish flush/pull fails; nothing reaches the server, publishError says why
+(pass) SyncController account binding + publish errors (gate round) > R5: a locally removed athlete is not resurrected by a pull; the republish deletes it on the server
+(pass) SyncController account binding + publish errors (gate round) > R5: removing a scored athlete is refused by the server; publishError says so and the next pull restores the athlete [16.00ms]
+(pass) SyncController account binding + publish errors (gate round) > G2-H2: a walk-on fetched by the pre-publish pull is in the publish payload even before the host commits it [16.00ms]
+(pass) SyncController account binding + publish errors (gate round) > R1: the admin phone publishes without a PIN and the server keeps its own (null admin_pin never overwrites)
+(pass) publish guards run before any network work (LT-08) > signed-out publish on a legacy key link: no flush, no pull, no RPC
+(pass) publish guards run before any network work (LT-08) > a different account is refused before any network work too
+
+test\dataFallbacks.test.mjs:
+(pass) website data fallbacks > cleanSlug decodes once and survives a bare percent sign
+(pass) website data fallbacks > a malformed slug reaches the lookups without throwing
+(pass) website data fallbacks > no backend + demos off: the list is empty and a fixture slug is not found
+(pass) website data fallbacks > scoreboard meta: a real meet that owns a fixture slug wins; the fixture only answers when no meet has it
+
+test\desk.test.mjs:
+(pass) desk rules > parseKg keeps the scale reading, two decimals, in range
+(pass) desk rules > lb and kg conversions
+(pass) desk rules > classCheck is inclusive at the cap and never rounds
+(pass) desk rules > federation preset picks SC, USS or generic
+(pass) desk mapping (supabase rows) > rpc shape -> DeskState and patch -> json keys
+(pass) desk fixture api > check in, weigh, reclass, cap, and the result guard
+(pass) desk fixture api > signed out is refused
+
+test\engine.test.mjs:
+(pass) scoreSingleEvent: reps > N-down-to-1 points, ordered by reps desc
+(pass) scoreSingleEvent: reps > zero reps, DNS and missing result all score 0 points at place N
+(pass) scoreSingleEvent: reps > tie split pools and divides points, flags isTied
+(pass) scoreSingleEvent: reps > three-way tie rounds to 2 decimals
+(pass) scoreSingleEvent: reps > trump weight: 1 heavy rep beats any number of light reps
+(pass) scoreSingleEvent: reps > missing tier defaults to heavy
+(pass) scoreSingleEvent: scratched athletes and the points field (10/26) > scratched with no score leaves the field: 3 active athletes score 3-2-1, scratch sits last with 0
+(pass) scoreSingleEvent: scratched athletes and the points field (10/26) > withdrawn mid-meet after scoring keeps the field size for every event
+(pass) scoreSingleEvent: scratched athletes and the points field (10/26) > a stray empty row (card opened, nothing entered) does not keep a scratch in the field
+(pass) scoreSingleEvent: scratched athletes and the points field (10/26) > PS-02: over-cap time with 0 ft on a withdrawn athlete is a zero, so they leave the field
+(pass) scoreSingleEvent: scratched athletes and the points field (10/26) > PS-02: a scratch whose only result is in another event is judged by that event
+(pass) scoreSingleEvent: scratched athletes and the points field (10/26) > all-active roster is unchanged
+(pass) scoreSingleEvent: time_or_distance > any finish beats any DNF; faster time wins; DNF by distance
+(pass) scoreSingleEvent: time_or_distance > time over cap is treated as DNF and ranked by distance
+(pass) scoreSingleEvent: time_or_distance > no time and no distance = zero
+(pass) scoreSingleEvent: time_or_distance > exact time ties split points
+(pass) scoreSingleEvent: time_or_implements > finished beats partial; partial by count then faster split
+(pass) scoreSingleEvent: time_or_implements > partial with no split shows count only and sorts after same count with split
+(pass) scoreSingleEvent: max_weight > rising bar uses heaviest good; pass/fail ignored; override wins
+(pass) calculateDivisionStandings > sums points across scored events, skips events with no results, counts wins
+(pass) calculateDivisionStandings > event_wins tiebreaker then finalEventPoints; final_event tiebreaker reverses priority
+(pass) calculateDivisionStandings > a first place with zero score is not an event win
+(pass) calculateDivisionStandings: scratches (Astra PS-03) > no-score scratch sits below the field at N+1 with 0, never tied with an active zero
+(pass) calculateDivisionStandings: scratches (Astra PS-03) > mid-meet withdrawal keeps earned points and ranks inside the field
+(pass) calculateDivisionStandings: scratches (Astra PS-03) > two no-score scratches both at N+1, alphabetical, active athletes unaffected
+(pass) generateEventRunOrder > event 1 by lot number, withdrawn excluded
+(pass) generateEventRunOrder > later event: reverse overall points, lot number breaks ties
+(pass) generateEventRunOrder > later event: reverse previous event place carries previousEventDisplay
+(pass) generateEventRunOrder > event with no prior results falls back to lot order even when later in number
+(pass) generateEventRunOrder > 2-lane events pair consecutive athletes into heats
+(pass) generateEventRunOrder > odd roster leaves lane 1 solo in final heat
+(pass) generateEventRunOrder > height callout: personal pin > division default > Not Set > undefined when disabled
+(pass) calculatePlateLoading > 0 points: fixed implement, no plates
+(pass) calculatePlateLoading > 1 point: loading pin, tare deducted, no collars
+(pass) calculatePlateLoading > 2 points: barbell with collars, greedy stack per sleeve
+(pass) calculatePlateLoading > event collar weight overrides the meet default; 0 on the event means no collars even when the meet says 5
+(pass) calculatePlateLoading > PS-01/PS-09: loadingTakesCollars and normalizeCollarWeight
+(pass) calculatePlateLoading > 4 points per_hand: farmers, target is per hand, total doubles
+(pass) calculatePlateLoading > 4 points total: yoke, uneven remainder warns about center plate
+(pass) calculatePlateLoading > limited inventory leaves unloadable remainder with warning
+(pass) calculatePlateLoading > target lighter than tare warns and loads nothing
+(pass) calculatePlateLoading > override and light tier select the target
+(pass) buildTransitionDeltas > parseMeasure / formatSigned
+(pass) buildTransitionDeltas > event changeover row
+(pass) buildTransitionDeltas > same event, weight delta per side
+(pass) buildTransitionDeltas > numeric stat deltas from pitCrewCallout
+(pass) buildTransitionDeltas > headline-only callouts produce swap/no-change row
+(pass) run order and standings on ties (R-M5) > tied in the previous event: lower overall points lifts first, then lot number
+(pass) run order and standings on ties (R-M5) > athletes level after both tiebreak criteria share the place and the next place is skipped
+(pass) buildTransitionDeltas headline with numeric stats (DR3-06) > vehicle swap shows even when the course length is unchanged
+(pass) buildTransitionDeltas headline with numeric stats (DR3-06) > same vehicle: only the stat row, no duplicate headline row
+
+test\eventOrder.test.mjs:
+(pass) normalizeEventOrder > meet order or empty input collapses to undefined
+(pass) normalizeEventOrder > unknown ids dropped, duplicates dropped, missing appended in meet order
+(pass) stationEvents and lookups > station without override follows eventNumber; override reorders
+(pass) stationEvents and lookups > stationForDivision / stationById / eventsForDivision
+(pass) stationEvents and lookups > next and prior events follow the station order
+(pass) stationEvents and lookups > stationPosition and hasCustomEventOrder
+(pass) stationEvents and lookups > moveEventInOrder swaps neighbours, clamps at the ends, collapses back to meet order
+(pass) generateEventRunOrder with stations and lot_order > lot_order ignores results and always goes by lot number
+(pass) generateEventRunOrder with stations and lot_order > on station B, Ev 1 (basket) runs after keg, so keg results drive reverse_overall
+(pass) generateEventRunOrder with stations and lot_order > on station B, Ev 2 (keg) is first: lot order even with basket results present
+(pass) generateEventRunOrder with stations and lot_order > without stations the old eventNumber behaviour holds
+(pass) meetBuilder keeps station event orders valid > updateStation sets, normalises and clears eventOrder
+(pass) meetBuilder keeps station event orders valid > removeEvent drops the id; reorderEvents collapses an order that now matches; addEvent appends [15.00ms]
+(pass) meetBuilder keeps station event orders valid > normalizeState keeps a valid order, cleans a stale one, and accepts lot_order
+(pass) mapping carries eventOrder > meetToRow -> rowToMeet keeps per-station order and drops junk
+
+test\eventSpec.test.mjs:
+(pass) event spec starter (11/4) > normalize keeps only filled fields and returns undefined for an empty form
+(pass) event spec starter (11/4) > validate refuses the cases the form must explain
+(pass) event spec starter (11/4) > kilograms are whole and shown beside pounds, light tier included, never for callouts or heights
+(pass) event spec starter (11/4) > segments read as one line; "other" uses the note; video is left to the caller
+(pass) event spec starter (11/4) > every implement maps to known gym-directory equipment ids (for the later train-for-this-show filter)
+(pass) event spec starter (11/4) > spec rides in events.config and round-trips through the sync mappers
+(pass) Astra 11/5 fixes (BR-05 safe video URL, BR-08 course step and small weights) > safeVideoUrl keeps http(s) only
+(pass) Astra 11/5 fixes (BR-05 safe video URL, BR-08 course step and small weights) > course distance: 1 ft minimum, half-foot steps, normalize keeps what validate accepts
+(pass) Astra 11/5 fixes (BR-05 safe video URL, BR-08 course step and small weights) > kgLabel: 1 lb reads "<1 kg", never "0 kg"
+(pass) Astra recheck 11/5: malformed specs never crash a render > null and non-string rule members are dropped by normalize and refused by validate
+(pass) Astra recheck 11/5: malformed specs never crash a render > object-valued text fields are refused by validate and ignored by normalize
+(pass) Astra recheck 11/5: malformed specs never crash a render > specSegments, specNotes and specHasContent survive junk
+
+test\export.test.mjs:
+(pass) export/import > JSON export round-trips through parseImportedState
+(pass) export/import > bare localStorage state is accepted too
+(pass) export/import > rejects garbage and dangling references with readable errors
+(pass) export/import > CSV: header per event, one row per athlete, scores only for scored events, quoting
+(pass) export/import > standings text lists divisions in order with places and points
+(pass) export/import > neutralizeFormula: formula prefixes get an apostrophe, plain numbers and words do not (BLD-05)
+(pass) export/import > withCsvBom prepends the UTF-8 BOM once (BLD-04) [16.00ms]
+(pass) export/import > backup filename is slug + timestamp
+
+test\exportFederation.test.mjs:
+(pass) federation results pack > CSV: title block, then places first, scratched noted, link carried
+(pass) federation results pack > CSV: a withdrawn athlete is marked Scratched
+(pass) federation results pack > filename is slug + date
+(pass) federation results pack > email draft: SC address, subject with date, link in body, standings inline when short
+(pass) federation results pack > email draft: a big meet drops the inline standings and points at the CSV
+(pass) federation results pack > email draft: the CSV fallback obeys the limit too, dropping contact, federation, then venue (BLD-06)
+(pass) federation results pack > CSV: names that look like formulas are kept as text (BLD-05)
+(pass) federation results pack > venueLine tolerates a missing venue
+
+test\externalShows.test.mjs:
+(pass) externalHost > strips protocol and www
+(pass) externalHost > falls back to the raw string for a non-URL
+(pass) isoToday (US show day, BLD-09) > a show still running at 19:01 ET on 11/3 is still on 11/3 [31.00ms]
+(pass) isoToday (US show day, BLD-09) > rolls over at midnight Pacific, not UTC
+(pass) isoToday (US show day, BLD-09) > summer time too (PDT)
+(pass) externalRowToSummary > maps to an upcoming PublicShowSummary that links out
+(pass) externalRowToSummary > omits facilityName and federation when null; empty note gives no division labels
+(pass) sheetFormat external branch > status reads "Registers elsewhere" and is never live
+(pass) sheetFormat external branch > row link goes to the registration page, flagged external
+(pass) sheetFormat external branch > ordinary rows are untouched
+
+test\extras.test.mjs:
+(pass) livestream link (046, #17) > https only, blank clears, bare domain gets https
+(pass) sponsors (046, #14) > cleanSponsors drops blank rows, trims, refuses a link without a name and more than six [16.00ms]
+(pass) sponsors (046, #14) > parseSponsors is lenient on row data and keeps a valid logo path
+(pass) sponsors (046, #14) > sponsorLogoUrl builds the public bucket URL and is empty without a path or base
+(pass) staff (046, #12) > cleanStaff needs a name and a known role; a row with only a role is dropped
+(pass) staff (046, #12) > parseStaff drops rows with unknown roles and clips long fields
+(pass) staff (046, #12) > staffByStation groups by station id, matches old label rows loosely, floating last (MD-15)
+(pass) listing plumbing (046) > rowToMeetListing / listingPatchToColumns carry the three fields; emptyListing has them null
+(pass) listing plumbing (046) > validateListingPatch names the problem row
+
+test\format.test.mjs:
+(pass) website format helpers (MS-14) > formatLocalDateTime renders a readable local stamp and tolerates junk
+(pass) website format helpers (MS-14) > directionsUrl searches the address on file and refuses to invent one
+(pass) directions: placeholders and demo venues (LT-05/06) > display placeholders are not an address
+(pass) directions: placeholders and demo venues (LT-05/06) > normalizeVenue(null) composes to no link
+(pass) directions: placeholders and demo venues (LT-05/06) > demo fixtures get no Directions
+(pass) eventWeightDisplay (show page matrix) > weight with unit mode and light tier
+(pass) eventWeightDisplay (show page matrix) > callout wins; height-only setup; fixed implement; nothing
+(pass) host gym helpers (026) > gymSearchPattern escapes ilike wildcards and PostgREST separators
+(pass) host gym helpers (026) > listing contract round-trips hostGymId and refuses a non-uuid
+(pass) host gym helpers (026) > 030: listing contract round-trips theme and refuses a bad hex without blocking a null
+
+test\grants.test.mjs:
+(pass) judge grants (011) > a joined phone without the PIN cannot write a score: 401, row kept, no grant on the link
+(pass) judge grants (011) > a wrong PIN issues nothing; the right PIN stores a grant that rides on every write and the score lands
+(pass) judge grants (011) > rotating the join code kills every grant: the next write is refused until the PIN is proved again [16.00ms]
+(pass) judge grants (011) > leaving the meet revokes the grant on the server [15.00ms]
+(pass) judge grants (011) > the publishing phone mints its own grant from the PIN it set, so a key-published admin can still score
+(pass) judge grants (011) > pit crew edits to athletes still work on the join code alone (no PIN for that role)
+(pass) 025: athlete writes need a grant; rack pins by join code > a joined phone without a grant sends rack pins through the RPC and the server merges only rack_heights
+(pass) 025: athlete writes need a grant; rack pins by join code > a grant holder still upserts athlete rows (walk-ons, scratches)
+(pass) 025: athlete writes need a grant; rack pins by join code > a stale or wrong join code gets 401 from the RPC and the row stays queued
+(pass) public meet column grant (fake vs real selects) > the fake allowlist equals the staging grant read on 2026-11-12
+(pass) public meet column grant (fake vs real selects) > PUBLIC_SHOW_MEET_COLS and the scorer MEET_COLS are inside the grant
+
+test\groupPicker.test.mjs:
+(pass) group picker (gaps #13) > eventLane: name first, then implement, bars by scoring type
+(pass) group picker (gaps #13) > Riverside demo: deadlift 315 / press 135 / carry 200 lands in Group 4, Group 5 reads heavy, truck pull is not compared
+(pass) group picker (gaps #13) > a stretch: one event just over the band is still offered, lightest stretch first
+(pass) group picker (gaps #13) > no numbers, or no published weights: no recommendation, a plain note
+(pass) group picker (gaps #13) > per-hand carry weights are doubled; added-plates weights include the empty implement
+(pass) group picker (gaps #13) > parseLiftInput and numbersFromPRs
+(pass) divisionGenderTag > reads gendered names, leaves strength groups and open-gender classes alone
+(pass) divisionGenderTag > showsGroupPicker: the promoter's division format decides; unset falls back to the name-based style
+(pass) divisionGenderTag > 054 mapping: division_format and weight_cap_kg round-trip; absent stays absent
+(pass) divisionGenderTag > 054 normalizeState keeps divisionFormat and weightCapKg (the dashboard save goes through it)
+(pass) group picker: Astra GP fixes (11/10) > GP-07 / GP-09: holds, throws, tosses, pushes and bench presses are not compared; a push press is overhead
+(pass) group picker: Astra GP fixes (11/10) > GP-11: added plates and per-hand together double the loaded handle
+(pass) group picker: Astra GP fixes (11/10) > GP-08: the unit switch converts what is on screen; explicit units and blanks are left alone
+(pass) group picker: Astra GP fixes (11/10) > GP-10: a weight above the band but under the number is described as above the band, not over the number
+(pass) group picker: Astra GP fixes (11/10) > GP-13: a timed carry is compared by its published implement weight (the explanation says so)
+(pass) group picker: Astra GP fixes (11/10) > GP-02: the registration projection carries the show gate
+(pass) group picker: Astra GP fixes (11/10) > GP-04: out-of-range caps are named before the database sees them
+
+test\gymsData.test.mjs:
+(pass) gyms table -> listing > maps ids to labels, street stays street-only, zip separate
+(pass) gyms table -> listing > every collector id has a label
+(pass) gyms table -> listing > blanks stay blank, no coordinates when null, claimed flag
+(pass) gyms table -> listing > display order: claimed, then most equipment, then confidence, then name
+(pass) listPublicGyms source selection > demo mode returns the fixtures
+(pass) listPublicGyms source selection > with a client, rows come from the gyms table and no fixtures are mixed in
+(pass) listPublicGyms source selection > a failing client reports the error instead of falling back to fixtures
+
+test\howItWorks.test.mjs:
+(pass) how-it-works copy > three tracks, each with 5-6 numbered steps, and a FAQ
+(pass) how-it-works copy > every link points at a route that exists
+(pass) how-it-works copy > copy carries no em-dashes and no real-meet names
+(pass) first-show guide > ten steps, each with a kicker, body, public-side note and at least one image
+(pass) first-show guide > every screenshot exists under public/guide
+(pass) first-show guide > every screenshot has its intrinsic size recorded, matching the PNG header [16.00ms]
+(pass) first-show guide > every link points at a route that exists
+(pass) first-show guide > copy carries no em-dashes and no real-meet names
+(pass) registration requires an account > FAQ says yes and points at the form
+(pass) registration requires an account > 021 takes execute away from anon on zt_submit_registration
+
+test\introSessions.test.mjs:
+(pass) row -> listing > absent or not_provided leaves the listing without the tag; yes carries note and link
+(pass) row -> listing > the public column list carries the three columns
+(pass) directory filter > introOnly keeps yes and on_request, drops no and unknown; off keeps all
+(pass) owner patch > yes keeps a trimmed note and a schemed link; no clears both; unknown value reads not_provided
+(pass) owner patch > patchFromRow reads the columns and defaults a legacy row
+
+test\invites.test.mjs:
+(pass) invite paths and urls encode the token and keep the origin
+(pass) daysLeft floors at zero and rounds up partial days
+(pass) previewHeadline covers every status
+
+test\ironpodium_replay.test.mjs:
+(pass) Iron Podium replay: Idaho Strongman Championships 2025 (event 18445), Novice Men, 6 athletes > event points match Iron Podium: zeros score 0, a shared 1st pays (6+5)/2, a shared 5th pays (2+1)/2
+(pass) Iron Podium replay: Idaho Strongman Championships 2025 (event 18445), Novice Men, 6 athletes > totals match Iron Podium
+(pass) Iron Podium replay: Idaho Strongman Championships 2025 (event 18445), Novice Men, 6 athletes > overall places match Iron Podium: the 9-point tie goes to the athlete with a 3rd place (lookback), not to the better final event
+(pass) Iron Podium replay: Idaho Strongman Championships 2025 (event 18445), Novice Men, 6 athletes > the old event_wins rule would place this pair the other way round: that is why lookback is the default
+(pass) Iron Podium replay: overall ties that stay shared > Red River Masters W 165: level through 3rds shares 2nd even though the final event differs
+(pass) Iron Podium replay: overall ties that stay shared > QRF Open M SHW: three event wins beat a better final event
+(pass) tiebreak rules: bodyweight, normalisation, labels > bodyweight: lighter athlete wins the tie; missing bodyweight shares
+(pass) tiebreak rules: bodyweight, normalisation, labels > lookback on a 1st/2nd swap is level and shares; lot order only decides row order
+(pass) tiebreak rules: bodyweight, normalisation, labels > normaliseTiebreakerRule keeps every rule and defaults the rest to lookback
+(pass) tiebreak rules: bodyweight, normalisation, labels > describeTiebreaker has a short label for every rule and falls back to lookback
+(pass) tiebreak rules: bodyweight, normalisation, labels > scoreSingleEvent: zero-score athletes never earn a place count
+(pass) time_or_implements: a missing split is scored at the cap (Iron Podium "n+0:60") > same count, one split recorded at the cap and one not recorded: shared place
+
+test\join_code_privacy.test.mjs:
+(pass) zt_meet_by_join_code privacy canary (MD-01) > the migrations define the columns this test expects to reason about
+(pass) zt_meet_by_join_code privacy canary (MD-01) > every private meets column is nulled before the row leaves the RPC
+(pass) zt_meet_by_join_code privacy canary (MD-01) > the client fake mirrors the server: join-code rows carry no admin_pin or staff
+
+test\landing.test.mjs:
+(pass) root splash: readResume > empty phone -> nothing to resume
+(pass) root splash: readResume > scorer opened once, default demo state, no athletes -> nothing
+(pass) root splash: readResume > demo roster without a link -> nothing (demo data is not the promoter's work)
+(pass) root splash: readResume > joined judge phone -> Resume with meet name and role
+(pass) root splash: readResume > published admin phone (no role key) -> Promoter
+(pass) root splash: readResume > offline promoter building a real meet (athletes, no link) -> Offline meet
+(pass) root splash: readResume > corrupt storage -> null, never throws
+(pass) root splash: readResume > link without a meet name -> Untitled meet
+(pass) root splash: readResume > linked meet cached as completed -> nothing (Resume is for meet day)
+(pass) root splash: readResume > linked meet cached as in_progress / scheduled / absent -> still Resume
+(pass) root splash: readResume > meetIsOver: completed/cancelled only
+(pass) root splash: refreshResumeStatus (live check for a meet finalized from the website) > no link -> false, no network
+(pass) root splash: refreshResumeStatus (live check for a meet finalized from the website) > server says completed -> true, status cached on the link so readResume is null next visit
+(pass) root splash: refreshResumeStatus (live check for a meet finalized from the website) > server says in_progress -> false, status cached, card stays
+(pass) root splash: refreshResumeStatus (live check for a meet finalized from the website) > meet not visible (empty rows) or network error -> false, link untouched
+(pass) root splash: refreshResumeStatus (live check for a meet finalized from the website) > a meet reopened on the server clears a stale completed cache [16.00ms]
+
+test\layout.test.mjs:
+(pass) layout mode resolution > viewport decides when nothing else is set
+(pass) layout mode resolution > saved toggle beats the viewport
+(pass) layout mode resolution > ?layout= in the URL beats everything
+(pass) layout mode resolution > junk values fall through
+(pass) layout mode resolution > otherLayout flips
+
+test\legal.test.mjs:
+(pass) legal markdown parser > headings, paragraphs, lists, quotes, tables, rules and inline marks
+(pass) legal markdown parser > two trailing spaces are a hard break; a plain newline is a space
+(pass) legal markdown parser > placeholders and emails survive as plain text
+(pass) legal markdown parser > each legal document parses to one H1 and the sections the product relies on
+
+test\meetBuilder.test.mjs:
+(pass) slugify & createBlankMeet > slugify produces url-safe lowercase slugs and falls back to meet
+(pass) slugify & createBlankMeet > createBlankMeet initializes two stations, empty arrays, isDemo false, adminPin 1050, and all plates
+(pass) normalizeState > hydrates a groups-seed JSON with isDemo/stations deleted and sets defaults
+(pass) normalizeState > upgrades legacy "Stn n" station labels to "Station n"; custom labels untouched
+(pass) normalizeState > hydrates a legacy custom save without presetId as isDemo false and fills implementCount on stone events
+(pass) normalizeState > never throws on null or garbage input and falls back to normalized seed state
+(pass) stations CRUD > addStation, updateStation, and removeStation (enforcing min 1 station)
+(pass) stations CRUD > R-M4: a new station never takes the id a removed station left on a division
+(pass) divisions CRUD & reorder > addDivision and updateDivision are immutable and assign sortOrder
+(pass) divisions CRUD & reorder > reorderDivisions re-sorts and renumbers sortOrder 1..n
+(pass) divisions CRUD & reorder > removeDivision removes its athletes, their results, and division keys in every event map
+(pass) events CRUD & reorder > addEvent and updateEvent preserve preset pitCrewCallout stats while updating headline
+(pass) events CRUD & reorder > addEvent prefills collarWeightPerPair from the meet default; updateEvent keeps an explicit 0 (10/26)
+(pass) events CRUD & reorder > reorderEvents renumbers eventNumber 1..n
+(pass) events CRUD & reorder > removeEvent removes its results, cleans athletes rackHeights[eventId], and renumbers
+(pass) athletes CRUD, moveAthlete & shuffleLots > addAthlete assigns incrementing lotNumbers per division and bulkAddAthletes adds multiple lines
+(pass) athletes CRUD, moveAthlete & shuffleLots > updateAthlete, moveAthlete (assigns next lot in target division), and removeAthlete (removes results)
+(pass) athletes CRUD, moveAthlete & shuffleLots > shuffleLots is deterministic with injected rng and only shuffles target division
+(pass) validateMeet (all problem types) > both demo presets validate as ok: true with zero problems
+(pass) validateMeet (all problem types) > flags empty meet (no divisions, no events, no athletes)
+(pass) validateMeet (all problem types) > flags division with no athletes ("Group 3 has no athletes")
+(pass) validateMeet (all problem types) > flags missing division weight on event ("Ev 2 has no weight for Group 1")
+(pass) validateMeet (all problem types) > updateEvent lets a patch clear a division callout but keeps stats for divisions it retains
+(pass) validateMeet (all problem types) > flags duplicate lot numbers within a division ("Two athletes in Group 2 share lot 3")
+(pass) validateMeet (all problem types) > flags rising bar event with no bar weights ("Event 4 is rising bar but has no bar weights")
+(pass) validateMeet (all problem types) > flags division assigned to a station that was removed
+(pass) validateMeet (all problem types) > flags trump weight event missing divisionLightWeights
+(pass) reorderLots / moveLot (drag-and-drop run order, Kurt 10/27) > reorderLots renumbers 1..n in the given order, appends unlisted ids, ignores foreign ids, leaves other divisions
+(pass) reorderLots / moveLot (drag-and-drop run order, Kurt 10/27) > reorderLots returns the same state object when nothing changes
+(pass) reorderLots / moveLot (drag-and-drop run order, Kurt 10/27) > moveLot moves one athlete down or up and clamps the index
+(pass) reorderLots / moveLot (drag-and-drop run order, Kurt 10/27) > a drag-and-drop order feeds the roster-order run order for every event
+
+test\meetReport.test.mjs:
+(pass) meetReport.buildMeetReport > a completed demo show: totals, a podium per division, event winners, no origins block [15.00ms]
+(pass) meetReport.buildMeetReport > origins are passed through; host gym comes from the summary; CSV carries the headline rows
+(pass) meetReport.buildMeetReport > an upcoming show reports zero scored and empty podiums without throwing
+(pass) hostingRecord.buildHostingRecord > splits upcoming from past, newest past first, counts and date span, reportable = completed non-external
+(pass) hostingRecord.buildHostingRecord > empty list
+(pass) buildMeetReport omits the venue when the data layer only has "Not provided" placeholders
+
+test\meetTransfers.test.mjs:
+(pass) cleanTransferUsername strips the @, whitespace and case
+(pass) partyLabel reads display name with handle, falls back sensibly
+(pass) every transfer status has a label
+
+test\membershipCards.test.mjs:
+(pass) cardStatus > boundaries: yesterday expired, today expiring, 30 days expiring, 31 days valid
+(pass) cardStatus > garbage dates never throw and read as valid
+(pass) cardStatus > labels
+(pass) cardDraftProblem > a complete draft passes
+(pass) cardDraftProblem > other needs a name; names and numbers are capped
+(pass) cardDraftProblem > unknown federation is refused
+(pass) cardDraftProblem > expiry must be a real date, not in the past, not absurdly far out
+(pass) cardFileProblem / cardExt > images under 5 MB pass; others name the rule
+(pass) cardFileProblem / cardExt > object path lives in the owner folder with the right extension
+(pass) federationLabel / rowToCard / draftToInsert > named federations have a long and a short form; other uses the typed name
+(pass) federationLabel / rowToCard / draftToInsert > rowToCard normalizes nulls, dates and unknown federations
+(pass) federationLabel / rowToCard / draftToInsert > draftToInsert trims and nulls optional fields; federation_other only for other
+(pass) groupRegistrationCards > groups by registration id, keeps order, tolerates a missing user_id
+(pass) showWantsMembershipCard > named federations nudge; empty and unsanctioned do not
+
+test\myGym.test.mjs:
+(pass) cleanGymPatch > trims, upper-cases state, adds https, strips @, dedupes equipment, drops orphan notes and empty socials
+(pass) cleanGymPatch > rejects a bad state, a bad zip, a missing city, a one-letter name
+(pass) cleanGymPatch > accepts zip+4 and an empty zip; unknown type and pass values fall back
+(pass) cleanGymPatch > 030: theme passes through normalised, blank is null, a bad hex is a problem
+(pass) cleanGymPatch > clips to the 015 limits
+(pass) patchKey / patchFromRow > whitespace-only edits are not dirty
+(pass) patchKey / patchFromRow > patchFromRow copies arrays and objects so edits do not mutate the row
+(pass) zipLatLng > uses /api/zip and returns null for bad zips or misses
+(pass) cleanAddGym > cleans and uppercases state, normalises url and handle, clips message
+(pass) cleanAddGym > needs a name, city and 2-letter state
+(pass) cleanAddGym > zip is optional but must be 5 digits when given
+(pass) cleanAddGym > needs a website or an instagram handle
+(pass) cleanAddGym > unknown gym type falls back to mixed
+(pass) emailMatchesSite (account email vs site, Astra G-M2) > same host and www are a match; site on a subdomain of the mail domain is a match
+(pass) emailMatchesSite (account email vs site, Astra G-M2) > mailbox on a subdomain of the site is only related, not a match
+(pass) emailMatchesSite (account email vs site, Astra G-M2) > different host and look-alikes are a mismatch
+(pass) emailMatchesSite (account email vs site, Astra G-M2) > malformed emails never match
+(pass) emailMatchesSite (account email vs site, Astra G-M2) > personal mail providers are generic regardless of site
+(pass) emailMatchesSite (account email vs site, Astra G-M2) > shared platforms say nothing about ownership
+(pass) emailMatchesSite (account email vs site, Astra G-M2) > no email, no site, or an unparseable site is unknown
+(pass) addressChanged (Astra G-M5) > any address part counts, other fields do not
+(pass) geocodeAddress > passes the address to /api/geocode and returns the pin with its source
+(pass) geocodeAddress > unknown source is reported as zip; 404 and network errors are null
+(pass) geocodeAddress > nothing to geocode without a street or zip
+
+test\ogTitle.test.mjs:
+(pass) fitOgTitle > short title: one line at 66 px, text untouched
+(pass) fitOgTitle > mid title: two lines, size between 42 and 60
+(pass) fitOgTitle > 90+ character title: three lines at 36 to 40 px, nothing cut
+(pass) fitOgTitle > absurd title is cut with an ellipsis at the three-line capacity
+(pass) fitOgTitle > whitespace is collapsed before measuring
+(pass) fitOgTitle: unbroken tokens (Astra recheck 11/5) > ogTitleLines breaks a word longer than the line the way break-word paints it
+(pass) fitOgTitle: unbroken tokens (Astra recheck 11/5) > a 99-character single token fits three lines at 36 to 40 px without a cut
+(pass) fitOgTitle: unbroken tokens (Astra recheck 11/5) > 150 unbroken characters are cut to the three-line capacity with an ellipsis
+
+test\pad.test.mjs:
+(pass) clock > formatClock reads mm:ss.d and floors the tenth
+(pass) clock > clockWord: ready, running, stopped, over cap
+(pass) clock > formatSeconds prints two decimals or nothing
+(pass) stones log > good advances the stone, no-lift is a miss on the same stone
+(pass) stones log > a retry after a miss completes the stone
+(pass) stones log > cannot complete more stones than the event has
+(pass) stones log > undo pops the log and recomputes; old results without a log step down
+(pass) reps log > good rep counts, no rep is tallied but not scored
+(pass) rising bar > current weight is the lowest pending unless the judge tapped one
+(pass) rising bar > press writes good / fail at the weight; undo clears that weight
+(pass) time or distance > finish stamps the clock; DNF clears the time so distance decides
+(pass) labels and state > keys read by event type
+(pass) labels and state > sync cell: filled square only when live, count of waiting scores, never a colour word
+(pass) labels and state > hasEntry: a fresh result has none; any mark, DNS or lock counts
+(pass) labels and state > clockTime is hh:mm
+(pass) Astra DR3 pad fixes > DR3-03: a saved reps result without a tape keeps its count on the next press
+(pass) Astra DR3 pad fixes > DR3-03: a saved stones count without a tape continues from its count
+(pass) Astra DR3 pad fixes > DR3-03: seedLog leaves a real tape alone and ignores zero counts
+(pass) Astra DR3 pad fixes > DR3-04: BEST follows the engine, so a typed override wins over a heavier good lift
+(pass) Astra DR3 pad fixes > DR3-05: undoing a no-lift at a weight already made restores the good lift
+
+test\paint.test.mjs:
+(pass) theme colour maths > hex round trip and luminance anchors
+(pass) theme colour maths > OKLCH round trip stays within 1/255 and gamut clipping lands in range
+(pass) theme colour maths > CIECAM02 white is J 100; CAM02-UCS black-white is ~100
+(pass) theme colour maths > the study defects reproduce: hostile red and brand rose are both inside 20 of the red pen
+(pass) theme colour maths > deutan simulation collapses a green toward the red pen
+(pass) promoter paint > no paint = ink with the mode label
+(pass) promoter paint > violet passes in both modes, with a readable label
+(pass) promoter paint > a promoter red is refused and the slots fall back to ink; the clamped colour is still returned for text
+(pass) promoter paint > a green is refused for deutan vision even though it reads fine to normal vision
+(pass) promoter paint > accent clamp holds L and C in range; a loud yellow comes back dark enough for white text
+(pass) promoter paint > ground clamp: a navy ground is lifted to a pale tint at home and kept dark in dark mode
+(pass) describePaint (Phase 6 picker) > no paint says nothing
+(pass) describePaint (Phase 6 picker) > a hostile red is refused in red pen, with the plain-English reason
+(pass) describePaint (Phase 6 picker) > a bright colour that gets toned says so, with the colour we used
+(pass) describePaint (Phase 6 picker) > a colour already inside the band passes silently
+
+test\prBoard.test.mjs:
+(pass) prBoard.competitionBests > reps: heaviest weight repped wins over more reps at a lighter weight; the row names the show
+(pass) prBoard.competitionBests > reps at the same weight: more reps wins; equal rank keeps the newer show
+(pass) prBoard.competitionBests > max weight: heaviest effective max; implements group across differently named events
+(pass) prBoard.competitionBests > time: a finished course at a heavier weight beats a faster one at a lighter weight; a DNF shows distance
+(pass) prBoard.competitionBests > medley: most implements, then time; over a minute formats m:ss.ss
+(pass) prBoard.competitionBests > no implement: events group by normalized name; "other" groups by its note; scratched shows add nothing
+(pass) prBoard.competitionBests > an empty history gives no rows
+(pass) showHistory entries carry per-event results for the board > buildShowHistoryEntry: events list the athlete scored, with the division weight and light tier
+
+test\prepSheet.test.mjs:
+(pass) buildPrepSheet > all divisions: events sorted, one weight per division in sort order, spec fields read
+(pass) buildPrepSheet > one division narrows the weights; an unknown id means all; unsafe video dropped; fixed implement becomes a note
+(pass) prepSheetCsv > one division: trio of weight columns; quotes and commas escaped; CRLF rows
+(pass) prepSheetCsv > all divisions: one weight column per division with kg in parentheses
+(pass) names and labels > filename, href and time cap
+
+test\presets.test.mjs:
+(pass) meet presets > default preset is a fictional demo show, not the real Strongfest roster
+(pass) meet presets > four website demo shows double as presets, each backed by a fixture and a blurb; postponed show skipped
+(pass) meet presets > builder presets still load and unknown ids fall back to the default demo
+(pass) meet presets > demo seed state is a fresh copy each time
+
+test\profileFields.test.mjs:
+(pass) profile about-you fields > handles lose @, URL prefixes, trailing slashes and query strings
+(pass) profile about-you fields > website gets https and must look like a host; junk is dropped
+(pass) profile about-you fields > socials keep only known keys with non-empty values
+(pass) profile about-you fields > PRs drop empty rows, cap at three, trim and cap lengths
+(pass) profile about-you fields > cleanProfilePatch validates favorite lift, forces trainer flags off for non-trainers, keeps only given keys
+(pass) profile about-you fields > normalizeProfile fills missing columns for rows written before 013
+(pass) profile about-you fields > roleBadges adds Trainer; favoriteLiftLabel and socialUrl resolve
+(pass) avatar helpers > only jpg/png/webp under 2 MB pass; path lives under the user folder (matches the 013 policies)
+(pass) avatar replace ordering (P-H1) > happy path: new object uploaded, path saved, old object removed, in that order
+(pass) avatar replace ordering (P-H1) > save fails: old object kept, new upload removed, error surfaces
+(pass) avatar replace ordering (P-H1) > upload fails: nothing saved, nothing removed
+(pass) avatar replace ordering (P-H1) > old-object removal failing is swallowed; the saved path still wins
+(pass) avatar replace ordering (P-H1) > rejects a bad file before touching storage
+
+test\profileLinks.test.mjs:
+(pass) mapProfileLinks > maps the three blocks and drops malformed rows
+(pass) mapProfileLinks > empty object (private or unknown username), null, arrays and junk all map to nothing
+(pass) mapProfileLinks > splitShows: upcoming soonest first, past as given; cancelled and completed are past; undated counts as upcoming
+(pass) mapProfileLinks > competitionStatusLabel knows the five statuses and degrades gracefully
+(pass) getProfileLinks loader > demo mode and malformed usernames never call the backend
+(pass) getProfileLinks loader > live: calls zt_profile_links with the cleaned username; an error is reported, not thrown
+(pass) trainer mode filter (/trainers) > trainer flags only count for trainers; mode narrows within the role
+(pass) trainer mode filter (/trainers) > cleanModeParam accepts the two modes (dash or underscore) and nothing else
+(pass) home_gym_id on the profile > cleanProfilePatch keeps a uuid, nulls anything else; normalizeProfile fills null
+(pass) home_gym_id on the profile > reconcileAbout follows a server change of home_gym_id and leaves a local pick alone otherwise
+
+test\profile_draft.test.mjs:
+(pass) reconcileAbout > Astra's two-tab repro: tab 1 saved a home gym, tab 2 keeps its unsaved location
+(pass) reconcileAbout > a member the server changed wins over a draft of the same member
+(pass) reconcileAbout > no server change: every draft survives, including PR rows and socials
+(pass) reconcileAbout > PR rows reconcile per row: server changed row 0, draft on row 1 survives
+(pass) reconcileAbout > socials reconcile per link: server set youtube, draft instagram survives, server-cleared link clears
+(pass) reconcileAbout > trainer flags are their own members
+(pass) reconcileAbout > no draft yet: takes the next profile
+(pass) reconcileAbout > aboutKey ignores empty PR rows and whitespace
+
+test\promoter.test.mjs:
+(pass) fixtureApi: session & seeded meets > getCurrentUser returns signed-in demo promoter by default and null when signedOut is set
+(pass) fixtureApi: session & seeded meets > updateProfile updates displayName and role flags
+(pass) fixtureApi: session & seeded meets > seeded meets: upcoming has athleteCount 2, registrationCount 2 (accepted), pendingCount 5
+(pass) fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, archiveMeet > createMeet validates inputs, rejects duplicate slugs, and initializes emptyListing with zero counts
+(pass) fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, archiveMeet > saveMeetState persists divisions while keeping the stored results array byte-for-byte
+(pass) fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, archiveMeet > H3: saveMeetState refuses a state that orphans a result (athlete or event), roster unchanged
+(pass) fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, archiveMeet > L1: saveMeetState refuses a meet date earlier than the registration deadline
+(pass) fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, archiveMeet > updateListing validates deadline <= meetDate, integer athleteCap, promoterContact shape
+(pass) fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, archiveMeet > rotateJoinCode changes the stored 6-char code (re-read) and archiveMeet sets completed
+(pass) fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, archiveMeet > deleteMeet (010): name required when the meet has data, refused for live/completed, cascades registrations
+(pass) fixtureApi: create, saveMeetState, updateListing, rotateJoinCode, archiveMeet > markResultsSubmitted (037): completed + final only, stamps once, then the meet cannot be deleted even when cancelled
+(pass) fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers > accept creates exactly one roster row linked by athleteId; decline removes exactly that id and updates counts
+(pass) fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers > H2: two registrants with the same name in the same division become two athletes; declining a pending same-name request removes nothing
+(pass) fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers > M6: accept fails when the division no longer exists; roster unchanged
+(pass) fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers > declining or withdrawing an accepted request whose athlete has results is refused; roster and status unchanged
+(pass) fixtureApi: setRegistrationStatus (athleteId linkage) & pure helpers > isMeetStateDirty detects config/roster edits and ignores result differences
+(pass) fixtureApi: gate round (cap on roster save, accepted division fixed, listing revision) > C4 / G2-M1: a save that adds athletes beyond the cap is refused; an over-cap roster still saves; the cap may drop below the roster
+(pass) fixtureApi: gate round (cap on roster save, accepted division fixed, listing revision) > M9 / G2-M1: moving an accepted athlete to another division saves; the registration keeps the submitted division as evidence
+(pass) fixtureApi: gate round (cap on roster save, accepted division fixed, listing revision) > C3 (listing): a stale tab cannot flip registration back open; the revision advances on every listing save
+(pass) fixtureApi: venue shape > validateVenueShape: only the six string keys, with limits
+(pass) fixtureApi: venue shape > updateListing refuses a malformed venue and a listed venue without country; accepts the proper shape
+(pass) athlete My Meets: followShow, listMyAthleteMeets, bucketAthleteMeets, athleteMeetBadge > followShow adds and removes a listed meet; unlisted slug and signed-out are refused
+(pass) athlete My Meets: followShow, listMyAthleteMeets, bucketAthleteMeets, athleteMeetBadge > bucketAthleteMeets splits follow / registered / completed and sorts by date [15.00ms]
+
+test\register.test.mjs:
+(pass) register: public meet shape (H1) > getPublicMeetBySlug returns the allowlisted shape and no owner data
+(pass) register: public meet shape (H1) > getPublicMeetBySlug returns data null, error null for an unknown slug; works without a session
+(pass) register: public meet shape (H1) > bridged /shows fixture carries its own promoter name and contact
+(pass) register: pure validation helpers > isRegistrationOpen allows open and waitlist only
+(pass) register: pure validation helpers > validateRegistrationInput checks name, email, emergency contact (name + 7 digits), division, waiver
+(pass) register: pure validation helpers > ageOnDate / parseIsoDate / ageReferenceDate (009)
+(pass) register: pure validation helpers > validateRegistrationInput rejects closed meets
+(pass) register: pure validation helpers > decideRegistrationOutcome: closed/not_provided error; open past deadline error; open at cap waitlists (034); waitlist always waitlist
+(pass) register: submitRegistration into fixtureApi (M10, M19) > submission creates a pending request with emergencyContact and athleteId null; counts move
+(pass) register: submitRegistration into fixtureApi (M10, M19) > rejects duplicate active/pending registration for same email and division
+(pass) register: submitRegistration into fixtureApi (M10, M19) > M10: closed meet -> error; open past deadline -> error; open at cap -> waitlist (034)
+(pass) register: submitRegistration into fixtureApi (M10, M19) > M10: waitlist status takes the entry past deadline and at cap, returns status waitlist, stores waitlisted=true
+(pass) register: submitRegistration into fixtureApi (M10, M19) > bridges /shows fixtures: garden-state-winter-wreckage-2026 (waitlist) accepts onto the waitlist
+(pass) register: submitRegistration into fixtureApi (M10, M19) > unknown slug -> error, nothing stored
+
+test\registrationEmail.test.mjs:
+(pass) registration emails (031) > received: pending wording, facts, show link and My Meets link; html escaped
+(pass) registration emails (031) > received: waitlisted wording
+(pass) registration emails (031) > decision: accepted and declined read differently; declined without a contact points at the show page
+(pass) registration emails (031) > promoter notice names the athlete, division and state, and links the dashboard
+(pass) registration emails (031) > missing optional facts are left out; venueLine handles partial venues
+(pass) registration emails (031) > emailLogKey: decisions are keyed by status, the rest by kind
+
+test\registrationEmailRoute.test.mjs:
+(pass) registration email route (033) > received: athlete mail + promoter notice, stamped once, repeat skips both
+(pass) registration email route (033) > EM-01 waitlisted entry gets the waitlist received mail and the notice
+(pass) registration email route (033) > EM-02 two simultaneous requests send once (in-flight marker)
+(pass) registration email route (033) > EM-02 registrant cannot force a resend
+(pass) registration email route (033) > EM-02 promoter resend: 10 minute window, then 5 attempt cap
+(pass) registration email route (033) > EM-03 a failed send clears the marker and keeps the row unsent, so a retry goes out
+(pass) registration email route (033) > 031 string stamps read as sent
+(pass) registration email route (033) > EM-04 the payload call carries the server key; missing key is 503 before any call
+(pass) registration email route (033) > accepted (032) sends the decision mail in place of received
+(pass) registration email route (033) > promoter notice with no owner address is reported, athlete mail still goes
+(pass) describeEmailResult (EM-05) > athlete hears only about their own confirmation
+(pass) describeEmailResult (EM-05) > promoter: athlete-address and owner-address problems read differently
+
+test\resultCard.test.mjs:
+(pass) buildResultCardData > every placed athlete on every completed demo show gets a card that agrees with the standings table
+(pass) buildResultCardData > field size counts the scored field, so place never exceeds it
+(pass) buildResultCardData > tied place label carries T-
+(pass) buildResultCardData > upcoming show, unknown athlete, unknown division: null
+(pass) sizes, hrefs, file names > three sizes with IG / FB dimensions
+(pass) sizes, hrefs, file names > href encodes slug and athlete id
+(pass) sizes, hrefs, file names > file name is safe and names the athlete, meet and size
+(pass) sizes, hrefs, file names > PLACE_SUFFIX: 1st 2nd 3rd 4th 11th 12th 13th 21st 22nd 23rd 101st 111th
+(pass) renderer text helpers > fitMono shrinks long names and never goes under the floor
+(pass) renderer text helpers > clip adds an ellipsis only when needed
+
+test\rosterImport.test.mjs:
+(pass) parseDelimited > detects tabs, commas and semicolons; drops blank lines; pads short rows
+(pass) parseDelimited > handles quoted commas, doubled quotes, CRLF and a BOM
+(pass) header detection and mapping > known aliases make a header row; numbers in the first row do not
+(pass) header detection and mapping > guessMapping claims each field once and falls back to first column = name
+(pass) header detection and mapping > bodyweight and lot parsing
+(pass) buildRosterPlan > maps existing divisions by name, queues new ones, reads bodyweight and lot
+(pass) buildRosterPlan > skips blank names and duplicates (on roster and within the paste); taken lots fall back
+(pass) buildRosterPlan > first + last name columns combine; no header means first column is the name
+(pass) buildRosterPlan > refuses without a name column or a default division; row limit truncates
+(pass) applyRosterImport > creates new divisions once and adds athletes with lots and bodyweights
+(pass) applyRosterImport > a plan with problems is a no-op
+
+test\schedule.test.mjs:
+(pass) schedule: clock parsing > accepts picker values and typed text, refuses nonsense
+(pass) schedule: clock parsing > formatClock prints 12-hour
+(pass) schedule: parse / clean / timeline > parseSchedule keeps known keys with valid values and drops the rest
+(pass) schedule: parse / clean / timeline > cleanSchedule: blank = null, order problems are named, typed times normalise
+(pass) schedule: parse / clean / timeline > timeline joins windows and marks the day-before row
+(pass) schedule: parse / clean / timeline > time zone defaults follow the venue state
+(pass) schedule: zoned time and ics > zonedToUtc handles standard and daylight time [15.00ms]
+(pass) schedule: zoned time and ics > buildShowIcs: timed event from the first thing on the timeline, day-before weigh-in as a second event
+(pass) schedule: zoned time and ics > buildShowIcs: the calendar starts at the earliest same-day time, not the first field set (MD-11)
+(pass) schedule: zoned time and ics > buildShowIcs: no schedule = all-day event, one VEVENT
+(pass) schedule: zoned time and ics > estimatedEnd before arrival falls back to eight hours
+(pass) schedule: listing contract > validateListingPatch refuses a bad schedule and passes a clean one
+(pass) schedule: listing contract > row <-> listing mapping carries schedule and null clears
+(pass) schedule: reminder email quotes it > facts list check-in, first event, time zone; .ics link present; note leads the paragraph
+(pass) schedule: reminder email quotes it > without a schedule the old wording and no .ics link
+
+test\scorer.test.mjs:
+(pass) navTabs > admin sees all four tabs in order
+(pass) navTabs > judge: no setup; pit crew: no judge pad or setup
+(pass) navTabs > spectator sees the floor view as Next Up
+(pass) sheetLabel > judge and pit crew read the event number of the count
+(pass) sheetLabel > standings and setup
+(pass) sheetLabel > SETUP_SECTIONS are numbered 1..6 in order
+(pass) stationChips / divisionOption > falls back to the two default stations, All last
+(pass) stationChips / divisionOption > uses the meet stations when present
+(pass) stationChips / divisionOption > division option brackets the station label, or Unassigned
+(pass) tv control / ordinal > default is Sheet A, bright
+(pass) tv control / ordinal > tvControlWord
+(pass) tv control / ordinal > ordinal
+
+test\scoring_formats.test.mjs:
+(pass) max_time (hold): longer wins, cap ignored > ranks by time descending, zero hold scores zero, a time over the cap still counts
+(pass) max_time (hold): longer wins, cap ignored > equal holds split the points
+(pass) max_time (hold): longer wins, cap ignored > resultHasScore and the pad model treat a hold like a stamped time
+(pass) max_weight with the Wessels attempt tiebreak > without the rule equal weights split the points
+(pass) max_weight with the Wessels attempt tiebreak > with the rule the earlier attempt wins and the display carries the attempt number
+(pass) max_weight with the Wessels attempt tiebreak > bestLiftAttempt: typed override, tape, rising-bar grid, unknown
+(pass) max_weight with the Wessels attempt tiebreak > an unknown attempt ranks below a known one at the same weight; two unknowns still split
+(pass) time_or_distance with distanceOnly (max distance) > furthest mark wins, no DNF suffix, the clock is ignored
+(pass) time_or_distance with distanceOnly (max distance) > the plain event still prints (DNF) and ranks a finish above any distance
+(pass) time_or_distance with distanceOnly (max distance) > pad labels and clock usage
+(pass) implementLabel: the word for one implement > standings use the word; default stays impl
+(pass) implementLabel: the word for one implement > normaliser: trims, strips control characters, 1..12 chars, "impl" means absent
+(pass) eventKinds labels and normalisers > scoring type list and fallbacks
+(pass) eventKinds labels and normalisers > labels in the three styles
+(pass) meetBuilder keeps the per-kind flags on their own kind > flags are normalised on add and dropped on a type change
+(pass) meetBuilder keeps the per-kind flags on their own kind > normalizeState accepts max_time and keeps the flags; unknown types fall back to reps
+
+test\selection.test.mjs:
+(pass) stationLanding (DR2-01 + DR3-12) > fresh station: its first event in its own order, first division
+(pass) stationLanding (DR2-01 + DR3-12) > Station B with Event 2 done for every group and Group 3 Event 1 done lands on Group 4 Event 1, not Group 3 Event 3
+(pass) stationLanding (DR2-01 + DR3-12) > everything locked: first event and first division as the fallback
+(pass) stationLanding (DR2-01 + DR3-12) > scratched athletes do not hold an event open; ALL spans every division; unknown station is null
+(pass) selection persistence (DR3-02) > round trip: what the judge had is what comes back [15.00ms]
+(pass) selection persistence (DR3-02) > another meet, or nothing saved, gives the old defaults with an empty athlete (run order picks lot 1)
+(pass) selection persistence (DR3-02) > stale parts fall back one at a time
+(pass) selection persistence (DR3-02) > garbage in storage reads as nothing; a storage that throws is ignored
+
+test\seo.test.mjs:
+(pass) canonical / noindex > canonical wraps a relative path for metadataBase
+(pass) canonical / noindex > NOINDEX blocks index and follow
+(pass) showEventJsonLd > SportsEvent with place, organizer and a closed offer
+(pass) showEventJsonLd > open registration is InStock; postponed maps to EventPostponed; summary row has no offers
+(pass) showEventJsonLd > serialises without undefined and escapes nothing dangerous
+(pass) gymJsonLd > ExerciseGym with address, geo, sameAs and amenities
+(pass) gymJsonLd > no coordinates, no geo; no website, no sameAs
+(pass) athleteJsonLd > ProfilePage around a Person with socials as sameAs
+(pass) site-level > Organization and WebSite point at the production origin
+
+test\sheet.test.mjs:
+(pass) sheet parts > REV letters skip I O Q S X Z and stop at the last letter
+(pass) sheet parts > the stone is an outline in currentColor with no fill and no red [15.00ms]
+(pass) sheet parts > the wordmark reads ZeroTacky to a screen reader and carries no fill colour
+(pass) sheet parts > NO LIFT is a light key with an X glyph and a red-pen border; GOOD LIFT is an ink fill
+
+test\sheet_format.test.mjs:
+(pass) sheetFormat dates > splitIsoDate splits an ISO day into pen numeral and caption
+(pass) sheetFormat dates > longIsoDate is weekday-day-month-year with no time zone drift
+(pass) sheetFormat dates > shortIsoDate is day and month
+(pass) sheetFormat venue and rows > venueLine joins facility and place, collapsing repeated placeholders
+(pass) sheetFormat venue and rows > showRowStatus reads one phrase per lifecycle, live in pen
+(pass) sheetFormat venue and rows > showRowLink prefers the live board, then results, then the show page
+(pass) sheetFormat fee > splitFee lifts the amount out of a free-text fee
+
+test\showHistory.test.mjs:
+(pass) showHistory.buildShowHistoryEntry > winner: 1st of the active field, points and event wins from the engine
+(pass) showHistory.buildShowHistoryEntry > equal points, same 1st/2nd/3rd counts: lookback (the preset default) shares 2nd, the way Iron Podium would
+(pass) showHistory.buildShowHistoryEntry > the same pair under the event_wins rule: the final-event tiebreak decides, no tie flag
+(pass) showHistory.buildShowHistoryEntry > a true tie (same points, wins and final-event points) carries the T- prefix
+(pass) showHistory.buildShowHistoryEntry > scratched athlete: no place, label says so
+(pass) showHistory.buildShowHistoryEntry > mid-meet withdrawal ahead of the active athletes: last active reads 3rd of 3, not 3rd of 2
+(pass) showHistory.buildShowHistoryEntry > unlisted show links to the public board; missing roster row returns null
+(pass) showHistory helpers > ordinals
+(pass) showHistory helpers > formatShowDate parses the ISO day without a timezone shift
+(pass) showHistory helpers > formatPlace: no score when nothing scored
+
+test\shows.data.test.mjs:
+(pass) website data: listPublicShows & getPublicShowBySlug > fallback to fixture shows when backend env is absent
+(pass) website data: listPublicShows & getPublicShowBySlug > with a live backend returns only listed non-demo meets and works with filterPublicShows and standingsAdapter [16.00ms]
+(pass) website data: listPublicShows & getPublicShowBySlug > appends demo fixtures with isDemoFixture: true by default (NEXT_PUBLIC_ZT_DEMO_SHOWS unset) and when set to "1"
+(pass) host gym on public shows (026) > listPublicShows attaches slug + name for a listed host gym and nothing for a removed or unset one
+(pass) host gym on public shows (026) > getPublicShowBySlug carries the host gym so the show page can link /gyms/<slug>
+
+test\siteUrl.test.mjs:
+(pass) siteUrl (metadataBase for link previews) > explicit NEXT_PUBLIC_SITE_URL wins
+(pass) siteUrl (metadataBase for link previews) > production on Vercel is www.zerotacky.com, previews use VERCEL_URL, local falls back to :3079
+
+test\standardClasses.test.mjs:
+(pass) standard weight class tables (054 quick-add) > Strongman Corporation 2026 and IPF tables match the published lists
+(pass) standard weight class tables (054 quick-add) > sex filter, unknown set, duplicate skip
+(pass) standard weight class tables (054 quick-add) > every generated name carries a gender tag the picker filter understands
+(pass) standard weight class tables (054 quick-add) > addDivision carries the cap; a typed division has none; caps survive the 20..300 check
+(pass) standard classes: Astra GP-06 (renamed class is still the same class) > a renamed capped class and a renamed heavyweight are not re-added; a capless Novice does not block the heavyweight
+
+test\supabaseApi.test.mjs:
+(pass) supabaseApi: list/detail mapping & the three counts > listMyMeets and getMeet map rows and split athleteCount, pendingCount, and registrationCount [16.00ms]
+(pass) supabaseApi: saveMeetState RPC pass-through & H3 orphan guard > saveMeetState calls zt_save_meet_config, preserves results, and surfaces H3 errors when removing a scored athlete or event
+(pass) supabaseApi: saveMeetState RPC pass-through & H3 orphan guard > C3: a save naming a stale revision is refused; the current revision saves; M9: a registration-linked athlete cannot be removed by a roster save
+(pass) supabaseApi: saveMeetState RPC pass-through & H3 orphan guard > gate C3: updateListing passes expectedUpdatedAt to zt_update_listing; a stale listing save is refused; a fresh one lands
+(pass) supabaseApi: saveMeetState RPC pass-through & H3 orphan guard > gate C2: a write that lands but cannot be re-read returns committed: true with a reload message, never a bare failure
+(pass) supabaseApi: saveMeetState RPC pass-through & H3 orphan guard > R3: a child read that throws after the write landed still reports committed: true (createMeet and saveMeetState)
+(pass) supabaseApi: accept/decline mapping of athleteId > accept creates reg-ath-<left(id,8)> and updates counts; decline removes it; scored athlete decline is refused
+(pass) supabaseApi: athlete account links (023 show history) > link by username (with @, any case), list, duplicate refused, unknown refused, unlink
+(pass) supabaseApi: athlete account links (023 show history) > signed out: both methods refuse without touching the database
+(pass) supabaseApi: getPublicMeetBySlug H1 secret check & submitRegistration > getPublicMeetBySlug output contains none of joinCode, adminPin, emergencyContact, ownerId, or results [16.00ms]
+(pass) supabaseApi: every method returns { data: null, error } when db throws > never throws an unhandled rejection on database failure
+(pass) supabaseApi: every method returns { data: null, error } when db throws > getPromoterApi forwards to the lazily loaded fixture when the Supabase client is null (H1)
+(pass) supabaseApi: deleteMeet (010) > a meet with data needs the exact name; then the meet, its children and registrations are gone
+(pass) supabaseApi: deleteMeet (010) > live and completed meets are refused; an empty draft deletes without a name; signed out is refused
+
+test\sync.test.mjs:
+(pass) mapping round-trips > test-groups-2026: state -> rows -> state is lossless
+(pass) mapping round-trips > york-iron-2026: state -> rows -> state is lossless
+(pass) mapping round-trips > event config holds every non-column field and nothing else
+(pass) mapping round-trips > event collarWeightPerPair rides in config and survives the round trip (10/26)
+(pass) mapping round-trips > result payload excludes ids/locked/updatedAt and row carries ISO time + device
+(pass) mapping round-trips > rowToMeet sorts plates descending and coerces numerics
+(pass) mergeResults (last writer wins) > newer incoming replaces, older incoming ignored, unknown added; unchanged returns same array
+(pass) queue > enqueue coalesces same table+id, keeps order, respects limit [31.00ms]
+(pass) queue > groupByTable and removeFlushed
+(pass) queue > readQueue tolerates garbage; writeQueue swallows errors
+(pass) remote meet id override > stateToRows stamps every row with the remote uuid while local meet.id stays
+
+test\teams.test.mjs:
+(pass) teams (055): division team_size mapping > divisionToRow sends team_size only when set; rowToDivision keeps 2..6 and drops 1
+(pass) teams (055): division team_size mapping > normalizeState keeps teamSize 2..6 and drops anything else
+(pass) teams (055): division team_size mapping > updateDivision accepts a teamSize patch
+(pass) teams (055): public projection and registration rows > toPublicRegistrationMeet carries teamSize for team divisions only
+(pass) teams (055): public projection and registration rows > registration rows map team_id / team_name / looking_for_partner; the seven wrappers use the SQL parameter names
+(pass) teams (055): public projection and registration rows > getMyRegistration is null (not an error) when signed out
+(pass) teams (055): public projection and registration rows > the preview backend has no teams: getMyRegistration is null and the actions refuse with one message
+(pass) teams (055): share link > teamShareUrl builds /register/<slug>?team=<code> on the given origin
+
+test\theme.test.mjs:
+(pass) normalizeHex accepts 6 and 3 digit forms, with or without #, and refuses the rest
+(pass) parseTheme reads a row value and drops anything off-contract
+(pass) cleanTheme: blank means no colours, partial is a problem, secondary optional
+(pass) contrast matches the WCAG reference points
+(pass) onColor and themeBaseId pick black/white and dark/light by contrast
+(pass) themeCssVars derives the full palette and keeps the chosen colours verbatim
+(pass) themeWarnings: every preset is clean; bad pairs warn in plain words with no numbers
+(pass) presets map surface -> background and sameTheme compares by value
+
+test\themes.test.mjs:
+(pass) themes: constants and globals.css agree > 13 themes, unique ids, two light ones
+(pass) themes: constants and globals.css agree > every theme id has a CSS block with the core variables; light themes also restate text colours and color-scheme
+(pass) themes: constants and globals.css agree > no CSS theme block without a THEMES entry
+
+test\trainFor.test.mjs:
+(pass) train for this show > needs are distinct equipment ids in event order, barbell and spec-less events skipped, repeats merged
+(pass) train for this show > coverage is case-insensitive and reports have / missing / share
+(pass) train for this show > ranking keeps partial matches, best first, name as the default tie-break; fullOnly keeps complete kits
+(pass) train for this show > labels read as a sheet line
+(pass) train for this show > show page link carries the slug and the venue state, or is null without mapped implements
+(pass) trainForEligible (Astra BR-01: unlisted meets never drive /gyms) > a listed show and a demo fixture (no flag) are eligible
+(pass) trainForEligible (Astra BR-01: unlisted meets never drive /gyms) > an unlisted show (results-retention path) is not, and gets no train-for link
+
+test\tv.test.mjs:
+(pass) tv model: helpers > sheet and mode guards
+(pass) tv model: helpers > date reads like the title block: Sat 14 Nov 2026
+(pass) tv model: helpers > surname and points formatting
+(pass) tv model: helpers > rev letter advances with locked scores only
+(pass) tv model: helpers > venue line
+(pass) tv model: helpers > event spec: weight, scoring, cap
+(pass) tv model: station choice > asked-for station wins, else the live one, else the first
+(pass) tv model: Sheet A > null without a live event on the station
+(pass) tv model: Sheet A > live athlete, target before a score, result after, on deck follows the order
+(pass) tv model: Sheet A > rising bar event shows the ladder with the athlete's attempts
+(pass) tv model: Sheet A > running order window keeps the live athlete in view
+(pass) tv model: Sheet B > pages of 12, live division first, wins ringed, blank until scored
+(pass) tv model: Sheet B > one division asked for, no live row
+(pass) tv model: idle > schedule lists every event with the first division's spec
+
+test\units.test.mjs:
+(pass) lib/units helpers > normalise: anything but metric is imperial
+(pass) lib/units helpers > labels
+(pass) lib/units helpers > mirror label flips direction with the unit, never reads zero for a positive load
+(pass) lib/units helpers > canonical conversion for cross-meet readers (session 2) round-trips to one decimal
+(pass) lib/units helpers > default plate sets and course caps
+(pass) meet model carries units > blank meet is imperial; parse normalises; mapping round-trips both ways
+(pass) engine prints the meet unit, numbers unchanged > max weight: lbs by default, kg on a metric meet; the rank is the same
+(pass) engine prints the meet unit, numbers unchanged > distance: ft / m, DNF suffix kept
+(pass) engine prints the meet unit, numbers unchanged > overall standings accept units and pass them to the event display
+(pass) engine prints the meet unit, numbers unchanged > plates: kg inventory loads a kg bar exactly, warnings name the unit
+(pass) engine prints the meet unit, numbers unchanged > transitions and setup text
+(pass) spec, show page and TV labels > course range per unit; segments print the unit
+(pass) spec, show page and TV labels > eventWeightDisplay: unit word and mirror flip
+(pass) spec, show page and TV labels > TV spec line
+
+test\units2.test.mjs:
+(pass) prBoard across units > reps: 115 kg (253.5 lb) outranks 250 lb; the row prints kg with the pound figure beside it
+(pass) prBoard across units > reps: 110 kg (242.5 lb) loses to 250 lb; the imperial row prints as before
+(pass) prBoard across units > max weight: 200 kg beats 440 lb (440.9 lb); printed "200 kg (441 lb)"
+(pass) prBoard across units > distance with no finish (no listed load): 20 m (65.6 ft) beats 60 ft; course prints in m
+(pass) prBoard across units > an event result without `units` (older callers) is read as imperial
+(pass) showHistory carries the show unit > metric row -> every event result says metric; imperial row (default column) says imperial
+(pass) group picker on a metric show > a 100 kg division weight is 220.5 lb for the ratio and prints "100 kg"
+(pass) group picker on a metric show > pickGroups threads the unit: 140 kg deadlift (308.6 lb) vs a 315 lb number is above the band (0.98), one such event = a stretch
+
+test\unsavedGuard.test.mjs:
+(pass) leavesPage > in-app link to another page asks
+(pass) leavesPage > external link in the same tab asks; new tab does not
+(pass) leavesPage > same page hash, mailto, download, modifier clicks and non-links are left alone
+(pass) leavesPage > message names the stakes
+
+test\waiver.test.mjs:
+(pass) waiver version > sha256(legal/WAIVER.md)[:12] is listed as an approved version in supabase/*.sql [16.00ms]
+(pass) waiver version > the server-only helper computes the same prefix the migration lists
+
+test\website.test.mjs:
+(pass) website filters: shows & gyms > filters shows by competitionStatus, state, implementTag, and inclusive division query
+(pass) website filters: shows & gyms > returns empty array when no show matches and recovers all on filter reset
+(pass) website filters: shows & gyms > filters gyms by implement tag and day-pass availability
+(pass) website lifecycle & podium certification rules > only completed + final results can render an official finalized podium
+(pass) website lifecycle & podium certification rules > standingsAdapter preserves tied 1st-place overall podiums (#1, #1, #3) and <3 finisher divisions
+(pass) website lifecycle & podium certification rules > provisional completed show marks isOfficialFinal false even when results exist
+(pass) gym directory equipment (Kurt 10/20) > every demo gym tag is a known piece of equipment, and the dropdown follows list order
+(pass) gym directory zip + radius (Kurt 10/20) > haversine, zip normalising, and miles formatting [15.00ms]
+(pass) gym directory zip + radius (Kurt 10/20) > origin + radius keeps only gyms in range, sorted closest first; gyms without coordinates drop out
+(pass) gym directory zip + radius (Kurt 10/20) > zip table resolves real zips and rejects junk [32.00ms]
+
+test\youreUp.test.mjs:
+(pass) you're up > up, on deck, queued, scored and waiting
+(pass) you're up > scored rows ahead do not count toward "away"
+(pass) you're up > lines and notify keys
+
+ 819 pass
+ 0 fail
+ 560 expect() calls
+Ran 819 tests across 77 files. [1.59s]

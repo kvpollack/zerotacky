@@ -1,0 +1,493 @@
+[
+  {
+    "id": "88d23e44-dd30-48c6-9553-fe1d4bed28dd",
+    "slug": "all-out-strongfest-2026-dryrun2",
+    "units": "imperial",
+    "available_plates": [
+      100,
+      55,
+      45,
+      35,
+      25,
+      15,
+      10,
+      5,
+      2.5
+    ],
+    "collar_weight_per_pair": "0",
+    "updated_at": "2026-11-04 12:07:41.688706+00",
+    "competition_status": "completed",
+    "results": 39,
+    "events": [
+      {
+        "id": "sf-ev-1",
+        "name": "Basket Deadlift (For Reps)",
+        "lanes": 1,
+        "config": {
+          "heightLabel": "Basket Keg Count & Load",
+          "hasTrumpWeight": false,
+          "pitCrewCallout": {
+            "title": "Keg / Load Callout",
+            "byDivision": {
+              "sf-g1": {
+                "headline": "8 Empty Kegs (No Added Plates)"
+              },
+              "sf-g2": {
+                "headline": "10 Empty Kegs (~265 lbs Total)"
+              },
+              "sf-g3": {
+                "headline": "11 Kegs + 50 lbs Plates (~355 lbs Total)"
+              },
+              "sf-g4": {
+                "headline": "11 Kegs + 200 lbs Plates (~420 lbs Total)"
+              },
+              "sf-g5": {
+                "headline": "11 Kegs + 300 lbs Plates"
+              }
+            }
+          },
+          "divisionWeights": {
+            "sf-g1": 0,
+            "sf-g2": 0,
+            "sf-g3": 50,
+            "sf-g4": 200,
+            "sf-g5": 300
+          },
+          "hasHeightCallout": true,
+          "groundTouchWarning": true,
+          "divisionDefaultHeights": {
+            "sf-g1": "8 Empty Kegs (0 Plates)",
+            "sf-g2": "10 Empty Kegs (~265 lbs)",
+            "sf-g3": "11 Kegs + 50 lb Plates (~355 lbs)",
+            "sf-g4": "11 Kegs + 200 lb Plates (~420 lbs)",
+            "sf-g5": "11 Kegs + 300 lb Plates"
+          },
+          "weightIsAddedPlatesOnly": true
+        },
+        "meet_id": "88d23e44-dd30-48c6-9553-fe1d4bed28dd",
+        "event_number": 1,
+        "scoring_type": "reps",
+        "loading_points": 2,
+        "time_cap_seconds": 60,
+        "weight_entry_mode": "total",
+        "implement_empty_weight": 0
+      },
+      {
+        "id": "sf-ev-2",
+        "name": "Keg Over Bar (For Reps)",
+        "lanes": 1,
+        "config": {
+          "heightLabel": "Yoke Crossbar Height",
+          "hasTrumpWeight": false,
+          "pitCrewCallout": {
+            "title": "Yoke Crossbar Height + Keg Weight",
+            "byDivision": {
+              "sf-g1": {
+                "stats": [
+                  {
+                    "label": "Yoke Crossbar",
+                    "value": "44\""
+                  },
+                  {
+                    "label": "Keg Weight",
+                    "value": "100 lb"
+                  }
+                ],
+                "headline": "44\" Yoke Bar \u2022 100 lb Keg"
+              },
+              "sf-g2": {
+                "stats": [
+                  {
+                    "label": "Yoke Crossbar",
+                    "value": "44\""
+                  },
+                  {
+                    "label": "Keg Weight",
+                    "value": "125 lb"
+                  }
+                ],
+                "headline": "44\" Yoke Bar \u2022 125 lb Keg"
+              },
+              "sf-g3": {
+                "stats": [
+                  {
+                    "label": "Yoke Crossbar",
+                    "value": "46\""
+                  },
+                  {
+                    "label": "Keg Weight",
+                    "value": "175 lb"
+                  }
+                ],
+                "headline": "46\" Yoke Bar \u2022 175 lb Keg"
+              },
+              "sf-g4": {
+                "stats": [
+                  {
+                    "label": "Yoke Crossbar",
+                    "value": "48\""
+                  },
+                  {
+                    "label": "Keg Weight",
+                    "value": "200 lb"
+                  }
+                ],
+                "headline": "48\" Yoke Bar \u2022 200 lb Keg"
+              },
+              "sf-g5": {
+                "stats": [
+                  {
+                    "label": "Yoke Crossbar",
+                    "value": "48\""
+                  },
+                  {
+                    "label": "Keg Weight",
+                    "value": "250 lb"
+                  }
+                ],
+                "headline": "48\" Yoke Bar \u2022 250 lb Keg"
+              }
+            }
+          },
+          "divisionWeights": {
+            "sf-g1": 100,
+            "sf-g2": 125,
+            "sf-g3": 175,
+            "sf-g4": 200,
+            "sf-g5": 250
+          },
+          "hasHeightCallout": true,
+          "divisionDefaultHeights": {
+            "sf-g1": "44\" Yoke Bar (100 lb Keg)",
+            "sf-g2": "44\" Yoke Bar (125 lb Keg)",
+            "sf-g3": "46\" Yoke Bar (175 lb Keg)",
+            "sf-g4": "48\" Yoke Bar (200 lb Keg)",
+            "sf-g5": "48\" Yoke Bar (250 lb Keg)"
+          }
+        },
+        "meet_id": "88d23e44-dd30-48c6-9553-fe1d4bed28dd",
+        "event_number": 2,
+        "scoring_type": "reps",
+        "loading_points": 0,
+        "time_cap_seconds": 60,
+        "weight_entry_mode": "total",
+        "implement_empty_weight": 0
+      },
+      {
+        "id": "sf-ev-3",
+        "name": "50ft Harness Truck Pull",
+        "lanes": 1,
+        "config": {
+          "hasTrumpWeight": false,
+          "pitCrewCallout": {
+            "title": "Vehicle Setup",
+            "byDivision": {
+              "sf-g1": {
+                "stats": [
+                  {
+                    "label": "Course",
+                    "value": "50 ft"
+                  },
+                  {
+                    "label": "Scoring",
+                    "value": "Fastest Time / Ft if Capped"
+                  }
+                ],
+                "headline": "Group 1 Vehicle \u2022 Pickup Truck"
+              },
+              "sf-g2": {
+                "stats": [
+                  {
+                    "label": "Course",
+                    "value": "50 ft"
+                  },
+                  {
+                    "label": "Scoring",
+                    "value": "Fastest Time / Ft if Capped"
+                  }
+                ],
+                "headline": "Group 2 Vehicle \u2022 Box Truck"
+              },
+              "sf-g3": {
+                "stats": [
+                  {
+                    "label": "Course",
+                    "value": "50 ft"
+                  },
+                  {
+                    "label": "Scoring",
+                    "value": "Fastest Time / Ft if Capped"
+                  }
+                ],
+                "headline": "Group 3 Vehicle \u2022 Box Truck"
+              },
+              "sf-g4": {
+                "stats": [
+                  {
+                    "label": "Course",
+                    "value": "50 ft"
+                  },
+                  {
+                    "label": "Scoring",
+                    "value": "Fastest Time / Ft if Capped"
+                  }
+                ],
+                "headline": "Group 4 Vehicle \u2022 Box Truck"
+              },
+              "sf-g5": {
+                "stats": [
+                  {
+                    "label": "Course",
+                    "value": "50 ft"
+                  },
+                  {
+                    "label": "Scoring",
+                    "value": "Fastest Time / Ft if Capped"
+                  }
+                ],
+                "headline": "Group 5 Vehicle \u2022 Box Truck"
+              }
+            }
+          },
+          "divisionWeights": {}
+        },
+        "meet_id": "88d23e44-dd30-48c6-9553-fe1d4bed28dd",
+        "event_number": 3,
+        "scoring_type": "time_or_distance",
+        "loading_points": 0,
+        "time_cap_seconds": 60,
+        "weight_entry_mode": "total",
+        "implement_empty_weight": 0
+      }
+    ]
+  },
+  {
+    "id": "23da26d1-3694-463f-90bc-99ef608def31",
+    "slug": "iron-harbor-classic-2026",
+    "units": "imperial",
+    "available_plates": [
+      100,
+      55,
+      45,
+      35,
+      25,
+      15,
+      10,
+      5,
+      2.5
+    ],
+    "collar_weight_per_pair": "0",
+    "updated_at": "2026-11-12 18:00:43.548648+00",
+    "competition_status": "upcoming",
+    "results": 0,
+    "events": null
+  },
+  {
+    "id": "23217e2f-c7a6-467c-b346-955564ee8229",
+    "slug": "the-scarlet-strongman-show-2024",
+    "units": "metric",
+    "available_plates": [
+      100,
+      55,
+      45,
+      35,
+      25,
+      15,
+      10,
+      5,
+      2.5
+    ],
+    "collar_weight_per_pair": "0",
+    "updated_at": "2026-11-12 18:13:01.993529+00",
+    "competition_status": "completed",
+    "results": 180,
+    "events": [
+      {
+        "id": "imp-e237620",
+        "name": "Max Deadlift",
+        "lanes": 1,
+        "config": {
+          "imported": true,
+          "importedType": "max_weight",
+          "importedUnit": "kg",
+          "divisionWeights": {}
+        },
+        "meet_id": "23217e2f-c7a6-467c-b346-955564ee8229",
+        "event_number": 1,
+        "scoring_type": "max_weight",
+        "loading_points": 0,
+        "time_cap_seconds": 60,
+        "weight_entry_mode": "total",
+        "implement_empty_weight": 0
+      },
+      {
+        "id": "imp-e237627",
+        "name": "Axle Clean/Press Away for Reps",
+        "lanes": 1,
+        "config": {
+          "imported": true,
+          "importedType": "reps",
+          "importedUnit": "reps",
+          "divisionWeights": {}
+        },
+        "meet_id": "23217e2f-c7a6-467c-b346-955564ee8229",
+        "event_number": 2,
+        "scoring_type": "reps",
+        "loading_points": 0,
+        "time_cap_seconds": 60,
+        "weight_entry_mode": "total",
+        "implement_empty_weight": 0
+      },
+      {
+        "id": "imp-e237634",
+        "name": "Truck Pull",
+        "lanes": 1,
+        "config": {
+          "imported": true,
+          "importedType": "time",
+          "importedUnit": "sec",
+          "divisionWeights": {}
+        },
+        "meet_id": "23217e2f-c7a6-467c-b346-955564ee8229",
+        "event_number": 3,
+        "scoring_type": "time_or_distance",
+        "loading_points": 0,
+        "time_cap_seconds": 60,
+        "weight_entry_mode": "total",
+        "implement_empty_weight": 0
+      },
+      {
+        "id": "imp-e237641",
+        "name": "Sandbag Medley",
+        "lanes": 1,
+        "config": {
+          "imported": true,
+          "importedType": "medley",
+          "importedUnit": "sec",
+          "divisionWeights": {}
+        },
+        "meet_id": "23217e2f-c7a6-467c-b346-955564ee8229",
+        "event_number": 4,
+        "scoring_type": "time_or_implements",
+        "loading_points": 0,
+        "time_cap_seconds": 60,
+        "weight_entry_mode": "total",
+        "implement_empty_weight": 0
+      },
+      {
+        "id": "imp-e237648",
+        "name": "MAS Wrestling",
+        "lanes": 1,
+        "config": {
+          "imported": true,
+          "importedType": "other",
+          "importedUnit": "points",
+          "divisionWeights": {}
+        },
+        "meet_id": "23217e2f-c7a6-467c-b346-955564ee8229",
+        "event_number": 5,
+        "scoring_type": "reps",
+        "loading_points": 0,
+        "time_cap_seconds": 60,
+        "weight_entry_mode": "total",
+        "implement_empty_weight": 0
+      }
+    ]
+  },
+  {
+    "id": "d2ca9e2a-e298-4879-93ae-bb91483240a8",
+    "slug": "metric-test-open-2026",
+    "units": "metric",
+    "available_plates": [
+      25,
+      20,
+      15,
+      10,
+      5,
+      2.5,
+      1.25
+    ],
+    "collar_weight_per_pair": "5",
+    "updated_at": "2026-11-12 18:38:13.936801+00",
+    "competition_status": "upcoming",
+    "results": 2,
+    "events": [
+      {
+        "id": "mt-e1",
+        "name": "Log Press (For Reps)",
+        "lanes": 1,
+        "config": {
+          "spec": {
+            "notes": "Clean once, press for reps.",
+            "implement": "log",
+            "implementNote": "30 cm log"
+          },
+          "hasTrumpWeight": true,
+          "divisionWeights": {
+            "mt-m": 100,
+            "mt-w": 60
+          },
+          "collarWeightPerPair": 5,
+          "divisionLightWeights": {
+            "mt-m": 85,
+            "mt-w": 50
+          },
+          "weightIsAddedPlatesOnly": false
+        },
+        "meet_id": "d2ca9e2a-e298-4879-93ae-bb91483240a8",
+        "event_number": 1,
+        "scoring_type": "reps",
+        "loading_points": 2,
+        "time_cap_seconds": 60,
+        "weight_entry_mode": "total",
+        "implement_empty_weight": 25
+      },
+      {
+        "id": "mt-e2",
+        "name": "Axle Deadlift (Max)",
+        "lanes": 1,
+        "config": {
+          "spec": {
+            "implement": "axle"
+          },
+          "hasTrumpWeight": false,
+          "divisionWeights": {
+            "mt-m": 200,
+            "mt-w": 120
+          },
+          "collarWeightPerPair": 5
+        },
+        "meet_id": "d2ca9e2a-e298-4879-93ae-bb91483240a8",
+        "event_number": 2,
+        "scoring_type": "max_weight",
+        "loading_points": 2,
+        "time_cap_seconds": 60,
+        "weight_entry_mode": "total",
+        "implement_empty_weight": 20
+      },
+      {
+        "id": "mt-e3",
+        "name": "Yoke Walk",
+        "lanes": 1,
+        "config": {
+          "spec": {
+            "implement": "yoke",
+            "courseFeet": 20
+          },
+          "hasTrumpWeight": false,
+          "divisionWeights": {
+            "mt-m": 280,
+            "mt-w": 180
+          }
+        },
+        "meet_id": "d2ca9e2a-e298-4879-93ae-bb91483240a8",
+        "event_number": 3,
+        "scoring_type": "time_or_distance",
+        "loading_points": 0,
+        "time_cap_seconds": 60,
+        "weight_entry_mode": "total",
+        "implement_empty_weight": 0
+      }
+    ]
+  }
+]

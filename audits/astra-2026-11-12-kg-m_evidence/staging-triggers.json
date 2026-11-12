@@ -1,0 +1,42 @@
+[
+  {
+    "event_object_table": "results",
+    "trigger_name": "results_stamp",
+    "action_statement": "EXECUTE FUNCTION zt_results_stamp()"
+  },
+  {
+    "event_object_table": "results",
+    "trigger_name": "results_stamp",
+    "action_statement": "EXECUTE FUNCTION zt_results_stamp()"
+  },
+  {
+    "event_object_table": "meets",
+    "trigger_name": "meets_add_owner_t",
+    "action_statement": "EXECUTE FUNCTION meets_add_owner()"
+  },
+  {
+    "event_object_table": "meets",
+    "trigger_name": "meets_freeze_slug",
+    "action_statement": "EXECUTE FUNCTION zt_meets_freeze_slug()"
+  },
+  {
+    "event_object_table": "meets",
+    "trigger_name": "meets_pin_change_revokes_grants",
+    "action_statement": "EXECUTE FUNCTION zt_revoke_grants_on_pin_change()"
+  },
+  {
+    "event_object_table": "events",
+    "trigger_name": "events_check_spec",
+    "action_statement": "EXECUTE FUNCTION zt_events_check_spec()"
+  },
+  {
+    "event_object_table": "events",
+    "trigger_name": "events_check_spec",
+    "action_statement": "EXECUTE FUNCTION zt_events_check_spec()"
+  },
+  {
+    "event_object_table": "events",
+    "trigger_name": "zt_guard_results_events",
+    "action_statement": "EXECUTE FUNCTION zt_guard_results()"
+  }
+]

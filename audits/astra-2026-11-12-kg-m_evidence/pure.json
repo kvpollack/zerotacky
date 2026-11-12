@@ -1,0 +1,512 @@
+{
+  "mapping": {
+    "meet": {
+      "id": "m",
+      "name": "Audit",
+      "date": "2026-11-12",
+      "runOrderMethod": "reverse_overall",
+      "tiebreakerRule": "lookback",
+      "availablePlates": [
+        25,
+        20,
+        15,
+        10,
+        5,
+        2.5,
+        1.25
+      ],
+      "collarWeightPerPair": 5,
+      "slug": "audit",
+      "isDemo": false,
+      "units": "metric",
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ]
+    },
+    "divisions": [
+      {
+        "id": "a",
+        "meetId": "m",
+        "name": "Group 1",
+        "flight": "A",
+        "sortOrder": 1
+      }
+    ],
+    "events": [
+      {
+        "collarWeightPerPair": 5,
+        "divisionWeights": {
+          "a": 100
+        },
+        "divisionLightWeights": {
+          "a": 60
+        },
+        "hasTrumpWeight": true,
+        "spec": {
+          "implement": "log",
+          "courseFeet": 50
+        },
+        "id": "e",
+        "meetId": "m",
+        "eventNumber": 1,
+        "name": "Log Press",
+        "scoringType": "reps",
+        "timeCapSeconds": 60,
+        "lanes": 1,
+        "loadingPoints": 2,
+        "weightEntryMode": "total",
+        "implementEmptyWeight": 25
+      }
+    ],
+    "athletes": [
+      {
+        "id": "a",
+        "divisionId": "a",
+        "name": "Audit Athlete",
+        "lotNumber": 1,
+        "status": "active",
+        "rackHeights": {},
+        "bodyweight": 220.5
+      }
+    ],
+    "results": []
+  },
+  "mergeBackToImperial": {
+    "id": "m",
+    "name": "Audit",
+    "date": "2026-11-12",
+    "runOrderMethod": "reverse_overall",
+    "tiebreakerRule": "lookback",
+    "availablePlates": [
+      25,
+      20,
+      15,
+      10,
+      5,
+      2.5,
+      1.25
+    ],
+    "collarWeightPerPair": 5,
+    "units": "metric",
+    "isDemo": false,
+    "stations": [
+      {
+        "id": "A",
+        "label": "Station 1"
+      },
+      {
+        "id": "B",
+        "label": "Station 2"
+      }
+    ],
+    "slug": "audit"
+  },
+  "missingPlates": {
+    "id": "m",
+    "name": "Metric no plates",
+    "date": "",
+    "runOrderMethod": "reverse_overall",
+    "tiebreakerRule": "lookback",
+    "availablePlates": [
+      100,
+      55,
+      45,
+      35,
+      25,
+      15,
+      10,
+      5,
+      2.5
+    ],
+    "collarWeightPerPair": 0,
+    "units": "metric",
+    "isDemo": false,
+    "stations": [
+      {
+        "id": "A",
+        "label": "Station 1"
+      },
+      {
+        "id": "B",
+        "label": "Station 2"
+      }
+    ],
+    "slug": "metric-no-plates"
+  },
+  "flipRetains": {
+    "meet": {
+      "id": "m",
+      "name": "Audit",
+      "date": "2026-11-12",
+      "runOrderMethod": "reverse_overall",
+      "tiebreakerRule": "lookback",
+      "availablePlates": [
+        100,
+        55,
+        45,
+        35,
+        25,
+        15,
+        10,
+        5,
+        2.5
+      ],
+      "collarWeightPerPair": 5,
+      "units": "imperial",
+      "isDemo": false,
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "slug": "audit"
+    },
+    "event": {
+      "id": "e",
+      "meetId": "m",
+      "eventNumber": 1,
+      "name": "Log Press",
+      "scoringType": "reps",
+      "timeCapSeconds": 60,
+      "lanes": 1,
+      "loadingPoints": 2,
+      "weightEntryMode": "total",
+      "implementEmptyWeight": 25,
+      "collarWeightPerPair": 5,
+      "divisionWeights": {
+        "a": 100
+      },
+      "divisionLightWeights": {
+        "a": 60
+      },
+      "hasTrumpWeight": true,
+      "spec": {
+        "implement": "log",
+        "courseFeet": 50
+      }
+    }
+  },
+  "spec": [
+    {
+      "courseFeet": 1610,
+      "validation": null,
+      "segments": [
+        "1610 m course"
+      ],
+      "meetValidation": {
+        "ok": true,
+        "problems": []
+      }
+    },
+    {
+      "courseFeet": 1610.5,
+      "validation": "Course distance is in meters, between 1 and 1610.",
+      "segments": [],
+      "meetValidation": {
+        "ok": true,
+        "problems": []
+      }
+    },
+    {
+      "courseFeet": 2000,
+      "validation": "Course distance is in meters, between 1 and 1610.",
+      "segments": [],
+      "meetValidation": {
+        "ok": true,
+        "problems": []
+      }
+    },
+    {
+      "courseFeet": 5280,
+      "validation": "Course distance is in meters, between 1 and 1610.",
+      "segments": [],
+      "meetValidation": {
+        "ok": true,
+        "problems": []
+      }
+    }
+  ],
+  "pickerToggle": [
+    {
+      "text": "225",
+      "kg": "102",
+      "back": "225",
+      "lbBefore": 225,
+      "lbAfter": 225,
+      "lbBack": 225
+    },
+    {
+      "text": "225.5",
+      "kg": "102",
+      "back": "225",
+      "lbBefore": 226,
+      "lbAfter": 225,
+      "lbBack": 225
+    },
+    {
+      "text": "140 kg",
+      "kg": "140 kg",
+      "back": "140 kg",
+      "lbBefore": 309,
+      "lbAfter": 309,
+      "lbBack": 309
+    },
+    {
+      "text": "225 x 3",
+      "kg": "225 x 3",
+      "back": "225 x 3",
+      "lbBefore": 225,
+      "lbAfter": 496,
+      "lbBack": 225
+    },
+    {
+      "text": "1,000",
+      "kg": "1,000",
+      "back": "1,000",
+      "lbBefore": 1,
+      "lbAfter": 2,
+      "lbBack": 1
+    }
+  ],
+  "boundary": [
+    {
+      "n": 54,
+      "kg": "24",
+      "before": 54,
+      "after": 53,
+      "target": 48.6,
+      "beforeVerdict": "reach",
+      "afterVerdict": "heavy"
+    },
+    {
+      "n": 56,
+      "kg": "25",
+      "before": 56,
+      "after": 55,
+      "target": 50.4,
+      "beforeVerdict": "reach",
+      "afterVerdict": "heavy"
+    },
+    {
+      "n": 58,
+      "kg": "26",
+      "before": 58,
+      "after": 57,
+      "target": 52.2,
+      "beforeVerdict": "reach",
+      "afterVerdict": "heavy"
+    }
+  ],
+  "plateMetric": {
+    "targetInputWeight": 100,
+    "totalSystemWeight": 100,
+    "implementTareWeight": 25,
+    "collarWeightApplied": 5,
+    "loadingPoints": 2,
+    "callOutLabel": "Per Sleeve (2 Sides)",
+    "weightPerLoadingPoint": 35,
+    "platesPerPoint": [
+      {
+        "weight": 25,
+        "count": 1
+      },
+      {
+        "weight": 10,
+        "count": 1
+      }
+    ],
+    "remainderUnloadedTotal": 0
+  },
+  "plateImperial": {
+    "targetInputWeight": 100,
+    "totalSystemWeight": 100,
+    "implementTareWeight": 25,
+    "collarWeightApplied": 5,
+    "loadingPoints": 2,
+    "callOutLabel": "Per Sleeve (2 Sides)",
+    "weightPerLoadingPoint": 35,
+    "platesPerPoint": [
+      {
+        "weight": 25,
+        "count": 1
+      },
+      {
+        "weight": 10,
+        "count": 1
+      }
+    ],
+    "remainderUnloadedTotal": 0
+  },
+  "exports": {
+    "results": "Division,Flight,Athlete,Lot,Status,Ev1 Log Press,Ev1 Place,Ev1 Pts,Ev2 Yoke,Ev2 Place,Ev2 Pts,Total Pts,Event Wins,Overall Place\r\nGroup 1,A,Audit Athlete,1,active,100 kg,1,1,20 m,1,1,2,2,1\r\n",
+    "federation": "Meet,Audit\r\nDate,2026-11-12\r\nVenue,\r\nFederation,\r\nPromoter contact,\r\nScored on,ZeroTacky\r\nResults link,https://example.invalid/audit\r\n\r\nDivision,Place,Athlete,Bodyweight,Status,Ev1 Log Press,Ev1 Pts,Ev2 Yoke,Ev2 Pts,Total Pts,Event Wins\r\nGroup 1,1,Audit Athlete,220.5,,100 kg,1,20 m,1,2,2\r\n"
+  },
+  "editedImport": {
+    "meet": {
+      "id": "m",
+      "name": "Audit",
+      "date": "2026-11-12",
+      "runOrderMethod": "reverse_overall",
+      "tiebreakerRule": "lookback",
+      "availablePlates": [
+        25,
+        20,
+        15,
+        10,
+        5,
+        2.5,
+        1.25
+      ],
+      "collarWeightPerPair": 5,
+      "units": "imperial",
+      "isDemo": false,
+      "stations": [
+        {
+          "id": "A",
+          "label": "Station 1"
+        },
+        {
+          "id": "B",
+          "label": "Station 2"
+        }
+      ],
+      "slug": "audit"
+    },
+    "divisions": [
+      {
+        "id": "a",
+        "meetId": "m",
+        "name": "Group 1",
+        "flight": "A",
+        "sortOrder": 1
+      }
+    ],
+    "athletes": [
+      {
+        "id": "a",
+        "divisionId": "a",
+        "name": "Audit Athlete",
+        "lotNumber": 1,
+        "status": "active",
+        "rackHeights": {},
+        "bodyweight": 220.5
+      }
+    ],
+    "events": [
+      {
+        "id": "e",
+        "meetId": "m",
+        "eventNumber": 1,
+        "name": "Log Press",
+        "scoringType": "max_weight",
+        "timeCapSeconds": 60,
+        "lanes": 1,
+        "loadingPoints": 2,
+        "weightEntryMode": "total",
+        "implementEmptyWeight": 25,
+        "collarWeightPerPair": 5,
+        "divisionWeights": {
+          "a": 100
+        },
+        "divisionLightWeights": {
+          "a": 60
+        },
+        "hasTrumpWeight": false,
+        "spec": {
+          "implement": "log",
+          "courseFeet": 50
+        }
+      },
+      {
+        "id": "e2",
+        "meetId": "m",
+        "eventNumber": 2,
+        "name": "Yoke",
+        "scoringType": "time_or_distance",
+        "timeCapSeconds": 60,
+        "lanes": 1,
+        "loadingPoints": 2,
+        "weightEntryMode": "total",
+        "implementEmptyWeight": 25,
+        "collarWeightPerPair": 5,
+        "divisionWeights": {
+          "a": 100
+        },
+        "divisionLightWeights": {
+          "a": 60
+        },
+        "hasTrumpWeight": true,
+        "spec": {
+          "implement": "log",
+          "courseFeet": 50
+        },
+        "distanceOnly": true
+      }
+    ],
+    "results": [
+      {
+        "id": "e_a",
+        "eventId": "e",
+        "athleteId": "a",
+        "maxWeightLbs": 100,
+        "locked": true
+      },
+      {
+        "id": "e2_a",
+        "eventId": "e2",
+        "athleteId": "a",
+        "distanceFeet": 20,
+        "locked": true
+      }
+    ]
+  },
+  "prPrecision": [
+    {
+      "key": "impl:log",
+      "label": "Log",
+      "scoringType": "max_weight",
+      "units": "imperial",
+      "result": "220.5 lb",
+      "showName": "newer-lighter",
+      "showHref": "/shows/newer-lighter",
+      "date": "2026-11-12",
+      "dateLabel": "Nov 12, 2026",
+      "divisionName": "Open",
+      "appearances": 2
+    }
+  ],
+  "prExactLb": 220.51737774554502,
+  "prMirrors": [
+    "200 kg (441 lb)",
+    "440 lb",
+    "20 m of 30"
+  ],
+  "prDistancePrecision": [
+    {
+      "key": "impl:log",
+      "label": "Log",
+      "scoringType": "time_or_distance",
+      "units": "imperial",
+      "result": "32.8 ft",
+      "showName": "32.8-ft",
+      "showHref": "/shows/32.8-ft",
+      "date": "2026-11-12",
+      "dateLabel": "Nov 12, 2026",
+      "divisionName": "Open",
+      "appearances": 2
+    }
+  ],
+  "prDistanceExactFt": 32.808398950000004
+}

@@ -1,0 +1,702 @@
+[
+  {
+    "grantee": "anon",
+    "column_name": "admin_pin",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "athlete_cap",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "auto_accept",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "available_plates",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "collar_weight_per_pair",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "competition_status",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "created_at",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "date",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "division_format",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "entry_fee_display",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "federation",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "host_gym_id",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "id",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "imported_from",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "imported_slug",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "is_demo",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "is_public_listed",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "join_code",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "livestream_url",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "name",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "owner_id",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "promoter_contact",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "registration_deadline",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "registration_status",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "reminders_enabled",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "results_status",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "results_submitted_at",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "run_order_method",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "schedule",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "slug",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "sponsors",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "staff",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "stations",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "theme",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "tiebreaker_rule",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "units",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "updated_at",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "venue",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "athlete_cap",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "available_plates",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "collar_weight_per_pair",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "competition_status",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "created_at",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "date",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "division_format",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "entry_fee_display",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "federation",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "host_gym_id",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "id",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "imported_from",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "imported_slug",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "is_demo",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "is_public_listed",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "livestream_url",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "name",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "promoter_contact",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "registration_deadline",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "registration_status",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "results_status",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "results_submitted_at",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "run_order_method",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "schedule",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "slug",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "sponsors",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "stations",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "theme",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "tiebreaker_rule",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "units",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "updated_at",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "anon",
+    "column_name": "venue",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "admin_pin",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "athlete_cap",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "auto_accept",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "available_plates",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "collar_weight_per_pair",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "competition_status",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "created_at",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "date",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "division_format",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "entry_fee_display",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "federation",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "host_gym_id",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "id",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "imported_from",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "imported_slug",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "is_demo",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "is_public_listed",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "join_code",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "livestream_url",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "name",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "owner_id",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "promoter_contact",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "registration_deadline",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "registration_status",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "reminders_enabled",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "results_status",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "results_submitted_at",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "run_order_method",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "schedule",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "slug",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "sponsors",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "staff",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "stations",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "theme",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "tiebreaker_rule",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "units",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "updated_at",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "venue",
+    "privilege_type": "INSERT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "athlete_cap",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "available_plates",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "collar_weight_per_pair",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "competition_status",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "created_at",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "date",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "division_format",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "entry_fee_display",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "federation",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "host_gym_id",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "id",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "imported_from",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "imported_slug",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "is_demo",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "is_public_listed",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "livestream_url",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "name",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "promoter_contact",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "registration_deadline",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "registration_status",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "results_status",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "results_submitted_at",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "run_order_method",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "schedule",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "slug",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "sponsors",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "stations",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "theme",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "tiebreaker_rule",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "units",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "updated_at",
+    "privilege_type": "SELECT"
+  },
+  {
+    "grantee": "authenticated",
+    "column_name": "venue",
+    "privilege_type": "SELECT"
+  }
+]

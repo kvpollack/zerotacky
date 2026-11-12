@@ -1,0 +1,113 @@
+{
+  "metricToImperial": {
+    "server": "imperial",
+    "judge": "metric",
+    "configPatches": [
+      "absent"
+    ]
+  },
+  "adminConfig": {
+    "server": "imperial",
+    "admin": "metric",
+    "configAt": "2030-01-01T00:00:00Z",
+    "configPatches": 0
+  },
+  "offlineResult": {
+    "serverUnit": "metric",
+    "judgeUnit": "metric",
+    "serverPayload": {
+      "maxWeightLbs": 220
+    },
+    "order": [
+      {
+        "method": "POST",
+        "path": "/rest/v1/results",
+        "body": [
+          {
+            "id": "sf-ev-1_sf-ath-1",
+            "meet_id": "815cbf66-abbd-4e94-9d3b-f304bb4d6cdd",
+            "event_id": "sf-ev-1",
+            "athlete_id": "sf-ath-1",
+            "payload": {
+              "maxWeightLbs": 220
+            },
+            "locked": true,
+            "updated_at": "2026-11-12T19:00:50.453Z",
+            "updated_by": "judge2"
+          }
+        ],
+        "headers": {
+          "apikey": "A",
+          "Authorization": "Bearer A",
+          "Content-Type": "application/json",
+          "Prefer": "resolution=merge-duplicates,return=minimal",
+          "x-zt-join": "JC0001",
+          "x-zt-grant": "grant-2-JC0001"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/rest/v1/results",
+        "headers": {
+          "apikey": "A",
+          "Authorization": "Bearer A",
+          "Content-Type": "application/json"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/rest/v1/athletes",
+        "headers": {
+          "apikey": "A",
+          "Authorization": "Bearer A",
+          "Content-Type": "application/json"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/rest/v1/meets",
+        "headers": {
+          "apikey": "A",
+          "Authorization": "Bearer A",
+          "Content-Type": "application/json"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/rest/v1/meets",
+        "headers": {
+          "apikey": "A",
+          "Authorization": "Bearer A",
+          "Content-Type": "application/json"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/rest/v1/divisions",
+        "headers": {
+          "apikey": "A",
+          "Authorization": "Bearer A",
+          "Content-Type": "application/json"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/rest/v1/events",
+        "headers": {
+          "apikey": "A",
+          "Authorization": "Bearer A",
+          "Content-Type": "application/json"
+        }
+      }
+    ],
+    "status": {
+      "state": "idle",
+      "pending": 0,
+      "lastSyncAt": 1794510050455,
+      "error": null,
+      "dropped": 0,
+      "publishError": null,
+      "denied": false
+    }
+  }
+}

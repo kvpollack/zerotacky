@@ -1,0 +1,114 @@
+[
+  {
+    "name": "metric start",
+    "kgSelected": true
+  },
+  {
+    "name": "unlabelled expression toggle",
+    "input": "225 x 3",
+    "before": "No group clears every compared weight; Group 1 is the closest of the 2 rated. Promoters expect this and will place you.",
+    "after": "Group 2 is the heaviest group where every compared weight is inside your comparison band."
+  },
+  {
+    "name": "decimal roundtrip",
+    "input": "225.5",
+    "kg": "102",
+    "back": "225"
+  },
+  {
+    "name": "setup flip retains values",
+    "before": "100 lbs (light 60) | Log / 50 ft course",
+    "after": "100 kg (light 60) | Log / 50 m course",
+    "state": {
+      "meet": {
+        "id": "m",
+        "name": "Audit setup",
+        "date": "2026-11-12",
+        "runOrderMethod": "reverse_overall",
+        "tiebreakerRule": "lookback",
+        "availablePlates": [
+          25,
+          20,
+          15,
+          10,
+          5,
+          2.5,
+          1.25
+        ],
+        "collarWeightPerPair": 5,
+        "isDemo": false,
+        "stations": [
+          {
+            "id": "A",
+            "label": "Station 1"
+          },
+          {
+            "id": "B",
+            "label": "Station 2"
+          }
+        ],
+        "slug": "audit-setup",
+        "units": "metric"
+      },
+      "divisions": [
+        {
+          "id": "a",
+          "meetId": "m",
+          "name": "Group 1",
+          "flight": "A",
+          "sortOrder": 1
+        },
+        {
+          "id": "b",
+          "meetId": "m",
+          "name": "Group 2",
+          "flight": "A",
+          "sortOrder": 2
+        }
+      ],
+      "athletes": [],
+      "events": [
+        {
+          "id": "e",
+          "meetId": "m",
+          "eventNumber": 1,
+          "name": "Log Press",
+          "scoringType": "reps",
+          "timeCapSeconds": 60,
+          "lanes": 1,
+          "loadingPoints": 2,
+          "weightEntryMode": "total",
+          "implementEmptyWeight": 45,
+          "collarWeightPerPair": 5,
+          "divisionWeights": {
+            "a": 100,
+            "b": 150
+          },
+          "divisionLightWeights": {
+            "a": 60,
+            "b": 100
+          },
+          "hasTrumpWeight": true,
+          "risingBarWeights": [
+            100,
+            120
+          ],
+          "spec": {
+            "implement": "log",
+            "courseFeet": 50
+          }
+        }
+      ],
+      "results": []
+    }
+  },
+  {
+    "name": "setup result lock",
+    "disabled": true,
+    "text": "Units\nPOUNDS AND FEET\nKILOGRAMS AND METERS\n\nLocked: this meet has results. Weights and marks stay in kilograms and meters.\n\nPounds and feet: lb plates, weights in lb, courses and marks in ft.\n\nKilograms and meters: kg plates, weights in kg, courses and marks in m."
+  },
+  {
+    "name": "browser errors",
+    "errors": []
+  }
+]

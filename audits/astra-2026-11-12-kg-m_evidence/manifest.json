@@ -1,0 +1,1972 @@
+[
+  {
+    "path": "lib/constants.ts",
+    "sha256": "9b0d9d99bbfa5127ad755b422cdd1094183f34ee0231b42f0d4fad9a2b390958",
+    "gitBlob": "4945c21979216e509eab42b493a0827213feb643"
+  },
+  {
+    "path": "lib/download.js",
+    "sha256": "64aeb496ceffedce3f82790525590036954ddcb65ae3f6b1664f9fa25d507031",
+    "gitBlob": "531e10a45cfab4a66ded4b2a0852a0bcde6425dc"
+  },
+  {
+    "path": "lib/export.ts",
+    "sha256": "3d72d19b40bd7be5f272eaccceb69b3333fa1d9f31788767bd33e8a0dac40aa3",
+    "gitBlob": "7d8a2bd99c7fcb64a133b9f67ffc85dfa435f389"
+  },
+  {
+    "path": "lib/exportFederation.ts",
+    "sha256": "27b5ac1b9a0fdd727b85a03be8fa7dc5d64e32cfe7c8769aea2ba63e13d91976",
+    "gitBlob": "524462f3b3ac9e81ace4582b80eb2c0d1848207a"
+  },
+  {
+    "path": "lib/landing.ts",
+    "sha256": "974f82f08ab81d8079374416442f259eac9f1a4a9f85d360c89492c6ff74e672",
+    "gitBlob": "4cfe0bb49bcee19aefce5e9ee7baf2b600f2712b"
+  },
+  {
+    "path": "lib/layout.ts",
+    "sha256": "8075b12716ee96005d32181785b67a7799617241bd02ddc3a24d32db290ebf53",
+    "gitBlob": "62e12ba56c48a99d46625ef8b4b0bd983eb293af"
+  },
+  {
+    "path": "lib/meetBuilder.ts",
+    "sha256": "669f6a3b37395bdeb6e9108889afe586c7c9d7c135c30a23c7b77bcb00a1b23c",
+    "gitBlob": "52f38d93a8f3fdbd251ec2ea3641bdb7e6436a2e"
+  },
+  {
+    "path": "lib/scorerSelection.ts",
+    "sha256": "7f469aae9a94e43845052ae4d5b9e76cfd9c5ed620ba0551c24d02791bcd29a8",
+    "gitBlob": "45dfefd57208431d4ae53d5ea2e9d6678807330b"
+  },
+  {
+    "path": "lib/types.ts",
+    "sha256": "8d676181704c28d86837cb222a44309f8e417e8e5b34a5e5f3ecc8ef28ab62a9",
+    "gitBlob": "414323d1bbe30322a022366dd61d445aec3a7278"
+  },
+  {
+    "path": "lib/units.ts",
+    "sha256": "38bed8fc275f729f339351593099820bf616137c996a11a0a7d1bf43549a747e",
+    "gitBlob": "6d59bab82abe23c524850ada3b3329f64ceba95c"
+  },
+  {
+    "path": "lib/utils.ts",
+    "sha256": "e46429536f43f5910f5b2b0c50bb2769b510a4558bb4b5d20a3b0a9091dbf7c3",
+    "gitBlob": "fed2fe91e4d2321f997c0209881db87fe0d07ba9"
+  },
+  {
+    "path": "lib/auth/age.ts",
+    "sha256": "ab1baa6c3dd73232d7fc53448fb76722a2281babe239e4cc030e5ed7fce53e47",
+    "gitBlob": "66fee55b7475f427c90bf448759151cc710d9dcd"
+  },
+  {
+    "path": "lib/auth/avatar.ts",
+    "sha256": "0653e3b03076b4310a87230c7210417135abb070f5bd4f9dff83ca6f5d921bb7",
+    "gitBlob": "4a7c4f41360b529c09f59c54edb4445a4a6fd06e"
+  },
+  {
+    "path": "lib/auth/profile.ts",
+    "sha256": "66a79a538cb9376eb5ace4b2250e6ff79cc2f826bae50b16aef5d7477155ce62",
+    "gitBlob": "9907b8533d06fffd5d401ed2506766c23cc27100"
+  },
+  {
+    "path": "lib/auth/profileDraft.ts",
+    "sha256": "96fa5bb064596cd0f0a4586f6fadf23ce2775ddc43780ea5c5c55aaccdb538c8",
+    "gitBlob": "ea3531694ea5a8c3e8c8639cc71a6179910164d1"
+  },
+  {
+    "path": "lib/auth/sponsorLogo.ts",
+    "sha256": "a7a5280f4a704d3bbb83da64ed7451d765a68754ad54f885b70dc5ff8ee20c58",
+    "gitBlob": "f3b206d0b2d0fc4c2697e91d0e7ef08f342bd235"
+  },
+  {
+    "path": "lib/auth/supabaseBrowser.ts",
+    "sha256": "5b7c44d7fe4a3cc8d74e9cb74b91a19cfaa3e5dd4d58345e3ebdf06f51424cd6",
+    "gitBlob": "42afeeeba753870472f632f8d7fd8202f0b20b53"
+  },
+  {
+    "path": "lib/auth/useAuth.ts",
+    "sha256": "bf71561fac50d9f2a511aab4623a4abd06bdda670c6eb9ec3191aaf57fae389a",
+    "gitBlob": "e52703a50358bad65c1f0382f987a28d54b5c012"
+  },
+  {
+    "path": "lib/desk/rules.ts",
+    "sha256": "f948fbbdd2bd4d8b0f0e7f1356ace74af86f6ea1746ee99d61393fe64b2c84c4",
+    "gitBlob": "9ed63f113caeb19a9e0d4d36defa2c7052666585"
+  },
+  {
+    "path": "lib/divisions/standardClasses.ts",
+    "sha256": "20d3c6507aeb7a9d78469b4eb7ba004f8d76632419d0febea6e1d25deae5a1dc",
+    "gitBlob": "e3fc717a682ba6cdeae6c471fa5aafb120508d8e"
+  },
+  {
+    "path": "lib/email/broadcast.ts",
+    "sha256": "f8070f40cc45f3bb27859ef621ef7ce007dfe46e7f0abde913b94ae3bcac5d60",
+    "gitBlob": "ce2c045cf349662b9ded3e38893ad38120175051"
+  },
+  {
+    "path": "lib/email/broadcastRun.ts",
+    "sha256": "3592550e3380361f632840c7afbac81966814a5eaa386d9d5bcc77e6bd2e5b2e",
+    "gitBlob": "012e8dced9620daa0a57f6de24774684f8653402"
+  },
+  {
+    "path": "lib/email/claimApproved.ts",
+    "sha256": "4f3ac36e4979cf7476c77bf8473c8c3e99913286744c53df225455a8a7586b56",
+    "gitBlob": "cdc4cac082602811b0d40db78328e4b1efdf84bc"
+  },
+  {
+    "path": "lib/email/client.ts",
+    "sha256": "fbd639c10155490e4e7541e6777f8a1b34a1ded155b2934f9fc10d3e0a2c8afe",
+    "gitBlob": "c919952e4055705a269d4db98a94c7f88cc8f2d7"
+  },
+  {
+    "path": "lib/email/layout.ts",
+    "sha256": "c1c74735cc9ee4a1035afd578f54b35fb3e4a40f31922d67bedf95c34c8ac314",
+    "gitBlob": "261736dd935decd1b41c5fa3f92c43787f528d88"
+  },
+  {
+    "path": "lib/email/registration.ts",
+    "sha256": "2fc6647b65ce1ece8719fb99f9dcbb8bda6b75d0f71837c4ce90eeb77701b520",
+    "gitBlob": "8a681ba2480abe6fbe01dc2d9ccadb90ff4d74c7"
+  },
+  {
+    "path": "lib/email/send.ts",
+    "sha256": "517502c7e7418b927f6608a94ca9d7ac917e2382cdf5035821a7d207e3b0aeb3",
+    "gitBlob": "de2469b2c3f9da81f475cf6f78b90244c1174caf"
+  },
+  {
+    "path": "lib/engine/eventKinds.ts",
+    "sha256": "f9fb5e765899bf30673fa52bd2ea2ccbc4423bceaf75c06ff1d70c07535183cb",
+    "gitBlob": "b69c57479d60862441794630e147fa023478b6c2"
+  },
+  {
+    "path": "lib/engine/eventOrder.ts",
+    "sha256": "3e1525eab95d33b816ff625d694475eb21c768702e3e3f51d21cf671c3364295",
+    "gitBlob": "d9eef7577c7060741f42684e97b48151f5844ddd"
+  },
+  {
+    "path": "lib/engine/index.ts",
+    "sha256": "a355fb9526162c089a9e1e4aede834c063adfe0d2a7497634e27ce8c3460b5ac",
+    "gitBlob": "17ff7c8f9252596ce252a99e34cf364528cb4788"
+  },
+  {
+    "path": "lib/engine/plates.ts",
+    "sha256": "a5ff827c13cdf4664f1e2507d971dfff6de3cea0dd08699f7c96942f4c1f43d5",
+    "gitBlob": "cfa6965e9e361eadf85cd5a62c208826dce171e2"
+  },
+  {
+    "path": "lib/engine/runOrder.ts",
+    "sha256": "df4cd9fb824e8be27785244378a4afd688ac875bfb57293349d0d459fa20e2ff",
+    "gitBlob": "d15a1a96af7078a12bb2d690381b3abe406f14b2"
+  },
+  {
+    "path": "lib/engine/scoring.ts",
+    "sha256": "e4319d4b9c7abf01ad6adf78504ff43a474e51e0238217d45c483ac5df04dffb",
+    "gitBlob": "98e78edf0aa91fa4ce1ce4761b3d62d90349de6a"
+  },
+  {
+    "path": "lib/engine/tiebreak.ts",
+    "sha256": "e11416fd32feaaedb5641415b46cdba04014c83885f31a7aeeb34da6041f0ad3",
+    "gitBlob": "de212c493077624e267973c3d97cbe3980f9dde5"
+  },
+  {
+    "path": "lib/engine/transitions.ts",
+    "sha256": "d10436a55f4b4bd4316503923c404e8c552a3d03a50a20d13ac687f37e9b5b8d",
+    "gitBlob": "e0740a0cf70398c4c6b8f1b744991540213f4c5c"
+  },
+  {
+    "path": "lib/events/spec.ts",
+    "sha256": "32e865660e1b9f5d4bd7a49e91e08bc9d6686c85e4fec5076169ebffcd078c8f",
+    "gitBlob": "504c3b15a06a92b1a9e78012d355f0e2775dc3e4"
+  },
+  {
+    "path": "lib/geo/censusMatch.ts",
+    "sha256": "ec6d5774f9e0817f2a84ea611521f509ed7af5167c5826bfe0d5cbf68fb5020c",
+    "gitBlob": "63d94b95a11ad2b1ac5302dd7c4e73e59fdbe8c6"
+  },
+  {
+    "path": "lib/geo/geo.ts",
+    "sha256": "89abb6d8386db60eebe33f93d3e53e5223a622bf7619d9a98c8d4531148ea68b",
+    "gitBlob": "45ef9c3d6dc1ab56101c4cc5f6b1892f197092e6"
+  },
+  {
+    "path": "lib/geo/zcta.json",
+    "sha256": "6a67b50ebaa197badc51d0a0f7f0a23c60c2c2107aa6c79f78be8703f0c891ab",
+    "gitBlob": "8a1e0cf5745190e9435a7bb0247ee2a666e9c200"
+  },
+  {
+    "path": "lib/geo/zcta.ts",
+    "sha256": "7cf44b44d8d96e01ef1c9ba07d01cecf9972392403ba3dc567fbb1f00ca7718e",
+    "gitBlob": "55ffc0bec994acbc5965dc1f6fc4b2d22dc0abc2"
+  },
+  {
+    "path": "lib/legal/markdown.ts",
+    "sha256": "4678ef60b649168a2db24a1b91a594563938e7a63f8e55287449c5acc1bd4f21",
+    "gitBlob": "c4626bfa6781ddaa78d66f8bd5f7c254d106249a"
+  },
+  {
+    "path": "lib/presets/index.ts",
+    "sha256": "48bc4e5959f31a504ddb504f3146bcc9f346d876e5238da7b5fe178f607e8bdd",
+    "gitBlob": "1e6bd5625e1680199f929b9a7951490cea390b10"
+  },
+  {
+    "path": "lib/presets/york.ts",
+    "sha256": "483dbb47fb47789b2692c2984cdafb63ce2ed26a692741b80d6bd7ffae055f22",
+    "gitBlob": "2e2fd8f6e12fb5217418f3ddcf0c63221c3c414d"
+  },
+  {
+    "path": "lib/promoter/contract.ts",
+    "sha256": "9f802a1cfdde63114f6d069e3263926658f7ccaad793a7402f5f42f30110bfbe",
+    "gitBlob": "a31d935eb9dbf3c31a8026fe38cf6b861888c622"
+  },
+  {
+    "path": "lib/promoter/db.ts",
+    "sha256": "dd34a426307337bf2c71853a24ebf7d7a1a4691831471acef93ee2a53760f2a1",
+    "gitBlob": "bcf7fa8656491d58f8dead7f44b1b84be6099dd2"
+  },
+  {
+    "path": "lib/promoter/fixtureApi.ts",
+    "sha256": "bfdf64d71343720a41cb7d0216e660f16adaa4e3f19ed1a33ea4f708b1795daf",
+    "gitBlob": "20196769f63c1583627f26f36030aa9f33f8a735"
+  },
+  {
+    "path": "lib/promoter/fixtures.ts",
+    "sha256": "298d4aa10a320e54861d3b69ab721a97dc55596dfe3c53d2a0405decf425a3ad",
+    "gitBlob": "a0fd59231584bcdab4e22afe469c1cbcb6700add"
+  },
+  {
+    "path": "lib/promoter/rules.ts",
+    "sha256": "71c9ff906ff229169884f53cd02baabb473712b0f4b848c9b0b412eca7196cc0",
+    "gitBlob": "6eba2c8927c64eaf51c9ed6c38c8fff21697d377"
+  },
+  {
+    "path": "lib/promoter/supabaseApi.ts",
+    "sha256": "d27e6303ba7dd37231dc92e402ef946a1cc306e3786b01193a62572ee46a557a",
+    "gitBlob": "39d58d0e8dfcb637996d0b5a5ba915ff93c8b97e"
+  },
+  {
+    "path": "lib/promoter/unsavedGuard.ts",
+    "sha256": "fee4fb3826e352a3eac08759cf5ad84a6747c9bc4e8174aa189e8be05378770e",
+    "gitBlob": "9cdb43a67449619fa93843a1ac4ed6d553d8f4c0"
+  },
+  {
+    "path": "lib/promoter/usePromoterApi.ts",
+    "sha256": "73b84d6cda35e5c00bf01638084f71a1c5046bbe0ff7a7595df61edb53f042a9",
+    "gitBlob": "520c883f9f06514ade1962ef10d5b905bb9bc6da"
+  },
+  {
+    "path": "lib/promoter/waiverVersion.ts",
+    "sha256": "86bfff432f0bac78ffc0dfee981df1396234c764a011caf5228b9b4862d32d0a",
+    "gitBlob": "62e059d394f1388af54363eed67c451d7d824a9b"
+  },
+  {
+    "path": "lib/roster/import.ts",
+    "sha256": "88446fcb262614780708d342fb5e490034a7619010faa1c6745935ad2fc89de8",
+    "gitBlob": "a2791fa915a9648a85f8b5a8164da53956c58314"
+  },
+  {
+    "path": "lib/sync/client.ts",
+    "sha256": "ae95fa03eaba20b5e0f7dca343de767cb37f14fc794871776109eecfacb9cb44",
+    "gitBlob": "ab233ea5743a956c19c6282517d21db61040e13d"
+  },
+  {
+    "path": "lib/sync/controller.ts",
+    "sha256": "26ae15298773be620b2bc6b8698f91b533fcef3ea1d596d68f7692cda4dc3f08",
+    "gitBlob": "21fbf49e3e101225869b0bddd5c7d154f8db9694"
+  },
+  {
+    "path": "lib/sync/mapping.ts",
+    "sha256": "3b921c9f5a4472d557cce67c28dec5aab09498c40aba384dda07f7f6ae920966",
+    "gitBlob": "b44717b1112324afca73594b702ba7f961891146"
+  },
+  {
+    "path": "lib/sync/meetApi.ts",
+    "sha256": "8869f2eecf230fa307b0f05bccb2ef98ca26195a0fd4ca44102ed096b1baa089",
+    "gitBlob": "65fd079f3397bf1eee83ccd27ec31a9014ea4903"
+  },
+  {
+    "path": "lib/sync/queue.ts",
+    "sha256": "c8f4e9df5426197c14568cbcb36c9e57e53e9a9ed6f4538dcceb4e2d7dfae288",
+    "gitBlob": "e23fc8e64414651c0a0662d5b9e840add7651b05"
+  },
+  {
+    "path": "lib/theme/color.ts",
+    "sha256": "d4ce4542e36ff2c276010349368d7eb34559996f3dcb26e002614461934de62a",
+    "gitBlob": "5bee8890ce7690d5a03a6b22154e8ed33b54c958"
+  },
+  {
+    "path": "lib/theme/promoter.ts",
+    "sha256": "626368ea9d22c123ae949bf293d7adb26541f818cec79906cc90f0ecd5d5553b",
+    "gitBlob": "9eac502e83ea03af1658808a1797a6f4703b3945"
+  },
+  {
+    "path": "lib/tv/model.ts",
+    "sha256": "88994431363262b9f8346f54cc0e3252bc4f09918adab84aa35fda727d662a09",
+    "gitBlob": "ca5dbcc0e7040e10920f9620a5df2e7153e60b06"
+  },
+  {
+    "path": "lib/tv/youreUp.ts",
+    "sha256": "d457d2ba834ab0129933cffc926dc2457381e850368b59a16da17461a2c64a5e",
+    "gitBlob": "e8788cc36620d56b69d33307933a2a94df587562"
+  },
+  {
+    "path": "lib/website/adoptArchive.ts",
+    "sha256": "91d2c3a1855bbbf517fc1d2178d83f31bb42ddc91b6a44c162ad229424c4c04d",
+    "gitBlob": "de8cc8afd1bf0fa39f3a6d00ffac49ab514c7607"
+  },
+  {
+    "path": "lib/website/archive.ts",
+    "sha256": "2e3007a15df3da96956ad0707fc430ae604ab370efed0c647aa6c74920fcee59",
+    "gitBlob": "523246315ecb6f24a4db812f6494df00d9f116eb"
+  },
+  {
+    "path": "lib/website/athletes.ts",
+    "sha256": "5d9107c0babec21ff72cf2d55e5351565265d7e17e42bebfa674cf2080ae779f",
+    "gitBlob": "c4aa547306b8933d8bf0a790f5e1fa6f7bd0a23e"
+  },
+  {
+    "path": "lib/website/briefing.ts",
+    "sha256": "7414bb8bdfd0c56f8fe5664e1bcc46aa5aea35d5bb57e476e58742cacff20100",
+    "gitBlob": "89f925c695f25a1e6f0aa58232ec27d9e0ed1095"
+  },
+  {
+    "path": "lib/website/data.ts",
+    "sha256": "0cca0978e4c6bf85d5b431041c0151e3a988c768f7e4f4cb11578f33d3862f41",
+    "gitBlob": "0832d1e6ee10b3cb48bb395b9c0bf2916afd15e7"
+  },
+  {
+    "path": "lib/website/externalShows.ts",
+    "sha256": "8a8eb6ed93f806cf23187dfe52dc095a30dc0762f649886f25f3350282f13e12",
+    "gitBlob": "a95bf6c2d22affda4db3ace0cc09580a6e653db9"
+  },
+  {
+    "path": "lib/website/extras.ts",
+    "sha256": "d018629cb70af21021954c3b544ae0b65631091803cef80ff9b78920544abdda",
+    "gitBlob": "42a475ab6b428c4d9f48dd2841134999ea6dcb6c"
+  },
+  {
+    "path": "lib/website/filters.ts",
+    "sha256": "ab481b215d5be46901fdd827e108a31c62a43b4a5929dcbd98c7d2234161abda",
+    "gitBlob": "9685094183c933032fa64593cb6b6050d84860a6"
+  },
+  {
+    "path": "lib/website/firstShow.ts",
+    "sha256": "d500e26cf346aa0bacb8313ffdaa7a1e8fcbc628349720434abd9fca07bf78a5",
+    "gitBlob": "bed0ca0c1f6e9abad6ce414626e3df01bde060ef"
+  },
+  {
+    "path": "lib/website/fixtures.ts",
+    "sha256": "910f6a9e49be12c39cef423efa7d03b85e76bb4817e1ff6973641aecc3088513",
+    "gitBlob": "752bc32e1d0cf1692d10396917006ced3858b9a5"
+  },
+  {
+    "path": "lib/website/format.ts",
+    "sha256": "12f6cacc2f2cc480e468372aae9791740dd7412508d6907998a33ef6dd6ec0b4",
+    "gitBlob": "d57ecc6650c016f7166b9e355ee719708f8c273a"
+  },
+  {
+    "path": "lib/website/groupPicker.ts",
+    "sha256": "32063641e6d6fb552f72ac165dbc874875e80dd1a22f947fcdf20f62700a6489",
+    "gitBlob": "f22fea12d80190ff3fb6a59932a37434ea67da3c"
+  },
+  {
+    "path": "lib/website/gymEquipment.ts",
+    "sha256": "4073347426d584844080adeb9824ae5ccfe6d0c7b86ef339a3d4303104b3c29b",
+    "gitBlob": "ea17529a40b5ea536e23fdec9628a565e3476f0e"
+  },
+  {
+    "path": "lib/website/hostGym.ts",
+    "sha256": "54238a0280d469ed62c2ff4c3d13d564d442f2da2ebd14988839835f77624f42",
+    "gitBlob": "77280b0eb102eaa8267f6ac2d661b3b75895336c"
+  },
+  {
+    "path": "lib/website/hostingRecord.ts",
+    "sha256": "f9024a573ba72e9e96653b16474cef56e20e8b7dfad292abb567120b78745367",
+    "gitBlob": "f4a85c9639dd5f164db41105750afb5829f9420b"
+  },
+  {
+    "path": "lib/website/howItWorks.ts",
+    "sha256": "c7bd539541d301616532b67c5b64da271f28ed710c1825f13a6a20ab7ecc6aa1",
+    "gitBlob": "6cee901b3f0b7a1e15ce05e9036c4254797be9f2"
+  },
+  {
+    "path": "lib/website/invites.ts",
+    "sha256": "7f0e090874b770da79bf659d1f538c8c9010d1994248274f3e686c391fa829ba",
+    "gitBlob": "4f3614f5fd7e1decf342c61c4a7ed1a412ccf81d"
+  },
+  {
+    "path": "lib/website/meetReport.ts",
+    "sha256": "8a7e03dba3567ddb30de016877003724bb1fa63f10f04bf396c1e2b4fadac8b5",
+    "gitBlob": "3152b3f5dff2cf6ee92c6f78c4790ba18f1c4463"
+  },
+  {
+    "path": "lib/website/meetTransfers.ts",
+    "sha256": "1e694518dadc4f355ec5bd54e382b50ab506b75d26b811c014e436b9de435933",
+    "gitBlob": "2f51f9d577acdfb82645a40bc017ceb446dbb1d8"
+  },
+  {
+    "path": "lib/website/membershipCards.ts",
+    "sha256": "839a335ef7a7ad97794f01c9e15eb2e8f1f614fc215464587becd422dac728a8",
+    "gitBlob": "da3d66059fb73974eb6e3be4b2fb3270266c64d1"
+  },
+  {
+    "path": "lib/website/myGym.ts",
+    "sha256": "b8089210a0e640e2bcba37fd687cc9dee6b9bcf76ce62079e7dcab9dc485c8eb",
+    "gitBlob": "4b40ff028fab22d3e2f578ebbd842d7d3edcc924"
+  },
+  {
+    "path": "lib/website/og.tsx",
+    "sha256": "cbbaf7b1526fbced44ba42459066270e68adde95a7f0646bfe151d1bd9617b99",
+    "gitBlob": "80559c0d758f5875746ab56965038c87629d80f8"
+  },
+  {
+    "path": "lib/website/prBoard.ts",
+    "sha256": "678b8e58a16ca494a7cdb10c4b80c427ff172b6420f181ab00645a442d92da57",
+    "gitBlob": "ee339ada202334dda58ca32f336c15e0aaf38372"
+  },
+  {
+    "path": "lib/website/prepSheet.ts",
+    "sha256": "bfb33b5f9e622f0d7032e9c71861fce6a33511d46bec6b65e8f8086e079c3cb2",
+    "gitBlob": "2b20b1d703b2ec128de96662bf58738055d6cf35"
+  },
+  {
+    "path": "lib/website/profileLinks.ts",
+    "sha256": "7588fd7f6ce1f0341f49b52ad41ad7d1f88e5af12be3fb4f2180ed0acee53f55",
+    "gitBlob": "2cbf1fd70971b54cfdb90a6bec15e4976778d8b0"
+  },
+  {
+    "path": "lib/website/resultCard.ts",
+    "sha256": "192dcb7c9822ddd4aa30a6bbca2f92d4e9ec29b54e0948e2799cc6f9484d7d3d",
+    "gitBlob": "03f79339421a5e96de00bf758e9e8c9cdc99b389"
+  },
+  {
+    "path": "lib/website/resultCardImage.tsx",
+    "sha256": "8bfac65b3b583dffd4ca702f8dfaa45b5e56d55fa72805f5760c8dfefdb3231f",
+    "gitBlob": "a323beca550edb325c2c4cfe8c30cb4849f36de9"
+  },
+  {
+    "path": "lib/website/schedule.ts",
+    "sha256": "a6482b7c5fea70d1b8093a3c861195600ef4aabe31f9a0f5f115d5082762f747",
+    "gitBlob": "aeea5202a47ccee1f1dc365136a3c1789da2984d"
+  },
+  {
+    "path": "lib/website/seo.ts",
+    "sha256": "cf56a20cb598edaa310e7a111b11bec0c29024d7c9a86ecc8262470b660aa335",
+    "gitBlob": "42e76b44441cf6dabda2eb356ea88770b9515b26"
+  },
+  {
+    "path": "lib/website/sheetFormat.ts",
+    "sha256": "fe15bd837d2d36afb9a35997d4f953f444e526564e49cb038f4064a5699d4b0c",
+    "gitBlob": "478f5d87c86464a19d6b3a1f038c418c36e9b757"
+  },
+  {
+    "path": "lib/website/showHistory.ts",
+    "sha256": "febe5788f20d4c661d9c5e64b20b456eb3690ae534b07b2c7f95a3c5354f76e7",
+    "gitBlob": "b1e9d4dd0873ff37ff25493f0a411e9dbd90f6cc"
+  },
+  {
+    "path": "lib/website/siteUrl.ts",
+    "sha256": "7aa9dc97586d22f09636e09816c71d616b7c2735724dc8bd4fb0f5ddccdeeaf8",
+    "gitBlob": "124e06b96f7800f75f021dbe991086279bad293e"
+  },
+  {
+    "path": "lib/website/standingsAdapter.ts",
+    "sha256": "8e1365de3df379f6180e79ffecb42a98aa84d84c22871c07f421fdf778608f2e",
+    "gitBlob": "b18e8255f6ea427e2c934b9f181b210a1fe031a0"
+  },
+  {
+    "path": "lib/website/supabaseGyms.ts",
+    "sha256": "4d2dc49449daa06acc0c9dd6550f8ea05fec279a63813c53a4ee2159d2196ac5",
+    "gitBlob": "f466b916b96a8acd7be0182062d6e8a61ad68441"
+  },
+  {
+    "path": "lib/website/supabaseShows.ts",
+    "sha256": "a72114ce2760af6b133b845a2f33a91829679440ffe57f9d630d5611bf3897d2",
+    "gitBlob": "829c8a33ddc59423a87846d627453ade705400a4"
+  },
+  {
+    "path": "lib/website/theme.ts",
+    "sha256": "2092f5ab2699ae736dbfd37cd10a46381c47c84ae406e3e38d9c2252ecc3d690",
+    "gitBlob": "addbe7dff514d84485d7dc7c1da2a4f28ee31fb3"
+  },
+  {
+    "path": "lib/website/trainFor.ts",
+    "sha256": "c6b72cd4133212e007f231205897e76ef9313a68c9b61e6a5c142f7c06cac98b",
+    "gitBlob": "37f4ac7007474912225d8df29f0f8d0aa813c9a0"
+  },
+  {
+    "path": "lib/website/types.ts",
+    "sha256": "91191468c4e957801290af909eab0b6ed8eddb82bc27f430487a9d0c4ccd0f20",
+    "gitBlob": "20a8155d8e52f702bad542c6d8ab84742e2edd82"
+  },
+  {
+    "path": "components/strongman-app-loader.tsx",
+    "sha256": "6e27a94f7808dc63de7f928ddf2582b5ab123fef62b5e621fcc9931867a1960a",
+    "gitBlob": "4fb40ad1eaef440b2614cf9b5719bfe3d58e7382"
+  },
+  {
+    "path": "components/strongman-app.jsx",
+    "sha256": "de6af273d25cb7bfb579816c9edea621fae7903817f91a86e81506e07c4c3548",
+    "gitBlob": "97c583341242edad27dbd246d8f05e7a859f001d"
+  },
+  {
+    "path": "components/auth/SignInForm.tsx",
+    "sha256": "d04d8e3c2f041c27b9dff603f05ee99130cb666352210f8f4032d87c4b02ff5c",
+    "gitBlob": "466a5c8b21713936a0b00cfc1683107e3b9aa080"
+  },
+  {
+    "path": "components/brand/Wordmark.tsx",
+    "sha256": "f64213825c3ddee5f92d21b5e67e281508cd4935ad0b02af62390676eef060c0",
+    "gitBlob": "eecc4157de65b459326ed2bbaaf49cbb5b4e466b"
+  },
+  {
+    "path": "components/brand/WordmarkSmallGlyphs.tsx",
+    "sha256": "ec4746d5ed8b4cc3238ecae36404dcff364175cd96912c7ea611a245fdfeeea9",
+    "gitBlob": "40cb5d71ec01a6bc71c6fd70d0bfca2531e65a50"
+  },
+  {
+    "path": "components/judge/JudgePad.tsx",
+    "sha256": "2540269f10ac6b256a486f4c2ed2c8f8277a62b110527442b5a9e6e75fb42aee",
+    "gitBlob": "109959e6d2e406fddcb33bcf8dbc41a5d1238f2d"
+  },
+  {
+    "path": "components/judge/PadClock.tsx",
+    "sha256": "a749809245332b436d0a17b2de45beb3ae5e497697241ad5a29132937bac0165",
+    "gitBlob": "22c2dc3956c3f13f84dee99adefc4711c1268eb7"
+  },
+  {
+    "path": "components/judge/padModel.ts",
+    "sha256": "4f7d8fc69b9f55fa94c1c54b58dc8186d9bdb3136a2cb4d180d3dec4e15add91",
+    "gitBlob": "d36eedbe69aaa4078d49e149c9d72a8a537c0c18"
+  },
+  {
+    "path": "components/legal/MarkdownBlocks.tsx",
+    "sha256": "72e8f830cbfb17f4f47d4f16376eeab998257cae2e27f79491ced9425ad0655d",
+    "gitBlob": "536e78ef21ad8466c8279b2a7ca800b1512af9b1"
+  },
+  {
+    "path": "components/promoter/AthleteAccountsSection.tsx",
+    "sha256": "69d8ceb9b2fb61f4bfbb9ab0fe174b875aea2c7d5dda4db8515f117d9641b850",
+    "gitBlob": "efce34ad536860703d692b095f2ad007589fa424"
+  },
+  {
+    "path": "components/promoter/AthleteMeetsSection.tsx",
+    "sha256": "9ab7313e7726b4c2475538e055678277acec3f990321b106d651b30d39fee7d6",
+    "gitBlob": "f70c0395e58a9cb387a30b9510ab283948dbe705"
+  },
+  {
+    "path": "components/promoter/BroadcastSection.tsx",
+    "sha256": "bafe1b7a1d2e416200b2ffd20a6fcaa7ccf337ce917ccc72568aef6128e40c3d",
+    "gitBlob": "1693868fbafd029519ee0bce49e829eb55b2c55b"
+  },
+  {
+    "path": "components/promoter/CheckInDeskSection.tsx",
+    "sha256": "55640b02459c53e7466a878fabbd9cf0b34f3a355fa79438c01294324b9049c7",
+    "gitBlob": "eef2494c8062efdc4dfcbfde66f68e6fed60ab23"
+  },
+  {
+    "path": "components/promoter/HostGymPicker.tsx",
+    "sha256": "061e0eee31b5c9f8fe6a925cec94f5624a8679aebe5d7443c5b0d32c09fb241f",
+    "gitBlob": "4d3815e5002b83e241758e8bbd8db69cd95cb06b"
+  },
+  {
+    "path": "components/promoter/ImportArchiveClient.tsx",
+    "sha256": "a6577ad802ba9dd0e70a765d3b268573f12aebf0656c9a2cde393f48c6a56641",
+    "gitBlob": "82bc3547edf0422ca952b8b89c9aba5a62934109"
+  },
+  {
+    "path": "components/promoter/ListingSection.tsx",
+    "sha256": "f7fb49ee4d99637ea1cfbd175fd2b0b2e7fb373f7369e750423590ed6a2db03a",
+    "gitBlob": "1a42dd11342384496b9a3e53873111622c7765dd"
+  },
+  {
+    "path": "components/promoter/MeetDayQrCards.tsx",
+    "sha256": "1eb84519312c21d482ba8fad879f2960e449c3de4180efb457fc90980f30c1b3",
+    "gitBlob": "6be22f53738c7009a84fef031102a91781f6599b"
+  },
+  {
+    "path": "components/promoter/MeetDaySection.tsx",
+    "sha256": "62aa1945f2e2bc9a162812b042120e14ac28ebe4afbaf97da1e795296c7bfd5f",
+    "gitBlob": "a87c9aeaea537c0966e97ab7c67665ed4f238236"
+  },
+  {
+    "path": "components/promoter/PromoterDashboardClient.tsx",
+    "sha256": "0e06f37cc0e1c450cd74c7419c3c34af1a1c8b40e7df50468e2ae9039b6824c4",
+    "gitBlob": "af7110bad0f2e9b99021c642fd2efd09901b5ca0"
+  },
+  {
+    "path": "components/promoter/PromoterMeetDetailClient.tsx",
+    "sha256": "40eca77203ba7454aad08ac164c04418417764a86c41eebf85e987f4a8e738b5",
+    "gitBlob": "6f781537bf97a8fa9cc9b4f7ff1aba523aba4add"
+  },
+  {
+    "path": "components/promoter/RegistrationsSection.tsx",
+    "sha256": "21174e6014c3be13559d6b838849a88be798cf12710ef278a14bdf65cfcb9d56",
+    "gitBlob": "4b51be15320f08d5a5ead1a47f1380d041c4f8c2"
+  },
+  {
+    "path": "components/promoter/ResultsPackSection.tsx",
+    "sha256": "3112455543070dd83b422eea40256ce6090a9275286f5563180446714d1d93ad",
+    "gitBlob": "5955a639214c62c006b597143a957db7affcafa4"
+  },
+  {
+    "path": "components/promoter/StaffSection.tsx",
+    "sha256": "30f91f7b3f4b2528ecc63516312a6f0bc1974f851166c5d8401dbb705f1651b5",
+    "gitBlob": "7ff848ad91571f7c68d3a7c1a8b46d97dbdb9db4"
+  },
+  {
+    "path": "components/promoter/TransferSection.tsx",
+    "sha256": "036552d24ee40543a1bb65a80aeded9e66b3189ab6f7a65727c5a29f9c867c63",
+    "gitBlob": "bd4e7951c59583bcc204176f85e23e79f15fe711"
+  },
+  {
+    "path": "components/register/RegisterClient.tsx",
+    "sha256": "b0de0768a93451421ad8d90ff0d4a0bcddb6e54d76a3c4606d01467c7f5d67fc",
+    "gitBlob": "42f4e9f5e4681ffd6173888561277ee0ed029921"
+  },
+  {
+    "path": "components/register/TeamPanel.tsx",
+    "sha256": "4a2cc1c897c6341220bf0386f752bb8e83e16ac2f33849f6e54b7bc4af4f290f",
+    "gitBlob": "07797d066af256ad404a7be4612a220ec618725e"
+  },
+  {
+    "path": "components/scorer/BackupExport.tsx",
+    "sha256": "84b9343c10c20f9b6c875aefdadf504025e6fc2dc7ba6a72561e9e2e89fdd586",
+    "gitBlob": "fece44160e51bbefd9162400daf3b7880613aa3d"
+  },
+  {
+    "path": "components/scorer/CloudSync.tsx",
+    "sha256": "9eac382875c03364c788f5b9862bcfe85f6f12f4b7c51f17a628af9c56ec49b7",
+    "gitBlob": "9494df50efc02cb5cb405540bafc1724c72f41ac"
+  },
+  {
+    "path": "components/scorer/LiveControl.tsx",
+    "sha256": "5b6e18e6be8243a9ca3c2bb94ad41f6d2472cb7dc372ddc3a507e5aa90b5b5b2",
+    "gitBlob": "feb2a47d6c4185735e82d614889775e1860558f6"
+  },
+  {
+    "path": "components/scorer/MeetSetupSheet.tsx",
+    "sha256": "5fefabbda22fd5f7021d231ccb4eefc107534f6f23dde4fbc7029da86be10347",
+    "gitBlob": "54da90d9fcbbe47c6fd514385839c7771d3bfbca"
+  },
+  {
+    "path": "components/scorer/parts.tsx",
+    "sha256": "5b4ac56217b4559e1df85cd479a702d445543aa55583de39249bea6f4ac1e7b8",
+    "gitBlob": "f8038b0c054bcc088698378eb17c0d546855b711"
+  },
+  {
+    "path": "components/scorer/PitCrewSheet.tsx",
+    "sha256": "605c7f176ef3e3fc72a37ec3c0e1eab79195e58640d32f3a8e9523e3c1338a6e",
+    "gitBlob": "5a78d99907222028fae0046a30cda2caa496777d"
+  },
+  {
+    "path": "components/scorer/RosterImport.tsx",
+    "sha256": "329618bf66a551082b36e4069dd3588d362a94a68c472790cc2e3cec24dca48e",
+    "gitBlob": "c889603d9bfeb3289eecf30b402bdf35b1237c13"
+  },
+  {
+    "path": "components/scorer/scorerModel.ts",
+    "sha256": "3109e2266e683e9535f9969c58d572ffa09041e8d8e53a38e08b485bd0ecc77e",
+    "gitBlob": "3966237d4090c213670ea132546eaad864ed3a3c"
+  },
+  {
+    "path": "components/scorer/ScorerShell.tsx",
+    "sha256": "4953215aa7a38c3aa0a816d542c15e4ae6f4766ecca9814a660caea257758e08",
+    "gitBlob": "737dfe66071cf9a5b67edb8a35b58fc56d79327d"
+  },
+  {
+    "path": "components/scorer/StandingsSheet.tsx",
+    "sha256": "ebed119f6d379e0865167815960a9cdddf0f0e1b7ed7a293a7af1890852c5f91",
+    "gitBlob": "c026467af2dfe11488d3232f2e7e996b64797f3c"
+  },
+  {
+    "path": "components/sheet/index.ts",
+    "sha256": "d4842c50c1d6bca75fc126e2997fdcd500b09a8849a35e648d0cc6f1bb46de03",
+    "gitBlob": "f6cd5f838592b13cf13268dd1a052d3bd63354b8"
+  },
+  {
+    "path": "components/sheet/NoLiftKey.tsx",
+    "sha256": "5c7136478a3793ce212a95580149c7ec9fd3dda18352ad33a0eabb2e7d537ea8",
+    "gitBlob": "b8bab5fa0af00c3845ab2f81f95173b20fe7a60d"
+  },
+  {
+    "path": "components/sheet/RuledBlock.tsx",
+    "sha256": "e7452a854e5621512d4ead497e0b5c0d6b50a15e749c17204b8db20ed0b50c15",
+    "gitBlob": "089c4de7b9a7ed70391803173365e8cea2f9ea4f"
+  },
+  {
+    "path": "components/sheet/Sheet.tsx",
+    "sha256": "1830b43285aee3c644f2089d943c9accc1bb375b997b1b0f4cb17b20999390b9",
+    "gitBlob": "4bbee5e9b28f480c4add5c62e02c20ce45ad4dff"
+  },
+  {
+    "path": "components/sheet/StoneMark.tsx",
+    "sha256": "204e58b84b5af1c1f70aeec1af7dc467c09c5e8824897db4ce4ba47d523f9613",
+    "gitBlob": "a8721f7639288309282fb95759706f766c3101fb"
+  },
+  {
+    "path": "components/sheet/TitleBlock.tsx",
+    "sha256": "f54e85cad8a76edd93843e410578ff532271d697a673d9abc8e938232fa6ea6d",
+    "gitBlob": "610c9d9aa55c9d507a00ff3a8d5a5f1e2e469885"
+  },
+  {
+    "path": "components/shell/LayoutToggle.jsx",
+    "sha256": "e033549c0952dcdbd503c7cd0e50fc0680cfe8db948c011e4fb9b15339f247b5",
+    "gitBlob": "e519a3be1ef199a2b96f85d9d1b1e7e191b712c8"
+  },
+  {
+    "path": "components/shell/RootLanding.tsx",
+    "sha256": "f93e9d463d478dc12f2c01d8946956a52838d672723202b3e0253df6aa63cbfe",
+    "gitBlob": "64c434dd5028fcc3b282096b1603328611dfa94d"
+  },
+  {
+    "path": "components/standings/LeaderboardTable.jsx",
+    "sha256": "c4ddc197fe0a652038b32700460a535d95c375d7a95176d3e4b2e65ec82808e6",
+    "gitBlob": "89578cb1ca75169aa1e1518fd79a2343ddd80970"
+  },
+  {
+    "path": "components/standings/Standings.jsx",
+    "sha256": "dcb00251be2d33587081262dacc59accc868c97869b63bf7989e5ff5e135e47d",
+    "gitBlob": "170cbcd4384f7d3727d1cb8e6e8591e1a1f091e9"
+  },
+  {
+    "path": "components/tv/SheetA.tsx",
+    "sha256": "36dd4b979d44f6d06fe155978bae8ae2f5f8317f3cff109226424ee201a6e06b",
+    "gitBlob": "4c3e539a5f64a61d0fa367d40a0e5bc89acd534d"
+  },
+  {
+    "path": "components/tv/SheetB.tsx",
+    "sha256": "35cff54cb9c237ca8a63280169d975534a8246b05aace15be4a4bee11d3e8d64",
+    "gitBlob": "691a461faaf687a06f39f79fc19309879fbec971"
+  },
+  {
+    "path": "components/tv/TvBoard.tsx",
+    "sha256": "6ce1735b7642d34d185302e4db9d2738d4d594bb6b49195b89a968541650460a",
+    "gitBlob": "c316c628f8228bfd8a585797f10c36da19101fee"
+  },
+  {
+    "path": "components/tv/TvFrame.tsx",
+    "sha256": "b27bb2b713790c7daab088058a8b5ea9d6290458793d3ff83db2d03bcff90b99",
+    "gitBlob": "e7d155f57205152bf8e41c9a578c4b30dbd7368d"
+  },
+  {
+    "path": "components/tv/TvIdle.tsx",
+    "sha256": "43cd50ea3c85459e8a9e1ae5977ecf034eab54a9ed72338a84ff8766318c1374",
+    "gitBlob": "f93b8271b0749900ecc70cc775d40b54d4d72e92"
+  },
+  {
+    "path": "components/ui/button.tsx",
+    "sha256": "4e679215c9c8480ea8b876cf74d77c1225da544adaf6acba43634a434275a69d",
+    "gitBlob": "b520e8718163a48ed9abc79cbc51028b7e4b1fcb"
+  },
+  {
+    "path": "components/website/AccountClient.tsx",
+    "sha256": "b4237d6959dffa5b3efeaaf28743f6ad76b65d89783fd63707d2054e84ffd070",
+    "gitBlob": "1513a97d0b2ef586c49cc504e0adf3474d7e2a39"
+  },
+  {
+    "path": "components/website/AddGymClient.tsx",
+    "sha256": "27779f57a8809895ca9d5982e803156a628a8b2c34484a33f9272cb198be3043",
+    "gitBlob": "44eacaab3ce753e71b32182ad03b2620e31cddff"
+  },
+  {
+    "path": "components/website/AdminArchiveClient.tsx",
+    "sha256": "4a8d178ef9c0d47f8058d0a225fdc7c01dcc5a4b5be64266a91684d07cccdbc6",
+    "gitBlob": "7175217d85ece626e6f7c9c09daab72913e574c1"
+  },
+  {
+    "path": "components/website/AdminClaimsClient.tsx",
+    "sha256": "2f61d0221874c90d77dc5fd6ec9aebbdaaac4e77e7d8df70720b2ce2be4c72b8",
+    "gitBlob": "265aa487e8a9c9c6e25b591d882838ff94ebe05a"
+  },
+  {
+    "path": "components/website/AdminExternalShowsClient.tsx",
+    "sha256": "75041bbb71097dd4d9579f75d8a78b5884b278cb777227d31cff1569814e537f",
+    "gitBlob": "64b6c23a8d7ccf275ab934e45aba24819a3059c8"
+  },
+  {
+    "path": "components/website/ArchiveClaimSection.tsx",
+    "sha256": "dbf4120893157858a7344e0b7a45e97573f1de53cb6f27ff1e09abe9b1bea6b0",
+    "gitBlob": "e9d70c66fcb666d02464d99f3d577139164b134d"
+  },
+  {
+    "path": "components/website/ArchiveHistory.tsx",
+    "sha256": "f9c0a843e22d418e4619680919180576da5dca66ad76b5dafbf3031e850e9ddf",
+    "gitBlob": "f39e909128b76591be2cd249eac4de856dcbc070"
+  },
+  {
+    "path": "components/website/AthletesBrowser.tsx",
+    "sha256": "1e717a5bec62aa7a5abd936edecb3d5441fa2b7703470ed37d74cd65e18e2823",
+    "gitBlob": "437effeac92dd9f4fad6c3e98055c64ab3459a94"
+  },
+  {
+    "path": "components/website/ClaimResultClient.tsx",
+    "sha256": "8bc6dab0ab2b903cdf872864c2e81166070bd4940444ad4ef511d21c8b4a2b52",
+    "gitBlob": "910e9600859004873f4f71df429accaa063e19a0"
+  },
+  {
+    "path": "components/website/FollowShowButton.tsx",
+    "sha256": "d2f6fbf9be9d98769ac0bff25fbc559771ae4fd0cca73494ee0427f9ebee3db6",
+    "gitBlob": "ceafd18d5e5ab5427b837c7f91a02156c5c9207e"
+  },
+  {
+    "path": "components/website/GroupPickerClient.tsx",
+    "sha256": "b30decd577c613f6fa4c845d598ee0b1bf19042ab04ff8737fc6cb1b30cfc941",
+    "gitBlob": "ec1cc13745e1720a725f4c6054a89dd08bceebaa"
+  },
+  {
+    "path": "components/website/GymInviteAdmin.tsx",
+    "sha256": "a63d740fb07ac46c35d9c40c103b68d39185f629150786b4d68866e3692f1f82",
+    "gitBlob": "6323596dec22c39ba40879cd47a400c69ad93ed8"
+  },
+  {
+    "path": "components/website/GymsBrowser.tsx",
+    "sha256": "c20db31708eed141237b46ceeccbc4325dbde18685b3823d961483b5a78c0007",
+    "gitBlob": "7d5491e34fa1770b378c2f8385c33d0601b9648b"
+  },
+  {
+    "path": "components/website/InviteClient.tsx",
+    "sha256": "c43e00f7fca47f5f2be5e6755135b8fb79e2c3b2d76bb1a17868be5ab54043bb",
+    "gitBlob": "5318e94e7c5965f52bfde492d43355d8a4e2d028"
+  },
+  {
+    "path": "components/website/InviteLinks.tsx",
+    "sha256": "db92213c895d6b577b76539093bc8909734181afcf70973dba776ee6a9073aec",
+    "gitBlob": "f06c7897357c504a4a3cc26c9ca78743c666d1ef"
+  },
+  {
+    "path": "components/website/JsonLd.tsx",
+    "sha256": "c1b1163ecfad0202f0dc2f448f064575485d1cd476c7f5449f0f9ad1eb956e1c",
+    "gitBlob": "ae3a19a7ba5296f11ef877299f8f1305c22dc76d"
+  },
+  {
+    "path": "components/website/MeetReportClient.tsx",
+    "sha256": "787fd643548bf9560a879ab9b39a3634dc64fb7e17a1eddcfb2a01307ebea917",
+    "gitBlob": "f8823d1caba4a693ed76012d338ce3f0de0ddb31"
+  },
+  {
+    "path": "components/website/MeetTransfersSection.tsx",
+    "sha256": "dc398a76812319b99dc69653d1ed0137c40f4d9e9db72e6666bbff938ed8707e",
+    "gitBlob": "9b44a94240ae2b6cb09444726f44fdc98580f5c6"
+  },
+  {
+    "path": "components/website/MembershipCardsSection.tsx",
+    "sha256": "4dcc3e922421ee82fd3d56a65da3a7c291a680a39836ca51dea267e965d7189f",
+    "gitBlob": "6f3d6f4cfd8c8e200c911f406726c579828c92fe"
+  },
+  {
+    "path": "components/website/MyClaimsSection.tsx",
+    "sha256": "01c001d75dea69c960e682d85b60bbfa3231cf1f932f56e5edc42912a6a22134",
+    "gitBlob": "2833033f8bae255a6a8a74a93977391fbafcb406"
+  },
+  {
+    "path": "components/website/MyGymClient.tsx",
+    "sha256": "59470f9a22006868b2e1b5599f4b17259b2a3ec798d8f389d9edb2cd868b4531",
+    "gitBlob": "258e475f856f7e7201fd69281e078c2524c640d4"
+  },
+  {
+    "path": "components/website/NavActiveScroll.tsx",
+    "sha256": "40e3382fb0e250444a74b8a84172fa7f9f03d5fba1c89de78b48497b34074207",
+    "gitBlob": "70a8d81a4b97e94a72918f67cc3196d688c54ea4"
+  },
+  {
+    "path": "components/website/NotFoundSheet.tsx",
+    "sha256": "2b1e1dd84b175af20b79fc6947b3702f2f45b56f171009e6afce88ff50cde8cd",
+    "gitBlob": "fb8eb28592cdeda9261e39a2ceb1a86ddcfd0e85"
+  },
+  {
+    "path": "components/website/PaintPicker.tsx",
+    "sha256": "798a950ae3a90863d54c6afc97f846fb3abf97463eaf398258f4cdfe14a38f19",
+    "gitBlob": "98cc16540ad337bc99cd2bd1c496f8cfefd81426"
+  },
+  {
+    "path": "components/website/PrepSheetClient.tsx",
+    "sha256": "7a5ba10b8260c5e2c31869be5e176a81bdd9971f5fff9c6ee6f13de393a04a89",
+    "gitBlob": "dade45939fd912efdfd1a8a71bebd85b819bf573"
+  },
+  {
+    "path": "components/website/PromoterNavLink.tsx",
+    "sha256": "1595a7653aa820531918640d0722de7d2bc0cdd5773eb7a64fc1023f5183679e",
+    "gitBlob": "b293b5649e3f8895dcb1c7744d68f6166cdbf890"
+  },
+  {
+    "path": "components/website/ResultCardButton.tsx",
+    "sha256": "f19b33e80e3ce28d89a7ab780826e3cd10165152b10a762d909275ae01da79b2",
+    "gitBlob": "75b678d2f2563b3e2f77bc6351e57dcae57c4e37"
+  },
+  {
+    "path": "components/website/sheet.tsx",
+    "sha256": "e0b8d7dcfbc495364b28f3d56d1727105b744ac3a627a8ab078d03cf8fbfb3da",
+    "gitBlob": "681f356885373b2c44698e5fc93d4f72c2ad0b8c"
+  },
+  {
+    "path": "components/website/SheetMode.tsx",
+    "sha256": "5f95659e187ffb4e9c00c0aa8e1a6491e57619023152e10cd36c73c1a73baa26",
+    "gitBlob": "d2571e0c6966c0f739a06e98e77e8971079a8d53"
+  },
+  {
+    "path": "components/website/ShowDetailClient.tsx",
+    "sha256": "42302c43241c93af52bdbe05125bd07554d427cdc314aabc52ddbe013a18f9ac",
+    "gitBlob": "3ff880dc29d987e71a02eae2d323b63f28894a15"
+  },
+  {
+    "path": "components/website/ShowRows.tsx",
+    "sha256": "6298490727d6371963f776483770e094f0b9466195d801ec0849b93f2a813fa1",
+    "gitBlob": "949e0cfab86ed836c9556747eb1b5c332a4a4560"
+  },
+  {
+    "path": "components/website/ShowsBrowser.tsx",
+    "sha256": "a186a5c387082e441e0cd3fd36090da0682c17194982c5d03e8f1adb30f7f708",
+    "gitBlob": "76eb24922176b8fd26dcf2a6eacf7bc47ec46303"
+  },
+  {
+    "path": "components/website/SponsorStrip.tsx",
+    "sha256": "41b9eac1b9d6419ad3f7a23169e59327e935c5680cc22a736ffdd7c7ebe22db0",
+    "gitBlob": "1e184d85abfa42a3f77689248b2c82085da680c5"
+  },
+  {
+    "path": "components/website/SubmitExternalShowClient.tsx",
+    "sha256": "b5cc5c02d6e403d439565d3a2153662975493b927a4d2618ab0b6baeb4fb2ee5",
+    "gitBlob": "d4b6151e524a58f50242c5c251e8c82588e15789"
+  },
+  {
+    "path": "components/website/UnsubscribeClient.tsx",
+    "sha256": "24837cd5ff07938688c3f060f598c3370a29fab7c6478b4a2b31074ab4132586",
+    "gitBlob": "1a0006313615610ae37b920884ef8f4e2f6277b3"
+  },
+  {
+    "path": "components/website/WebsiteAccountChip.tsx",
+    "sha256": "77d3cd81872f0b8e1838040764acfcd0125dcd1d6ca16398a650028c1a66a787",
+    "gitBlob": "ae90f4c657f5ec8630820c88849a9ba526d68352"
+  },
+  {
+    "path": "components/website/WebsiteShell.tsx",
+    "sha256": "3338b6e68838331cb6bf0c50e4779ef79cd92f3b7efe93551ae9bdbe33a349d4",
+    "gitBlob": "815d213b6938b5c3068496e688ef72cf01a49e14"
+  },
+  {
+    "path": "components/website/WebsiteThemeControls.tsx",
+    "sha256": "fc363a03291966fadae6c0523b7d06c1f9acf11833b2ac89087fcc57e73e7f72",
+    "gitBlob": "16806ebb06da52e723595afe57bf71cff7f89d4c"
+  },
+  {
+    "path": "components/website/WebsiteThemeFrame.tsx",
+    "sha256": "5f21f3df89e7666eaa10348c6092f641c7cc8b0631205f66f4d946e26bac1c10",
+    "gitBlob": "79ba301589e2faac399c151f87a3d617dc98d219"
+  },
+  {
+    "path": "components/setup/builder/EmptyMeetNotice.jsx",
+    "sha256": "797057253144f9840f1bdb17648371442b7e49643bb288493fa33b1bc10171d8",
+    "gitBlob": "258202dcc6b72a3d903d03153e386ac61551f900"
+  },
+  {
+    "path": "components/setup/builder/EventForm.jsx",
+    "sha256": "5042e28f86025d49118fb286444b05e7caab648561791382efd8411fe3f36a87",
+    "gitBlob": "eb7f49915f3ededa203b17909b4956532af1752c"
+  },
+  {
+    "path": "components/setup/builder/MeetSection.jsx",
+    "sha256": "b33f9546db41e7a9e71fce4a291311bc0d016d6d0897cd35de199adb2c445bb9",
+    "gitBlob": "7e0fc34ce164b69482fea35dddec73323944e896"
+  },
+  {
+    "path": "app/globals.css",
+    "sha256": "6f84dc861b7669ed9b66abd67d9218934c7ebd4b40e0e45575ac3c37427dd893",
+    "gitBlob": "878372641021bf37281452038bedee8c478f0532"
+  },
+  {
+    "path": "app/layout.tsx",
+    "sha256": "844526f1c2ac0f964104e1f5f1c0630bb4463bcb6afdb7edd12c576a464a564a",
+    "gitBlob": "beabbb606e282ed35371656a3ee1985c2c27383e"
+  },
+  {
+    "path": "app/not-found.tsx",
+    "sha256": "1a17b759a13906d7f82a5f2ab6562f7df4e93b4b8eafab3e0adc6ca9de2de5c0",
+    "gitBlob": "dbd58f64799adf0c6326a32c84c80dfff2235b6c"
+  },
+  {
+    "path": "app/page.tsx",
+    "sha256": "e188b6246067e8782f63ee560347070a7c087d4d924a52b3abeb914915d4fea1",
+    "gitBlob": "8c8cfc2807c95d1aa52f189b2cf9d2a845daae04"
+  },
+  {
+    "path": "app/robots.ts",
+    "sha256": "d16ddd7aedfa0915107d5ef93169686487603adc191171bdd531715bec8484bf",
+    "gitBlob": "05110330e3b5cfdb6e50f52d32096519782c3182"
+  },
+  {
+    "path": "app/sitemap.ts",
+    "sha256": "3f21505c0b284a57ec064a449ff629eaad4685cf78d9d4d3030986da01065566",
+    "gitBlob": "05bcebc01b52b84fa0e53f7dc71e43128249f1e8"
+  },
+  {
+    "path": "app/athletes/page.tsx",
+    "sha256": "61b2f422252dc28247a770ac5f8a0197ed1bf7b2071ead97504d989ee37e75ee",
+    "gitBlob": "d538b1ffa6c888ff250931a9c65ffdb7c86ec087"
+  },
+  {
+    "path": "app/demo/page.tsx",
+    "sha256": "a1fa7f0d473ba1b1ad00bb981ad040a30c56a69ed9cea75f7d49ddd5a46a697c",
+    "gitBlob": "e2a6606f147004036effdaf6e0581e3e0651c7a5"
+  },
+  {
+    "path": "app/gyms/page.tsx",
+    "sha256": "176a8a1aa5d19921ba0ed5bfe6010b5c0c132d2f1e79b44860332b9ad39fce3c",
+    "gitBlob": "1deb85b358c3094c2d980231e302b5b61a33de75"
+  },
+  {
+    "path": "app/how-it-works/page.tsx",
+    "sha256": "c8fdf6584939fc497b72d67a4118f3c7558069e861237ae1eae664c24f13edaa",
+    "gitBlob": "d63c942784e1ed1f1933926b35862d521df2d91d"
+  },
+  {
+    "path": "app/join/JoinClient.tsx",
+    "sha256": "6e18dd2b69afb24c1085fa45744a223c91f05bc62a8ad2fce75224158bde9da7",
+    "gitBlob": "1db55b8a6ffb21a216a0484ecbf7988926a706fd"
+  },
+  {
+    "path": "app/join/page.tsx",
+    "sha256": "70086f6c73c96e57052f9b1a6abab228b39909807dd770f7792854388dc394bb",
+    "gitBlob": "5085348b92a1bb4cf13f0010ba7f65870c6aa1ae"
+  },
+  {
+    "path": "app/promoter/page.tsx",
+    "sha256": "182a918defcfeab55c852e9bf1e2618513eaa73a8cc9ec46f7b8d49768fce47a",
+    "gitBlob": "92168e850b39868a15cfa10b37d362f02789ade4"
+  },
+  {
+    "path": "app/scorer/page.tsx",
+    "sha256": "3f77696c06b74c8c2cab5eeb8ba5dae89f1e3d7ba2c36d3ce2a52f5e451bcde0",
+    "gitBlob": "e56ebef1b01c1f5907e7cea24526da797e366187"
+  },
+  {
+    "path": "app/shows/page.tsx",
+    "sha256": "860a11a9b99367771c0ad8902c398abd20a873d52991751c74aae57a29e7ca95",
+    "gitBlob": "879abc9dbbfe9a8addc3754cc0a92707f4ace1b0"
+  },
+  {
+    "path": "app/trainers/page.tsx",
+    "sha256": "201df76124ee6be9da68d3181cb077ceda9b8ffe30d3ffb84b9d4720e5d5b46d",
+    "gitBlob": "a552d1a5561a582b286e4535162fefaadb2da479"
+  },
+  {
+    "path": "app/unsubscribe/page.tsx",
+    "sha256": "ae575bc8fdd72e5daca40bfaecdb6c5413b71f6c20d034656cf82453bfe4b7b3",
+    "gitBlob": "176afa119151b782b0d7d10e6270e883037cf44e"
+  },
+  {
+    "path": "app/website/page.tsx",
+    "sha256": "8a43276697897c4624b53079186acb031d50f55482fff2d87e8e909c731db507",
+    "gitBlob": "e9dddfe941151d80c14e011b6a70cf80b842d093"
+  },
+  {
+    "path": "app/website/account/page.tsx",
+    "sha256": "a494b19055976b747e3e8f944d71c8bb2f522cf3a405ffb464d95a9b1f8639b4",
+    "gitBlob": "5500e03f8c4020b1f092c3fd6c9e3ff9275e8198"
+  },
+  {
+    "path": "app/website/admin/archive/page.tsx",
+    "sha256": "3a6469359eaf7527b7e5f6a3b1f1707cc10c32abb88e17fe4613d14ca5bf03af",
+    "gitBlob": "661a665bbd39fba36d2ebf5b97669d9621e694d1"
+  },
+  {
+    "path": "app/website/admin/claims/page.tsx",
+    "sha256": "b1f927d30f074399ba742b4315f29e0ceaed5cef94ade598956952619a959d62",
+    "gitBlob": "6d26641ae36d29fcb5bc4043185832244592e75c"
+  },
+  {
+    "path": "app/website/admin/shows/page.tsx",
+    "sha256": "2e2873d787cd178f8a287cd2aeca95cdcd682d1044b0d3cf4c43bce0dc4e21c5",
+    "gitBlob": "48468a2cad4195d942de1e9c474a9c0d6bee328e"
+  },
+  {
+    "path": "app/website/account/gym/page.tsx",
+    "sha256": "d2714510d3778c8260080067f2a9625e5f9d73b28d13a532b01b02dda0c0d36b",
+    "gitBlob": "32ee590cf5cb1790dce10e20f517b056002c3d12"
+  },
+  {
+    "path": "app/website/account/gym/add/page.tsx",
+    "sha256": "b409e6550dd6898301c753a5004d7d1001405d980be956a7d8315c948210725a",
+    "gitBlob": "d4b018fed91de785ce512945aa4973c754e33546"
+  },
+  {
+    "path": "app/shows/submit/page.tsx",
+    "sha256": "7f199b08916b042000f13281a01f5525dae41701f3544b2c6ae5cb8de11f4913",
+    "gitBlob": "05d7976182c2008c42c4f4e65b00df33c959ca53"
+  },
+  {
+    "path": "app/shows/[slug]/not-found.tsx",
+    "sha256": "7290b3e2505e0304ffea581f894cafafa5ae92c9e1e54cb9dfa65a0d6e7f656e",
+    "gitBlob": "0383dd9f4869ae2e7cedaaf0a9fb8a8cf005a2f5"
+  },
+  {
+    "path": "app/shows/[slug]/opengraph-image.tsx",
+    "sha256": "590f145b89d7316da01c1f9dbfef2376d20d551476613514399d38767aa7fdf6",
+    "gitBlob": "d8d2712f6fb2bcb12d5ab854f9ee5e3b848fd5b3"
+  },
+  {
+    "path": "app/shows/[slug]/page.tsx",
+    "sha256": "2b4bb9dfb15b50c06da04cad152a58ee72993c809a2506d964c8216e76725558",
+    "gitBlob": "61972bd532c0d6940e156c6d51e007212a9c9343"
+  },
+  {
+    "path": "app/shows/[slug]/calendar.ics/route.ts",
+    "sha256": "2989fd1e02ebfff94626673991ddb2fd582490943e53081864fcf144abc3a48b",
+    "gitBlob": "a7f7009dffc2f04f7e8a55ef4e071687496e2b7c"
+  },
+  {
+    "path": "app/shows/[slug]/prep/page.tsx",
+    "sha256": "fa7e420e5a63763a21e99ad7384e2729beb8e40b99ed86c5e2d17c430b50f308",
+    "gitBlob": "393137049384c56ff84bf6a5fe0e39ce08aab723"
+  },
+  {
+    "path": "app/shows/[slug]/report/page.tsx",
+    "sha256": "6c96e0b8bf46c8d3f652d7fac2c9d601244d2bb413b401b889e10e39df8b6f92",
+    "gitBlob": "71f079a20202bfdc112a9677995f58c2e0160c44"
+  },
+  {
+    "path": "app/shows/[slug]/card/[athleteId]/route.tsx",
+    "sha256": "35f629449f2ab000c16cf915e00e37592a9669a4f2dd6442cd2fa11c1cdee315",
+    "gitBlob": "efe3b940769bf7dc32a775a4ea7934fd302baeb9"
+  },
+  {
+    "path": "app/register/[slug]/not-found.tsx",
+    "sha256": "ebbfd70479f613d7af4ef8e190f370c05f4efa77608eedc8f70f2577f5a0b053",
+    "gitBlob": "ec684890f03d5354bf90467eedc15a50bed9d0b1"
+  },
+  {
+    "path": "app/register/[slug]/page.tsx",
+    "sha256": "d839b61cb0acd178caabac2d098ec899eb00a1a9af972fed3f521889b86f89a5",
+    "gitBlob": "37a261857327c52e4671a69a2d8f51f1c0e4fbab"
+  },
+  {
+    "path": "app/promoter/import/page.tsx",
+    "sha256": "ab4f183b5739f53ba7f645f88fc071f2487e897cfc7ea073979119f54a72bb8f",
+    "gitBlob": "a7f16d5f7d85a415f3f1ce3222486185dcc57adb"
+  },
+  {
+    "path": "app/promoter/[serverId]/page.tsx",
+    "sha256": "3bf1cc05414109714b44cc470a16d070513c998b2c9803c78ee0a53984711a4b",
+    "gitBlob": "d52a967ed241daf7f6145be490e770c450e2e5f8"
+  },
+  {
+    "path": "app/m/[slug]/opengraph-image.tsx",
+    "sha256": "1041f56d24ea3d44958d8433b08505ed8205b6b38f8ffbb1738f5591726724a2",
+    "gitBlob": "1fad8bfe6a97b73c502f9a9c3277b942159d2430"
+  },
+  {
+    "path": "app/m/[slug]/page.tsx",
+    "sha256": "972dbcad83efdca73482914859ec4b0fa9d7e0df931e5e3f49c5fd64421f2cd9",
+    "gitBlob": "886bff6967497cf1e3e5fb5fd97a6e40c73b6e7c"
+  },
+  {
+    "path": "app/m/[slug]/ScoreboardClient.tsx",
+    "sha256": "b0d6f3a44bf48236499b17924bebdc19600d6cdcd24621494d233ad494116027",
+    "gitBlob": "2991deaa63e8d828c63e963e91b6b06636cd9f46"
+  },
+  {
+    "path": "app/legal/[doc]/page.tsx",
+    "sha256": "0986d669bd00318a1874c931ffc558f8c0c5cfe53df9a976640dbe22006e393c",
+    "gitBlob": "48befef96e428da609b7434067f754a4aadb8873"
+  },
+  {
+    "path": "app/invite/[token]/page.tsx",
+    "sha256": "7e83db58b9a504374eaf372cb57400708f9eff0297c3cd44b513990c40e5114a",
+    "gitBlob": "b4d21c8e5a48025bc00c501fdf5ee155bc6fde26"
+  },
+  {
+    "path": "app/how-it-works/first-show/page.tsx",
+    "sha256": "38bab8a328d2fff12c1751596ad87df3c35f69661e8e84dac9fd211f5e122aab",
+    "gitBlob": "987835bc54e9af1784d4884e11f828b99256077c"
+  },
+  {
+    "path": "app/gyms/[slug]/not-found.tsx",
+    "sha256": "f6edfe687cce1aa1103e3401c3b1e0f6d664213e22216c35a13bd88f8ab743d1",
+    "gitBlob": "b7ba495314c4914096a525bfd79997a77fd0b222"
+  },
+  {
+    "path": "app/gyms/[slug]/page.tsx",
+    "sha256": "b49f15254b868bc75462003fbd6fea0ace26438ca5ba365223d7e3efd0cbb941",
+    "gitBlob": "43790c483166e1a9ba453634b45455fb5746ab45"
+  },
+  {
+    "path": "app/gyms/[slug]/claim/GymClaimClient.tsx",
+    "sha256": "8dd22e116ccf2b17881c3e4a96903c28af7d1aaa5795c4a25373f37765838f3e",
+    "gitBlob": "1fbdccc2b2dbb3a42435192fb930ba51339e146c"
+  },
+  {
+    "path": "app/gyms/[slug]/claim/page.tsx",
+    "sha256": "9e39c18e1ad5e9631b3333f523a79151d65364aa1b71935c2e79286cb0a4fbeb",
+    "gitBlob": "0d1e72a4ec020faf6dff012211516a819839d37d"
+  },
+  {
+    "path": "app/athletes/[username]/not-found.tsx",
+    "sha256": "00c161022f6ec77b9203839cf387928b4afb30decfca770f477aeb167d4f142d",
+    "gitBlob": "c66035d02f69995e3100526c0d81f88ba128aedb"
+  },
+  {
+    "path": "app/athletes/[username]/page.tsx",
+    "sha256": "5ddc1ab128ac9e7f590cde392773d6b222fdba29c13a48a843731764044bb762",
+    "gitBlob": "59a71f330d7c508e694a68c2c586738633df4ac6"
+  },
+  {
+    "path": "app/api/broadcast/route.ts",
+    "sha256": "ef526209b4a28ca8f2e32d954038a7fc3f6322c591ffa1b9130a6e3afd312d1f",
+    "gitBlob": "f07b94870e660c8be2cf2c81e6952780c5a006b1"
+  },
+  {
+    "path": "app/api/claim-approved/route.ts",
+    "sha256": "99894101dee96a58eea6d79136e181c1f53835955f5664a54fff17ddea6d3dfb",
+    "gitBlob": "a5443837a84566ef55c57d5141607d76bc2da7a5"
+  },
+  {
+    "path": "app/api/geocode/route.ts",
+    "sha256": "97baa48d9b93d4a367a360a7aca15bb09d61306e7ddbefa42755d0b3b66018da",
+    "gitBlob": "1885850172dd8299e6c4bb8751373c691119c263"
+  },
+  {
+    "path": "app/api/registration-email/route.ts",
+    "sha256": "bc22516c0d5b95dd45486a7d0273854036d0f0f31b26563e9513ee7bbcd2bee3",
+    "gitBlob": "5dae21dbb17c3561aea19b0567a97fc7f1e6d7c3"
+  },
+  {
+    "path": "app/api/unsubscribe/route.ts",
+    "sha256": "0c887f03042c6b0110966f508fbe52284f4691680e57639c32113f711e8aaf45",
+    "gitBlob": "04f96d2deb02c386e628d7976e606b50ca983a69"
+  },
+  {
+    "path": "app/api/zip/[zip]/route.ts",
+    "sha256": "7f93a2702c7f3404b2fc0fd871ef1c098df22545b8cdc467819ac739733d99b2",
+    "gitBlob": "2db3780bd6b283fe776ea07df9d5b54167ac7d51"
+  },
+  {
+    "path": "app/api/cron/reminders/route.ts",
+    "sha256": "4239f0ca6ae820194f759c64ed788ac004913216ce60eb1f719c88069c079f8d",
+    "gitBlob": "e6ef5842a142946421993a3b13e879153fe44a99"
+  },
+  {
+    "path": "hooks/useLayoutMode.js",
+    "sha256": "ea66a7b1fba305dded5e7009f35b5575ed9a175ff4ebd91afa69607989cd4bdb",
+    "gitBlob": "15de0cf4c693fcd2999569aa57e4919a43fdb7c7"
+  },
+  {
+    "path": "hooks/useMeetState.js",
+    "sha256": "541ed2bb2f306431b96f0a88fb17c7e7b567b4c06a7b0eaf8e1289701e499d99",
+    "gitBlob": "a0a69c291e22b763d9e89dbfb614f944722fd830"
+  },
+  {
+    "path": "hooks/useMeetSync.js",
+    "sha256": "61bbdc60b98ec0e51055ec4d7b0b7bb952d588416e1ca3f752839db7cf6a8277",
+    "gitBlob": "e1a07ad3376cd36b6f7ba9675b9d053d184b772c"
+  },
+  {
+    "path": "hooks/useRoleLock.js",
+    "sha256": "79ec5fe7a951d69ffc74c1021809299e139191c4c75f2a262b42a59a3af14311",
+    "gitBlob": "5c7a13bfb3a38b5b131ff2351c0e8f502e7064b8"
+  },
+  {
+    "path": "hooks/useStopwatch.js",
+    "sha256": "72ae2dcab7345b2f15c91d322339e8b18a85944a32c3f27f891712afd129b2fe",
+    "gitBlob": "900dbea7d60cc942b663c9fc19e4aa3834f22385"
+  },
+  {
+    "path": "hooks/useTheme.js",
+    "sha256": "a64f94073a29a978329422b187ede75a640ff3b36170853b53786d4b1c3465db",
+    "gitBlob": "b42adad2436abd5ce883116386cfa66a7b0226cc"
+  },
+  {
+    "path": "supabase/001_schema.sql",
+    "sha256": "4b21b275401fce7fc90764f6d71ac4774be8ffc912edae0e8952f59bdc7b6f19",
+    "gitBlob": "2c49929a2aeda4873cee660d7389873a21ab36ca"
+  },
+  {
+    "path": "supabase/002_station_labels.sql",
+    "sha256": "c9a09faa4e4f6d268376e23dd3400223b0f3b864d03404a410b1c5e97b577116",
+    "gitBlob": "9f57d5e5751bfbf4e8b13ca7d9fddec8d8e89fac"
+  },
+  {
+    "path": "supabase/003_auth.sql",
+    "sha256": "6be3418bb35cb6be17677313f24c5eb32107c79cd91e9c922194f4a5cd3a4c3f",
+    "gitBlob": "2524fd9a5e14f2f761d55e83285803984587f13d"
+  },
+  {
+    "path": "supabase/004_result_guard.sql",
+    "sha256": "13891e4b31ade35f7607fc7fb19f5f83ed3fc78f310e54cedb57e1fd7c61f982",
+    "gitBlob": "187db63a5e3af48ae51950fc7c90829562238b9f"
+  },
+  {
+    "path": "supabase/005_listing.sql",
+    "sha256": "75dbcc2cbea1fa61384bf779eab684f5b200747403308a6ff400d5a6fe22acd0",
+    "gitBlob": "559971a933dd609812408e0a6e4c816225aa7d88"
+  },
+  {
+    "path": "supabase/006_ownership.sql",
+    "sha256": "7dd9d40b6f593cc644699b28f1fd2e0d1c23db63930defde26a91ce86e4754cd",
+    "gitBlob": "e45592e287d2ddc5146acbb92bb354f2010ec7d4"
+  },
+  {
+    "path": "supabase/007_gate_fixes.sql",
+    "sha256": "a665ac48097a53be184754c93789323314c818f81bb24aaec18b1d6d7ed3ad4b",
+    "gitBlob": "2bc30de5b62b2f1c514fe5b95233fbf2a5c3829f"
+  },
+  {
+    "path": "supabase/008_publish_guards.sql",
+    "sha256": "066afb8c6e17e6aea07babe6c0634eb753e3446225e1f65b683a5243b90361df",
+    "gitBlob": "0129cab447317a46abdc2a8c7caad391263ea9a7"
+  },
+  {
+    "path": "supabase/009_minors.sql",
+    "sha256": "368764c348bd8e7e303bdbeb3f8ddabcf0b279bc05d2551c3e3b7e9e9e8f7237",
+    "gitBlob": "7f384e3ca3decc177a129d5e79b1c37bd54805bf"
+  },
+  {
+    "path": "supabase/010_meet_lifecycle.sql",
+    "sha256": "35ef12f13d1d8e8f4109998bbbcfbf3c1d8d27b3cba83b25a8becb46852afaee",
+    "gitBlob": "536bd3113da35d90ca00587ce9deb17f71611c83"
+  },
+  {
+    "path": "supabase/011_judge_grants.sql",
+    "sha256": "38b3df29caff6f8cf1c4eef35e14f6e8afcb13e37f35f61f71831d5b6973e797",
+    "gitBlob": "7ea01debc62116ccd3f340f6b6fef04d833fd227"
+  },
+  {
+    "path": "supabase/012_follow_fixes.sql",
+    "sha256": "bc75d913d27b86c86e13576160eaa88fbb636c93ffc0669d00ecbdc3253c9247",
+    "gitBlob": "cfcdeb991b712e0b8fb4a778f383da3027a96547"
+  },
+  {
+    "path": "supabase/013_profile_fields.sql",
+    "sha256": "d4fb064fbbf63eb1437046a4ddcb33ee72a24bb9469371f8c220687994dd0840",
+    "gitBlob": "2986897543e74db20909ecf59cfa0e257bd6bc8c"
+  },
+  {
+    "path": "supabase/014_profile_shape.sql",
+    "sha256": "05995fb1124ebce0e21b3367b9314cb87487d54e7bfce73310eb18c9b384bf44",
+    "gitBlob": "c78de67e1c8c7793444f0dfd75198f34daa10abb"
+  },
+  {
+    "path": "supabase/015_gyms.sql",
+    "sha256": "6ea7ed763ab2a956ec5dae1674c5f20815273d674d302296a7f17f2cf50a8da0",
+    "gitBlob": "fb7d79ebee79dd9c9e8f4c5f0e412299a27ebb31"
+  },
+  {
+    "path": "supabase/016_gym_owner.sql",
+    "sha256": "5f4838ea12107ca246ee46bbf78dd6abb6af5f6fbf186999c291b37b7317dfff",
+    "gitBlob": "b14f542301e29d3379946993cfdd1cb74ba1dbba"
+  },
+  {
+    "path": "supabase/017_gym_admin.sql",
+    "sha256": "d599b85d911d598381d62adef645f51ee7511415e3e22e655b73dede7cbad4c4",
+    "gitBlob": "7a612035dbe7faad44118cc76b7db37f1bf041c2"
+  },
+  {
+    "path": "supabase/018_anon_revokes.sql",
+    "sha256": "c06509aa70e45ea3789bc856903a1beed3a177ec2b4d510b77f20f6c07258f84",
+    "gitBlob": "0803311c4a21bfe675f9cbd1c3abe4123f77369f"
+  },
+  {
+    "path": "supabase/019_gym_fixes.sql",
+    "sha256": "1d10d6c8536f501a482c9d3d58b894866c29ea721b63c4a289ee692de68a56e4",
+    "gitBlob": "64a8850d77e89038dcf58c066d5abd8f0e74ec3f"
+  },
+  {
+    "path": "supabase/020_athlete_directory.sql",
+    "sha256": "a8c46fab2996adad8559bb78bd6531a9c09239f942bf0262b1e6c4c8afd48241",
+    "gitBlob": "b618e6c4213463cc506041f15cef48249a44868e"
+  },
+  {
+    "path": "supabase/021_registration_requires_account.sql",
+    "sha256": "dba504ffe185a531b7a23ac435d8cdedbaeb76270a74289bba04fd57cbc94677",
+    "gitBlob": "6a4e38f118f5f5df34927fa5635cf86379457d58"
+  },
+  {
+    "path": "supabase/022_pin_change_revokes_grants.sql",
+    "sha256": "f1970a0b0c4e492aa9afea056400a3554a093f48c801baa9565b85e5f8af7de6",
+    "gitBlob": "4dfe166a3acb6f4396c6d520924e1432e21294b8"
+  },
+  {
+    "path": "supabase/023_show_history.sql",
+    "sha256": "9a090abbc7f0d088989e54934c1b7107806d59fa2693449e486a48f2419fc36f",
+    "gitBlob": "7b3c4770218c8aff9969cf65e204ad1f8819d24b"
+  },
+  {
+    "path": "supabase/024_drop_publish_key.sql",
+    "sha256": "99599e8fc4134be33767224541d75a46afdc2281c758061bef5f60c613b221a6",
+    "gitBlob": "7b2115d5841e8d031451c03306c9daf54923f441"
+  },
+  {
+    "path": "supabase/025_athlete_writes_need_grant.sql",
+    "sha256": "435d3ec43220dbc237751df7d92aeafefabf812b170dc76a103f4e97cb3c751a",
+    "gitBlob": "b307d1220419e752887dc6b6a1d4d62cfccc085f"
+  },
+  {
+    "path": "supabase/026_host_gym.sql",
+    "sha256": "4a157b073d03f80164b754e63ed79ce6668f2df60e795a8c46be71bd93216077",
+    "gitBlob": "b3b959d3212585d5b0bb4309b856a471158615ee"
+  },
+  {
+    "path": "supabase/027_claim_email.sql",
+    "sha256": "f49c0e665fc413a710138d0ce211c1ac6aa46867171093ba56cbec1b746fb8d0",
+    "gitBlob": "d82d27bef5b759260929842cd337b41a76692c54"
+  },
+  {
+    "path": "supabase/028_drop_publish_key_shim.sql",
+    "sha256": "c9417fad1ea57d1cdf0f735086ecdcf0b45464924f837d7c9f2f634ec7828709",
+    "gitBlob": "8f3b82787a0f07be5d536440c3f9b9e7f61dabd7"
+  },
+  {
+    "path": "supabase/029_profile_links.sql",
+    "sha256": "ad650dcace4417e1a56ffd380d26dc662fb808607e8103f71deb707b1c92c217",
+    "gitBlob": "c474f35ea987b9f23b4e6f9dce8e2ce3382f7c01"
+  },
+  {
+    "path": "supabase/030_theme.sql",
+    "sha256": "b638a4e4d05cdf7a82908c53355454bf026c64c25f36e0e400ea16fc07e25294",
+    "gitBlob": "b221de734aef500182233df9ff06686dc69a24ad"
+  },
+  {
+    "path": "supabase/031_registration_email.sql",
+    "sha256": "bc02185a7c2a28028a616f8e6ecd8a255c89170b37e01145d791233af8a6d2f0",
+    "gitBlob": "06dc1d20da0ef00c56dcb3a9a1d3a45c8e139302"
+  },
+  {
+    "path": "supabase/032_auto_accept.sql",
+    "sha256": "e12a380e1495ebd71479e0ee490bf5ae3069da9c60e2b7142e9ab15cdb4d7490",
+    "gitBlob": "b08012d634bfb1a0c9ee58ec5804512b3d68b1b8"
+  },
+  {
+    "path": "supabase/033_mail_reservations.sql",
+    "sha256": "85f6dcea8a1041e55162e02e836786f84721b621951208fd90a5cb58bd36cbcc",
+    "gitBlob": "bcfdb0dee48d16f6c4959f91d3e106afb32abd7a"
+  },
+  {
+    "path": "supabase/034_full_waitlists.sql",
+    "sha256": "c7116740bda91ab9136cad3d01f26e280e13a9b9aabac7322cafe052193b08a3",
+    "gitBlob": "d3da73e17ced38af022a5d470c8fb56652fb3cbd"
+  },
+  {
+    "path": "supabase/035_membership_cards.sql",
+    "sha256": "0e6f87c0fe31d09d117f8fcfcdb69bb4f93f130a9400b72d826ce222bf680646",
+    "gitBlob": "534439d0db8f4eb18026497b1363768878c7133f"
+  },
+  {
+    "path": "supabase/036_tv_control.sql",
+    "sha256": "d4acf3d2a572c6bae49159aed266bca923aa198248921cb6ae0ee9c495369a96",
+    "gitBlob": "599956b3cf9b979058c81e3a987743361a7fd8ce"
+  },
+  {
+    "path": "supabase/037_results_retention.sql",
+    "sha256": "fc2da6ce5a26d2b18f7874ffd13cbf97ea1d0fbe93b5c57b17ec0e6cfea53caa",
+    "gitBlob": "a86e376c95929a4c86bdf64fffab1a83f04ff521"
+  },
+  {
+    "path": "supabase/038_external_shows.sql",
+    "sha256": "94dee7aa70d9feb2c358111432958e541f4533b0a12606aa3789b708c897b765",
+    "gitBlob": "0980a2b74959126b1f3a2cc8b6e70953d8260138"
+  },
+  {
+    "path": "supabase/039_builds_audit_fixes.sql",
+    "sha256": "a86b1e29f8e9994390a83f3abc706fbf9fd253f53109d333bf61c141651f3e72",
+    "gitBlob": "a4f78c87b3b0d87f42c7173bccba958bcd4f653e"
+  },
+  {
+    "path": "supabase/040_event_spec_guard.sql",
+    "sha256": "8961179894af1e056936137c0714fdff6508d14662968a781da1770599d0b044",
+    "gitBlob": "dddccc39f49a54978797800819666aa8a93be0b4"
+  },
+  {
+    "path": "supabase/041_event_spec_guard_types.sql",
+    "sha256": "09693eead066e2eed2937eb0edf33a0924e2f32710647329a8276017334a36c5",
+    "gitBlob": "6404878c163235f89daa8a9424519beedfca5568"
+  },
+  {
+    "path": "supabase/042_broadcasts.sql",
+    "sha256": "92ac44b05e4dafe20a5349c9736f4b9b0224643bdd7e9ff14d9e35a7c92ad18d",
+    "gitBlob": "093e1ce8df1c48194a2fd41fdedf04981b49bc38"
+  },
+  {
+    "path": "supabase/043_broadcast_hardening.sql",
+    "sha256": "1a7c679fb20334316929ec811859ad30b84cf80453e382aa459bec1400a5d113",
+    "gitBlob": "fc352d75469998acfa8e1a839e4b07639abbeda3"
+  },
+  {
+    "path": "supabase/044_schedule.sql",
+    "sha256": "f0568f5555c11d38ceb448154fdde6aa6c5808082d440ff41e10af0794b21c49",
+    "gitBlob": "0286d795171b463d091a17cac4a1c7ae4bdeb58e"
+  },
+  {
+    "path": "supabase/045_checkin_desk.sql",
+    "sha256": "fd911aacfef18c29e4996a2505fc03a1354e93404ddc657b3c3befaf4719df38",
+    "gitBlob": "e52689384cd4ca04f30acf9618aee3f891a56eb8"
+  },
+  {
+    "path": "supabase/046_sponsors_staff_stream.sql",
+    "sha256": "5aa7a4ba65525d06f6e09dc544bff1a166dbd55ec1a4022ee9311fea7fe5c32a",
+    "gitBlob": "7414d22ce333c9d47b184c5f6bcf7bbd7460b615"
+  },
+  {
+    "path": "supabase/047_audit_md_fixes.sql",
+    "sha256": "fc9d1b12666cef28ab6897e569df253776afe021e6eba2b56d94c1614eb794e8",
+    "gitBlob": "9d2c81270753d069c7454ece43ddb91e331b5240"
+  },
+  {
+    "path": "supabase/048_result_claims.sql",
+    "sha256": "c49b00504671c1c49a58c5e06644e35fbdad05aab1735bfec36723bf9c7bfe91",
+    "gitBlob": "f7aa04810148bb71833f04bed0ef861f52658eed"
+  },
+  {
+    "path": "supabase/049_meet_report.sql",
+    "sha256": "e3c7dc116d8091bb054ddd72e0f555f1ad7f07e3562aaf5eb13b65bd4b0b3e25",
+    "gitBlob": "7181e0a7ce3643b012409141cc30e5f1330f4d64"
+  },
+  {
+    "path": "supabase/050_archive.sql",
+    "sha256": "9981f46c667d54506c9e7004a8375d636262452b4420bbc3a44b017aaab8b3de",
+    "gitBlob": "3e67e026a40ba8d56a35014749f58b88380652a3"
+  },
+  {
+    "path": "supabase/051_meet_transfers.sql",
+    "sha256": "b39c040cd4e06acf7189bb48211cd59bb51770cd2aeb8bdd1b78f5d8df225dc5",
+    "gitBlob": "c7e3171f7b19c848260cf4eb4e92bb1d55a8e6fc"
+  },
+  {
+    "path": "supabase/052_invites.sql",
+    "sha256": "337b3911cf06d45bf0e0facbf20cafd2d5dccc8236dac7e8ead2226db219ef62",
+    "gitBlob": "b2bb0f67a735c02eb6818e87d54c01a51e5d60ee"
+  },
+  {
+    "path": "supabase/053_adopt_archive.sql",
+    "sha256": "0f6e850ce5cab19c0aa59acb5b659cd3c6def4449cfad23395b49591cfc1f6f9",
+    "gitBlob": "0a226ed7cfd381ee48c288dc1ff04e498edd0e99"
+  },
+  {
+    "path": "supabase/054_division_format.sql",
+    "sha256": "e14e5246063e9b37847a3901e71cc66e2f59dcb096a947fdb9b2908d9991fee2",
+    "gitBlob": "447cec5b7f01c2616a07705c73459f6141d51ef8"
+  },
+  {
+    "path": "supabase/055_teams.sql",
+    "sha256": "2a0c4f8624f47a9e43d21592b09fa6f7c82e82ee1d46b939dfcd17ebcdd84965",
+    "gitBlob": "a5c65c5c668d8039348407d25821dda1116ba4bd"
+  },
+  {
+    "path": "supabase/056_publish_server_wins.sql",
+    "sha256": "fd252d76240b61fa1ae6a558f13c2e9270d5bf2864d408ba3e3e4a2f9d00609b",
+    "gitBlob": "32c7ffc591f2a34faacc58b46ee6a6f566875f6f"
+  },
+  {
+    "path": "supabase/057_age_and_tiebreak_default.sql",
+    "sha256": "632f5964d14c1bb916478a5ce6604a8785b3576d942fd6f29ecbfe4936e55891",
+    "gitBlob": "6f66d3e35decc0cbe62b41c41147cca30a2beba7"
+  },
+  {
+    "path": "supabase/058_intro_sessions.sql",
+    "sha256": "399a0f1447d1d451fe49fcd25944e8617c76c12cd95851905945ce31d1140bb4",
+    "gitBlob": "7d392c7c5b04fb12f86cbacfde9dffdc6e4e0687"
+  },
+  {
+    "path": "supabase/059_meet_units.sql",
+    "sha256": "72039f2929dc4a1511850f59c397dcd72152083dd4ec5b7e75a0358a6078bb65",
+    "gitBlob": "20f5a98165aa0e9fd475347b48bbc2daf42e5785"
+  },
+  {
+    "path": "supabase/060_adopt_units.sql",
+    "sha256": "bd70316a46e2284628dc6ec2152505c1b499ed60c49250c6ffe6ac89df737022",
+    "gitBlob": "9855dc6fa0e184aa697ef771955edd10477a1e68"
+  },
+  {
+    "path": "test/adoptArchive.test.mjs",
+    "sha256": "01559a8aceda7bf9a2e9eed17c7c013da3b1474181ff5afa34b7b5b74f08b624",
+    "gitBlob": "235c581e309ce5f828e1436ef6e5ecdb7e04aff8"
+  },
+  {
+    "path": "test/age.test.mjs",
+    "sha256": "a0818c77bfcc5728f0a4d18c2a0b919082c91148a808075754a464c6e5d8d304",
+    "gitBlob": "428a5f2f36ce6e0c9cf525c96d0e0da658c6bb6d"
+  },
+  {
+    "path": "test/archive.test.mjs",
+    "sha256": "5eb2296d67b455b2b7d9d228f76f5716b3d8354660a4bcb1cd8889c42d57b1ba",
+    "gitBlob": "68cd6ad86de1b20ee4eafd6daf6fc3b3058105c8"
+  },
+  {
+    "path": "test/athletes.test.mjs",
+    "sha256": "a3cce5ceefdaa227979b8ef17f2be97457c40c205869cf035a0664f31324ea39",
+    "gitBlob": "f217d6d08273d1ec0dcdfc8bcf8ec5e6f5db71b7"
+  },
+  {
+    "path": "test/auth.test.mjs",
+    "sha256": "aa69915d62dd6fbb7ec66555923825a6224208b9a7d61c53f202c89f575ab4df",
+    "gitBlob": "0bf0e1a87b87d0a4a1fd5f159ecc3f7c4fbe4c08"
+  },
+  {
+    "path": "test/briefing.test.mjs",
+    "sha256": "9d0c1df7d96483b095663fbb953a08cabddc7462481bedb93d5711cbf31b9e78",
+    "gitBlob": "5dd65a2baf2e1cbd1a6aeb1779fc18e939996a1c"
+  },
+  {
+    "path": "test/broadcast.test.mjs",
+    "sha256": "7e32dfe60c0fdfa64d07ccfb4b7801087319e8d6c8a491e1dd2db5780881eb9a",
+    "gitBlob": "fcd9d5a51910a23446a962fb87f9a12e2c62e9a9"
+  },
+  {
+    "path": "test/censusMatch.test.mjs",
+    "sha256": "c227d91c1cc73f43c2d7687fbc5427d4137a653bea39ad2cc0a13a267c49466b",
+    "gitBlob": "74c383c3ff311098cf5dbd6978f80ee237a7ec31"
+  },
+  {
+    "path": "test/claimEmail.test.mjs",
+    "sha256": "9881f9ba5d2372e3b36146351755f2de0e4876a49c8dc96682687e42abbe0d2c",
+    "gitBlob": "12c2ae64b7c7575ebf68a272b2ff6187787d04a4"
+  },
+  {
+    "path": "test/claims.test.mjs",
+    "sha256": "3db73dd1ed86509c1b94dd6d76a36ed475f4f3c5a8e95650e0bdd9e014d6f7a2",
+    "gitBlob": "0a3ecaf726b9fe0a5feeeefbbb88d5be0b7caf77"
+  },
+  {
+    "path": "test/client.test.mjs",
+    "sha256": "ba12b128b5d28f31cf1d2d93388c435d13fcdc05c708df84e2fe6678fce597a4",
+    "gitBlob": "11b1757fa0ea108ed42fda0af1e0aa0c9305525f"
+  },
+  {
+    "path": "test/controller.test.mjs",
+    "sha256": "210d1cc4f041c97f922bbaa408e70efbab9f4fc369001535d091bfc4c258f930",
+    "gitBlob": "aa0855830aab125e6f53e9e241bae76b6b644b05"
+  },
+  {
+    "path": "test/dataFallbacks.test.mjs",
+    "sha256": "1d4d44c208368216f35a5b499425ae62bfc6cbbe19134bc73a7e4a68a3c2a37e",
+    "gitBlob": "8d7b504435a62473c6cdc45d9be73e4740d076b8"
+  },
+  {
+    "path": "test/desk.test.mjs",
+    "sha256": "8e6c0151ca420128984ff5fc8daef6d8d3c6636ca06cbac2e0348819754ba910",
+    "gitBlob": "f5bb9b736e7d0715a0878b7daa1d7a688ae10100"
+  },
+  {
+    "path": "test/engine.test.mjs",
+    "sha256": "6046ea60c984e298fbbd1f5049e6c29667d66f2421466e92d0e58899c10247d6",
+    "gitBlob": "a596ebef8276dabf218a409e8647a7865cd35f6e"
+  },
+  {
+    "path": "test/eventOrder.test.mjs",
+    "sha256": "150fa891ca6329f865e6759df8cd9c103612a99cca4e042b77e2d2c2af464607",
+    "gitBlob": "514b7afcedd0061268050259695983727988bb80"
+  },
+  {
+    "path": "test/eventSpec.test.mjs",
+    "sha256": "54884425a521a1887eea4933e48d691b8dca035eae1d12162b848d77ff1d7eae",
+    "gitBlob": "2ee3f960fbf30cd6420fe144820b735124f1f39d"
+  },
+  {
+    "path": "test/export.test.mjs",
+    "sha256": "e4524cba1b3ba8d4702f2bcd2719ebc2dcfb15899670d522c48ca7531b391a84",
+    "gitBlob": "508c1bd68866823ecf4b54a099859114d7b7e103"
+  },
+  {
+    "path": "test/exportFederation.test.mjs",
+    "sha256": "f7c57e360e5a150067a6c0e46febd8d312cb1e065ec9612c79f06c0748f0f46d",
+    "gitBlob": "cf515ef3dc43c6bcb56c83e3f18a16faf5818c8e"
+  },
+  {
+    "path": "test/externalShows.test.mjs",
+    "sha256": "767ef62d0f2d71a5fcb1be55590794496c7c6aad71240d949948dc029e0bbef2",
+    "gitBlob": "a61eb0d5024b8b575d2368ed6ae0ab09bdc27a47"
+  },
+  {
+    "path": "test/extras.test.mjs",
+    "sha256": "f2a8fd01f6b11d65d10f04b09e2a6be4d5c70d0449c3e7d974349a73363f9c56",
+    "gitBlob": "a1677169e35008e61bffc699b515146e732a0d77"
+  },
+  {
+    "path": "test/fake_supabase.mjs",
+    "sha256": "18c90f5805e552d20156532bf559e6ffa25555af03fb4490a00714cadf38a63d",
+    "gitBlob": "82507e5789affebeebced54beb2d01968a0c2ce2"
+  },
+  {
+    "path": "test/format.test.mjs",
+    "sha256": "fc9154f16d209ad4a111cab2ccd102e28b1f6b72601eff2e8b280843b60fe40a",
+    "gitBlob": "25ce551f95a4bf4608de4bb6eeb1fb71d84ec6aa"
+  },
+  {
+    "path": "test/grants.test.mjs",
+    "sha256": "c8146c736dbad192e44e109dbb9976a0cdc5e2dfffd6441b4f3aa2b81e97c8cc",
+    "gitBlob": "0ecca7620b7dd7e6f3792f0526a25a067ca1635b"
+  },
+  {
+    "path": "test/groupPicker.test.mjs",
+    "sha256": "956057f753258c34d2c32965251b725a4b6b34d44e8111c1ea173bd1034358d2",
+    "gitBlob": "8aa9764127a08ec9ce142cd452fea15e2a65c186"
+  },
+  {
+    "path": "test/gymsData.test.mjs",
+    "sha256": "39660b0f32b3b36b1719f47944d925355d63510a9745228ffdc0696c9bcc042a",
+    "gitBlob": "d78c9b140ee35553b386b2f896065911c3eea242"
+  },
+  {
+    "path": "test/howItWorks.test.mjs",
+    "sha256": "acd9b9648d482a77d366dfa31d0ea452638150a0d0572032d4afd056fd33d1d1",
+    "gitBlob": "79c85daa750c704fae26d2c3f43f7e1ac1a826a7"
+  },
+  {
+    "path": "test/introSessions.test.mjs",
+    "sha256": "e95f75a7b77ef29e4c96cce3e2b2873188c0598985fd6c5491cd5d1cc4526f73",
+    "gitBlob": "02066b66fed0c9b99f61bf193a4c9c528e831339"
+  },
+  {
+    "path": "test/invites.test.mjs",
+    "sha256": "cc4f9480d40779f0f1d6600a745970d7ef4c9a1ef36735ca00e0c49875b92651",
+    "gitBlob": "fe808f763781583ce4c08e415757d09c2c9dc44d"
+  },
+  {
+    "path": "test/ironpodium_replay.test.mjs",
+    "sha256": "ab91a1bea40c21628c0a2fc8859bcc0049c215f7567a6e35b93bfdcc1b2cc59d",
+    "gitBlob": "7c9a84872a34ffbcf7f247b8f0c3064855a45cb8"
+  },
+  {
+    "path": "test/join_code_privacy.test.mjs",
+    "sha256": "f36acb0156fbb370db14605ea0d4630d5f90f6e1c2cb0e4a97d02160684973ad",
+    "gitBlob": "c31bb7b215c958edeb3ccc98070b554ecb8e4765"
+  },
+  {
+    "path": "test/landing.test.mjs",
+    "sha256": "d4960ff013e49f5b23c1e5a1fc025d76a2245b8d43346d355ff2cbeb67ff267d",
+    "gitBlob": "bde654c09ae1221c4171c55b7073365d34f4cf0b"
+  },
+  {
+    "path": "test/layout.test.mjs",
+    "sha256": "35dc04bbe6c9ad6ccc56f3171a73722216860af3dc3edbbf1cd25468958f7579",
+    "gitBlob": "65da34edb629183fa44312f339a50fb03b2c4294"
+  },
+  {
+    "path": "test/legal.test.mjs",
+    "sha256": "b5c325cbc6a932236e9f7ef0745224e0585a438ea1d230a8433632867f7f41c4",
+    "gitBlob": "76786c5bcd6ba0a99462f7d400ff2803c2dcb956"
+  },
+  {
+    "path": "test/meetBuilder.test.mjs",
+    "sha256": "3cf842562d83d2bc3ee7a8436a482b4a2fc23a771d41afb4f72bfef08b7a7bc6",
+    "gitBlob": "dc3b9515989a2539dccc1e1b4ff64d6cea2374f9"
+  },
+  {
+    "path": "test/meetReport.test.mjs",
+    "sha256": "5f68fe3b631fa4f30183d8470e1419cd4b9255dad02cd80a71ee7da69e3cb34d",
+    "gitBlob": "9c0268f5d8e107154ff6da415597a889977deed6"
+  },
+  {
+    "path": "test/meetTransfers.test.mjs",
+    "sha256": "9979387a60e457786b40ce4a704c1f5cccd71c454ca4a72ac0d2210e4c32973b",
+    "gitBlob": "dcf0f2f5173715c72ef1f154922478f9fe7714ee"
+  },
+  {
+    "path": "test/membershipCards.test.mjs",
+    "sha256": "9f4e1e4547614bbcd72bc241f71aae021b1769a6833796baca03a488e1e13490",
+    "gitBlob": "859af06ea8ba69b089e9eda7941488423a8d8114"
+  },
+  {
+    "path": "test/myGym.test.mjs",
+    "sha256": "0028e88c955eea1a431aa872ce015fc308eacf7e8d80578806a283d6333f4a0a",
+    "gitBlob": "b8d617bd6334a4d8d14943726387da589123e556"
+  },
+  {
+    "path": "test/ogTitle.test.mjs",
+    "sha256": "3c28b2fc2a387149ba3405aab47e8ce751889cfa8f92453cd5e32cbd6a9b5398",
+    "gitBlob": "096081fbaf935c08ff51331dc6be148d73c02084"
+  },
+  {
+    "path": "test/pad.test.mjs",
+    "sha256": "22fbe87d0fffd62ce001ec7e93deda3d6fc28512062f6476113d3a5357f1c985",
+    "gitBlob": "56af521d88d7b1b21d980fd698a3fe8cb45d8c09"
+  },
+  {
+    "path": "test/paint.test.mjs",
+    "sha256": "a88b2a69a64023cedd6a067116723d596a3fb889329f32e5722f43d366018d11",
+    "gitBlob": "f9c7a51e9fc43b4f58271e2cb004d36112e9e4ee"
+  },
+  {
+    "path": "test/prBoard.test.mjs",
+    "sha256": "396b99f424d378b3411a4911ca4cc0e1e9d4d227b96a6f5f90fe329d8fbc85be",
+    "gitBlob": "8642e087bbfbf5cbf4e6566e722a4f69a336ff9c"
+  },
+  {
+    "path": "test/prepSheet.test.mjs",
+    "sha256": "fa75d35f48970804f59036614d317251524be6bed928b8d24c45d02b48d4b7ac",
+    "gitBlob": "a04a7920ace86248f62f0602d8372576f59f970c"
+  },
+  {
+    "path": "test/presets.test.mjs",
+    "sha256": "55a1f032cb77d771edc354acd0b2dbb0c8043842abfd8e3bf6a32be2bdb95f83",
+    "gitBlob": "0e2cccf1feea07a81e33c1ae6cadace0f03c1a32"
+  },
+  {
+    "path": "test/profileFields.test.mjs",
+    "sha256": "f381cc219bc181dfee472d1c210f433f8d589cec818bb588ff42069e7bc6f2f0",
+    "gitBlob": "7980caffcb912032bce108913551265ecc97f175"
+  },
+  {
+    "path": "test/profileLinks.test.mjs",
+    "sha256": "4bbf78231f617630d8a248a03f6aaba00b6e371b5affcbcd5cbdab2685aa851e",
+    "gitBlob": "42166f2c11e12b69648bcdb08aa370d89f5f15a2"
+  },
+  {
+    "path": "test/profile_draft.test.mjs",
+    "sha256": "3c1d1c42ae351a3701d3c5e23d3151ab5866998fdc05e31a8bdca01209a48e25",
+    "gitBlob": "36ec900dfa33ce9b2459c26a5f700467e267f41e"
+  },
+  {
+    "path": "test/promoter.test.mjs",
+    "sha256": "716222f52085a0a81cbecbacccbe94c54cd029aa89b7728f006b0460d8e0028c",
+    "gitBlob": "11394697728f3834d727ef1f5f5cbfad976799cd"
+  },
+  {
+    "path": "test/register.test.mjs",
+    "sha256": "1b01e2a300bfd6ef9adec976dbae13e59441fe6c4efa6e19d4ca26432db25b6c",
+    "gitBlob": "599ca5cb5ef9454ed7367c8afa8fdfa17b75f13b"
+  },
+  {
+    "path": "test/registrationEmail.test.mjs",
+    "sha256": "4456992437086e0fbf5bc7f971b680145fa6fe375b8ad254ac0d6f4c8a06f0db",
+    "gitBlob": "4100d7dc8b6060d15e1d82a8efc3ffc209ae2031"
+  },
+  {
+    "path": "test/registrationEmailRoute.test.mjs",
+    "sha256": "f5fe49ebfa01965503de8b414dfa2eedf9473d5a5290f3d382f6513eefbdc1b1",
+    "gitBlob": "0d4ac982180723d13472e2aecb3db62c197de9b0"
+  },
+  {
+    "path": "test/resultCard.test.mjs",
+    "sha256": "a05fce36ba4ce2c6f276ed1e802b02de10188a0082ec474f0a13e29285d55450",
+    "gitBlob": "9a95d5580a12d388708c7519d0cdc6e708899882"
+  },
+  {
+    "path": "test/rosterImport.test.mjs",
+    "sha256": "f122a607a84ee56d14cdc1ad57c4a5e50806dfad6f6cfc829b46e2253ddd7f5d",
+    "gitBlob": "c75610a6028ccdf55ba395294d901b80310a7b5f"
+  },
+  {
+    "path": "test/schedule.test.mjs",
+    "sha256": "298444c5fa0e17581f5f6875896b8a21c726d9264efe5a50eeb18d7f118f6bce",
+    "gitBlob": "a7d500e00e34f5b3f297929974f012a63d23c934"
+  },
+  {
+    "path": "test/scorer.test.mjs",
+    "sha256": "79fd7c854186f733fe9f7c5a54328a37d9a2d0de083ea84c2902677e4216bac6",
+    "gitBlob": "f36019c05cd79346c299cb0b72a2a8652faf51de"
+  },
+  {
+    "path": "test/scoring_formats.test.mjs",
+    "sha256": "f19f094a64c799c2dca81f687c6c307c7dedb2dc43c80c944eb0f73daf402807",
+    "gitBlob": "5401ad6072cfab57345be934506a53e5c86c0e23"
+  },
+  {
+    "path": "test/selection.test.mjs",
+    "sha256": "4b3cd64eddee8803753f1e8fc2d9908466c4bf4d01ed8a7b58bb3ae6eff70f4b",
+    "gitBlob": "13f369d9030b87116415a985d27f107e531c1b19"
+  },
+  {
+    "path": "test/seo.test.mjs",
+    "sha256": "55437d41c6213f3d499d1c336eefd69fc0a142ad65b9442b64e358543cf0c43e",
+    "gitBlob": "71b0a8bb3763a638d1cab6c4ef344b533bfe6aff"
+  },
+  {
+    "path": "test/sheet.test.mjs",
+    "sha256": "b8a48ad4aee130e821594eb0dbaf70e3dd3f60a1cd153f9c8ea2cad85f850268",
+    "gitBlob": "954ffbea5e8731f268cecfa8a82a42172b555490"
+  },
+  {
+    "path": "test/sheet_format.test.mjs",
+    "sha256": "60f6b800499e06da7fe47b7f3c9c6fb25fefe3ead6db239b8e6f40bc1a0290f4",
+    "gitBlob": "3609ce18d90994c7d74cc8321f25c1d9227e4145"
+  },
+  {
+    "path": "test/showHistory.test.mjs",
+    "sha256": "54fa7aaa1924450eb99374f6dd63cb295fc5d0e30daf28d475d407477dce3f15",
+    "gitBlob": "0f20f70a405c1efb0d5e9c2fcc55bcff22be15de"
+  },
+  {
+    "path": "test/shows.data.test.mjs",
+    "sha256": "8e3c40fab883170243a172ae6b687cc9a157976046193c8821957f4b925d12b4",
+    "gitBlob": "4c7734c98c77ea0c7d62b5284f089bebe8ad6055"
+  },
+  {
+    "path": "test/siteUrl.test.mjs",
+    "sha256": "a2c37ddff7465d199040989a297d6663a8f7b1b03b926c07f83fe1551d02818f",
+    "gitBlob": "be69da6de21a424b6206f3c94f3fb18d16687b9b"
+  },
+  {
+    "path": "test/standardClasses.test.mjs",
+    "sha256": "3be670c583ad3e6867e0d1fb995b1fc181b3e1ae048a82ae09f57e9c58fbf469",
+    "gitBlob": "bd20b6a20b043bd4775b8f86028135cfed4ba2c1"
+  },
+  {
+    "path": "test/supabaseApi.test.mjs",
+    "sha256": "dc404fb6d19cc3b15b45b098ef22e0e60645764a007d446d641e9985d9f9d181",
+    "gitBlob": "18986340f4599a4160d5fcf5b7e47ffceb9bea6c"
+  },
+  {
+    "path": "test/sync.test.mjs",
+    "sha256": "f2cf5e6e7d8aee9c3896b73e07095d1fdd27d1ff91d31a51fc8ba803a2cbee06",
+    "gitBlob": "800007533b1ee2b5a68c0cc5c8ebed8fe4fa5446"
+  },
+  {
+    "path": "test/teams.test.mjs",
+    "sha256": "3fdea513e430ed8c3a02b3966e00de54f69fd94ab0d80786d1f399f7f4e24618",
+    "gitBlob": "f5aad0cb931f72dd142a618844c5f192ee989b1d"
+  },
+  {
+    "path": "test/theme.test.mjs",
+    "sha256": "0445c1d3623d7cd9d2d7cb67e5cc32e6026d154e2ac388df048113a87f7f96d2",
+    "gitBlob": "6b1d9fb4c1eaca06dabca1243f8e4b5191fd6323"
+  },
+  {
+    "path": "test/themes.test.mjs",
+    "sha256": "9a1f27c4cfdf2239a69042c350ca6db99b8a065f32e1ad222ab5c9473d3d91ae",
+    "gitBlob": "6000812725a6f27a05a8b16f3a72dae611009bc3"
+  },
+  {
+    "path": "test/trainFor.test.mjs",
+    "sha256": "6ee2d35c4a142a344401d9ef1caaa3178bb01b318bdc834db5fbe1235b9e6641",
+    "gitBlob": "c3e8dde90a77e47a83d3787037c20b96c3ee9d26"
+  },
+  {
+    "path": "test/tv.test.mjs",
+    "sha256": "fa71acc3b7dc70a21483566a2866e8b9433d4cc8d7ba78ec5828cbfc5e7f3070",
+    "gitBlob": "44538f5c6deed87c075c18ede49e717a833ff58f"
+  },
+  {
+    "path": "test/units.test.mjs",
+    "sha256": "74939c723f8880bdaabe8fadf88736127bca638ef04508f8a61b4863c1d237c2",
+    "gitBlob": "dead5ec0b13d07b4e5664eddd22dbb863510c546"
+  },
+  {
+    "path": "test/units2.test.mjs",
+    "sha256": "de1197e261669945f3f43056133f1aecd38fe563e483074c66e2ec09dec45eff",
+    "gitBlob": "4bf23fd7e9d97255de293e639fe29b9f3e5d9a58"
+  },
+  {
+    "path": "test/unsavedGuard.test.mjs",
+    "sha256": "148111ad9e6c3b79d01911100830230f76dfe7a49628cf6102a5091d55529832",
+    "gitBlob": "85efab85a9a4e26ad9524cbd335c3278be08fe0b"
+  },
+  {
+    "path": "test/waiver.test.mjs",
+    "sha256": "12b5994320f070ccd3cc806abbc01623f68e594f809b4be18005bb0acf50718e",
+    "gitBlob": "06898a416ca80b967249433672b30754fe02d903"
+  },
+  {
+    "path": "test/website.test.mjs",
+    "sha256": "d0959f7a9643bed1bb1887e8332ef5cbaa67911095d2c501e33f1ac5170320d1",
+    "gitBlob": "ccd978aed501ccc95613ed75fccf4ec47424b586"
+  },
+  {
+    "path": "test/youreUp.test.mjs",
+    "sha256": "019ccf982d4c0b31317939c89144c60534717ee9aff87ce89569b208ecb87363",
+    "gitBlob": "a00691f38f51a36a63aab909575d11f87f6b03b6"
+  },
+  {
+    "path": "test/fixtures/groupsSeed.ts",
+    "sha256": "b1b5a933326182c76fe59cc6365655c5eb0bd2f87be532455154f2916cc6493b",
+    "gitBlob": "de7b8e41d23ffa7e3cb38eb1054a457072d5c6f6"
+  }
+]

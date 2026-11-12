@@ -1,0 +1,1537 @@
+[
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "publish",
+    "locked": false,
+    "input": "metric",
+    "rejected": true,
+    "error": "This meet has results in pounds and feet; units cannot change now.",
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "publish",
+    "locked": false,
+    "input": "imperial",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "publish",
+    "locked": false,
+    "input": null,
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "publish",
+    "locked": false,
+    "input": "absent",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "publish",
+    "locked": false,
+    "input": "junk",
+    "rejected": true,
+    "error": "Units must be imperial or metric.",
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "publish",
+    "locked": true,
+    "input": "metric",
+    "rejected": true,
+    "error": "This meet has results in pounds and feet; units cannot change now.",
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "publish",
+    "locked": true,
+    "input": "imperial",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "publish",
+    "locked": true,
+    "input": null,
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "publish",
+    "locked": true,
+    "input": "absent",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "publish",
+    "locked": true,
+    "input": "junk",
+    "rejected": true,
+    "error": "Units must be imperial or metric.",
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "save",
+    "locked": false,
+    "input": "metric",
+    "rejected": true,
+    "error": "This meet has results in pounds and feet; units cannot change now.",
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "save",
+    "locked": false,
+    "input": "imperial",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "save",
+    "locked": false,
+    "input": null,
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "save",
+    "locked": false,
+    "input": "absent",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "save",
+    "locked": false,
+    "input": "junk",
+    "rejected": true,
+    "error": "Units must be imperial or metric.",
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "save",
+    "locked": true,
+    "input": "metric",
+    "rejected": true,
+    "error": "This meet has results in pounds and feet; units cannot change now.",
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "save",
+    "locked": true,
+    "input": "imperial",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "save",
+    "locked": true,
+    "input": null,
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "save",
+    "locked": true,
+    "input": "absent",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "imperial",
+    "writer": "save",
+    "locked": true,
+    "input": "junk",
+    "rejected": true,
+    "error": "Units must be imperial or metric.",
+    "state": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "publish",
+    "locked": false,
+    "input": "metric",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "publish",
+    "locked": false,
+    "input": "imperial",
+    "rejected": true,
+    "error": "This meet has results in kilograms and meters; units cannot change now.",
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "publish",
+    "locked": false,
+    "input": null,
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "publish",
+    "locked": false,
+    "input": "absent",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "publish",
+    "locked": false,
+    "input": "junk",
+    "rejected": true,
+    "error": "Units must be imperial or metric.",
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "publish",
+    "locked": true,
+    "input": "metric",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "publish",
+    "locked": true,
+    "input": "imperial",
+    "rejected": true,
+    "error": "This meet has results in kilograms and meters; units cannot change now.",
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "publish",
+    "locked": true,
+    "input": null,
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "publish",
+    "locked": true,
+    "input": "absent",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "publish",
+    "locked": true,
+    "input": "junk",
+    "rejected": true,
+    "error": "Units must be imperial or metric.",
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "save",
+    "locked": false,
+    "input": "metric",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "save",
+    "locked": false,
+    "input": "imperial",
+    "rejected": true,
+    "error": "This meet has results in kilograms and meters; units cannot change now.",
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "save",
+    "locked": false,
+    "input": null,
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "save",
+    "locked": false,
+    "input": "absent",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "save",
+    "locked": false,
+    "input": "junk",
+    "rejected": true,
+    "error": "Units must be imperial or metric.",
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "save",
+    "locked": true,
+    "input": "metric",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "save",
+    "locked": true,
+    "input": "imperial",
+    "rejected": true,
+    "error": "This meet has results in kilograms and meters; units cannot change now.",
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "save",
+    "locked": true,
+    "input": null,
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "save",
+    "locked": true,
+    "input": "absent",
+    "rejected": false,
+    "error": null,
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "lock matrix",
+    "storedUnit": "metric",
+    "writer": "save",
+    "locked": true,
+    "input": "junk",
+    "rejected": true,
+    "error": "Units must be imperial or metric.",
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "empty meet flips",
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": []
+    }
+  },
+  {
+    "name": "course validation",
+    "courseFeet": 1610,
+    "accepted": true,
+    "error": null
+  },
+  {
+    "name": "course validation",
+    "courseFeet": 1610.5,
+    "accepted": true,
+    "error": null
+  },
+  {
+    "name": "course validation",
+    "courseFeet": 2000,
+    "accepted": true,
+    "error": null
+  },
+  {
+    "name": "course validation",
+    "courseFeet": 5280,
+    "accepted": true,
+    "error": null
+  },
+  {
+    "name": "course validation",
+    "courseFeet": 5280.5,
+    "accepted": false,
+    "error": "Course distance is in feet, between 1 and 5280."
+  },
+  {
+    "name": "course validation",
+    "courseFeet": 20.25,
+    "accepted": false,
+    "error": "Course distance is in half-foot steps (50 or 50.5)."
+  },
+  {
+    "name": "old-unit result inserted after legal flip",
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": [
+        {
+          "payload": {
+            "maxWeightLbs": 220
+          },
+          "locked": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "publish missing plates",
+    "state": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ],
+      "results": []
+    }
+  },
+  {
+    "name": "archive adoption",
+    "inputUnits": [
+      "kg"
+    ],
+    "meet": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ]
+    },
+    "results": [
+      {
+        "payload": {
+          "maxWeightLbs": 100,
+          "importedPoints": 10,
+          "importedDisplay": "100 kg"
+        }
+      }
+    ]
+  },
+  {
+    "name": "archive adoption",
+    "inputUnits": [
+      "kg",
+      "m"
+    ],
+    "meet": {
+      "units": "metric",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ]
+    },
+    "results": [
+      {
+        "payload": {
+          "maxWeightLbs": 100,
+          "importedPoints": 10,
+          "importedDisplay": "100 kg"
+        }
+      },
+      {
+        "payload": {
+          "distanceFeet": 100,
+          "importedPoints": 10,
+          "importedDisplay": "100 m"
+        }
+      }
+    ]
+  },
+  {
+    "name": "archive adoption",
+    "inputUnits": [
+      "kg",
+      "ft"
+    ],
+    "meet": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ]
+    },
+    "results": [
+      {
+        "payload": {
+          "maxWeightLbs": 220.5,
+          "importedPoints": 10,
+          "importedDisplay": "100 kg"
+        }
+      },
+      {
+        "payload": {
+          "distanceFeet": 100,
+          "importedPoints": 10,
+          "importedDisplay": "100 ft"
+        }
+      }
+    ]
+  },
+  {
+    "name": "archive adoption",
+    "inputUnits": [
+      "m",
+      "lb"
+    ],
+    "meet": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ]
+    },
+    "results": [
+      {
+        "payload": {
+          "distanceFeet": 328.1,
+          "importedPoints": 10,
+          "importedDisplay": "100 m"
+        }
+      },
+      {
+        "payload": {
+          "maxWeightLbs": 100,
+          "importedPoints": 10,
+          "importedDisplay": "100 lb"
+        }
+      }
+    ]
+  },
+  {
+    "name": "archive adoption",
+    "inputUnits": [
+      "lb"
+    ],
+    "meet": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ]
+    },
+    "results": [
+      {
+        "payload": {
+          "maxWeightLbs": 100,
+          "importedPoints": 10,
+          "importedDisplay": "100 lb"
+        }
+      }
+    ]
+  },
+  {
+    "name": "archive adoption",
+    "inputUnits": [
+      "reps"
+    ],
+    "meet": {
+      "units": "imperial",
+      "available_plates": [
+        "100",
+        "55",
+        "45",
+        "35",
+        "25",
+        "15",
+        "10",
+        "5",
+        "2.5"
+      ]
+    },
+    "results": [
+      {
+        "payload": {
+          "reps": 100,
+          "importedPoints": 10,
+          "importedDisplay": "100 reps"
+        }
+      }
+    ]
+  }
+]

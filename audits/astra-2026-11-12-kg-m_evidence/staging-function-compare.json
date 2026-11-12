@@ -1,0 +1,37 @@
+[
+  {
+    "function": "zt_adopt_archive_competition",
+    "source": "060_adopt_units.sql",
+    "bodyMatches": true
+  },
+  {
+    "function": "zt_get_my_meet",
+    "source": "059_meet_units.sql",
+    "bodyMatches": true
+  },
+  {
+    "function": "zt_my_meets",
+    "source": "059_meet_units.sql",
+    "bodyMatches": true
+  },
+  {
+    "function": "zt_public_meet_by_slug",
+    "source": "059_meet_units.sql",
+    "bodyMatches": true
+  },
+  {
+    "function": "zt_publish_meet",
+    "source": "059_meet_units.sql",
+    "bodyMatches": true
+  },
+  {
+    "function": "zt_save_meet_config",
+    "source": "059_meet_units.sql",
+    "bodyMatches": true
+  },
+  {
+    "function": "zt_scoring_type_for",
+    "source": "053_adopt_archive.sql",
+    "bodyMatches": true
+  }
+]
