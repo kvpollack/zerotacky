@@ -2,13 +2,13 @@
 // page keep working unchanged. Rows come from the Argon collection rounds (page-verified) and start `unclaimed`.
 
 import { GYM_EQUIPMENT } from './gymEquipment';
-import type { DayPassAvailability, GymEquipmentItem, StrongmanGymListing } from './types';
+import type { DayPassAvailability, GymEquipmentItem, IntroSessions, StrongmanGymListing } from './types';
 import { parseTheme } from './theme';
 
 export const PUBLIC_GYM_COLS =
   'id,slug,name,status,gym_type,street_address,city,state,zip,lat,lng,website_url,phone,instagram,contact,' +
   'day_pass_availability,day_pass_price,day_pass_url,drop_in_policy,drop_in_hours,equipment,equipment_notes,' +
-  'source_url,confidence,last_verified,updated_at,theme';
+  'source_url,confidence,last_verified,updated_at,theme,intro_sessions,intro_sessions_note,intro_sessions_url';
 
 export interface GymRow {
   id: string;
@@ -38,6 +38,14 @@ export interface GymRow {
   last_verified: string | null;
   updated_at: string | null;
   theme?: Record<string, unknown> | null;   // 030: owner-set colours; see lib/website/theme.ts
+  intro_sessions?: IntroSessions | null;    // 058: optional on the row type so fixtures and older snapshots still type
+  intro_sessions_note?: string | null;
+  intro_sessions_url?: string | null;
+}
+
+const INTRO = new Set<string>(['yes', 'on_request', 'no', 'not_provided']);
+export function normalizeIntroSessions(v: unknown): IntroSessions {
+  return typeof v === 'string' && INTRO.has(v) ? (v as IntroSessions) : 'not_provided';
 }
 
 const LABEL_BY_ID = new Map(GYM_EQUIPMENT.map((e) => [e.id, e.label]));
@@ -75,6 +83,9 @@ export function mapGymRowToListing(row: GymRow): StrongmanGymListing {
     ...(row.website_url ? { websiteUrl: row.website_url } : {}),
     ...(contactLine(row) ? { contactInfo: contactLine(row) } : {}),
     dayPassAvailability: row.day_pass_availability,
+    ...(row.intro_sessions && row.intro_sessions !== 'not_provided' ? { introSessions: normalizeIntroSessions(row.intro_sessions) } : {}),
+    ...(row.intro_sessions_note?.trim() ? { introSessionsNote: row.intro_sessions_note.trim() } : {}),
+    ...(row.intro_sessions_url?.trim() ? { introSessionsUrl: row.intro_sessions_url.trim() } : {}),
     ...(row.day_pass_price ? { dayPassPriceDisplay: row.day_pass_price } : {}),
     ...(row.day_pass_url ? { dayPassBookingUrl: row.day_pass_url } : {}),
     ...(row.drop_in_policy ? { dropInPolicy: row.drop_in_policy } : {}),

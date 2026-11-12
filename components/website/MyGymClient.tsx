@@ -8,7 +8,7 @@ import { GYM_EQUIPMENT } from '@/lib/website/gymEquipment';
 import PaintPicker from './PaintPicker';
 import { Cap, Key, KeyButton, keyClass, textLink } from './sheet';
 import {
-  DAY_PASS_OPTIONS, GYM_LIMITS, GYM_SOCIAL_KEYS, GYM_TYPES, cleanGymPatch, fetchMyClaims, fetchMyGyms, patchFromRow, patchKey,
+  DAY_PASS_OPTIONS, GYM_LIMITS, GYM_SOCIAL_KEYS, GYM_TYPES, INTRO_SESSIONS_OPTIONS, cleanGymPatch, fetchMyClaims, fetchMyGyms, patchFromRow, patchKey,
   geocodeAddress, saveMyGym, addressChanged, type GymPatch, type PinChange, type MyClaimRow, type MyGymRow,
 } from '@/lib/website/myGym';
 
@@ -235,6 +235,32 @@ function GymEditor({ row, onSaved }: { row: MyGymRow; onSaved: (r: MyGymRow) => 
             <label htmlFor={`hours-${row.id}`} className={labelCls}>Hours a visitor can come in</label>
             <input id={`hours-${row.id}`} value={draft.drop_in_hours} onChange={(e) => patch({ drop_in_hours: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.drop_in_hours} placeholder="Staffed hours Mon–Fri 4–8 pm, Sat 9–1" />
           </div>
+        </div>
+      </fieldset>
+
+      {/* 058: intro sessions for newcomers */}
+      <fieldset className={CELL}>
+        <legend className={LEGEND}>New to strongman</legend>
+        <p className={NOTE}>Beginners search for a gym that will teach them. Say whether you run intro sessions and how to get into one.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <label htmlFor={`intro-${row.id}`} className={labelCls}>Intro strongman sessions</label>
+            <select id={`intro-${row.id}`} value={draft.intro_sessions} onChange={(e) => patch({ intro_sessions: e.target.value as GymPatch['intro_sessions'] })} className={inputCls}>
+              {INTRO_SESSIONS_OPTIONS.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+            </select>
+          </div>
+          {(draft.intro_sessions === 'yes' || draft.intro_sessions === 'on_request') && (
+            <>
+              <div className="md:col-span-2">
+                <label htmlFor={`intronote-${row.id}`} className={labelCls}>When, how much, who to ask</label>
+                <textarea id={`intronote-${row.id}`} value={draft.intro_sessions_note} onChange={(e) => patch({ intro_sessions_note: e.target.value })} className="zt-input min-h-[4.5rem]" maxLength={GYM_LIMITS.intro_sessions_note} placeholder="Saturdays 10 am, $20, no experience needed. Email the desk to book a spot." />
+              </div>
+              <div className="md:col-span-2">
+                <label htmlFor={`introurl-${row.id}`} className={labelCls}>Sign-up or info link</label>
+                <input id={`introurl-${row.id}`} value={draft.intro_sessions_url} onChange={(e) => patch({ intro_sessions_url: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.intro_sessions_url} inputMode="url" placeholder="yourgym.com/intro-strongman" />
+              </div>
+            </>
+          )}
         </div>
       </fieldset>
 

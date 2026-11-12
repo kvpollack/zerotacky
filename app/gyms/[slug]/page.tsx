@@ -130,6 +130,28 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
           <div className="text-[12px] text-ink-muted mt-2">Last updated: {gym.lastUpdatedDate}</div>
         </div>
 
+        {/* 058: new to strongman. Shown whenever the gym answered; "no" is an answer too, so a beginner does not email a gym that
+            cannot help them. Unknown stays quiet. */}
+        {gym.introSessions && gym.introSessions !== 'not_provided' && (
+          <section aria-labelledby="intro-heading" className="zt-block grid-cols-1">
+            <WebCell>
+              <Cap as="h2" id="intro-heading">New to strongman?</Cap>
+              <p className="text-[15px] leading-relaxed text-ink font-bold">
+                {gym.introSessions === 'yes' ? 'This gym runs intro strongman sessions for beginners.'
+                  : gym.introSessions === 'on_request' ? 'Intro sessions on request: contact the gym and they will set one up.'
+                  : 'No intro sessions here. Try the directory filter for gyms that run them.'}
+              </p>
+              {gym.introSessionsNote && <p className="text-[15px] leading-relaxed text-ink mt-1">{gym.introSessionsNote}</p>}
+              <div className="flex flex-wrap gap-3 mt-2">
+                {gym.introSessionsUrl && (
+                  <a href={gym.introSessionsUrl} target="_blank" rel="noopener noreferrer" className={`${textLink} text-pen font-bold`}>Sign up or read more <span aria-hidden="true">↗</span></a>
+                )}
+                {gym.introSessions === 'no' && <Key href="/gyms?intro=1" variant="line">Gyms with intro sessions</Key>}
+              </div>
+            </WebCell>
+          </section>
+        )}
+
         {/* Policy */}
         <section aria-labelledby="policy-heading" className="zt-block grid-cols-1">
           <WebCell>

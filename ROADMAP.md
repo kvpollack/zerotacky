@@ -5,9 +5,12 @@
 **Where we are.** The two-track plan finished: `v2` became `main` on 11/9 (tag `v2-retired-2026-11-09`), one branch, one
 Supabase prod (`kagitbfthapxmaljsdtz`, migrations 001-053 applied) plus staging, www.zerotacky.com on Vercel Hobby, Resend
 mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 feature-gaps report ranked 22 builds;
-21 shipped. Live main `5a47f337` (scoring audit vs Iron Podium 11/10: lookback tiebreak default, report in audits/; IG result cards: square/story/link PNG per athlete, share or download). 11/11 local, push pending: scoring audit items 1/2/3/5 (Wessels tiebreak, hold events, max distance, implement word), sign-up date of birth with the 13 rule (057), `lookback` column default. 792 tests. Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10).
+22 shipped. Live main `db7353d7` (11/11: scoring audit items 1/2/3/5, Wessels tiebreak, hold events, max distance, implement word; sign-up date of birth with the 13 rule, 057). 11/11 local, push pending: gym intro-sessions tag (058): owner answer yes / on request / no with note and link, `/gyms?intro=1` filter and card chip, "New to strongman?" section on the gym page. 797 tests. Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10).
 
 **Shipped since the 10/21 entries below (newest first)**
+- 11/11 gym intro-sessions tag (058): a gym says whether it runs intro strongman sessions; beginners filter the directory
+  by it. Scoring formats from the Iron Podium audit (057): Wessels tiebreak, hold events, max distance, implement word;
+  sign-up asks date of birth, 13 and up.
 - 11/10 teams (055): a division can be a team of 2 to 6. Each teammate registers and pays alone, then forms the team on
   the registration page: start one (name, join code, share link), join by code, or opt in to the partner board and team
   up. The team is one roster row; the promoter sees the team under each entry and can rename it.

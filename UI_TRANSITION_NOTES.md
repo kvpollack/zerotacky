@@ -1421,3 +1421,29 @@ with a payload migration, not a label swap.
   `Downloads/zt_ui_1111/`): sign-up DOB input max 2013-11-11, 2020 blocked (`rangeOverflow`), 2010 valid; event form
   shows the hold type, Wessels note, distance-only toggle and the word field, cancels with no draft, no page errors.
 - Tests: `test/scoring_formats.test.mjs` (16), `test/age.test.mjs` (4). 792 pass, tsc clean.
+
+## Gym intro strongman sessions tag (11/11, migration 058)
+
+Kurt 11/11: "Start the gym intro-sessions tag." A beginner's first question to a directory is "who will teach me?"; the
+listing now answers it. Three gym columns, one filter, one public section. Held item "#2 first-timer flag" (an athlete-side
+flag) is a different thing and stays held.
+
+- 058: `gyms.intro_sessions text default 'not_provided'` (yes | on_request | no | not_provided, check
+  `gyms_intro_sessions_chk`), `intro_sessions_note` and `intro_sessions_url` (300 chars each). Select to anon and
+  authenticated, update to authenticated (the owner RLS policy already scopes the row). `not_provided` is the silent default:
+  the mapper leaves `introSessions` undefined and no page shows anything.
+- `lib/website/types.ts`: `IntroSessions`, `StrongmanGymListing.introSessions / introSessionsNote / introSessionsUrl`,
+  `GymFilterQuery.introOnly`. `supabaseGyms.ts` reads the three columns (`normalizeIntroSessions`, unknown = not_provided).
+  `filters.ts`: `introOnly` keeps `yes` and `on_request`.
+- Owner form (`MyGymClient.tsx`, fieldset "New to strongman" above Equipment): select, then note ("When, how much, who to
+  ask") and link, shown only for yes / on_request. `myGym.cleanGymPatch` clears note and url for no / not_provided and runs
+  `cleanUrl` on the link. `INTRO_SESSIONS_OPTIONS` carries the labels.
+- Directory (`GymsBrowser.tsx`): checkbox "New to strongman: only gyms that run intro sessions"; `/gyms?intro=1` (or `true`)
+  preselects it; reset clears it; card chip "Intro sessions" or "Intro on request" in pen colour. Blurb mentions the filter.
+- Gym page (`app/gyms/[slug]/page.tsx`): section "New to strongman?" with the sentence for the answer (yes / on request / no),
+  the note, the link ("Sign up or read more"), and for "no" a key to `/gyms?intro=1`. Hidden for not_provided.
+- Staging: 058 applied, columns and grants verified. Browser (`shots/intro1.py`, `Downloads/zt_ui_1111/`): owner set
+  Hercules Gym (Syracuse) to yes with note and link, saved; public page section with note and link; `/gyms?intro=1` checkbox
+  on, one card with the "Intro sessions" chip; on_request shows "Intro on request"; reset to not_provided afterwards (row
+  verified back to defaults). No page errors.
+- Tests: `test/introSessions.test.mjs` (5: normaliser, filter, patch cleaning). 797 pass, tsc clean.

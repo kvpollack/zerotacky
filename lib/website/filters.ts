@@ -85,6 +85,7 @@ export function filterPublicGyms(
   const state = (query.state ?? 'ALL').trim().toUpperCase();
   const implementTag = normalizeChoice(query.implementTag);
   const dayPassOnly = Boolean(query.dayPassOnly);
+  const introOnly = Boolean(query.introOnly);
   const origin = query.origin ?? null;
   const radius = origin && query.radiusMiles && query.radiusMiles > 0 ? query.radiusMiles : null;
 
@@ -112,6 +113,11 @@ export function filterPublicGyms(
       ) {
         return false;
       }
+    }
+
+    // 058: a newcomer wants a gym that will teach them; "on request" counts, "no" and unknown do not.
+    if (introOnly && gym.introSessions !== 'yes' && gym.introSessions !== 'on_request') {
+      return false;
     }
 
     if (search) {

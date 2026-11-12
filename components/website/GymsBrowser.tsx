@@ -16,6 +16,7 @@ interface GymsBrowserProps {
   // From /gyms?q=&state= (10/21): the sitewide SearchAction in JSON-LD points here.
   initialSearch?: string;
   initialState?: string;
+  initialIntroOnly?: boolean;   // 058: /gyms?intro=1
   // Train for this show (11/5): /gyms?show=<slug>. Gyms are ranked by how many of the show's implements they tag.
   trainFor?: { slug: string; name: string; date: string; needs: TrainingNeed[] } | null;
 }
@@ -39,12 +40,14 @@ export default function GymsBrowser({
   availableImplements,
   initialSearch = '',
   initialState = 'ALL',
+  initialIntroOnly = false,
   trainFor = null,
 }: GymsBrowserProps) {
   const [search, setSearch] = useState(initialSearch);
   const [stateFilter, setStateFilter] = useState(initialState);
   const [implementTag, setImplementTag] = useState('ALL');
   const [dayPassOnly, setDayPassOnly] = useState(false);
+  const [introOnly, setIntroOnly] = useState(initialIntroOnly);   // 058: ?intro=1 preselects it
   const [fullKitOnly, setFullKitOnly] = useState(false);
 
   // Zip + radius (Kurt 10/20). The zip resolves to a centroid through /api/zip so the table stays on the server.
@@ -79,10 +82,11 @@ export default function GymsBrowser({
         state: stateFilter,
         implementTag,
         dayPassOnly,
+        introOnly,
         origin,
         radiusMiles: radius,
       }),
-    [initialGyms, search, stateFilter, implementTag, dayPassOnly, origin, radius]
+    [initialGyms, search, stateFilter, implementTag, dayPassOnly, introOnly, origin, radius]
   );
   // With a show: keep gyms that have at least one of its implements (or every one), best coverage first, then the
   // directory's own order (distance when a zip is set, otherwise name). Without a show every gym gets full coverage.
@@ -93,13 +97,14 @@ export default function GymsBrowser({
   }, [filteredGyms, needs, fullKitOnly, origin]);
 
   const hasActiveFilters =
-    search.trim() !== '' || stateFilter !== 'ALL' || implementTag !== 'ALL' || dayPassOnly || zip.trim() !== '' || fullKitOnly;
+    search.trim() !== '' || stateFilter !== 'ALL' || implementTag !== 'ALL' || dayPassOnly || introOnly || zip.trim() !== '' || fullKitOnly;
 
   const resetFilters = () => {
     setSearch('');
     setStateFilter('ALL');
     setImplementTag('ALL');
     setDayPassOnly(false);
+    setIntroOnly(false);
     setFullKitOnly(false);
     setZip('');
   };
@@ -233,6 +238,10 @@ export default function GymsBrowser({
               <input type="checkbox" checked={dayPassOnly} onChange={(e) => setDayPassOnly(e.target.checked)} className="w-5 h-5 shrink-0" style={CHECK} />
               <span>Only gyms with day-pass or appointment drop-in availability</span>
             </label>
+            <label className="flex items-center gap-2.5 text-[15px] font-bold text-ink cursor-pointer">
+              <input type="checkbox" checked={introOnly} onChange={(e) => setIntroOnly(e.target.checked)} className="w-5 h-5 shrink-0" style={CHECK} />
+              <span>New to strongman: only gyms that run intro sessions</span>
+            </label>
             <div id="gym-zip-note" role="status" className={`text-[13px] ${zipState === 'unknown' || zipState === 'error' ? 'text-redpen font-bold' : 'text-ink-muted'} ${zipNote ? '' : 'hidden'}`}>
               {zipNote}
             </div>
@@ -270,6 +279,9 @@ export default function GymsBrowser({
                     {gym.dayPassPriceDisplay ? ` · ${gym.dayPassPriceDisplay}` : ''}
                   </span>
                   <span className="flex flex-wrap items-center gap-1.5">
+                    {(gym.introSessions === 'yes' || gym.introSessions === 'on_request') && (
+                      <span className={`${CHIP} border-pen text-pen`}>{gym.introSessions === 'yes' ? 'Intro sessions' : 'Intro on request'}</span>
+                    )}
                     {gym.gymType && <span className={CHIP}>{gym.gymType === 'mixed' ? 'Strongman + Powerlifting' : gym.gymType}</span>}
                     {gym.isDemoListing && <span className={`${CHIP} border-dashed`}>Demo listing</span>}
                     {gym.claimStatus === 'unclaimed' && (

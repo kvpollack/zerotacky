@@ -53,7 +53,7 @@ export default async function GymsDirectoryPage({ searchParams }: { searchParams
           )}
         </div>
         <p className="text-[15px] leading-relaxed text-ink max-w-3xl">
-          Strongman and powerlifting gyms you can actually train at. Filter by distance from your zip, equipment, and day-pass policy.
+          Strongman and powerlifting gyms you can actually train at. Filter by distance from your zip, equipment, day-pass policy, or gyms that run intro sessions for beginners.
           Missing details are marked <strong>Not provided</strong>.{' '}
           {live
             ? 'Each listing was built from the gym\u2019s own website and stays marked Unclaimed until the owner takes it over. Gym owner? Open your gym and tap Claim this gym.'
@@ -70,6 +70,7 @@ export default async function GymsDirectoryPage({ searchParams }: { searchParams
         availableImplements={implementTags}
         initialSearch={cleanSearchParam(sp.q)}
         initialState={cleanStateParam(sp.state)}
+        initialIntroOnly={sp.intro === '1' || sp.intro === 'true'}
         trainFor={trainFor}
       />
     </WebsiteShell>

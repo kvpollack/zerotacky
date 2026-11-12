@@ -131,6 +131,9 @@ export interface GymEquipmentItem {
   details?: string; // e.g. '10" & 12" steel logs', '140–360 lb series'
 }
 
+// 058: intro strongman sessions for newcomers.
+export type IntroSessions = 'yes' | 'on_request' | 'no' | 'not_provided';
+
 export type DayPassAvailability = 'available' | 'by_appointment' | 'not_available' | 'not_provided';
 
 export interface StrongmanGymListing {
@@ -144,6 +147,10 @@ export interface StrongmanGymListing {
   websiteUrl?: string;
   contactInfo?: string;
   dayPassAvailability: DayPassAvailability;
+  // 058 (11/11): does the gym run intro strongman sessions for people new to the sport? Absent = not provided.
+  introSessions?: IntroSessions;
+  introSessionsNote?: string;
+  introSessionsUrl?: string;
   dayPassPriceDisplay?: string;
   dayPassBookingUrl?: string;
   dropInPolicy?: string;
@@ -235,6 +242,7 @@ export interface GymFilterQuery {
   state?: string | 'ALL';
   implementTag?: string | 'ALL';
   dayPassOnly?: boolean;
+  introOnly?: boolean;   // 058: keep gyms whose introSessions is 'yes' or 'on_request'
   // Zip + radius (Kurt 10/20): when origin is set, gyms without coordinates drop out and results sort by distance.
   origin?: { lat: number; lng: number } | null;
   radiusMiles?: number;

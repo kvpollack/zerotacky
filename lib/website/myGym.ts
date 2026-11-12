@@ -5,7 +5,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { GYM_EQUIPMENT } from './gymEquipment';
-import type { DayPassAvailability } from './types';
+import type { DayPassAvailability, IntroSessions } from './types';
 import type { GymRow } from './supabaseGyms';
 import { cleanTheme, parseTheme, type ZtTheme } from './theme';
 
@@ -40,6 +40,10 @@ export interface GymPatch {
   day_pass_url: string;
   drop_in_policy: string;
   drop_in_hours: string;
+  // 058: intro strongman sessions for newcomers
+  intro_sessions: IntroSessions;
+  intro_sessions_note: string;
+  intro_sessions_url: string;
   equipment: string[];
   equipment_notes: Record<string, string>;
   socials: Record<string, string>;
@@ -59,6 +63,13 @@ export const DAY_PASS_OPTIONS: ReadonlyArray<{ id: DayPassAvailability; label: s
   { id: 'not_provided', label: 'Prefer not to say' },
 ];
 
+export const INTRO_SESSIONS_OPTIONS: ReadonlyArray<{ id: IntroSessions; label: string }> = [
+  { id: 'yes', label: 'Yes, we run intro sessions for beginners' },
+  { id: 'on_request', label: 'On request, contact us to set one up' },
+  { id: 'no', label: 'No intro sessions' },
+  { id: 'not_provided', label: 'Prefer not to say' },
+];
+
 export const GYM_SOCIAL_KEYS: ReadonlyArray<{ key: string; label: string; placeholder: string }> = [
   { key: 'facebook', label: 'Facebook', placeholder: 'facebook.com/yourgym' },
   { key: 'tiktok', label: 'TikTok', placeholder: '@yourgym' },
@@ -69,11 +80,13 @@ export const GYM_SOCIAL_KEYS: ReadonlyArray<{ key: string; label: string; placeh
 export const GYM_LIMITS = {
   name: 120, street_address: 160, city: 80, website_url: 300, phone: 30, instagram: 60, contact: 200,
   day_pass_price: 60, day_pass_url: 300, drop_in_policy: 600, drop_in_hours: 200, equipment_note: 160, social: 200,
+  intro_sessions_note: 300, intro_sessions_url: 300,
 } as const;
 
 const KNOWN_EQUIPMENT = new Set(GYM_EQUIPMENT.map((e) => e.id));
 const TYPES = new Set<string>(GYM_TYPES.map((t) => t.id));
 const PASS = new Set<string>(DAY_PASS_OPTIONS.map((o) => o.id));
+const INTRO = new Set<string>(INTRO_SESSIONS_OPTIONS.map((o) => o.id));
 
 function clip(v: unknown, max: number): string {
   return String(v ?? '').trim().slice(0, max);
@@ -102,6 +115,9 @@ export function patchFromRow(row: MyGymRow): GymPatch {
     day_pass_url: row.day_pass_url,
     drop_in_policy: row.drop_in_policy,
     drop_in_hours: row.drop_in_hours,
+    intro_sessions: INTRO.has(row.intro_sessions ?? '') ? (row.intro_sessions as IntroSessions) : 'not_provided',
+    intro_sessions_note: row.intro_sessions_note ?? '',
+    intro_sessions_url: row.intro_sessions_url ?? '',
     equipment: [...(row.equipment ?? [])],
     equipment_notes: { ...(row.equipment_notes ?? {}) },
     socials: { ...(row.socials ?? {}) },
@@ -123,6 +139,7 @@ export function cleanGymPatch(p: GymPatch): { patch: GymPatch; problem: null } |
   if (!city || !state) return { patch: null, problem: 'City and state are needed so athletes can find you.' };
   const gym_type = TYPES.has(p.gym_type) ? p.gym_type : 'mixed';
   const day_pass_availability = PASS.has(p.day_pass_availability) ? p.day_pass_availability : 'not_provided';
+  const intro_sessions: IntroSessions = INTRO.has(p.intro_sessions) ? p.intro_sessions : 'not_provided';
   const equipment = Array.from(new Set((p.equipment ?? []).filter((id) => KNOWN_EQUIPMENT.has(id))));
   const equipment_notes: Record<string, string> = {};
   for (const id of equipment) {
@@ -150,6 +167,10 @@ export function cleanGymPatch(p: GymPatch): { patch: GymPatch; problem: null } |
       day_pass_url: cleanUrl(clip(p.day_pass_url, GYM_LIMITS.day_pass_url)),
       drop_in_policy: clip(p.drop_in_policy, GYM_LIMITS.drop_in_policy),
       drop_in_hours: clip(p.drop_in_hours, GYM_LIMITS.drop_in_hours),
+      intro_sessions,
+      // a "no" or unknown answer carries no note or link; the owner's text is kept only when the answer is a kind of yes
+      intro_sessions_note: intro_sessions === 'yes' || intro_sessions === 'on_request' ? clip(p.intro_sessions_note, GYM_LIMITS.intro_sessions_note) : '',
+      intro_sessions_url: intro_sessions === 'yes' || intro_sessions === 'on_request' ? cleanUrl(clip(p.intro_sessions_url, GYM_LIMITS.intro_sessions_url)) : '',
       equipment, equipment_notes, socials,
       theme: theme.theme,
     },
