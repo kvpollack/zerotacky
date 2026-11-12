@@ -1519,3 +1519,35 @@ display, which session 1 already labels. What changed:
   archive ("Open M HW (242-)") are the published names and stay.
 - Session 3: a metric meet end to end in the browser (register, judge pad, pit crew, TV, prep sheet, PR board via a
   claimed result on the Scarlet show), then an Astra audit of every print point.
+
+## kg / m units, session 3 probe (11/12, no migration)
+
+Kurt 11/12: "Start session 3 probe." A metric meet end to end on staging, every print point read in the browser. No code
+change came out of it; the Astra audit is the other half of session 3 and is still open.
+
+- Fixture: `metric-test-open-2026` on staging (`tmp/zt/publish_metric_test.py`, creds `metric_test_staging.txt`),
+  published through `zt_publish_meet` with `units = metric`, metric plates, 5 kg collars, 2 divisions, 3 events (Log Press
+  for reps with light tier 60 / 50 and 100 / 85 kg, Axle Deadlift max opener 120 / 200 kg, Yoke Walk 180 / 280 kg on a
+  20 m course), 4 athletes, listed, registration open, `division_format = custom` so the group picker shows. Kept on
+  staging with the adopted Scarlet show as the metric fixtures.
+- Probe (`shots/units3.py`, `shots/units3b.py`; shots `Downloads/zt_ui_1112/s3_*.png`), all read as intended, no page
+  errors in any context:
+  - Show page: "60 kg (light 50)" with the mirror "132 lb (light 110)" under it, "20 m course", no "ft".
+  - Group picker: lb / kg toggle starts on kg; 180 typed as kg; cells "100 kg", "120 kg", "200 kg"; verdicts rendered.
+  - Prep sheet: kg weights, "20 m course", lb mirror column. Register: weight summary in kg.
+  - Judge pad (phone, Judge role via join code + PIN): reps event shows "Heavy bar 60 kg" / "Light bar 50 kg"; 5 reps
+    locked for lot 1; max-weight event reads "Best kg" and "Exact max weight override (kg)"; yoke after DNF shows
+    "Distance (m)". No "lb" or "ft" anywhere on the pad.
+  - Pit crew (Promoter role): "25 kg" tare, "Heavy bar (60 kg) / Light bar (50 kg)", "Includes 5 kg collars", load per
+    sleeve, plates in kg; 12 kg labels, 0 lb.
+  - TV (1920): "EVENT 1 LOG PRESS (FOR REPS) 60 KG · REPS · 60 S CAP", divisions "60 KG" / "100 KG", upcoming "120 KG",
+    footer "UNITS KG · M"; result "5 REPS (HEAVY)". Phone board shows the 5 reps.
+- Probe notes, not product findings: the pad and TV render uppercase, so unit checks must be case-insensitive; the
+  max-weight pad keeps Good / No lift disabled until a bar weight exists (no rising-bar list on this fixture, override
+  field instead), which is the existing design and not unit-related.
+- Not covered in the browser: the PR board on an athlete page needs a claimed result on a metric show (the Scarlet
+  claim flow); it is unit-tested in `test/units2.test.mjs`. Exports (CSV, federation) carry the unit through the engine
+  display strings and were not opened.
+- For the Astra audit (Kurt's Astra thread): every print point from sessions 1 to 3, the lock rule (results exist =
+  units frozen), the plate-inventory reset on flip, `COURSE_MAX` 1610 m under SQL guard 041's 5280, the 060 kg-only
+  rule for adopted shows (mixed shows stay imperial), PR board mirror text, group picker ratio on metric shows.
