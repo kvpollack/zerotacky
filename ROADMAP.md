@@ -5,11 +5,12 @@
 **Where we are.** The two-track plan finished: `v2` became `main` on 11/9 (tag `v2-retired-2026-11-09`), one branch, one
 Supabase prod (`kagitbfthapxmaljsdtz`, migrations 001-053 applied) plus staging, www.zerotacky.com on Vercel Hobby, Resend
 mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 feature-gaps report ranked 22 builds;
-22 shipped. Live main `4f3ba436` (11/12: gym intro-sessions tag, 058). 11/12 local, push pending: kg / m session 1 of 3 (059): a meet picks pounds and feet or kilograms and meters once, locked after the first result; labels follow it through the engine, forms, judge pad, TV, show pages and exports; numbers are stored as entered, no conversion (scope note `audits/slate-2026-11-12-kg-m-scope.md`). 811 tests. Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10).
+22 shipped. Live main `2a2e6cbf` (11/12: kg / m session 1 of 3, 059: a meet picks pounds and feet or kilograms and meters once, locked after the first result; labels follow it everywhere; numbers stored as entered; scope note `audits/slate-2026-11-12-kg-m-scope.md`). 11/12 local, push pending: kg / m session 2 (060): PR board and group picker normalise across shows, adopted kg-only archive shows stay metric. 819 tests. Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10).
 
 **Shipped since the 10/21 entries below (newest first)**
-- 11/12 kg / m session 1 (059): meet-level units with kg plates, metric course cap and unit labels everywhere; cross-meet
-  normalisation (PR board, history, trainFor) is session 2.
+- 11/12 kg / m session 2 (060): PR board ranks across kg and lb shows in pounds and prints each show's unit; group picker
+  converts a metric show's weights for the ratio; adopted kg-only archive shows keep kg.
+- 11/12 kg / m session 1 (059): meet-level units with kg plates, metric course cap and unit labels everywhere.
 - 11/11 gym intro-sessions tag (058): a gym says whether it runs intro strongman sessions; beginners filter the directory
   by it. Scoring formats from the Iron Podium audit (057): Wessels tiebreak, hold events, max distance, implement word;
   sign-up asks date of birth, 13 and up.

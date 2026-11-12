@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth/useAuth';
-import type { Division, EventDef } from '@/lib/types';
+import type { Division, EventDef, MeetUnits } from '@/lib/types';
 import {
   FIT_LABELS, LANE_LABELS, VERDICT_LABELS, convertDisplayUnit, divisionGenderTag, lbToDisplay, numbersFromPRs, parseLiftInput, pickGroups,
   type DivisionFit, type PickerNumbers, type Unit,
@@ -15,15 +15,17 @@ interface Props {
   events: EventDef[];
   canRegister: boolean;
   isDemoFixture: boolean;
+  /** 059: the show's unit system. Division weights are converted for the ratio; the toggle starts in this unit. */
+  units?: MeetUnits;
 }
 
 // "Which group fits me?" (gaps #13, 11/10). Three gym numbers, no strongman history needed; the divisions are ranked
 // against the published weights by lib/website/groupPicker.ts. Signed in, the inputs seed from profile PRs. The result
 // is a suggestion with the promoter named as the authority; the Register key carries the pick into step 1.
-export default function GroupPickerClient({ slug, divisions, events, canRegister, isDemoFixture }: Props) {
+export default function GroupPickerClient({ slug, divisions, events, canRegister, isDemoFixture, units = 'imperial' }: Props) {
   const auth = useAuth();
   const [open, setOpen] = useState(false);
-  const [unit, setUnit] = useState<Unit>('lb');
+  const [unit, setUnit] = useState<Unit>(units === 'metric' ? 'kg' : 'lb');
   const [text, setText] = useState({ deadlift: '', overhead: '', carry: '' });
   const [seeded, setSeeded] = useState(false);
   const [showAll, setShowAll] = useState(false);
@@ -59,7 +61,7 @@ export default function GroupPickerClient({ slug, divisions, events, canRegister
     overhead: parseLiftInput(text.overhead, unit),
     carry: parseLiftInput(text.carry, unit),
   }), [text, unit]);
-  const result = useMemo(() => pickGroups(scoped, events, numbers), [scoped, events, numbers]);
+  const result = useMemo(() => pickGroups(scoped, events, numbers, units), [scoped, events, numbers, units]);
   const hasNumbers = !!(numbers.deadlift || numbers.overhead || numbers.carry);
   const shown = showAll || !result.recommendedId ? result.divisions : result.divisions.slice(0, 3);
 

@@ -1484,3 +1484,38 @@ one unit happens only where meets are compared (PR board, show history, trainFor
 - Not in this session (session 2): PR board, athlete group picker, show history, result cards and `trainFor` still
   assume pounds and feet when they compare across meets; 053 adopt-result path needs the kg case. Session 3: metric meet
   end to end (register, judge, TV, show page, exports) in the browser, then an Astra audit.
+
+## kg / m units, session 2 (11/12, migration 060)
+
+Kurt 11/12: "Start session 2." The cross-meet readers from the scope note, checked one by one. Two of the five needed no
+work: `trainFor.ts` has no numbers (it maps implements to gym equipment), and IG result cards read the engine's per-meet
+display, which session 1 already labels. What changed:
+
+- `showHistory.ts`: `HistoryEventResult.units` from the show's `meets.units` (normalised, so the default column reads
+  imperial). Numbers stay in the show's unit under their historical field names.
+- `prBoard.ts`: `rank()` converts loads with `toLb` and distances with `toFt` before comparing, so a 115 kg log beats a
+  250 lb one and 110 kg loses to it. `formatBestResult` prints in the show's unit and adds the pound figure beside a
+  metric load ("3 reps at 115 kg (254 lb)", "200 kg (441 lb)", "20 m of 30"); `CompetitionBest.units` says which. An
+  event result without `units` (older callers) reads as imperial.
+- `groupPicker.ts`: `gradeEvent` / `fitDivision` / `pickGroups` take `units` (default imperial). The athlete's numbers stay
+  canonical pounds (Astra GP-09); a metric show's division weight is converted for the ratio (`weightLb` is always
+  pounds) and the cell text prints in the show's unit ("100 kg"). `GroupPickerClient` takes `units`, starts its lb / kg
+  toggle in the show's unit (PR seeds then display in kg), and passes it to `pickGroups`; `ShowDetailClient` supplies it.
+- 060 `zt_adopt_archive_competition`: an archive show whose results carry only kg / m rows (no lb / ft) is adopted as a
+  metric meet with its numbers kept as published; anything with lb / ft rows, mixed shows included, is adopted imperial
+  with kg / m converted as 053 did. `m` rows now land in `distanceFeet` (053 dropped them). `importedDisplay` untouched.
+  Body copied from 053 with five marked changes. Staging archive: 50,963 lb rows, 511 kg, 0 m; most kg shows are mixed
+  (kg on the max-weight event, lb elsewhere) and stay imperial.
+- Tests: `test/units2.test.mjs` (8): PR board ranking across kg / lb shows for reps, max weight and distance, the
+  no-`units` fallback, show history unit on metric and default rows, picker ratio and text on a metric show. 819 pass,
+  tsc clean.
+- Staging: 060 applied and `v_units` present in the function body. Adopted "The Scarlet Strongman Show" (2024, kg-only,
+  36 athletes, 180 results) as the staging account via `set_config('request.jwt.claims', ...)` in a `do` block: meet
+  `the-scarlet-strongman-show-2024`, `units = metric`, `maxWeightLbs` 290 / 310 / 290 / 270 unconverted. Kept on staging
+  as the metric fixture for session 3. Show page (`shots/units2.py`, `Downloads/zt_ui_1112/adopted_metric_show_1280.png`):
+  renders, 8 "kg" labels, 0 "lb", no page errors.
+- Left alone on purpose: `components/setup/builder/MeetSection.jsx` still says "(lbs)" / "lb" but only its two option
+  tables are imported (MeetSetupSheet replaced the form); the lb strings are dead. Weight-class division names from the
+  archive ("Open M HW (242-)") are the published names and stay.
+- Session 3: a metric meet end to end in the browser (register, judge pad, pit crew, TV, prep sheet, PR board via a
+  claimed result on the Scarlet show), then an Astra audit of every print point.

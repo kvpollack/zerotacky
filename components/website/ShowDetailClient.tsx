@@ -415,7 +415,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
         {/* Which group fits me? (gaps #13, 11/10): non-traditional divisions on upcoming shows only (054: the promoter's
             division format decides; standard weight classes never see it). */}
         {showsGroupPicker(show, sortedEvents.length) && (
-          <GroupPickerClient slug={show.slug} divisions={show.state.divisions} events={show.state.events} canRegister={canRegisterInApp} isDemoFixture={!!show.isDemoFixture} />
+          <GroupPickerClient slug={show.slug} divisions={show.state.divisions} events={show.state.events} canRegister={canRegisterInApp} isDemoFixture={!!show.isDemoFixture} units={units} />
         )}
         <div className="mb-2.5 flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0">

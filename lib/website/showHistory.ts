@@ -4,8 +4,9 @@
 
 import type { AthleteRow, DivisionRow, EventRow, MeetRow, ResultRow } from '../sync/mapping';
 import { effectiveMaxWeight, scoringField } from '@/lib/engine/scoring';
-import type { ImplementKind, ScoringType } from '../types';
+import type { ImplementKind, MeetUnits, ScoringType } from '../types';
 import { rowsToState } from '../sync/mapping';
+import { normalizeUnits } from '@/lib/units';
 import { buildDivisionResultsView } from './standingsAdapter';
 import type { PublicShowRecord } from './types';
 
@@ -61,9 +62,12 @@ export interface HistoryEventResult {
   eventId: string;
   eventName: string;
   scoringType: ScoringType;
+  /** 059 session 2: the unit system the show was run in. Every number below is in it (kg / m on a metric show); the
+   *  field names keep their historical lb / ft spelling. Readers that compare shows normalise with `toLb` / `toFt`. */
+  units: MeetUnits;
   implement: ImplementKind | null;
   implementNote: string | null;
-  /** The division's listed weight in lb for the tier the athlete lifted (light tier when they took the trump), 0 = none. */
+  /** The division's listed weight (meet unit) for the tier the athlete lifted (light tier when they took the trump), 0 = none. */
   weightLbs: number;
   courseFeet: number | null;
   timeCapSeconds: number;
@@ -118,6 +122,7 @@ export function buildShowHistoryEntry(row: ShowHistoryRow, bundle: ShowHistoryBu
   const mine = view.standings.find((s) => s.athleteId === athlete.id);
   const scored = mine ? Object.keys(mine.eventBreakdown).length : 0;
   const withdrawn = athlete.status === 'withdrawn';
+  const units = normalizeUnits(state.meet.units);
   const events: HistoryEventResult[] = withdrawn ? [] : state.events.flatMap((ev) => {
     const r = state.results.find((x) => x.eventId === ev.id && x.athleteId === athlete.id);
     if (!r || r.didNotStart) return [];
@@ -130,6 +135,7 @@ export function buildShowHistoryEntry(row: ShowHistoryRow, bundle: ShowHistoryBu
       eventId: ev.id,
       eventName: ev.name,
       scoringType: ev.scoringType,
+      units,
       implement: ev.spec?.implement ?? null,
       implementNote: ev.spec?.implementNote ?? null,
       weightLbs: weight > 0 ? weight : 0,

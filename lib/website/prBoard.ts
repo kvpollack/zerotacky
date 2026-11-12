@@ -7,9 +7,14 @@
 // heaviest weight with a finished course, then fastest; with no finish, the longest distance. Medley: heaviest weight,
 // then most implements, then fastest. Events without a listed weight (bodyweight carries, fixed implements) compare on
 // performance alone. Two shows at different loads are not the same test, so the row names the load with the result.
+//
+// 059 session 2: a show's numbers are stored in its own unit. Ranking converts every load and distance to pounds and
+// feet first (`toLb` / `toFt`) so a 115 kg log beats a 250 lb one; the printed result keeps the show's unit and adds the
+// pound figure beside a metric one, since the board sits next to imperial rows.
 
 import { implementLabel } from '@/lib/events/spec';
-import type { ScoringType } from '../types';
+import { distanceUnit, mirrorWeightLabel, toFt, toLb, weightUnit } from '@/lib/units';
+import type { MeetUnits, ScoringType } from '../types';
 import type { HistoryEventResult, ShowHistoryEntry } from './showHistory';
 import { formatShowDate } from './showHistory';
 
@@ -18,7 +23,9 @@ export interface CompetitionBest {
   key: string;
   label: string;
   scoringType: ScoringType;
-  /** The result, e.g. "8 reps at 250 lb", "455 lb", "28.40 s at 600 lb (50 ft)". */
+  /** The unit system of the show the best came from. */
+  units: MeetUnits;
+  /** The result in that show's unit, e.g. "8 reps at 250 lb", "455 lb", "28.40 s at 600 lb (50 ft)", "115 kg (254 lb)". */
   result: string;
   /** Where it happened. */
   showName: string;
@@ -45,19 +52,20 @@ function groupKey(e: HistoryEventResult): { key: string; label: string } {
   return { key: `name:${norm || e.eventName.toLowerCase()}`, label: e.eventName };
 }
 
-/** Sort tuple: bigger is better, compared lexicographically. */
+/** Sort tuple: bigger is better, compared lexicographically. Loads in pounds, distances in feet, whatever the show used. */
 function rank(e: HistoryEventResult): number[] {
+  const w = toLb(e.weightLbs, e.units);
   switch (e.scoringType) {
     case 'max_weight':
-      return [e.maxWeightLbs];
+      return [toLb(e.maxWeightLbs, e.units)];
     case 'reps':
-      return [e.reps > 0 ? e.weightLbs : -1, e.reps];
+      return [e.reps > 0 ? w : -1, e.reps];
     case 'time_or_distance':
-      return e.finished ? [1, e.weightLbs, -e.timeSeconds] : [0, e.weightLbs, e.distanceFeet];
+      return e.finished ? [1, w, -e.timeSeconds] : [0, w, toFt(e.distanceFeet, e.units)];
     case 'time_or_implements':
-      return e.finished || e.implementsCompleted > 0 ? [e.weightLbs, e.implementsCompleted, e.finished ? -e.timeSeconds : -Infinity] : [-1];
+      return e.finished || e.implementsCompleted > 0 ? [w, e.implementsCompleted, e.finished ? -e.timeSeconds : -Infinity] : [-1];
     case 'max_time':
-      return e.timeSeconds > 0 ? [e.weightLbs, e.timeSeconds] : [-1];
+      return e.timeSeconds > 0 ? [w, e.timeSeconds] : [-1];
     default:
       return [-1];
   }
@@ -80,24 +88,31 @@ export function formatSeconds(s: number): string {
   return `${s.toFixed(2)} s`;
 }
 
-const lb = (w: number) => `${Number.isInteger(w) ? w : w.toFixed(1)} lb`;
+const num = (w: number) => (Number.isInteger(w) ? String(w) : w.toFixed(1));
+/** "250 lb" on an imperial show; "115 kg (254 lb)" on a metric one. */
+function load(w: number, units: MeetUnits): string {
+  const mirror = units === 'metric' ? ` (${mirrorWeightLabel(w, units)})` : '';
+  return `${num(w)} ${weightUnit(units)}${mirror}`;
+}
 
 export function formatBestResult(e: HistoryEventResult): string {
-  const load = e.weightLbs > 0 ? ` at ${lb(e.weightLbs)}` : '';
-  const course = e.courseFeet ? ` (${e.courseFeet} ft)` : '';
+  const u = e.units ?? 'imperial';
+  const ft = distanceUnit(u);
+  const load_ = e.weightLbs > 0 ? ` at ${load(e.weightLbs, u)}` : '';
+  const course = e.courseFeet ? ` (${e.courseFeet} ${ft})` : '';
   switch (e.scoringType) {
     case 'max_weight':
-      return lb(e.maxWeightLbs);
+      return load(e.maxWeightLbs, u);
     case 'reps':
-      return `${e.reps} rep${e.reps === 1 ? '' : 's'}${load}`;
+      return `${e.reps} rep${e.reps === 1 ? '' : 's'}${load_}`;
     case 'time_or_distance':
-      return e.finished ? `${formatSeconds(e.timeSeconds)}${load}${course}` : `${e.distanceFeet} ft${load}${course ? ` of ${e.courseFeet}` : ''}`;
+      return e.finished ? `${formatSeconds(e.timeSeconds)}${load_}${course}` : `${e.distanceFeet} ${ft}${load_}${course ? ` of ${e.courseFeet}` : ''}`;
     case 'time_or_implements': {
       const n = `${e.implementsCompleted} implement${e.implementsCompleted === 1 ? '' : 's'}`;
-      return e.finished ? `${formatSeconds(e.timeSeconds)}${load}` : `${n}${load}`;
+      return e.finished ? `${formatSeconds(e.timeSeconds)}${load_}` : `${n}${load_}`;
     }
     case 'max_time':
-      return e.timeSeconds > 0 ? `${formatSeconds(e.timeSeconds)} hold${load}` : '';
+      return e.timeSeconds > 0 ? `${formatSeconds(e.timeSeconds)} hold${load_}` : '';
     default:
       return '';
   }
@@ -126,6 +141,7 @@ export function competitionBests(history: ShowHistoryEntry[]): CompetitionBest[]
       key,
       label: g.label,
       scoringType: g.best.scoringType,
+      units: g.best.units ?? 'imperial',
       result: formatBestResult(g.best),
       showName: g.entry.name,
       showHref: g.entry.href,

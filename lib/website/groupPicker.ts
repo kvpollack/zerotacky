@@ -4,9 +4,13 @@
 // weight (lb) is compared to the lane number and graded. A division fits when every graded event sits inside the band,
 // is a stretch when one event is over it, and is heavy otherwise. Divisions without published weights are unrated and
 // get the promoter's text instead of a verdict. The output is a suggestion, never a rule: promoters move athletes.
-import type { Division, DivisionFormat, EventDef } from '@/lib/types';
+//
+// 059 session 2: the athlete's numbers are canonical pounds (Astra GP-09); a metric show's division weights are stored
+// in kg, so `gradeEvent` converts them to pounds before the ratio and prints the cell in the show's unit.
+import type { Division, DivisionFormat, EventDef, MeetUnits } from '@/lib/types';
 import type { DivisionGroupingStyle } from './types';
 import { normalizeEventSpec } from '@/lib/events/spec';
+import { toLb } from '@/lib/units';
 import { eventWeightDisplay } from './format';
 
 export type Lane = 'deadlift' | 'overhead' | 'carry' | 'pull' | 'unknown';
@@ -25,8 +29,8 @@ export interface EventVerdict {
   eventNumber: number;
   name: string;
   lane: Lane;
-  weightLb: number | null;   // the division's main weight when numeric
-  weightText: string;        // what the show page prints for that cell ('' when the promoter left it out)
+  weightLb: number | null;   // the division's main weight when numeric, in pounds whatever the show's unit
+  weightText: string;        // what the show page prints for that cell, in the show's unit ('' when the promoter left it out)
   ratio: number | null;      // division weight / athlete number for the lane
   verdict: Verdict;
 }
@@ -109,10 +113,11 @@ export function divisionWeightLb(ev: EventDef, divisionId: string, lane: Lane): 
   return total;
 }
 
-export function gradeEvent(ev: EventDef, division: Division, nums: PickerNumbers): EventVerdict {
+export function gradeEvent(ev: EventDef, division: Division, nums: PickerNumbers, units: MeetUnits = 'imperial'): EventVerdict {
   const lane = eventLane(ev);
-  const weightLb = divisionWeightLb(ev, division.id, lane);
-  const weightText = eventWeightDisplay(ev, division.id).main;
+  const stored = divisionWeightLb(ev, division.id, lane);
+  const weightLb = stored === null ? null : toLb(stored, units);
+  const weightText = eventWeightDisplay(ev, division.id, units).main;
   const mine = laneNumber(nums, lane);
   const base = { eventId: ev.id, eventNumber: ev.eventNumber, name: ev.name, lane, weightLb, weightText };
   if (weightLb === null || mine === null || mine <= 0) return { ...base, ratio: null, verdict: 'unrated' };
@@ -149,8 +154,8 @@ function list(names: string[]): string {
   return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
 
-export function fitDivision(division: Division, events: EventDef[], nums: PickerNumbers): DivisionFit {
-  const graded = events.map((ev) => gradeEvent(ev, division, nums));
+export function fitDivision(division: Division, events: EventDef[], nums: PickerNumbers, units: MeetUnits = 'imperial'): DivisionFit {
+  const graded = events.map((ev) => gradeEvent(ev, division, nums, units));
   const scored = graded.filter((g) => g.verdict !== 'unrated');
   const overCount = scored.filter((g) => g.verdict === 'heavy').length;
   const reachCount = scored.filter((g) => g.verdict === 'reach').length;
@@ -167,10 +172,10 @@ const FIT_ORDER: Record<Fit, number> = { fits: 0, stretch: 1, heavy: 2, unrated:
 
 /** Rank: fitting divisions first, the heaviest fit (largest maxRatio) on top so a capable athlete is not sent to the
  *  lightest group; then stretches lightest first; then heavy; unrated last in the promoter's order. */
-export function pickGroups(divisions: Division[], events: EventDef[], nums: PickerNumbers): PickerResult {
+export function pickGroups(divisions: Division[], events: EventDef[], nums: PickerNumbers, units: MeetUnits = 'imperial'): PickerResult {
   const sortedDivs = [...divisions].sort((a, b) => a.sortOrder - b.sortOrder);
   const sortedEvents = [...events].sort((a, b) => a.eventNumber - b.eventNumber);
-  const fits = sortedDivs.map((d) => fitDivision(d, sortedEvents, nums));
+  const fits = sortedDivs.map((d) => fitDivision(d, sortedEvents, nums, units));
   const ranked = [...fits].sort((a, b) => {
     if (FIT_ORDER[a.fit] !== FIT_ORDER[b.fit]) return FIT_ORDER[a.fit] - FIT_ORDER[b.fit];
     if (a.fit === 'fits') return (b.maxRatio ?? 0) - (a.maxRatio ?? 0);
