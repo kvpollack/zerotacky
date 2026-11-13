@@ -1,0 +1,44 @@
+# Weekly rebuild of the strongmanresults.com archive (CC BY 4.0) into archive_* tables.
+# Runs as the scoped Postgres role zt_archive_loader (supabase/062_archive_loader_role.sql).
+# One repo secret: ZT_ARCHIVE_DSN = the loader connection string (pooler, session mode, sslmode=require).
+name: Archive refresh
+
+on:
+  schedule:
+    - cron: '0 8 * * 0'   # Sundays 08:00 UTC (upstream rebuilds weekly)
+  workflow_dispatch:
+
+concurrency:
+  group: archive-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Check secret
+        env:
+          ZT_ARCHIVE_DSN: ${{ secrets.ZT_ARCHIVE_DSN }}
+        run: |
+          if [ -z "$ZT_ARCHIVE_DSN" ]; then
+            echo "ZT_ARCHIVE_DSN secret is not set (Settings > Secrets and variables > Actions)"; exit 1
+          fi
+
+      - name: Load archive
+        env:
+          ZT_ARCHIVE_DSN: ${{ secrets.ZT_ARCHIVE_DSN }}
+        run: uv run --with "psycopg[binary]" python scripts/archive/load_sr.py --ref prod
+
+      - name: Keep the snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sr-snapshot-${{ github.run_id }}
+          path: scripts/archive/snapshots
+          retention-days: 90
+          if-no-files-found: ignore
