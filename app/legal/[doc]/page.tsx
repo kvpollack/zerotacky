@@ -32,7 +32,7 @@ export default async function LegalPage({ params }: Params) {
   const blocks = parseMarkdown(text);
   return (
     <WebsiteShell>
-      <article className="max-w-3xl mx-auto space-y-4 print:text-black">
+      <article className="w-full min-w-0 max-w-3xl mx-auto space-y-4 print:text-black">
         <nav className="flex flex-wrap gap-x-5 gap-y-1 text-[13px] font-bold uppercase tracking-[0.04em] text-ink-muted">
           {(Object.keys(LEGAL_DOCS) as Array<keyof typeof LEGAL_DOCS>).map((id) => (
             <Link key={id} href={`/legal/${id}`} className={id === doc ? 'text-ink underline underline-offset-4 decoration-2' : 'no-underline hover:text-ink'}>

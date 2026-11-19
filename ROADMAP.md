@@ -1,13 +1,17 @@
 # ZeroTacky roadmap to "final state" (drafted 10/16 evening, Slate; Kurt to edit)
 
-## Status, 2026-11-12 (Slate; the sections below are the 10/16 plan and its running log)
+## Status, 2026-11-18 (Slate; the sections below are the 10/16 plan and its running log)
 
 **Where we are.** The two-track plan finished: `v2` became `main` on 11/9 (tag `v2-retired-2026-11-09`), one branch, one
 Supabase prod (`kagitbfthapxmaljsdtz`, migrations 001-062 applied) plus staging, www.zerotacky.com on Vercel Hobby, Resend
 mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 feature-gaps report ranked 22 builds;
-22 shipped. Live main `c86ee6b1` (11/12: kg / m, 059 to 061: a meet picks pounds and feet or kilograms and meters once, locked after the first result; labels follow it everywhere; numbers stored as entered; PR board and group picker normalise across shows; adopted kg-only archive shows stay metric; scope note `audits/slate-2026-11-12-kg-m-scope.md`). Astra kg / m audit closed, 10 of 10 + D1 / D2 (061, notes "kg / m audit fixes"); live multi-device recheck 30 of 30 on 5 browser contexts (phone, tablet, desktop). 837 tests. Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10). The product is feature-complete against this plan; what is left is Kurt's set-up list and the held items, so the next step is a dry run, not a build.
+22 shipped. Live main `c6155e98` (11/13, archive refresh workflow green on prod) with UI pass 1 queued on top (11/18); before that `c86ee6b1` (11/12: kg / m, 059 to 061: a meet picks pounds and feet or kilograms and meters once, locked after the first result; labels follow it everywhere; numbers stored as entered; PR board and group picker normalise across shows; adopted kg-only archive shows stay metric; scope note `audits/slate-2026-11-12-kg-m-scope.md`). Astra kg / m audit closed, 10 of 10 + D1 / D2 (061, notes "kg / m audit fixes"); live multi-device recheck 30 of 30 on 5 browser contexts (phone, tablet, desktop). 845 tests. Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10). The product is feature-complete against this plan; what is left is Kurt's set-up list and the held items, so the next step is a dry run, not a build.
 
 **Shipped since the 10/21 entries below (newest first)**
+- 11/18 UI pass 1, legibility tokens (no migration): web-scoped `--muted`, `--rule-subtle`, `--sheet-subtle`, weight 400,
+  11 px caps, 68 ch measure, title bands on show / gym / register, 95 px phone header, rebuilt footer, legal-page and
+  standings overflow fixed, `$` on bare day-pass prices. Scorer and judge pad untouched (`test/webTokens.test.mjs`).
+  Probe 60 of 60 pass; notes "UI pass 1". Passes 2 (structure) and 3 (content order) follow the merged audit's build order.
 - 11/12 archive refresh role (062): `zt_archive_loader`, a login role that can only write the four `archive_*` tables and
   call `zt_refresh_archive_athletes()`; `scripts/archive/load_sr.py` runs over it when `ZT_ARCHIVE_DSN` is set;
   `.github/workflows/archive-refresh.yml` runs it Sundays 08:00 UTC and keeps the snapshot as an artifact.
@@ -47,17 +51,16 @@ mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 
 
 **Kurt's set-up items still open** (each blocks something live)
 1. ~~`CRON_SECRET`~~ set and redeployed 11/11; test call of `/api/cron/reminders` returned 200 `{queued: 0}` with the bearer and 401 without. Reminders run daily at 13:00 UTC from here.
-2. ~~Vercel deployment retention~~ done 11/11; check Usage > Functions Storage trends down on 11/13 (the 48 h mark).
+2. ~~Vercel deployment retention~~ done 11/11; checked 11/13: Functions Storage 8.2 GB -> 980 MB, Deployment Storage 1.7 GB -> 273 MB.
 3. ~~Delete the Supabase `zerotacky-upgrade-test` project~~ done 11/11; optional: drop the old v2 preview URL from
    Supabase Auth redirects.
-4. admin@zerotacky.com forwarding in Namecheap, and one claim-approved email read in a real inbox on prod.
+4. ~~admin@zerotacky.com forwarding in Namecheap~~ set 11/13 (one test mail to it still to confirm); one claim-approved email read in a real inbox on prod.
 5. Age rule: sign-up asks for a date of birth and refuses under 13 (057, 11/11). Parent-account handling for 13 to 17
    still waits on counsel.
 
 **Infrastructure still held**
-- ~~Weekly archive refresh~~ built 11/12 (062 + workflow above). One Kurt action: add the GitHub repo secret
-  `ZT_ARCHIVE_DSN` (Settings > Secrets and variables > Actions; value in Slate's `tmp/zt/archive_loader_role.txt`,
-  `prod_dsn` line), then Actions > Archive refresh > Run workflow once and check the run is green.
+- ~~Weekly archive refresh~~ LIVE 11/13: 062 + workflow pushed, secret `ZT_ARCHIVE_DSN` set, first manual run green
+  (run 43471191695, 50 s, prod `archive_sources.sr.fetched_at` 2026-11-13 17:17 UTC, snapshot artifact kept 90 days).
 - M6 leftover: `/` is still the three-button splash (Scorer / Website / Join). Promote `/website` to `/` once the first
   outside promoter has been through the site, so their feedback shapes the landing page.
 - iOS / Google Play: Capacitor shell around the scorer, Android first; nothing started.
@@ -66,7 +69,7 @@ mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 
 the gym invite, imports Power Plant's past shows, builds the next meet, opens registration, sends a broadcast, runs a dry
 meet day on two phones, exports the federation pack. Slate drives it in the browser and logs every snag; Kurt covers the
 two parts a script cannot (the emails landing in a real inbox, and how the scorer feels on a real phone). Fix what snags,
-in the order it snags. Set-up item 4 and the `ZT_ARCHIVE_DSN` secret are Kurt's; item 5 waits on counsel. Stripe (#5) starts the day a promoter asks to charge.
+in the order it snags. Set-up item 4 (the inbox test) is Kurt's; item 5 waits on counsel. Stripe (#5) starts the day a promoter asks to charge.
 
 
 Two tracks run at once. `main` stays the meet-day build for 10/24 and only takes the five sprint items plus bug fixes. A `v2` branch takes everything that needs accounts. They merge after the meet.

@@ -86,7 +86,7 @@ export function mapGymRowToListing(row: GymRow): StrongmanGymListing {
     ...(row.intro_sessions && row.intro_sessions !== 'not_provided' ? { introSessions: normalizeIntroSessions(row.intro_sessions) } : {}),
     ...(row.intro_sessions_note?.trim() ? { introSessionsNote: row.intro_sessions_note.trim() } : {}),
     ...(row.intro_sessions_url?.trim() ? { introSessionsUrl: row.intro_sessions_url.trim() } : {}),
-    ...(row.day_pass_price ? { dayPassPriceDisplay: row.day_pass_price } : {}),
+    ...(row.day_pass_price ? { dayPassPriceDisplay: /^\d+(\.\d{1,2})?$/.test(row.day_pass_price.trim()) ? `$${row.day_pass_price.trim()}` : row.day_pass_price } : {}),
     ...(row.day_pass_url ? { dayPassBookingUrl: row.day_pass_url } : {}),
     ...(row.drop_in_policy ? { dropInPolicy: row.drop_in_policy } : {}),
     ...(row.drop_in_hours ? { dropInHours: row.drop_in_hours } : {}),

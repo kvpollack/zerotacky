@@ -13,8 +13,8 @@ Kurt Pollack, drafted by Slate, 2 Nov 2026. Direction: Title Block (D07) chrome 
 | TV | Two sheets. **A, the drawing**: live athlete, clock, attempt count, on deck, upcoming, and the running order of the current event. **B, the card**: full standings, every attempt in its own cell, best marks ringed. Scorer picks which is up; auto-rotate exists but is off by default. |
 | Pad | D07 pad. Never takes promoter colour. NO LIFT is a light key (sheet ground, 3 px red border, red label, X glyph) so it survives sun. |
 | Logo | Set Stone redrawn as an outline (circle on a flat base), one colour, no fill, no red. It is the 0 in ZER0TACKY, the title block's logo cell, the ring round a best mark, the pending-attempt marker and the loader. No bespoke logo typeface. Fixed after launch. |
-| Scorer | **Full reskin**, not tokens only (Kurt 2 Nov). |
-| Website | Copy stays. Layout moves to the sheet grammar, last. |
+| Scorer | **Full reskin**, not tokens only (Kurt 2 Nov). Phase 5. |
+| Website | Copy stays. Layout moves to the sheet grammar right after the TV (Phase 3, reordered 2 Nov). |
 | Motion | Swap-cut on score lock (row redraws in place, REV letter advances, no tween). Ring-draw 400 ms when a mark becomes a best. Nothing else moves. |
 
 ## 2. How the work runs
@@ -22,6 +22,7 @@ Kurt Pollack, drafted by Slate, 2 Nov 2026. Direction: Title Block (D07) chrome 
 1. Nothing you have not seen gets built. Every screen gets a mockup first (section 4) and you approve or redline it.
 2. One branch per phase, Vercel preview URL for you to try on a real TV or phone.
 3. I ask before every push to main and before any prod SQL, same as today. Staging is mine.
+5. **Nothing goes to main until Phase 2 (TV) and Phase 3 (website shell) are both done** (Kurt 2 Nov). Until then prod would show the new type inside the old chrome; the v2 preview is the only place the transition is visible.
 4. Each phase ends with `bun test`, `tsc`, a contrast check in both modes, and a dry run on staging before I ask to merge.
 
 ## 3. Phases
@@ -30,21 +31,20 @@ Kurt Pollack, drafted by Slate, 2 Nov 2026. Direction: Title Block (D07) chrome 
 |---|---|---|---|---|---|
 | 1 Foundation | Self-host the three fonts with size-adjusted fallbacks; Tailwind 4 `@theme` tokens (`--ground --sheet --ink --muted --pen --red --accent --accent-label`); kill rose and emerald; shared parts: `Sheet` (frame + zone strips), `TitleBlock`, `RuledBlock`, `StoneMark`, `NoLiftKey`; the promoter clamp and refusal functions (OKLCH clamp, CAM02-UCS deltaE >= 20 from the red pen, normal and deutan) with unit tests. Nothing visible changes except state colours. | `app/globals.css`, `components/brand`, `components/ui`, `lib/theme/` (new) | M | None (the mockups you have are the spec) | tests + tsc; website still renders |
 | 2 TV | Sheet A and Sheet B at `/m/[slug]`; scorer control for which sheet is up; dark toggle; promoter slots wired to the meet's colour; idle/splash screen with the wordmark. Built on a preview route first, flipped on your word. | `app/m/[slug]/ScoreboardClient.tsx`, `components/standings` | L | Idle screen; sheet with 20+ athletes and 6+ events (overflow rule); between-athletes state | You watch a staged meet on a TV in both modes |
-| 3 Judge pad | Port the pad. Light-key NO LIFT, pen-blue values, REV letter on lock. Two-phone sync unchanged. | `components/judge` | M | Lock state, offline/sync-dot state, between-athletes | Two-phone staging run |
-| 4 Scorer, full reskin | Break `strongman-app.jsx` into TypeScript components under `components/scorer/`, screen by screen, each kept green against the existing controller and sync tests. Screens: meet setup, events and implements, roster and lots, live control (clock, station, TV sheet switch, venue toggle), results and export. | `app/scorer`, `components/strongman-app.jsx` -> `components/scorer/*` | XL | Every one of the five screens, before its code | 470+ tests; a scripted meet-day dry run on staging, audited the way Astra did the 10/19 release |
-| 5 Promoter and registration | Sheet grammar on the promoter console and `/register`; the paint picker with live preview of the three slots, the clamp, and a plain-English refusal ("that red is too close to the no-lift pen; pick another or we set your name in it instead"). | `components/promoter`, `components/register` | M | Paint picker; show listing editor | Staging pass with a hostile colour |
-| 6 Website | Public pages (home, shows, show detail, athletes, gyms, how-it-works) to the sheet grammar; wordmark in the header; stone favicon and app icon. Copy untouched. | `components/website`, `public/` | M | Home and show detail | Lighthouse a11y, both modes |
+| 3 Website shell (moved up from 6, Kurt 2 Nov: the new type looked misplaced inside the old chrome) | Header with the wordmark, nav as a ruled strip, page frame on the grey ground, buttons as ink keys, cards as ruled blocks, show cards as results-table rows, footer as a title block. Home, shows, show detail, gyms, athletes and account inherit it through the shared shell. Copy untouched. Stone favicon and app icon. | `components/website`, `app/website`, `public/` | M | Home and show detail, bright and dark (in the Phase 2 batch) | Lighthouse a11y both modes; every public page opened |
+| 4 Judge pad | Port the pad. Light-key NO LIFT, pen-blue values, REV letter on lock. Two-phone sync unchanged. | `components/judge` | M | Lock state, offline/sync-dot state, between-athletes | Two-phone staging run |
+| 5 Scorer, full reskin | Break `strongman-app.jsx` into TypeScript components under `components/scorer/`, screen by screen, each kept green against the existing controller and sync tests. Screens: meet setup, events and implements, roster and lots, live control (clock, station, TV sheet switch, venue toggle), results and export. | `app/scorer`, `components/strongman-app.jsx` -> `components/scorer/*` | XL | Every one of the five screens, before its code | 485+ tests; a scripted meet-day dry run on staging, audited the way Astra did the 10/19 release |
+| 6 Promoter and registration | Sheet grammar on the promoter console and `/register`; the paint picker (030 `theme`) gets the clamp, a live preview of the three slots, and a plain-English refusal ("that red is too close to the no-lift pen; pick another or we set your name in it instead"). | `components/promoter`, `components/register` | M | Paint picker; show listing editor | Staging pass with a hostile colour |
 
 Sizes are relative effort, my judgment, not dates: S under a session, M one or two, L three or four, XL more.
 
 ## 4. Mockup queue (in order)
 
-1. Sheet A and B, pad, wordmark: **delivered 2 Nov, awaiting your redlines.**
-2. TV idle/splash screen and the overflow rule (what Sheet B does with 24 athletes and 7 events).
+1. Sheet A and B, pad, wordmark: **approved 2 Nov.**
+2. Phase 2 batch: TV idle/splash screen; the overflow rule (Sheet B with 24 athletes and 7 events); website home and show detail, bright and dark.
 3. Pad states: locked, waiting for the next athlete, sync lost.
 4. Scorer: five screens.
 5. Promoter paint picker.
-6. Website home and show detail.
 
 ## 5. To check before Phase 2 (mine)
 

@@ -113,7 +113,7 @@ export default function AthletesBrowser({ initialAthletes, availableStates, init
                   )}
                   {(a.location || a.favoriteLift) && (
                     <div className="text-[13px] leading-snug text-ink-muted pt-0.5">
-                      {a.location && <div className="truncate">{a.location}</div>}
+                      {a.location && <div className="truncate text-ink">{a.location}</div>}
                       {a.favoriteLift && <div className="truncate">Favorite lift: <span className="text-ink">{a.favoriteLift}</span></div>}
                     </div>
                   )}

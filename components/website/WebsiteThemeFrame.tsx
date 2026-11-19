@@ -49,7 +49,7 @@ export default function WebsiteThemeFrame({ children, className = '', override =
           const acc = brand ? resolveAccent(brand.primary, mode) : null;
           const slot = acc ? ({ '--accent': acc.accent, '--accent-label': acc.label } as React.CSSProperties) : undefined;
           return (
-            <div data-zt-theme={shown} data-zt-mode={mode} data-zt-sheet="" style={slot} className={`min-h-screen bg-ground text-ink font-sans flex flex-col ${className}`}>
+            <div data-zt-theme={shown} data-zt-mode={mode} data-zt-sheet="" data-zt-web="" style={slot} className={`min-h-screen bg-ground text-ink font-sans flex flex-col ${className}`}>
               <WebsiteThemeControls.Provider value={controls}>{children}</WebsiteThemeControls.Provider>
             </div>
           );
