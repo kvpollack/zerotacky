@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import FollowShowButton from './FollowShowButton';
 import ClaimResultClient from './ClaimResultClient';
-import { Cap, Key, KeyButton, WebCell, keyClass, textLink } from './sheet';
+import { Cap, Key, KeyButton, WebCell, keyClass, textLink, TitleBand } from './sheet';
 import SponsorStrip from './SponsorStrip';
 import GroupPickerClient from './GroupPickerClient';
 import { ResultCardSizes, ResultCardToggle } from './ResultCardButton';
@@ -90,26 +90,11 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
 
       {/* Promoter band: the one place on this page the show's colour fills */}
       <div>
-        <div className="bg-slot text-slot-label border-2 border-b-0 border-rule flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-5 sm:px-7 min-h-16 py-3 text-[15px] sm:text-lg leading-snug">
-          <h1 className="font-normal">
-            <span className="font-bold text-xl sm:text-[22px]">{show.name}</span>
-            <span className="opacity-60 mx-3.5" aria-hidden="true">·</span>
-            <span>{show.date ? longIsoDate(show.date) : 'Not provided'}</span>
-            <span className="opacity-60 mx-3.5" aria-hidden="true">·</span>
-            <span>{venueLine(show.venue)}</span>
-          </h1>
-          <div className="text-[13px] sm:text-[15px] uppercase tracking-[0.04em]">
-            <span>Competition: {life.competitionLabel}</span>
-            <span className="opacity-60 mx-3.5" aria-hidden="true">·</span>
-            <span>Results: {life.resultsLabel}</span>
-            {show.isDemoFixture && (
-              <>
-                <span className="opacity-60 mx-3.5" aria-hidden="true">·</span>
-                <span>Demo Fixture (Sample Data)</span>
-              </>
-            )}
-          </div>
-        </div>
+        <TitleBand
+          name={show.name}
+          meta={[show.date ? longIsoDate(show.date) : 'Not provided', venueLine(show.venue)]}
+          status={[`Competition: ${life.competitionLabel}`, `Results: ${life.resultsLabel}`, show.isDemoFixture && 'Demo Fixture (Sample Data)']}
+        />
 
         {/* Facts strip */}
         <section aria-label="Show facts" className="zt-block border-t-0 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
@@ -330,7 +315,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
               {divView.standings.length === 0 ? (
                 <p className="text-[13px] text-ink-muted">No athletes or scores recorded for this division.</p>
               ) : (
-                <div className="overflow-x-auto border-2 border-rule">
+                <div className="overflow-x-auto max-w-full min-w-0 [contain:inline-size] border-2 border-rule">
                   <table className="w-full text-left border-collapse text-[13px]">
                     <thead>
                       <tr>
@@ -434,8 +419,8 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
           )}
         </div>
 
-        <div className="border-2 border-rule">
-          <div className="overflow-x-auto">
+        <div className="border-2 border-rule min-w-0 max-w-full">
+          <div className="overflow-x-auto max-w-full min-w-0 [contain:inline-size]">
             <table className="w-full text-[13px] border-collapse">
               <thead>
                 <tr>

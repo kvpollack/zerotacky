@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import WebsiteShell from '@/components/website/WebsiteShell';
-import { Cap, Key, SectionCap, WebCell, textLink } from '@/components/website/sheet';
+import { Cap, Key, SectionCap, WebCell, textLink, TitleBand } from '@/components/website/sheet';
 import { getPublicGymBySlug, listPublicShows } from '@/lib/website/data';
 import { canonical, gymJsonLd } from '@/lib/website/seo';
 import { longIsoDate } from '@/lib/website/sheetFormat';
@@ -75,24 +75,11 @@ export default async function GymDetailPage({ params }: GymDetailPageProps) {
 
         {/* Gym band: the one place on this page the gym's colour fills */}
         <div>
-          <div className="bg-slot text-slot-label border-2 border-b-0 border-rule flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-5 sm:px-7 min-h-16 py-3 text-[15px] sm:text-lg leading-snug">
-            <h1 className="font-normal">
-              <span className="font-bold text-xl sm:text-[22px]">{gym.name}</span>
-              <span className="opacity-60 mx-3.5" aria-hidden="true">·</span>
-              <span>{gym.city}, {gym.state}</span>
-            </h1>
-            <div className="text-[13px] sm:text-[15px] uppercase tracking-[0.04em]">
-              {typeLabel && <span>{typeLabel}</span>}
-              {typeLabel && claimLabel && <span className="opacity-60 mx-3.5" aria-hidden="true">·</span>}
-              {claimLabel && <span>{claimLabel}</span>}
-              {gym.isDemoListing && (
-                <>
-                  <span className="opacity-60 mx-3.5" aria-hidden="true">·</span>
-                  <span>Demo listing (fictional)</span>
-                </>
-              )}
-            </div>
-          </div>
+          <TitleBand
+            name={gym.name}
+            meta={[`${gym.city}, ${gym.state}`]}
+            status={[typeLabel, claimLabel, gym.isDemoListing && 'Demo listing (fictional)']}
+          />
 
           {/* Facts strip */}
           <section aria-label="Gym facts" className="zt-block border-t-0 grid-cols-2 lg:grid-cols-4">

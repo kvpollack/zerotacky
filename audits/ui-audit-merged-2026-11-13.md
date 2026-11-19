@@ -1,0 +1,88 @@
+# ZeroTacky website legibility audit, merged (2026-11-13)
+
+Three independent reviews of www.zerotacky.com, same prompt, run in parallel: **Fable** (thread "UI Audit 1 - Fable"), **Astra** (thread "UI Audit 2 - Astra", report `Downloads/ZeroTacky_Independent_Audit_Thread2_2026-11-13/Audit.md`, screenshots + DOM evidence alongside), **Grok** (thread "UI Audit 3 - Grok": nothing beyond the prompt was produced; dropped). Merged by Slate.
+
+**Coverage.** Both reports complete: Astra 19 findings; Fable 25 findings (`Downloads/ZT_Site_Audit_2026-11-13/Audit.md`, screenshots + `metrics.json` with per-page DOM counts alongside). Second pass of this merge done 11/13 after Fable's file landed; Fable names the real components (`components/website/sheet.tsx` Cap, `RuledBlock.tsx` Cell, `NAV_LINK`, `ShowRows.tsx`, `GymsBrowser.tsx`, the LT-07 edge fade), which the build order below uses.
+
+Agreement column: **2/2** = both reviewers, independently, same mechanism. **A** = Astra only, **F** = Fable only.
+
+## 1. Diagnosis (both reviewers, same three causes)
+
+1. **Rules carry no hierarchy.** `--rule` is the ink colour (`#111`; dark `#f2f2f2`), and `.zt-block` draws a 2 px edge plus 1 px cell gaps in it, so page frame, header, filter panel, table, one-line notice and footer all have the same line weight. Fable counted 48 rules in the first phone screen of a show page. Dark mode makes it worse because the rules are then the brightest thing on screen.
+2. **One type voice.** `[data-zt-sheet]` forces weight 500 on everything; labels, nav items, badges, statuses, footer links and section headings are all 11 to 13 px caps in the same muted grey (`#4f4f4f`, 2.3:1 against ink; 1.7:1 in dark). Major section headings use the same cap treatment as metadata, so "Competition Bests" reads like a field label.
+3. **Same cell, repeated, often empty.** Every section is cap + bold line + muted paragraph in a ruled block, and the pattern is kept even for thin or placeholder content: "Not provided" 17 times on a gym page, three empty ruled grid cells on Trainers, 169 gym cards each with four ruled sub-rows. Desktop column layouts survive to 390 px.
+
+## 2. Findings, merged and ranked
+
+Rank = agreement first, then reading failure before cosmetic, then effort.
+
+| # | Agree | Page | Viewport | Finding | Proposed change (Slate's pick where the two differed) | Effort | Source rows |
+|---|---|---|---|---|---|---|---|
+| 1 | 2/2 | /shows | phone | 5-column desktop table kept at 390 px: ~112 to 140 px for the title, names wrap to 4 lines, venue truncates, a 6-show list is 5,901 px tall | Below 640 px render a stacked row: line 1 date + status, line 2 name 20/24 700, line 3 venue 15/22 muted; whole row is the tap target (44 px min), drop the OPEN / action column, move division and implement lists to the show page; one 1 px divider between shows, no vertical cell rules | M | F1, A1 |
+| 2 | 2/2 | all pages | both | Rules all one weight (cause 1) | Add `--rule-subtle` (`#b8b8b8` bright / `#505050` dark) and use it for `.zt-block` 1 px cell gaps, table row rules and secondary separators; keep the 2 px `--rule` (ink) for the page frame, header, title bars and true group boundaries only; add `--sheet-subtle` (`#f1f1f1` / `#181818`) for filter rails and table headers. Fable's values were `#9a9a9a` / `#5a5a5a`; Astra's recede further, so those are the pick | S | F3, A6 |
+| 3 | 2/2 | all pages | both | Label and value do not separate; section headings look like labels (cause 2) | Split three roles: section heading 20/26 700 normal case; field label caps 12/16 (11 px phone) 500-600, tracking .06em, `--muted` lightened to `#6b6b6b` bright / `#9a9a9a` dark; value 16/22 600 ink, 6 px label-to-value gap. Keep body copy out of `--muted` | S | F4, A7 |
+| 4 | 2/2 | /gyms | both | 169 cards at once (74,124 px on phone), each a miniature form: 4 ruled bands, 9 to 17 boxed chips, repeated empty hours/policy rows | Paginate 24 with a visible total and a "Show 24 more" key; card = name/location band with day-pass beside it, one rule above the action row, equipment as plain text "x · y · z +N more", one "Details not supplied" line instead of repeated empties | M | F2, A8 |
+| 5 | 2/2 | /shows/<slug>, /gyms/<slug> | both | The record's own name (h1) is 17/500 desktop, 15 px phone, inline in the title strip with date and venue; the section h2s below are 22/700 so "Official Finalized Podiums" outranks the show | Name on its own line, 26/700 desktop, 22 px phone (Fable's sizes; Astra said 32/28, too wide for the mono face at 390 px); date · venue once beneath at 14 px; one official/provisional status beside the results heading instead of four repeats; raw `/m/` URL becomes "Live scoreboard" | S | F6, A10 |
+| 6 | 2/2 | /shows/<slug>, /how-it-works | desktop | Prose runs the full 1,232 to 1,300 px sheet, 100 to 170 characters a line | `max-w-[68ch]` on intro paragraphs and guide steps; body 16/25 | S | F7, A12 |
+| 7 | 2/2 (diag) | /trainers, /athletes | desktop | Grid draws three ruled columns with one or two entries; empty cells carry full chrome | `repeat(auto-fit, minmax(280px, 1fr))`, entry width capped ~440 px, borders only on populated cells, names 20/26 | S | F diag, A16 |
+| 8 | 2/2 (diag) | /gyms/<slug> | both | Equipment list is twelve copies of the same empty form ("Size / weight range not provided" per item, Strongman badge ten times); Hosting Record (0) gets a full enclosure | Group under Strongman / Powerlifting, say "Sizes and weights not supplied" once, no per-item box, two columns desktop; "No linked shows yet" as one unboxed line | S | F diag, A9 |
+| 9 | 2/2 | /shows/<slug> results, weights | phone | **Defect:** document is 1,137 px wide (Astra); standings show only EV 1 and the matrix only Group 1 with nothing saying they scroll, SHARE CARD off-screen (Fable) | `max-width:100%; min-width:0; contain:inline-size paint` on table wrappers (Astra's browser probe restored 390 px); reuse the LT-07 edge fade as the scroll cue; place + total before event columns; division tabs as the matrix column picker on phone, one column at a time | M | F9, A4 |
+| 10 | A | /legal/privacy | phone | **Defect:** article intrinsic width wins (467 px in a 346 px column), document 489 px wide, heading and paragraphs clipped | Article `width:100%; min-width:0`, table wrapper `min-width:0; max-width:100%`; desktop measure (768 px) unchanged | S | A5 |
+| 11 | 2/2 | all pages | both | Body text is weight 500 (`[data-zt-sheet]`), so headings at 700 barely separate; the 400 face is loaded but only used for placeholders | Body (`p`, `li`, cell values) 400; 700 for h1 to h3, names, numerals, keys | S | F5 (Astra's top five #2 allows 400-500) |
+| 12 | 2/2 | /website | both | Primary action buried: phone hero is a five-line h1 plus 16 lines of paragraph, FIND A SHOW lands at y 811-820 of 844; the only pen accent on the page is "169" at 40 px, the three keys are equal-weight caps; feature trio is three identical cap/h3/paragraph cells | On phones keys directly under the h1, paragraph after (or cut to two sentences); FIND A SHOW becomes the pen key, the other two line keys; "169" to 28 px ink; drop the caps on the feature trio and the duplicate gym pitch | S | F14, F15, A2 |
+| 13 | A | /shows, /gyms, /athletes, /trainers | both | Intro copy and filters push the first real entry to y≈1,130 on phone | Two-line intros; search + status (Shows) / search + ZIP (Gyms) visible, rest behind "More filters" with an active count; owner/opt-in copy moves next to its action | M | A3 |
+| 14 | 2/2 | /shows/<slug> weights, logistics | both | Weight matrix prints every value twice (22 px pen value, then the same thing as an 11 px muted footnote, all 15 cells); descriptive strings set at 22 px display size; "Last updated" twice, "Registration Closed" 3 to 4 times; Not provided x3 + x4 in full cap/value chrome; "Competed here?" in a 2 px block for one sentence | Keep the pen value, drop the repeat unless it adds information; 22/26 only for numeric loads + units, 15/22 for descriptions; one "Last updated" stamp; status once in the title line; one muted line per empty block ("Schedule, rules: not provided by the promoter"); Competed-here as a plain line | S | F8, F11, F23, A11 |
+| 15 | 2/2 | /how-it-works, /first-show | both | 12,106 px and 14,611 px tall on phone; every FAQ expanded; first guide step below 1,400 px after prerequisites and ten nav buttons; step number rail leaves 262 px for text | FAQ as 48 px disclosure rows; one "Jump to step" control on phone; prerequisites to three lines; step number beside the heading not the paragraph; "On the public side" panel becomes an indented note | M | A12, A13 |
+| 16 | A | /first-show | phone | Screenshots (2,012 px native) shown at 306 px, not linked | Link each to the original, 44 px "View full-size" caption, single 1 px rule not double framing | S | A14 |
+| 17 | 2/2 | /athletes/<username> | both | Competition Bests, PRs, Show History, Shows They Run and one Instagram link all share the same cap-header box | Lead with "Competition record" 20/26; group bests from one show under one source line; self-reported PRs as a quieter unboxed list; Instagram inline in the header | S | A15 |
+| 18 | 2/2 | footer | both | Footer is a second scorecard: 2 px block, 9 cells (TITLE / SHEET / REV / STATUS / OPERATOR / UNITS / COPY), the third ZEROTACKY wordmark on every page, address truncated on phone | Keep the block in `--rule-subtle` 1 px with one 2 px top edge; drop the wordmark from TITLE (the stone mark is already there); one 12/18 metadata line (rev · units · ©); nav and contact unboxed and wrapping; drop Sheet and Public status cells | S | F18, A17 |
+| 19 | A | /gyms/<slug> claim path, /website/account | both | "Claim this gym" at y≈792 on phone behind prose; claim form has rules between inputs that already have borders; Report a problem is a second big button | Claim key directly under the gym name/status; Report as a secondary link; 24 px field spacing, no inter-field rules; Account intro to one sentence | S | A18 |
+| 20 | 2/2 | listings, account, footer | phone | Results / Website / Unclaimed / Forgot password links 19 to 25 px tall; footer links 32 px; OPEN-column links 58x20 | Standalone action links `inline-flex; min-height:44px` (`min-h-11`), 8 px apart; whole show row clickable (row 1); prose links `py-1` only | S | F16, A19 |
+| 21 | F | header, every page | phone | 115 px sticky header (wordmark row + nav row, two 56 px rows) holds 14% of the screen on every page | Phone nav row 44 px, or un-stick the nav row and keep only the wordmark row sticky | S | F17 |
+| 22 | F | dark mode, all pages | dark | Straight inversion: 2 px `#f2f2f2` rules on `#000` bloom and dominate; muted `#bdbdbd` vs ink `#f2f2f2` is 1.7:1 | Falls out of rows 2 and 3 (dark `--rule-subtle`, dark `--muted #9a9a9a`); also dark `--rule` to `#d8d8d8` so the 2 px edges stop glowing | S | F24, A6 |
+| 23 | F | /shows/<slug> | both | Podium block and Event-by-Event table list the same three athletes in the same order back to back, each in full chrome | Standings table takes the podium's place numerals and FINALIZED tag in its header row; podium block goes, or stays for All Divisions only | M | F10 |
+| 24 | F | /gyms/<slug> | desktop | **Defect:** day pass shows "Not provided" with a bare pen "15" under it (price without label when availability is missing) | "$15 · availability not stated", or the price alone with a `$`; never a bare numeral | S | F13 |
+| 25 | F | /join | both | Disabled FIND MEET key is pen at 50% opacity and reads as a third (lavender) colour | Disabled key = line key in `--muted` text, no fill | S | F25 |
+
+## 3. Build order (Slate's proposal)
+
+**Scope guard first.** `[data-zt-sheet]` is mounted three times: `WebsiteThemeFrame.tsx` (the website), `ScorerShell.tsx` and `JudgePad.tsx` (the scorer). Pass 1 adds a `data-zt-web` attribute on the website frame and every new rule targets `[data-zt-web]`, so the judge pad, pit crew and TV board keep their weight-500, 2 px-ink grammar untouched.
+
+**Pass 1, system tokens and shared components (all S, one session):** rows 9, 10, 24 first (defects); then rows 2, 3, 11, 22 in `app/globals.css` (web-scoped tokens `--rule-subtle`, `--sheet-subtle`, lighter `--muted`, body 400, dark `--rule`), Cap in `components/website/sheet.tsx` and Cell in `RuledBlock.tsx` (11/12 px, weight 500, .08em), `.zt-block` cell gaps and `NAV_LINK` borders to `--rule-subtle`; row 6 measure as one rule (`[data-zt-web] main :is(p, li) { max-width: 68ch }` with an opt-out class for cells); row 5 title bar; rows 18 and 21 (footer, header height) since they are shell components; row 25. Re-shoot the 13 pages at both viewports and modes and run the metrics below before anything page-specific is touched.
+
+**Pass 2, phone listing composition (M):** rows 1, 4, 13: `ShowRows.tsx` stacked variant below `md`, `GymsBrowser.tsx` paged at 24 with chips as text, directory intros and filter disclosure, row 20 tap targets.
+
+**Pass 3, page-level content order (mostly S):** rows 7, 8, 12, 14, 17, 19, 23; then 15 and 16 (guides).
+
+Astra's component names were guesses from the DOM; Fable's are the real files. Slate maps the rest at build time.
+
+## 3a. Pass 1 verification (what "done" means before Kurt looks)
+
+Fable's `metrics.json` is the baseline: 56 rows (13 pages x 2 viewports x 2 modes, plus clips) with `rulesFold`, `rules2px`, `upsFold` (uppercase labels in the first screen), `capSizes`, `pairs` (label -> value size/weight/colour pairs), `paraSummary` (characters per line), `headerH`, `docH`, `small` (targets under 44 px). The same probe is re-run on the staging preview after pass 1 and diffed per page. Pass 1 passes when, on every website page at both viewports and modes:
+
+1. **No overflow:** `document.documentElement.scrollWidth == 390` on phone (today 1,137 on the show page, 489 on privacy). Hard fail.
+2. **Rules recede:** 2 px ink rules in the first screen only on the frame, header, title bar and true group edges; every other rule is `--rule-subtle`. Measured as `rules2px` per page not rising and interior 1 px rules reporting the subtle colour. Target: first-screen ink rules on the show page phone from 48 to under 12.
+3. **Three type roles exist:** computed styles show section headings 20 px / 700 / no uppercase; caps 11 or 12 px / 500 / `--muted`; values 16 px / 600 / `--ink`; body `p`/`li` weight 400. `pairs` must contain no "13 px muted -> 13 px muted" rows (today 4 on the landing page alone).
+4. **Contrast both ways:** `--muted` on `--sheet` at least 4.5:1 and against `--ink` at least 3:1 in both modes (today 2.3:1 and 1.7:1 against ink). Computed from the live variables, not the spec.
+5. **Measure:** no `p`/`li` in `main` above 72 characters per line at 1440 (today up to 170).
+6. **Header:** phone `headerH` 100 px or under (today 115).
+7. **Scorer untouched:** the same probe on `/scorer` (demo) and a judge pad reports weight 500 body, `--rule` ink, identical `capSizes` to the baseline. Regression guard for the scope rule.
+8. **Code:** tsc clean, all unit tests pass (837 today), plus a new `test/webTokens.test.mjs` asserting the web-scoped variables are defined for both modes and the scorer selector does not inherit them.
+9. **Eyes:** before/after contact sheet (13 pages x 4 conditions, fold crops) in `Downloads/zt_ui_pass1/` for Kurt; the only sign-off that counts for the dosage question.
+
+## 3b. Fable's top five and open questions (for the record)
+
+Top five: (1) two rule tones via `--rule-cell` on `.zt-block`, `RuledBlock`, `NAV_LINK`, footer; (2) lighter muted, smaller un-bolded Cap in `sheet.tsx` and `RuledBlock.tsx`; (3) body 400; (4) a prose measure with an opt-out; (5) phone list rows in `ShowRows.tsx` / `GymsBrowser.tsx` + scroll fade. Items 1 to 4 are pass 1 here; 5 is pass 2.
+
+Open questions: is the gym directory meant to be browsed without a zip (the 169-card render), or is distance filtering the intended default? And is Resume the only intended third key on `/`? Both for Kurt.
+
+## 4. Keep list (both)
+
+Fable adds: pen numerals in Saira Stencil (dates, places, counts) stay the only large pen text; the ink-filled title bar on show/register pages and the gym's slate bar (colour way slot), only the type inside changes; the cap-over-value grammar in show and athlete headers (tone and size change, not structure); pen key for the primary action where it exists (CLAIM THIS GYM, FIND MY GYM), extend it, do not dilute it; red stays unused on these pages; `/legal/privacy` is the pattern to borrow (768 px measure, one tone-step grey for notice and table header).
+
+Astra: fonts, wordmark, square geometry, grey ground / white sheet / ink / blue + red roles. Official vs provisional vs demo states and honest missing-data language (consolidate, never hide). Blue performance values and selected states as the reading anchor. Control sizing: toggle 44x56, fields 44, main keys 48, join code 56. Working interactions: Upcoming filter, gym search, division switch, Athletes & Spectators jump link. `/` (two keys, Resume appears only when a phone carries a meet) and `/join` initial state are fine. Privacy's 768 px desktop measure. The claim form's field list and guidance.
+
+## 5. Open questions / limits
+
+- No show on prod had registration open, so `/register/<slug>` was only seen in its not-found and closed states (both reviewers). The open form gets covered in the signed-in staging pass (part 2) or by opening registration on a prod show.
+- Astra reviewed in Chromium emulation, not on-device Safari. Fable's screenshots carry an Edge extension badge bottom-right (not the site).

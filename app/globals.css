@@ -481,6 +481,8 @@
   --color-ink: var(--ink);
   --color-ink-muted: var(--muted);
   --color-rule: var(--rule);
+  --color-rule-subtle: var(--rule-subtle);
+  --color-sheet-subtle: var(--sheet-subtle);
   --color-pen: var(--pen);
   --color-pen-label: var(--pen-label);
   --color-redpen: var(--red);
@@ -541,6 +543,31 @@ body { font-family: var(--font-sans); }
 [data-zt-sheet] :is(.border-amber-500\/40, .border-amber-500\/50) { border-color: var(--rule); }
 [data-zt-sheet] h1, [data-zt-sheet] h2, [data-zt-sheet] h3 { letter-spacing: 0; }
 [data-zt-sheet] { font-weight: 500; }
+
+/* UI pass 1 (11/18, merged Fable + Astra legibility audits, `audits/ui-audit-merged-2026-11-13.md`). Website only:
+   `data-zt-web` is set by WebsiteThemeFrame and never by the scorer or judge pad, which keep the weight-500, all-ink
+   grammar for floodlights and TVs. Three moves: (1) two rule tones, the 2 px ink edge stays for the frame, header,
+   title bars and real group boundaries while 1 px cell gaps and row rules drop to --rule-subtle; (2) three type roles,
+   section heading / cap label / value, with a lighter --muted that still clears 4.5:1 on the sheet and 3:1 against ink;
+   (3) body weight 400 so a 700 heading reads as one. Dark mode gets its own values rather than a straight inversion. */
+[data-zt-web] {
+  --muted: #6b6b6b; --rule-subtle: #b8b8b8; --sheet-subtle: #f1f1f1;
+  font-weight: 400;
+}
+[data-zt-web][data-zt-mode='dark'] {
+  --muted: #8a8a8a; --rule: #d8d8d8; --rule-subtle: #505050; --sheet-subtle: #181818;
+}
+[data-zt-web] .zt-block { background: var(--rule-subtle); }
+[data-zt-web] .bg-rule { background-color: var(--rule-subtle); }
+[data-zt-web] :is(.border, .border-t, .border-b, .border-l, .border-r, .border-x, .border-y).border-rule { border-color: var(--rule-subtle); }
+[data-zt-web] .divide-rule > :not([hidden]) ~ :not([hidden]) { border-color: var(--rule-subtle); }
+/* caps (Cap in components/website/sheet.tsx, the Cell cap in components/sheet/RuledBlock.tsx): 11 px, medium, wider
+   tracking; the value that follows a cap inside a ruled block sits at 600 so label and value separate by weight too */
+[data-zt-web] .zt-cap { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; }
+[data-zt-web] .zt-block .zt-cap + :not(p, ul, ol, a, button) { font-weight: 600; }
+/* a measure for prose (Fable 7 / 20, Astra 12): the mono face at 1,300 px ran to 170 characters a line */
+[data-zt-web] main :is(p, li):not(.zt-wide, td *, th *) { max-width: 68ch; }
+[data-zt-web] main :is(p, li).text-center { margin-inline: auto; }
 /* Desktop type scale (Kurt 11/9): the mono body at 13 px got lost on a desktop display. From lg every body size steps
    up one notch; phones keep the tight scale. Headings (22 px and up) are untouched. One place to tune or revert. */
 @media (min-width: 1024px) {
@@ -555,6 +582,7 @@ body { font-family: var(--font-sans); }
   [data-zt-sheet] .text-xs { font-size: 13px; }
   [data-zt-sheet] .text-sm { font-size: 15px; }
   [data-zt-sheet] .text-base { font-size: 17px; }
+  [data-zt-web] .zt-cap { font-size: 12px; }   /* after the scale so it wins over .text-[13px] on Cell caps */
 }
 /* the old emerald "success" paint: pen text, no tint, pen rule; the solid emerald button is an ink key */
 [data-zt-sheet] :is(.text-emerald-200, .text-emerald-300, .text-emerald-400, .text-emerald-200\/80) { color: var(--pen); }

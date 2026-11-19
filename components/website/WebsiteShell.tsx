@@ -50,8 +50,9 @@ const FOOTER_LINKS: Array<{ label: string; href: string }> = [
 ];
 const TAGLINE = 'Your one stop for strongman: shows, registration, live scoring, and a gym directory.';
 
-// header cells: 56 px tall; nav links from ./sheet (NAV_LINK / navClass)
-const CELL = 'bg-sheet flex items-center h-14 min-w-0';
+// header cells: 48 px on phones, 56 px from lg (pass 1: the two-row phone header drops from 115 to 95 px); nav links
+// from ./sheet (NAV_LINK / navClass) fill their cell with h-full
+const CELL = 'bg-sheet flex items-center h-12 lg:h-14 min-w-0';
 
 export default function WebsiteShell({ activeNav, brand = null, sheet, children }: WebsiteShellProps) {
   // Astra gate STYLE: the amber "preview" badge belongs to fixture-only builds. With a backend configured the site is
@@ -91,11 +92,11 @@ export default function WebsiteShell({ activeNav, brand = null, sheet, children 
 
               {/* nav: full-width row on phones (order-last), the second cell of the first row from lg up. Scrolls at
                   every width; the actions sit on their own row from lg up, so nothing shares this row but the wordmark. */}
-              <div className={`${CELL} relative col-span-full lg:col-span-1 order-last lg:order-none border-t border-rule lg:border-t-0`}>
+              <div className="bg-sheet flex items-center min-w-0 h-11 lg:h-14 relative col-span-full lg:col-span-1 order-last lg:order-none border-t border-rule lg:border-t-0">
                 <nav
                   id="zt-primary-nav"
                   aria-label="Primary website navigation"
-                  className="flex items-stretch h-14 w-full overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pr-10"
+                  className="flex items-stretch h-11 lg:h-14 w-full overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pr-10"
                 >
                   {NAV_ITEMS.map((item) => {
                     const isActive = activeNav === item.id;
@@ -147,48 +148,42 @@ export default function WebsiteShell({ activeNav, brand = null, sheet, children 
             {children}
           </main>
 
-          {/* Footer = title block. Fields: TITLE, SHEET, REV, STATUS; links, OPERATOR, UNITS, COPY. */}
-          <footer className="mt-10 zt-block border-x-0 border-b-0 grid-cols-2 zt-print-hide lg:grid-cols-[90px_1fr_220px_220px_160px_120px] lg:grid-rows-2 text-[15px]">
+          {/* Footer = a quiet title block (pass 1, 11/18: Fable 18, Astra 17). One 2 px top edge, 1 px subtle cell rules,
+              the stone as the only mark (the header already carries the wordmark), TITLE + tagline, one metadata line
+              (sheet · rev · units · ©), the links at 44 px, the operator address wrapping instead of truncating. */}
+          <footer className="mt-10 zt-block border-x-0 border-b-0 grid-cols-1 zt-print-hide lg:grid-cols-[90px_minmax(0,1fr)_minmax(0,1fr)] lg:grid-rows-2 text-[13px]">
             <div className="hidden lg:flex items-center justify-center row-span-2 text-ink">
               <StoneMark size={48} stroke={7} title="ZeroTacky" />
             </div>
-            <div className="flex flex-col justify-center px-3.5 py-2.5 col-span-2 lg:col-span-2 min-h-[60px]">
-              <Cap className="text-[11px] mb-0.5">Title</Cap>
-              <div className="font-bold leading-snug">
-                <Wordmark cut="small" className="text-[18px] mr-2" />
-                <span className="font-normal text-[13px] text-ink-muted">{TAGLINE}</span>
+            <div className="flex flex-col justify-center px-3.5 py-3 min-h-[60px]">
+              <Cap className="mb-0.5">Title</Cap>
+              <div className="leading-snug">
+                <span className="font-bold text-[15px] text-ink mr-2">ZeroTacky</span>
+                <span className="text-ink-muted">{TAGLINE}</span>
               </div>
             </div>
-            <div className="flex flex-col justify-center px-3.5 py-2.5 min-h-[60px]">
-              <Cap className="text-[11px] mb-0.5">Sheet</Cap>
-              <div className="font-bold text-[13px] leading-snug break-all">{sheetName}</div>
+            <div className="flex flex-col justify-center px-3.5 py-3 min-h-[60px]">
+              <Cap className="mb-0.5">Record</Cap>
+              <div className="leading-snug text-ink">
+                <span className="break-all">{sheetName}</span>
+                <span className="text-ink-muted mx-2" aria-hidden="true">·</span>
+                <span className="font-sheet">{rev}</span>
+                <span className="text-ink-muted mx-2" aria-hidden="true">·</span>
+                <span>lb / kg</span>
+                <span className="text-ink-muted mx-2" aria-hidden="true">·</span>
+                <span className="font-sheet">© {year}</span>
+              </div>
             </div>
-            <div className="flex flex-col justify-center px-3.5 py-2.5 min-h-[60px]">
-              <Cap className="text-[11px] mb-0.5">Rev</Cap>
-              <div className="font-bold font-sheet truncate">{rev}</div>
-            </div>
-            <div className="flex flex-col justify-center px-3.5 py-2.5 min-h-[60px] col-span-2 lg:col-span-1">
-              <Cap className="text-[11px] mb-0.5">Status</Cap>
-              <div className="font-bold">Public</div>
-            </div>
-            <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-3.5 gap-y-1 px-3.5 py-2.5 col-span-2 lg:col-span-2 min-h-[60px]">
+            <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-4 px-3.5 py-1 min-h-[60px]">
               {FOOTER_LINKS.map((l) => (
-                <Link key={l.href} href={l.href} className="inline-flex items-center min-h-[32px] text-xs uppercase tracking-[0.04em] text-ink no-underline border-b border-rule hover:text-pen hover:border-pen">
+                <Link key={l.href} href={l.href} className="inline-flex items-center min-h-11 text-xs font-medium uppercase tracking-[0.06em] text-ink no-underline border-b border-rule hover:text-pen hover:border-pen">
                   {l.label}
                 </Link>
               ))}
             </nav>
-            <div className="flex flex-col justify-center px-3.5 py-2.5 min-h-[60px]">
-              <Cap className="text-[11px] mb-0.5">Operator</Cap>
-              <a href="mailto:privacy@zerotacky.com" className="font-bold text-[13px] text-ink no-underline hover:text-pen truncate">privacy@zerotacky.com</a>
-            </div>
-            <div className="flex flex-col justify-center px-3.5 py-2.5 min-h-[60px]">
-              <Cap className="text-[11px] mb-0.5">Units</Cap>
-              <div className="font-bold">lb / kg</div>
-            </div>
-            <div className="flex flex-col justify-center px-3.5 py-2.5 min-h-[60px] col-span-2 lg:col-span-1">
-              <Cap className="text-[11px] mb-0.5">Copy</Cap>
-              <div className="font-bold font-sheet">© {year}</div>
+            <div className="flex flex-col justify-center px-3.5 py-3 min-h-[60px]">
+              <Cap className="mb-0.5">Operator</Cap>
+              <a href="mailto:privacy@zerotacky.com" className="inline-flex items-center min-h-11 -my-2 font-medium text-ink no-underline hover:text-pen break-all">privacy@zerotacky.com</a>
             </div>
           </footer>
         </div>

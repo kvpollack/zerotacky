@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Cap, WebCell, keyClass, textLink } from '@/components/website/sheet';
+import { Cap, WebCell, keyClass, textLink, TitleBand } from '@/components/website/sheet';
 import { longIsoDate } from '@/lib/website/sheetFormat';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import type { PublicRegistrationMeet } from '@/lib/promoter/contract';
@@ -316,26 +316,11 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
 
       {/* Band + facts strip, as on the show page (the slot colour defaults to ink here) */}
       <section aria-label="Competition">
-        <div className="bg-slot text-slot-label border-2 border-b-0 border-rule flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-5 sm:px-6 min-h-16 py-3 text-[15px] leading-snug">
-          <h1 className="font-normal">
-            <span className="font-bold text-xl sm:text-[22px]">{meet.name}</span>
-            <span className="opacity-60 mx-3" aria-hidden="true">·</span>
-            <span>{meet.date ? longIsoDate(meet.date) : 'Date TBD'}</span>
-            <span className="opacity-60 mx-3" aria-hidden="true">·</span>
-            <span>{venueDisplay}</span>
-          </h1>
-          <div className="text-[13px] uppercase tracking-[0.04em]">
-            <span>Competition: {life.competitionLabel}</span>
-            <span className="opacity-60 mx-3" aria-hidden="true">·</span>
-            <span>Registration: {life.registrationLabel}</span>
-            {meet.listing.federation && (
-              <>
-                <span className="opacity-60 mx-3" aria-hidden="true">·</span>
-                <span>{meet.listing.federation}</span>
-              </>
-            )}
-          </div>
-        </div>
+        <TitleBand
+          name={meet.name}
+          meta={[meet.date ? longIsoDate(meet.date) : 'Date TBD', venueDisplay]}
+          status={[`Competition: ${life.competitionLabel}`, `Registration: ${life.registrationLabel}`, meet.listing.federation]}
+        />
         <div className="zt-block border-t-0 grid-cols-2 sm:grid-cols-4">
           <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
             <Cap>Entry fee</Cap>

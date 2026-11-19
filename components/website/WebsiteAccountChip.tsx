@@ -29,7 +29,7 @@ export default function WebsiteAccountChip({ compact = false }: { compact?: bool
         href="/website/account"
         aria-label={`Account: ${label}`}
         title={label}
-        className={`inline-flex items-center gap-1.5 h-14 text-xs font-bold text-pen no-underline hover:text-ink transition ${compact ? 'min-w-[44px] justify-center px-2' : 'pl-3.5 pr-1'}`}
+        className={`inline-flex items-center gap-1.5 h-full text-xs font-bold text-pen no-underline hover:text-ink transition ${compact ? 'min-w-[44px] justify-center px-2' : 'pl-3.5 pr-1'}`}
       >
         <UserCheck className="w-3.5 h-3.5" aria-hidden="true" />
         {!compact && <span className="max-w-[140px] truncate hidden md:inline">{label}</span>}

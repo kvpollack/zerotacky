@@ -1649,3 +1649,52 @@ Scope checked live as the role on both projects: reads and writes on the four ta
 Kurt's one action: add the GitHub repo secret `ZT_ARCHIVE_DSN` (Settings > Secrets and variables > Actions) with the
 `prod_dsn` line from Slate's `tmp/zt/archive_loader_role.txt`, then Actions > Archive refresh > Run workflow and check
 it is green. Until then the loader keeps running by hand from the laptop.
+
+## UI pass 1: legibility tokens (11/18, no migration)
+
+First of three passes from the merged UI audit (`audits/ui-audit-merged-2026-11-13.md`: Fable 25 findings, Astra 19, 16
+agreed by both). Pass 1 is the token layer: the website reads too heavy and too flat because every rule is 2 px ink,
+every cap is bold, body text is weight 500 and muted text is barely muted. Nothing here touches page structure; passes 2
+and 3 do.
+
+**Scope guard.** `WebsiteThemeFrame` now sets `data-zt-web=""` next to `data-zt-sheet`. Every pass-1 rule in
+`app/globals.css` is prefixed `[data-zt-web]`, so the scorer and judge pad (which mount `data-zt-sheet` alone) keep the
+weight-500, all-ink sheet. `test/webTokens.test.mjs` holds that boundary: the tokens exist in both web modes, no bare
+`[data-zt-sheet]` rule carries them, and `ScorerShell` / `JudgePad` never set the attribute.
+
+**Tokens** (bright / dark):
+- `--muted` `#6b6b6b` / `#8a8a8a` (was `#4f4f4f` / `#bdbdbd`): 5.33:1 and 6.08:1 on the sheet, 3.54:1 and 3.08:1 against ink, so secondary text reads as secondary.
+- `--rule-subtle` `#b8b8b8` / `#505050` (new; Tailwind `border-rule-subtle`, `bg-rule-subtle`): 1 px borders, `.divide-rule`, `.bg-rule` gaps and `.zt-block` cell gaps use it. 2 px frames and title bars stay `--rule` (ink).
+- `--sheet-subtle` `#f1f1f1` / `#181818` (new; `bg-sheet-subtle`): a quieter fill for later passes.
+- dark `--rule` `#d8d8d8` (was `#f2f2f2`), so dark 2 px frames stop glowing (Fable 24).
+- `font-weight: 400` on the web sheet; keys, titles and table heads keep their own weights.
+- `.zt-cap`: 11 px (12 px from lg), weight 500, 0.08 em tracking, muted. Inside a `.zt-block` the sibling after a cap is weight 600 unless it is prose, a list, a link or a button.
+- Measure: `main p, main li` cap at 68 ch (`.zt-wide` opts out; table cells exempt); centred paragraphs stay centred.
+
+**Components.** `components/website/sheet.tsx`: `Cap` on `zt-cap`; `SectionCap` is now a 20 px bold ink `h2` (no caps);
+new `TitleBand` (name on its own line 22 / 26 px bold, meta 14 / 15 px, status caps on the right); `KeyButton` disabled =
+outline in `rule-subtle` with muted text instead of 50 % opacity (Fable 25). `TitleBand` replaces the hand-built bands
+on show detail, gym detail and `/register`. `components/sheet/RuledBlock.tsx` cell caps carry `zt-cap` (styled only
+under `[data-zt-web]`). `WebsiteShell`: header cells 48 px on phones (56 from lg), nav row 44 px, nav links / mode toggle
+/ account chip `h-full`; footer rebuilt as a 90 px stone + title + record grid at 13 px with 44 px link targets.
+Overflow: `app/legal/[doc]`, `MarkdownBlocks` tables, show-detail standings and weights wrappers get `min-w-0 max-w-full`
+(+ `[contain:inline-size]` on the scrollers). `AthletesBrowser` location line in ink, since it is a value with no label of its own.
+`supabaseGyms.dayPassPriceDisplay` prefixes `$` on bare digits (Fable 13).
+
+**Probe.** `shots/ui_metrics.py` (Slate's `tmp/zt`): 15 pages x phone 390 / desktop 1440 x bright / dark, headless
+Chromium against two dev servers (before = main `c6155e98` served from a copy of the tree, after = this build).
+Criteria, all met on 60 of 60 conditions: no horizontal scroll on phones; muted >= 4.5:1 on the sheet and >= 3:1 against
+ink; desktop measure <= 74 ch; phone header <= 102 px; body weight 400; zero muted-to-muted label pairs; scorer readings
+unchanged. Two criteria were tightened during the run so they measure what the audit meant: a flat pair is only counted
+when both elements render at that viewport and are not both caps (column headings and a segmented control are peers,
+not a label running into its value), and body weight is the most common `main p` weight rather than the first one (the
+register page opens with a bold "show is full" notice). Readings, before -> after: phone header 115 -> 95; privacy phone
+scroll width 489 -> 390; muted on sheet 8.19 -> 5.33 bright, 11.18 -> 6.08 dark; muted vs ink 2.31 -> 3.54, 1.68 -> 3.08;
+widest desktop measure 147 -> 68 ch (landing, athlete); 1 px ink rules in the first screen 45 -> 0 on the gym directory,
+23 -> 0 on athletes; 2 px frames unchanged; scorer identical on every reading. Contact sheet with all 60 pairs:
+`Downloads/zt_ui_pass1/contact_sheet.html` (Slate's laptop). Tests 837 -> 845, tsc clean.
+
+**Left for pass 2** (structure): `ShowRows` stacked phone rows, `GymsBrowser` pagination at 24 with a compact card,
+directory intros and filter disclosure, tap targets under 44 px. **Pass 3** (content order): landing keys and the
+169-word intro, weights duplicates on show detail, empty-state collapse, athlete page sections, guides, claim placement.
+The nav still scrolls on phones (its own row) and the mode toggle still spells out Bright / Dark; both are pass 2.

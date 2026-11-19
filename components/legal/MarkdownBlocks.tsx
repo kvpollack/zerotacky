@@ -48,7 +48,7 @@ export default function MarkdownBlocks({ blocks, compact = false }: { blocks: Bl
           }
           case 'table':
             return (
-              <div key={i} className="overflow-x-auto border-2 border-rule">
+              <div key={i} className="overflow-x-auto max-w-full min-w-0 border-2 border-rule">
                 <table className="w-full text-left text-[13px] text-ink">
                   <thead className="bg-ground text-xs uppercase tracking-[0.06em] font-normal text-ink-muted">
                     <tr>{b.header.map((c, j) => <th key={j} className="px-3 py-2 align-top">{renderInlines(c)}</th>)}</tr>

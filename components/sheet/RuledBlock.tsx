@@ -37,7 +37,7 @@ export function Cell({ cap, pen, end, accent: slot, className = '', style, child
       className={`flex flex-col justify-center px-2.5 ${end ? 'items-end text-right' : ''} ${slot ? 'bg-slot text-slot-label' : ''} ${pen && !slot ? 'text-pen' : ''} ${className}`}
       style={style}
     >
-      {cap !== undefined && <div className={`text-[13px] tracking-[0.04em] mb-1 ${slot ? '' : 'text-ink-muted'}`}>{cap}</div>}
+      {cap !== undefined && <div className={`zt-cap text-[13px] tracking-[0.04em] mb-1 ${slot ? '' : 'text-ink-muted'}`}>{cap}</div>}
       {children}
     </div>
   );
