@@ -115,3 +115,15 @@ describe('directory components keep the pass-2 structure', () => {
     }
   });
 });
+
+describe('horizontal scroll wrappers contain their absolutely positioned children', () => {
+  // An sr-only element (position:absolute) inside an overflow-x-auto wrapper that is not itself positioned escapes the
+  // clip and widens the whole document; phones then load the page zoomed out (found on the live results page 11/27).
+  test('every overflow-x-auto wrapper on website, legal and promoter pages is `relative`', () => {
+    for (const f of ['components/website/ShowDetailClient.tsx', 'components/website/PrepSheetClient.tsx', 'components/legal/MarkdownBlocks.tsx', 'components/promoter/CheckInDeskSection.tsx', 'components/promoter/RegistrationsSection.tsx']) {
+      const wrappers = read(f).match(/className="[^"]*\boverflow-x-auto\b[^"]*"/g) ?? [];
+      assert.ok(wrappers.length > 0, `${f} has no scroll wrapper; update this list`);
+      for (const w of wrappers) assert.ok(/[" ]relative[" ]/.test(w), `${f}: ${w}`);
+    }
+  });
+});

@@ -8,6 +8,10 @@ mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 
 22 shipped. Live main `c6155e98` (11/13, archive refresh workflow green on prod) with UI pass 1 queued on top (11/18); before that `c86ee6b1` (11/12: kg / m, 059 to 061: a meet picks pounds and feet or kilograms and meters once, locked after the first result; labels follow it everywhere; numbers stored as entered; PR board and group picker normalise across shows; adopted kg-only archive shows stay metric; scope note `audits/slate-2026-11-12-kg-m-scope.md`). Astra kg / m audit closed, 10 of 10 + D1 / D2 (061, notes "kg / m audit fixes"); live multi-device recheck 30 of 30 on 5 browser contexts (phone, tablet, desktop). 845 tests. Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10). The product is feature-complete against this plan; what is left is Kurt's set-up list and the held items, so the next step is a dry run, not a build.
 
 **Shipped since the 10/21 entries below (newest first)**
+- 11/27 Results pages on phones: show pages with a standings table laid out at 1,008 to 1,310 px on a 390 px phone and
+  loaded zoomed out (a screen-reader-only header escaped its scroll wrapper). One class on six scroll wrappers, a guard
+  test, and a phone-emulation probe. Signed-in UI review merged into the build order
+  (`audits/ui-audit-merged-part2-2026-11-27.md`): groups A defects, B meet day, C public content order, D forms, E structure.
 - 11/27 UI pass 2, directory structure (no migration): on phones the show list is
   stacked rows with the whole row as the link (name 112 -> 342 px wide); the gym directory pages at 24 with a "Show 24
   more" key and a two-band card (phone page 73,892 -> 9,161 px), and Back reopens the cards that were open

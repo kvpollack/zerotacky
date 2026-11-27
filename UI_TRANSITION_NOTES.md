@@ -1777,3 +1777,21 @@ and dark; the pass criteria are coded in its `compare`). Phone, before to after:
 **Not in this pass.** The phone nav row still scrolls sideways; the pass 1 notes parked it here, but it is not one of
 the four audit rows and needs a design decision first. Athlete cards keep their role chips. **Pass 3** (content
 order) is unchanged: rows 7, 8, 12, 14, 17, 19, 23, then 15 and 16.
+
+## Results pages on phones: scroll wrappers contain their children (11/27, no migration)
+
+Found while merging the signed-in review (`audits/ui-audit-merged-part2-2026-11-27.md`). Every show page with a
+standings table laid out at 1,008 to 1,310 px on a 390 px phone, so the phone loaded it zoomed out. Part 1 row 9 was
+marked fixed in pass 1 and was not: the pass 1 probe never loaded a page with a results table.
+
+- Cause: the standings table's "Share" column header is `sr-only`, which is `position: absolute`. Its scroll wrapper
+  (`overflow-x-auto`, `[contain:inline-size]`) was not positioned, so the element's containing block was outside the
+  wrapper, it escaped the clip, and the document grew to the table's full width.
+- Fix: `relative` on every horizontal scroll wrapper on website, legal and promoter pages (`ShowDetailClient.tsx` x2,
+  `PrepSheetClient.tsx`, `MarkdownBlocks.tsx`, `CheckInDeskSection.tsx`, `RegistrationsSection.tsx`).
+  `test/directory.test.mjs` fails if a wrapper in those files loses it (858 tests).
+- Probe: `~/.aki/tmp/zt/shots/mobile_width.py` loads pages with a real phone descriptor (the viewport meta is honoured)
+  and passes when `innerWidth` and `scrollWidth` are both 390. The earlier probes used a plain 390 px viewport and only
+  the pages in their own lists. Run this one on results, prep, report and register pages after any table change.
+  Before: 4 of 17 production pages failed. After, on the local build: 26 of 26 pass.
+

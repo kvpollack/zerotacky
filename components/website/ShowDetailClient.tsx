@@ -312,10 +312,14 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                 </span>
               </div>
 
+              {/* The scroll wrapper is `relative` (11/27): the sr-only "Share" header in the last column is position:absolute.
+                  Without a positioned wrapper it escapes the clip and widens the document to the table's full width
+                  (1,137 px on a 390 px phone), so a phone loads the page zoomed out. test/directory.test.mjs holds
+                  this for every scroll wrapper. */}
               {divView.standings.length === 0 ? (
                 <p className="text-[13px] text-ink-muted">No athletes or scores recorded for this division.</p>
               ) : (
-                <div className="overflow-x-auto max-w-full min-w-0 [contain:inline-size] border-2 border-rule">
+                <div className="relative overflow-x-auto max-w-full min-w-0 [contain:inline-size] border-2 border-rule">
                   <table className="w-full text-left border-collapse text-[13px]">
                     <thead>
                       <tr>
@@ -420,7 +424,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
         </div>
 
         <div className="border-2 border-rule min-w-0 max-w-full">
-          <div className="overflow-x-auto max-w-full min-w-0 [contain:inline-size]">
+          <div className="relative overflow-x-auto max-w-full min-w-0 [contain:inline-size]">
             <table className="w-full text-[13px] border-collapse">
               <thead>
                 <tr>

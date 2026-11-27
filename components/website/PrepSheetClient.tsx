@@ -64,7 +64,7 @@ export default function PrepSheetClient({ sheet, venue, isDemo }: { sheet: PrepS
         <div className="border-2 border-rule px-5 py-5 text-[15px] text-ink-muted">The promoter has not entered any events yet.</div>
       ) : (
         <div className="border-2 border-rule">
-          <div className="overflow-x-auto print:overflow-visible">
+          <div className="relative overflow-x-auto print:overflow-visible">
             <table className="w-full text-[13px] border-collapse print:text-[10px] print:table-fixed">
               <caption className="sr-only">{sheet.showName}: events{one ? ` for ${one.name}` : ' for every division'}</caption>
               <thead>
