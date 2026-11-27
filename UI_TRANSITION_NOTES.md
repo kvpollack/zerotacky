@@ -1698,3 +1698,82 @@ widest desktop measure 147 -> 68 ch (landing, athlete); 1 px ink rules in the fi
 directory intros and filter disclosure, tap targets under 44 px. **Pass 3** (content order): landing keys and the
 169-word intro, weights duplicates on show detail, empty-state collapse, athlete page sections, guides, claim placement.
 The nav still scrolls on phones (its own row) and the mode toggle still spells out Bright / Dark; both are pass 2.
+
+## UI pass 2: directory structure (11/27, no migration)
+
+Second of three passes from the merged UI audit (`audits/ui-audit-merged-2026-11-13.md`), rows 1, 4, 13 and 20: how the
+four directories are composed on a phone. Pass 1 changed tokens and left structure alone; this pass changes structure
+and adds no tokens. Scorer and judge pad are untouched.
+
+**Show list (row 1).** `components/website/ShowRows.tsx` renders two things and CSS shows one. Below `md` it is a
+stacked list (`<ul>`, one `<li data-zt-show-row>` per show): date and status on the first line, the name on its own line
+at 20/24 bold, the venue under it in muted 15/22, one 1 px divider between shows. The whole row is the link, so the
+Open column is gone on phones; the division and implement lists stay on the show page. From `md` up the five-column
+table is unchanged.
+- A live show's row opens the live board, the same place the Open column sent it. The live board has no link back to
+  the show page, so a live row has a second 44 px link, "Show details", under the row.
+- The table sits in a `hidden md:block` wrapper. `.zt-block` sets `display: grid` outside Tailwind's layers, so
+  `hidden` on the block itself loses and the table would draw under the phone list (it did, on the first try).
+  `test/directory.test.mjs` fails if `hidden` is ever put on a `.zt-block` in this file.
+
+**Gym directory (row 4).** `components/website/GymsBrowser.tsx` pages the list at 24 (`DIRECTORY_PAGE_SIZE` in the new
+`lib/website/directory.ts`). The filter bar and the foot of the list both read "Showing 24 of 169 gyms"; the key under
+the list reads "Show 24 more" and counts what the next press adds ("Show 1 more" on the last one).
+- The count belongs to the filter set it was opened under: any filter change starts again at 24 with no effect hook,
+  and clearing the filter gives back the list as it was left.
+- "Show more" also writes the count to the address bar (`/gyms?n=72`, `history.replaceState`, no navigation). Back from
+  a gym page then reopens the same cards at the same scroll position. The router remounts the component from its
+  cached first-visit props on Back, so the count is read from the address bar on mount, and from the `initialShown`
+  prop on the server. `cleanShownParam` accepts digits only, floors at one page and caps at 1,200.
+- `/gyms` no longer has a link to every gym in its HTML. `app/sitemap.ts` lists every gym page, and search, zip and
+  state reach the rest.
+- The card went from five ruled bands to two: details, then one rule and the action row. The day pass sits beside the
+  name when the card is at least 448 px wide and under the address when it is narrower (a container query on the
+  card, because a card is as narrow at 768 px in two columns as on a phone). Equipment is one line of text, the first
+  six tags and "+N more". Intro sessions and gym type are text, not chips. Hours and policy show only when the gym
+  supplied them (policy clamps at two lines), and everything missing is one line: "Not provided: street address,
+  hours." A price with no stated availability still shows (pass 1, finding 24).
+- Helpers `equipmentLine`, `dayPassSummary`, `missingDetailsLine`, `nextShown`, `moreLabel`, `shownLabel` are pure
+  functions in `lib/website/directory.ts`, tested without rendering.
+
+**Intros and filters (row 13).** Each directory has one sentence above the list; the copy that explains where listings
+come from, how to be listed and how to claim a gym moved below the list, next to its link. On phones `/shows` keeps
+search and status in view and `/gyms` keeps search and zip; the rest open from `MoreFiltersToggle`
+(`components/website/sheet.tsx`: 44 px, `aria-expanded`, `aria-controls` on the filter grid, and "· 2 on" when hidden
+filters are set, so a filter arriving by link such as `/gyms?state=PA` is never invisible). From `md` up the toggle is
+hidden and every filter shows. `/athletes` and `/trainers` have three filters and keep them all in view.
+
+**Tap targets (row 20).** `actionLink` in `sheet.tsx` is the text link at 44 px for links that stand alone: Reset
+filters, Website, Unclaimed, Clear show, View All on the landing page, Forgot password on sign-in. Gym names, the gym
+details key and the train-for show name are 44 px too. Checkbox labels in the gym filters are 44 px rows. Links inside
+a sentence are unchanged. The gym card's action row holds Website, Unclaimed and the key on one line down to a 360 px
+phone; the two arrows are dropped on narrow cards to make that fit, and at 320 px the key wraps.
+
+**Checked** (`~/.aki/tmp/zt/shots/p2_metrics.py`, local dev server on staging data, phone 390 and desktop 1440, bright
+and dark; the pass criteria are coded in its `compare`). Phone, before to after:
+
+| Page | Page height px | First entry at y | Entries rendered | Standalone targets under 44 px |
+|---|---|---|---|---|
+| /shows | 7,771 to 3,116 | 1,125 to 594 | 10 to 11 | 11 to 0 |
+| /gyms | 73,892 to 9,161 | 1,105 to 598 | 169 to 24 | 463 to 0 |
+| /athletes | 1,311 to 1,339 | 719 to 574 | 1 to 1 | 0 to 0 |
+| /trainers | 1,384 to 1,388 | 793 to 598 | 1 to 1 | 0 to 0 |
+| landing | 4,363 to 4,253 | (not a directory) | 4 to 4 | 5 to 0 |
+
+- The show name gets 342 px on a 390 px phone (was 112 px and up to three lines). No page scrolls sideways at 320, 360,
+  375 or 390 px.
+- Desktop: the gym directory is 4,656 px tall (was 32,288); the first entry sits at 552 px on `/gyms` (was 682) and 577
+  px on `/shows` (was 735). Table links on desktop are still 23 px tall; row 20 is a phone finding and they have a
+  pointer.
+- Staging gained a show between the two runs (the signed-in review approved a submission), so the show list is 11 rows
+  after and 10 before.
+- Walked in a browser: seven presses of the key reach all 169 gyms, each once; Back from card 61 of 72 returns to 72
+  cards at the same scroll offset; search to 38 matches shows 24, clearing it shows 72 again; `?n=abc`, `?n=-5` and an
+  eight-digit `?n=` give 24; `?n=999999` gives all 169; the train-for view (`/gyms?show=metric-test-open-2026`) keeps
+  its coverage line; no console errors.
+- Tests 845 to 857 (`test/directory.test.mjs`, 12 new), tsc clean. Contact sheet, 20 pairs:
+  `Downloads/zt_ui_pass2/contact_sheet.html` (Slate's laptop).
+
+**Not in this pass.** The phone nav row still scrolls sideways; the pass 1 notes parked it here, but it is not one of
+the four audit rows and needs a design decision first. Athlete cards keep their role chips. **Pass 3** (content
+order) is unchanged: rows 7, 8, 12, 14, 17, 19, 23, then 15 and 16.

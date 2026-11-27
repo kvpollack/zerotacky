@@ -98,3 +98,23 @@ export const navClass = (active: boolean) => `${NAV_LINK} ${active ? 'bg-ink tex
 
 /** Inline link in running text: ink, underlined, pen on hover. */
 export const textLink = 'font-bold underline underline-offset-4 decoration-1 text-ink hover:text-pen';
+// A standalone action link (not inside a sentence): the same link, 44 px tall so a thumb can hit it (pass 2, finding 20).
+export const actionLink = `inline-flex items-center min-h-11 ${textLink}`;
+
+// Pass 2 (finding 13): a directory keeps its two main filters in view and the rest behind this toggle on phones. From
+// md up the toggle is hidden and the panel it controls is always open, so the caller hides the panel with
+// `open ? '' : 'hidden md:grid'`. `count` is how many of the hidden filters are set.
+export function MoreFiltersToggle({ open, onToggle, count, controls, className = '' }: { open: boolean; onToggle: () => void; count: number; controls: string; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      aria-controls={controls}
+      className={`md:hidden inline-flex items-center justify-between gap-3 min-h-11 px-3.5 border-2 border-rule bg-sheet text-[13px] font-bold uppercase tracking-[0.04em] text-ink outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 ${className}`}
+    >
+      <span>{open ? 'Fewer filters' : 'More filters'}{count > 0 && <span className="text-pen"> · {count} on</span>}</span>
+      <span aria-hidden="true">{open ? '−' : '+'}</span>
+    </button>
+  );
+}

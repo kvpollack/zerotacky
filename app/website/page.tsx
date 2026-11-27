@@ -113,7 +113,7 @@ export default async function WebsiteLandingPage() {
         <SectionCap
           id="sample-shows-heading"
           aside={
-            <Link href="/shows" className="text-xs font-bold uppercase tracking-[0.04em] text-ink underline underline-offset-4 decoration-1 hover:text-pen whitespace-nowrap">
+            <Link href="/shows" className="inline-flex items-center min-h-11 -my-2 text-xs font-bold uppercase tracking-[0.04em] text-ink underline underline-offset-4 decoration-1 hover:text-pen whitespace-nowrap">
               View All ({shows.length}) →
             </Link>
           }

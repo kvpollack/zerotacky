@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { filterPublicAthletes, ROLE_OPTIONS, TRAINER_MODE_OPTIONS, type PublicAthlete } from '@/lib/website/athletes';
 import { athleteProfilePath } from '@/lib/auth/profile';
-import { Cap, textLink } from './sheet';
+import { Cap, actionLink } from './sheet';
 
 interface AthletesBrowserProps {
   initialAthletes: PublicAthlete[];
@@ -74,11 +74,11 @@ export default function AthletesBrowser({ initialAthletes, availableStates, init
             </label>
           )}
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 sm:px-5 text-[13px]">
-          <span className="text-ink-muted">
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-4 py-1 sm:px-5 text-[13px] min-h-11">
+          <span className="text-ink-muted" role="status">
             {filtered.length === initialAthletes.length ? `${filtered.length} listed` : <>{<strong className="text-ink">{filtered.length}</strong>} of {initialAthletes.length} match</>}
           </span>
-          {active && <button type="button" onClick={reset} className={textLink}>Reset filters</button>}
+          {active && <button type="button" onClick={reset} className={actionLink}>Reset filters</button>}
         </div>
       </section>
 

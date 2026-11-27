@@ -8,6 +8,12 @@ mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 
 22 shipped. Live main `c6155e98` (11/13, archive refresh workflow green on prod) with UI pass 1 queued on top (11/18); before that `c86ee6b1` (11/12: kg / m, 059 to 061: a meet picks pounds and feet or kilograms and meters once, locked after the first result; labels follow it everywhere; numbers stored as entered; PR board and group picker normalise across shows; adopted kg-only archive shows stay metric; scope note `audits/slate-2026-11-12-kg-m-scope.md`). Astra kg / m audit closed, 10 of 10 + D1 / D2 (061, notes "kg / m audit fixes"); live multi-device recheck 30 of 30 on 5 browser contexts (phone, tablet, desktop). 845 tests. Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10). The product is feature-complete against this plan; what is left is Kurt's set-up list and the held items, so the next step is a dry run, not a build.
 
 **Shipped since the 10/21 entries below (newest first)**
+- 11/27 UI pass 2, directory structure (no migration): on phones the show list is
+  stacked rows with the whole row as the link (name 112 -> 342 px wide); the gym directory pages at 24 with a "Show 24
+  more" key and a two-band card (phone page 73,892 -> 9,161 px), and Back reopens the cards that were open
+  (`/gyms?n=`); one-sentence intros with the how-to-be-listed copy under the list; extra filters behind "More filters"
+  on phones; standalone links 44 px tall (479 under 44 px on the five probed phone pages -> 0). First entry on a
+  phone: shows 1,125 -> 594 px, gyms 1,105 -> 598. Tests 845 -> 857; notes "UI pass 2". Pass 3 (content order) is next.
 - 11/18 UI pass 1, legibility tokens (no migration): web-scoped `--muted`, `--rule-subtle`, `--sheet-subtle`, weight 400,
   11 px caps, 68 ch measure, title bands on show / gym / register, 95 px phone header, rebuilt footer, legal-page and
   standings overflow fixed, `$` on bare day-pass prices. Scorer and judge pad untouched (`test/webTokens.test.mjs`).
