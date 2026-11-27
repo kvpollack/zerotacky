@@ -204,7 +204,7 @@ export default function GymsBrowser({
                 autoComplete="postal-code"
                 value={zip}
                 onChange={(e) => setZip(e.target.value.replace(/[^\d-]/g, '').slice(0, 10))}
-                placeholder="19063"
+                placeholder="e.g. 19063"
                 aria-describedby="gym-zip-note"
                 className="zt-input !w-24 shrink-0"
               />

@@ -71,9 +71,9 @@ export const INTRO_SESSIONS_OPTIONS: ReadonlyArray<{ id: IntroSessions; label: s
 ];
 
 export const GYM_SOCIAL_KEYS: ReadonlyArray<{ key: string; label: string; placeholder: string }> = [
-  { key: 'facebook', label: 'Facebook', placeholder: 'facebook.com/yourgym' },
-  { key: 'tiktok', label: 'TikTok', placeholder: '@yourgym' },
-  { key: 'youtube', label: 'YouTube', placeholder: 'youtube.com/@yourgym' },
+  { key: 'facebook', label: 'Facebook', placeholder: 'e.g. facebook.com/yourgym' },
+  { key: 'tiktok', label: 'TikTok', placeholder: 'e.g. @yourgym' },
+  { key: 'youtube', label: 'YouTube', placeholder: 'e.g. youtube.com/@yourgym' },
 ];
 
 // Same ceilings as gyms_len_chk in 015 so a save never bounces on a constraint the form could have caught.

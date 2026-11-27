@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AthleteMeetsSection from './AthleteMeetsSection';
 import { Cap, keyClass, textLink } from '@/components/website/sheet';
-import { longIsoDate } from '@/lib/website/sheetFormat';
+import { longIsoDate, registrationShort, venueWithPlace } from '@/lib/website/sheetFormat';
+import { isRegistrationOpen } from '@/lib/promoter/rules';
 import { slugify } from '@/lib/meetBuilder';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import type { PromoterMeetSummary, PromoterUser } from '@/lib/promoter/contract';
@@ -159,9 +160,7 @@ export default function PromoterDashboardClient() {
 
   return (
     <div className="flex flex-col gap-7">
-      <AthleteMeetsSection />
-
-      {/* Heading row */}
+      {/* Heading row. UI group A (11/27, S12): My Meets leads on /promoter; the athlete's own shows follow it. */}
       <section aria-labelledby="my-meets-heading">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-2.5">
           <div className="flex flex-col gap-1 min-w-0">
@@ -257,7 +256,7 @@ export default function PromoterDashboardClient() {
                     setSlugEdited(true);
                     setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, '-'));
                   }}
-                  placeholder="pennsylvania-winter-iron-2026"
+                  placeholder="e.g. pennsylvania-winter-iron-2026"
                   className={`${INPUT} font-mono`}
                 />
               </div>
@@ -304,6 +303,13 @@ export default function PromoterDashboardClient() {
               const listedLabel = m.listing.isPublicListed
                 ? (isLiveBackend() ? 'Listed' : 'Listed (preview)')
                 : (isLiveBackend() ? 'Unlisted' : 'Unlisted (preview)');
+              // S12: registration reads as one short phrase and is left out when it does not apply (an imported or
+              // scored-only meet printed "REGISTRATION N/A"); the place comes from the shared formatter ("Oslo", not
+              // "Oslo,"); the Reg form key shows only while the form takes entries.
+              const regShort = registrationShort(m.listing.registrationStatus);
+              const statusLine = [life.competitionLabel, listedLabel, regShort && `Registration ${regShort}`, life.resultsLabel].filter(Boolean).join(' · ');
+              const place = venueWithPlace(m.listing.venue);
+              const takesEntries = isRegistrationOpen(m.listing.registrationStatus);
               return (
                 <article
                   key={m.serverId}
@@ -311,21 +317,14 @@ export default function PromoterDashboardClient() {
                   className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-x-6 gap-y-3 px-4 py-4 sm:px-5"
                 >
                   <div className="flex flex-col gap-1 min-w-0">
-                    <Cap as="span">
-                      {life.competitionLabel} · {listedLabel} · {life.registrationLabel} · {life.resultsLabel}
-                    </Cap>
+                    <Cap as="span">{statusLine}</Cap>
                     <h2 className="text-[20px] font-bold leading-tight text-ink lg:truncate">
                       <Link href={`/promoter/${m.serverId}`} className="hover:text-pen no-underline">{m.name}</Link>
                     </h2>
                     <div className="text-[13px] text-ink-muted flex flex-wrap gap-x-3">
                       <span className="text-ink font-bold">{m.date ? longIsoDate(m.date) : 'Date TBD'}</span>
                       <span className="font-mono">/{m.slug}</span>
-                      {m.listing.venue && (
-                        <span>
-                          {m.listing.venue.facilityName ? `${m.listing.venue.facilityName}, ` : ''}
-                          {m.listing.venue.city}, {m.listing.venue.state}
-                        </span>
-                      )}
+                      {place && <span>{place}</span>}
                     </div>
                   </div>
 
@@ -338,7 +337,7 @@ export default function PromoterDashboardClient() {
                       <Count label="Pending" value={m.pendingCount} pen={m.pendingCount > 0} />
                     </dl>
                     <div className="flex items-center gap-2">
-                      <Link href={`/register/${m.slug}`} className={keyClass('line')}>Reg form</Link>
+                      {takesEntries && <Link href={`/register/${m.slug}`} className={keyClass('line')}>Reg form</Link>}
                       <Link href={`/promoter/${m.serverId}`} className={keyClass('ink')}>Open →</Link>
                     </div>
                   </div>
@@ -348,6 +347,8 @@ export default function PromoterDashboardClient() {
           </div>
         )}
       </section>
+
+      <AthleteMeetsSection />
     </div>
   );
 }

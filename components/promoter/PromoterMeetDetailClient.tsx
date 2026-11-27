@@ -47,7 +47,8 @@ import type {
   PromoterUser,
   RegistrationRequest,
 } from '@/lib/promoter/contract';
-import { isMeetStateDirty } from '@/lib/promoter/rules';
+import { isMeetStateDirty, isRegistrationOpen } from '@/lib/promoter/rules';
+import { registrationShort } from '@/lib/website/sheetFormat';
 import { useUnsavedGuard } from '@/lib/promoter/unsavedGuard';
 import { isLiveBackend, usePromoterApi } from '@/lib/promoter/usePromoterApi';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
@@ -648,12 +649,15 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
         </Link>
 
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <Link
-            href={`/register/${summary.slug}`}
-            className="px-3 py-1.5 rounded-xl bg-zt-inset border border-zt-border-strong text-zt-text-2 hover:text-zt-text font-extrabold uppercase"
-          >
-            Public Registration Page
-          </Link>
+          {/* UI group A (11/27, S12): the form link shows only while the form takes entries, as on the dashboard */}
+          {isRegistrationOpen(summary.listing.registrationStatus) && (
+            <Link
+              href={`/register/${summary.slug}`}
+              className="px-3 py-1.5 rounded-xl bg-zt-inset border border-zt-border-strong text-zt-text-2 hover:text-zt-text font-extrabold uppercase"
+            >
+              Public Registration Page
+            </Link>
+          )}
         </div>
       </div>
 
@@ -682,9 +686,11 @@ export default function PromoterMeetDetailClient({ serverId }: PromoterMeetDetai
                 </>
               )}
             </span>
-            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-text-2">
-              {life.registrationLabel}
-            </span>
+            {registrationShort(summary.listing.registrationStatus) !== null && (
+              <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-text-2">
+                {life.registrationLabel}
+              </span>
+            )}
             <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-zt-inset border border-zt-border text-zt-muted">
               {life.resultsLabel} ({workingState.results.length} locked/recorded scores — read-only here)
             </span>

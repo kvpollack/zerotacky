@@ -158,7 +158,7 @@ function NoTeam({ mine, busy, run }: { mine: MyRegistration; busy: boolean; run:
       <div className={CELL}>
         <Cap as="span">Start a team</Cap>
         <form className="flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); void run('Team started. Share the code with your teammates.', () => api.teamCreate(mine.registrationId, name.trim())); }}>
-          <input className={`${INPUT} max-w-sm`} value={name} onChange={(e) => setName(e.target.value)} placeholder="Team name" maxLength={60} minLength={2} aria-label="New team name" required data-testid="team-start-name" />
+          <input className={`${INPUT} max-w-sm`} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Keystone Forge" maxLength={60} minLength={2} aria-label="New team name" required data-testid="team-start-name" />
           <button type="submit" disabled={busy} className={keyClass('pen', 'disabled:opacity-40')}>Start team</button>
         </form>
         <p className={NOTE}>You become the captain and get a join code to share.</p>
@@ -167,7 +167,7 @@ function NoTeam({ mine, busy, run }: { mine: MyRegistration; busy: boolean; run:
       <div className={CELL}>
         <Cap as="span">Join a team</Cap>
         <form className="flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); void run('You joined the team.', () => api.teamJoin(mine.registrationId, code.trim().toUpperCase())); }}>
-          <input className={`${INPUT} max-w-[12rem] font-mono uppercase tracking-[0.12em]`} value={code} onChange={(e) => setCode(e.target.value)} placeholder="Join code" maxLength={8} aria-label="Team join code" required data-testid="team-join-code" />
+          <input className={`${INPUT} max-w-[12rem] font-mono uppercase tracking-[0.12em]`} value={code} onChange={(e) => setCode(e.target.value)} placeholder="e.g. K7PQ2M" maxLength={8} aria-label="Team join code" required data-testid="team-join-code" />
           <button type="submit" disabled={busy} className={keyClass('ink', 'disabled:opacity-40')}>Join</button>
         </form>
         <p className={NOTE}>The code comes from your captain; the team has to be in {mine.divisionName}.</p>

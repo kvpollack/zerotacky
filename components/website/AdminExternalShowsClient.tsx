@@ -6,7 +6,8 @@ import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/lib/auth/useAuth';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import { fetchIsAdmin } from '@/lib/website/myGym';
-import { Cap, keyClass, textLink } from '@/components/website/sheet';
+import { Cap, QueueNotice, keyClass, textLink } from '@/components/website/sheet';
+import { longIsoDate, stampDateTime } from '@/lib/website/sheetFormat';
 import { externalHost } from '@/lib/website/externalShows';
 
 // Feature 2 MVP (11/3): the admin queue for shows registered elsewhere (038). Pending rows first, then everything
@@ -23,7 +24,7 @@ export default function AdminExternalShowsClient() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [rows, setRows] = useState<QueueRow[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ text: string; tone: 'ok' | 'warn' } | null>(null);
 
   const load = useCallback(async () => {
     const sb = getSupabase();
@@ -32,7 +33,7 @@ export default function AdminExternalShowsClient() {
     setIsAdmin(admin);
     if (!admin) { setRows([]); return; }
     const { data, error } = await sb.rpc('zt_admin_external_shows');
-    if (error) { setNotice(errText(error)); setRows([]); return; }
+    if (error) { setNotice({ text: errText(error), tone: 'warn' }); setRows([]); return; }
     setRows((data as QueueRow[]) ?? []);
   }, [auth.user]);
   useEffect(() => { void load(); }, [load]);
@@ -43,8 +44,8 @@ export default function AdminExternalShowsClient() {
     setBusy(row.id); setNotice(null);
     const { error } = await sb.rpc('zt_review_external_show', { p_id: row.id, p_status: status, p_admin_note: null });
     setBusy(null);
-    if (error) { setNotice(errText(error)); return; }
-    setNotice(`${row.name}: ${status}.`);
+    if (error) { setNotice({ text: errText(error), tone: 'warn' }); return; }
+    setNotice({ text: `${row.name}: ${status}.`, tone: 'ok' });
     await load();
   };
 
@@ -72,14 +73,14 @@ export default function AdminExternalShowsClient() {
       <div role="cell" className="flex flex-col justify-center px-3.5 py-3 min-w-0">
         <div className="font-bold text-ink leading-tight">{r.name}</div>
         <div className="text-[13px] text-ink-muted mt-0.5">
-          {r.date} · {[r.facility_name, r.city, r.state].filter(Boolean).join(', ')}{r.federation ? ` · ${r.federation}` : ''}
+          {longIsoDate(r.date)} · {[r.facility_name, r.city, r.state].filter(Boolean).join(', ')}{r.federation ? ` · ${r.federation}` : ''}
         </div>
         {r.divisions_note && <div className="text-[13px] text-ink mt-1">{r.divisions_note}</div>}
         <a href={r.registration_url} target="_blank" rel="noopener noreferrer" className={`${textLink} inline-flex items-center gap-1 text-[13px] mt-1.5 self-start break-all`}>
           {externalHost(r.registration_url)} <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
         </a>
         <div className="text-xs text-ink-muted mt-1.5">
-          {r.source === 'admin' ? 'Entered by an admin' : `Submitted by ${r.submitted_by_username ? `@${r.submitted_by_username}` : 'a signed-in user'}`} on {r.created_at.slice(0, 10)}
+          {r.source === 'admin' ? 'Entered by an admin' : `Submitted by ${r.submitted_by_username ? `@${r.submitted_by_username}` : 'a signed-in user'}`} on {stampDateTime(r.created_at)}
           {r.submitter_note ? ` · "${r.submitter_note}"` : ''}
         </div>
       </div>
@@ -101,7 +102,7 @@ export default function AdminExternalShowsClient() {
         <h1 className="text-[28px] font-bold leading-tight text-ink">Show listings queue</h1>
         <p className="text-[15px] text-ink">Shows registered elsewhere, submitted from <Link href="/shows/submit" className={textLink}>List a show</Link>. Open the link, check the date and place, then List or Hide.</p>
       </div>
-      {notice && <div role="status" className="text-[13px] font-bold text-ink">{notice}</div>}
+      {notice && <QueueNotice tone={notice.tone}>{notice.text}</QueueNotice>}
       <section aria-label="Pending listings" className="flex flex-col gap-2">
         <Cap>Pending ({pending.length})</Cap>
         {pending.length === 0 ? <p className="text-[13px] text-ink-muted">Nothing waiting.</p> : (

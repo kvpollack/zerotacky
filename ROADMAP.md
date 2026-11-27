@@ -8,6 +8,12 @@ mail live. M0 through M5 are done; M6 is done except one line (below). The 11/3 
 22 shipped. Live main `c6155e98` (11/13, archive refresh workflow green on prod) with UI pass 1 queued on top (11/18); before that `c86ee6b1` (11/12: kg / m, 059 to 061: a meet picks pounds and feet or kilograms and meters once, locked after the first result; labels follow it everywhere; numbers stored as entered; PR board and group picker normalise across shows; adopted kg-only archive shows stay metric; scope note `audits/slate-2026-11-12-kg-m-scope.md`). Astra kg / m audit closed, 10 of 10 + D1 / D2 (061, notes "kg / m audit fixes"); live multi-device recheck 30 of 30 on 5 browser contexts (phone, tablet, desktop). 845 tests. Astra GP audit (11/10) closed, 13 of 13 fixed. Jess has the gym and meet invite links and the feature email (11/10). The product is feature-complete against this plan; what is left is Kurt's set-up list and the held items, so the next step is a dry run, not a build.
 
 **Shipped since the 10/21 entries below (newest first)**
+- 11/27 UI group A, defects and pass 1 corrections (no migration; part 2 S2, S3, S4, S6, S12, S23, S24, S26): checkboxes
+  and selects follow the sheet mode; no grey slabs in ruled blocks with a short last row; typed values are ink and
+  placeholders are muted examples ("e.g."); a disabled key prints why; no "Not provided" or stray comma in a place
+  line; admin queues print readable stamps; a full show reads "Full · Waitlist" through to the final key; one fee
+  sentence on the register form. Probe 88 page loads, all six counts to 0; 885 tests; notes "UI group A". Group B
+  (meet day) is next. Open: a waitlist position needs a server field.
 - 11/27 Results pages on phones: show pages with a standings table laid out at 1,008 to 1,310 px on a 390 px phone and
   loaded zoomed out (a screen-reader-only header escaped its scroll wrapper). One class on six scroll wrappers, a guard
   test, and a phone-emulation probe. Signed-in UI review merged into the build order

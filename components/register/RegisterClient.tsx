@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Cap, WebCell, keyClass, textLink, TitleBand } from '@/components/website/sheet';
-import { longIsoDate } from '@/lib/website/sheetFormat';
+import { longIsoDate, registrationShort, venueWithPlace } from '@/lib/website/sheetFormat';
 import { describeShowLifecycle } from '@/lib/website/filters';
 import type { PublicRegistrationMeet } from '@/lib/promoter/contract';
 import { weightUnit } from '@/lib/units';
@@ -206,9 +206,15 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
   const teamDivision = (selectedDivision?.teamSize ?? 1) > 1;
   const promoterContactDisplay = meet.listing.promoterContact ?? 'contact not provided';
 
-  const venueDisplay = meet.listing.venue
-    ? `${meet.listing.venue.facilityName ? `${meet.listing.venue.facilityName}, ` : ''}${meet.listing.venue.city}, ${meet.listing.venue.state}`
-    : 'Venue not provided';
+  // UI group A (11/27, S12): one place formatter, so a venue with a city and no state is "Oslo", not "Oslo,".
+  const venueDisplay = venueWithPlace(meet.listing.venue) || 'Venue not provided';
+  // S24: a full show still takes entries, onto the waitlist. The band, the notice and the final key all say so.
+  const waitlisted = gate.status === 'waitlist';
+  const full = waitlisted && gate.reason === 'full';
+  const regShort = registrationShort(meet.listing.registrationStatus, { full });
+  // S26: one fee sentence, the same in the facts strip, the review and the confirmation.
+  const feeAmount = meet.listing.entryFeeDisplay?.trim() || 'No fee listed';
+  const FEE_WHO = 'The promoter collects payment.';
 
   const renderedWaiver = (waiverText ?? '')
     .replace(/\{\{PROMOTER_NAME\}\}/g, meet.promoterDisplayName)
@@ -319,12 +325,15 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
         <TitleBand
           name={meet.name}
           meta={[meet.date ? longIsoDate(meet.date) : 'Date TBD', venueDisplay]}
-          status={[`Competition: ${life.competitionLabel}`, `Registration: ${life.registrationLabel}`, meet.listing.federation]}
+          status={[`Competition: ${life.competitionLabel}`, regShort && `Registration: ${regShort}`, meet.listing.federation]}
         />
         <div className="zt-block border-t-0 grid-cols-2 sm:grid-cols-4">
           <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
             <Cap>Entry fee</Cap>
-            <div className={FACT_V}>{meet.listing.entryFeeDisplay || 'Collected by promoter'}</div>
+            <div className={FACT_V}>
+              {feeAmount}
+              <span className={FACT_S}>{FEE_WHO}</span>
+            </div>
           </WebCell>
           <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
             <Cap>Registration deadline</Cap>
@@ -371,12 +380,17 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
         </section>
       ) : (
         <>
-          {gate.status === 'waitlist' && step < 4 && (
-            <p className={`${BODY} font-bold`}>
-              {gate.reason === 'full'
-                ? `This show is full (${capacityDisplay}). You can still register: your entry goes on the waitlist and the promoter decides if a spot opens.`
-                : 'This competition is taking waitlist entries only. Your request will be marked waitlisted and the promoter decides if a spot opens.'}
-            </p>
+          {waitlisted && step < 4 && (
+            <section aria-label="Waitlist" className="zt-block" data-testid="waitlist-line">
+              <div className={`${CELL} gap-1`}>
+                <Cap as="span">{full ? 'Full · Waitlist' : 'Waitlist only'}</Cap>
+                <p className={`${BODY} font-bold`}>
+                  {full
+                    ? `This show is full (${capacityDisplay}). You can still enter: your entry joins the waitlist and the promoter decides if a spot opens.`
+                    : 'This competition is taking waitlist entries only. Your entry joins the waitlist and the promoter decides if a spot opens.'}
+                </p>
+              </div>
+            </section>
           )}
 
           {/* Step strip */}
@@ -535,7 +549,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="athlete@example.com"
+                    placeholder="e.g. athlete@example.com"
                     className={INPUT}
                   />
                 </div>
@@ -604,7 +618,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                           type="text"
                           value={guardianContact}
                           onChange={(e) => setGuardianContact(e.target.value)}
-                          placeholder="717-555-0100 or guardian@example.com"
+                          placeholder="e.g. 717-555-0100 or guardian@example.com"
                           className={INPUT}
                         />
                       </div>
@@ -618,10 +632,9 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                 </div>
 
                 <div className={`${CELL} col-span-full`}>
-                  <Cap as="span">Entry fee &amp; payment notice</Cap>
+                  <Cap as="span">Entry fee</Cap>
                   <p className={BODY}>
-                    Entry fee is <strong>{meet.listing.entryFeeDisplay || 'set by the promoter'}</strong>. No
-                    online payment is collected on this form; the promoter will collect payment directly.
+                    <strong>{feeAmount}.</strong> {FEE_WHO} Nothing is charged on this form.
                   </p>
                 </div>
               </div>
@@ -695,7 +708,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
               <div className="zt-block">
                 <div className={`${CELL} py-4 gap-1`}>
                   <Cap as="span">Step 3</Cap>
-                  <h2 className="text-[22px] font-bold leading-tight text-ink">Review &amp; submit registration</h2>
+                  <h2 className="text-[22px] font-bold leading-tight text-ink">{waitlisted ? 'Review & join the waitlist' : 'Review & submit registration'}</h2>
                 </div>
                 <dl className="contents">
                   <ReviewRow label="Competition">{meet.name} ({meet.date ? longIsoDate(meet.date) : 'date TBD'})</ReviewRow>
@@ -715,7 +728,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                     {isMinor && `, registered by ${guardianName} (${guardianContact}); guardian signs at check-in`}
                   </ReviewRow>
                   <ReviewRow label="Waiver acceptance" pen>Accepted (timestamped on submit)</ReviewRow>
-                  <ReviewRow label="Entry fee">{meet.listing.entryFeeDisplay || 'Not provided'}; the promoter collects payment</ReviewRow>
+                  <ReviewRow label="Entry fee">{feeAmount}. {FEE_WHO}</ReviewRow>
                 </dl>
               </div>
 
@@ -736,7 +749,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
                   disabled={submitting}
                   className={keyClass('pen', 'disabled:opacity-40 disabled:cursor-not-allowed')}
                 >
-                  {submitting ? 'Submitting…' : 'Submit registration'}
+                  {submitting ? 'Submitting…' : waitlisted ? 'Join the waitlist' : 'Submit registration'}
                 </button>
               </div>
             </form>
@@ -766,7 +779,7 @@ export default function RegisterClient({ slug, waiverText, waiverVersion, waiver
 
               <dl className="contents">
                 <ReviewRow label="Registration ID"><code className="font-mono text-[14px]">{submitted.id}</code></ReviewRow>
-                <ReviewRow label="Entry fee &amp; payment">{meet.listing.entryFeeDisplay || 'Standard entry fee'}; the promoter will collect payment directly.</ReviewRow>
+                <ReviewRow label="Entry fee">{feeAmount}. {FEE_WHO}</ReviewRow>
                 <ReviewRow label="Promoter contact">{meet.promoterDisplayName} ({promoterContactDisplay})</ReviewRow>
               </dl>
 

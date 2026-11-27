@@ -88,8 +88,7 @@ export default function ShowRows({ shows, ariaLabelledby, detail = false }: { sh
                   </Link>
                 )}
                 <span className="block text-[13px] text-ink-muted mt-1 truncate">
-                  {venueLine(show.venue)}
-                  {!detail && show.divisionLabels.length > 0 && ` · ${divisionsShort(show.divisionLabels)}`}
+                  {[venueLine(show.venue), !detail && show.divisionLabels.length > 0 ? divisionsShort(show.divisionLabels) : ''].filter(Boolean).join(' · ')}
                 </span>
                 {detail && (
                   <div className="mt-2.5 text-[13px] leading-[1.5] text-ink space-y-1 whitespace-normal">

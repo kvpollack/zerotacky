@@ -172,7 +172,7 @@ export default function AthleteAccountsSection({ athletes, divisions, links, onL
                       id={inputId}
                       value={draft}
                       onChange={(e) => setDrafts((prev) => ({ ...prev, [a.id]: e.target.value }))}
-                      placeholder="@username"
+                      placeholder="e.g. @username"
                       autoComplete="off"
                       spellCheck={false}
                       className="w-40 bg-zt-inset border border-zt-border rounded-lg px-2.5 py-1.5 text-xs font-bold text-zt-text focus:outline-none focus:border-zt-primary"

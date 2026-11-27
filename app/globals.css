@@ -566,8 +566,30 @@ body { font-family: var(--font-sans); }
 [data-zt-web] .zt-cap { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; }
 [data-zt-web] .zt-block .zt-cap + :not(p, ul, ol, a, button) { font-weight: 600; }
 /* a measure for prose (Fable 7 / 20, Astra 12): the mono face at 1,300 px ran to 170 characters a line */
-[data-zt-web] main :is(p, li):not(.zt-wide, td *, th *) { max-width: 68ch; }
+[data-zt-web] main :is(p, li):not(.zt-wide, .zt-block, td *, th *, .zt-block > *, .zt-block > .contents > *) { max-width: 68ch; }
 [data-zt-web] main :is(p, li).text-center { margin-inline: auto; }
+/* UI group A (11/27, part 2 audit S2 / S3 / S4; `audits/ui-audit-merged-part2-2026-11-27.md`). Website only.
+   S3 native controls: `[data-zt-theme]` sets `color-scheme: dark` for the scorer themes and the bright sheet never
+   reset it, so an unchecked box drew as a dark square. The sheet mode decides the scheme; checks and radios take pen. */
+[data-zt-web] { color-scheme: light; accent-color: var(--pen); }
+[data-zt-web][data-zt-mode='dark'] { color-scheme: dark; }
+/* S4 short last rows: the 1 px rules were the block's ground showing through the gaps, so a row with fewer cells than
+   columns showed the ground as a grey slab (and so did a p / li cell the 68ch measure had narrowed: cells are out of
+   the measure above, the prose inside them keeps it). On screen the ground is the sheet and each cell draws its own
+   right and bottom rule into the gap. Those rules land on the inner pixel of the block's right and bottom edge, so
+   ::after repaints that edge on top. A block that drops its right or bottom border (border-0, the footer) keeps the
+   old ground: there the rule would spill outside the block. Print keeps the old ground too. */
+@media screen {
+  [data-zt-web] .zt-block:not([class*='border-0'], [class*='border-x-0'], [class*='border-b-0'], [class*='border-r-0']) { background: var(--sheet); position: relative; }
+  [data-zt-web] .zt-block:not([class*='border-0'], [class*='border-x-0'], [class*='border-b-0'], [class*='border-r-0']) > *,
+  [data-zt-web] .zt-block:not([class*='border-0'], [class*='border-x-0'], [class*='border-b-0'], [class*='border-r-0']) > .contents > * { box-shadow: 1px 0 0 0 var(--rule-subtle), 0 1px 0 0 var(--rule-subtle), 1px 1px 0 0 var(--rule-subtle); }
+  [data-zt-web] .zt-block:not([class*='border-0'], [class*='border-x-0'], [class*='border-b-0'], [class*='border-r-0'])::after { content: ''; position: absolute; inset: 0 -2px -2px 0; border: inherit; border-top-width: 0; border-left-width: 0; pointer-events: none; }
+}
+/* S2 one editable grammar: a typed value is ink at the body weight in both modes (pen is for links and keys), a
+   placeholder is muted and reads as an example. Scoped to the shell's <main>, so the Join code and PIN cells keep
+   their own weight. The scorer and judge pad keep `.zt-input` as it is (value in pen). */
+[data-zt-web] :where(#zt-main) :is(input:not([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='color'], [type='submit'], [type='button']), textarea, select) { color: var(--ink); font-weight: 400; }
+[data-zt-web] :where(#zt-main) :is(input, textarea)::placeholder { color: var(--muted); font-weight: 400; opacity: 1; }
 /* Desktop type scale (Kurt 11/9): the mono body at 13 px got lost on a desktop display. From lg every body size steps
    up one notch; phones keep the tight scale. Headings (22 px and up) are untouched. One place to tune or revert. */
 @media (min-width: 1024px) {

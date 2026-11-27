@@ -1795,3 +1795,53 @@ marked fixed in pass 1 and was not: the pass 1 probe never loaded a page with a 
   the pages in their own lists. Run this one on results, prep, report and register pages after any table change.
   Before: 4 of 17 production pages failed. After, on the local build: 26 of 26 pass.
 
+## UI group A: defects and pass 1 corrections (11/27, no migration)
+
+First group of the part 2 build order (`audits/ui-audit-merged-part2-2026-11-27.md`): S2, S3, S4, S6, S12, S23, S24,
+S26. Website, register and promoter pages only. The scorer, judge pad and TV are untouched (`test/webTokens.test.mjs`).
+
+- **S3 native controls.** `[data-zt-theme]` sets `color-scheme: dark` for the scorer themes and the bright sheet never
+  reset it, so an unchecked box drew as a dark square on a white page. `[data-zt-web]` is now `color-scheme: light`
+  with `accent-color: var(--pen)`; the dark sheet mode sets `dark`.
+- **S4 grey slabs.** The 1 px rules inside a `.zt-block` were the block's ground showing through the grid gaps, so a
+  last row with fewer cells than columns showed the ground as a grey slab. A `p` or `li` cell narrowed by the 68ch
+  measure did the same. On screen the ground is now the sheet and each cell draws its own right and bottom rule with a
+  box shadow; `::after` repaints the block's right and bottom edge on top. Ruled cells are out of the 68ch measure, the
+  prose inside them keeps it. Blocks that drop their right or bottom border (`border-0`, the footer) and print keep
+  the old ground.
+- **S2 one editable grammar.** Inside `<main id="zt-main">` a typed value is ink at 400 and a placeholder is muted at
+  400, in both modes. Pen stays for links and keys. The Join code and PIN cells and the scorer's `.zt-input` are
+  outside the selector. Every example placeholder now starts with "e.g." (or carries it after a label: "Lift, e.g. Log
+  press"); placeholders that name what to type ("Name or @username") are a short allow list in `test/groupA.test.mjs`.
+  A new placeholder has to pick a side or the test fails.
+- **S6 disabled keys print their reason.** `KeyReason` in `components/website/sheet.tsx`: one cap line under the key,
+  wired with `aria-describedby`, nothing rendered when the key is live. On admin "Approve claim" (replaces a `title`
+  that touch screens never showed), account "Save profile" and the username key, My Gym "Save listing", meet "Send
+  transfer". The show page's dead disabled registration key is gone; the facts strip already says the state.
+- **S12 filler text.** `placeLine`, `venueWithPlace` and `registrationShort` in `lib/website/sheetFormat.ts`. A missing
+  city or state no longer prints "Not provided" or a stray comma; `venueLine` drops parts that are not on file. The
+  lifecycle label "Registration N/A" is "No Registration" in filters and the status is left out where it adds nothing
+  (dashboard row, meet header chip). "Reg form" and "Public Registration Page" show only while the form takes entries.
+  The dashboard leads with My Meets; the athlete block follows. The show title band and the register title band use
+  the same header formatter (`venueWithPlace`: "Power Plant Gym, York, PA"); list rows keep `venueLine`.
+- **S23 admin queues.** `stampDateTime` ("20 Nov 2026, 08:22", local time) replaces raw ISO stamps in both queues;
+  addresses wrap inside themselves (`overflow-wrap: anywhere` on the address span only, no `break-all` on the card);
+  the duplicated "no confirmed account email" sentence is printed once; both queues answer through `QueueNotice`.
+- **S24 full show.** The register band reads "Registration: Full · Waitlist". The waitlist notice is one ruled block
+  (`data-testid="waitlist-line"`) and the step 3 heading and final key read "Join the waitlist". The audit asked for
+  the waitlist position on that line. `PublicRegistrationMeet` carries `acceptedCount` and no waitlist count, so the
+  line states the cap and that the entry joins the waitlist. A position needs a new server field (not built).
+- **S26 one fee sentence.** The fee amount (`entryFeeDisplay` or "No fee listed") plus "The promoter collects
+  payment." is one constant used in the facts strip, the step 1 notice, the review row and the confirmation row.
+
+Carried to group B, because the Meet tab embeds the scorer's `components/scorer/MeetSetupSheet.tsx`: its two
+placeholders ("Set on the publishing phone", "meet-slug") and the locked units keys with no printed reason (S16 / S33).
+The meet header's lavender disabled-key style is S5 (group D).
+
+Probe: `~/.aki/tmp/zt/shots/pa_probe.py <tag>` then `compare before after` (22 pages, phone 390 and desktop 1440,
+bright and dark, signed in on staging; 88 page loads). Its header lists the criteria. Before (main `81ffdccb`) to
+after: controls in the wrong colour scheme 105 to 0, slabs 32 to 0, typed values not ink 400 420 to 0, placeholders
+that read as values 280 to 0, disabled keys with no printed reason 76 to 0, filler text 42 to 0, no sideways scroll.
+The "after" run skips the four Meet Setup items above by name. `mobile_width.py` on the local build: 11 of 11 pass.
+`test/groupA.test.mjs` holds the formatters, the CSS rules, the reason lines and the placeholder rule (885 tests).
+Contact sheet: `Downloads/zt_ui_groupA/contact_sheet.html` (`shots/contact_sheet_ga.py`).

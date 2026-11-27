@@ -192,7 +192,7 @@ export function describeShowLifecycle(
     closed: 'Registration Closed',
     waitlist: 'Waitlist Only',
     day_of_only: 'Day-Of Entry Only',
-    not_applicable: 'Registration N/A',
+    not_applicable: 'No Registration',
     not_provided: 'Registration Not Provided',
   };
 

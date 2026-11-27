@@ -25,10 +25,13 @@ describe('sheetFormat dates', () => {
 });
 
 describe('sheetFormat venue and rows', () => {
-  test('venueLine joins facility and place, collapsing repeated placeholders', () => {
+  test('venueLine joins facility and place, and leaves out what the listing has not supplied', () => {
     assert.equal(F.venueLine({ facilityName: 'The Power Plant Gym', city: 'York', state: 'PA', country: 'US' }), 'The Power Plant Gym, York PA');
     assert.equal(F.venueLine({ city: 'Erie', state: 'PA', country: 'US' }), 'Erie PA');
-    assert.equal(F.venueLine({ facilityName: 'Not provided', city: 'Not provided', state: '', country: 'US' }), 'Not provided');
+    // UI group A (11/27, S12): "Not provided" is the data layer's filler, never a town or a venue name
+    assert.equal(F.venueLine({ facilityName: 'Not provided', city: 'Not provided', state: '', country: 'US' }), '');
+    assert.equal(F.venueLine({ city: 'Oslo', state: 'Not provided', country: 'NO' }), 'Oslo');
+    assert.equal(F.venueLine({ facilityName: 'York', city: 'York', state: 'PA', country: 'US' }), 'York, PA');
   });
   test('showRowStatus reads one phrase per lifecycle, live in pen', () => {
     assert.deepEqual(F.showRowStatus({ competitionStatus: 'live', registrationStatus: 'closed', resultsStatus: 'in_progress' }), { text: 'Live Now · Live Provisional Standings', live: true });

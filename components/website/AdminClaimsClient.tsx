@@ -4,7 +4,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/useAuth';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
-import { Cap, Key, keyClass, textLink } from './sheet';
+import { Cap, Key, KeyReason, QueueNotice, keyClass, textLink } from './sheet';
+import { placeLine, stampDateTime } from '@/lib/website/sheetFormat';
 import {
   adminApproveClaim, adminRejectClaim, adminRemoveGym, adminResolveReport, emailMatchesSite, fetchAdminClaims, fetchIsAdmin,
   sendClaimApprovedEmail,
@@ -58,7 +59,7 @@ function Row({ r, busy, onAction }: { r: AdminClaimRow; busy: boolean; onAction:
               {isReport ? 'Report' : newListing ? 'New listing' : 'Claim'}
             </span>
             <span className="text-[17px] font-bold text-ink">{r.gym_name}</span>
-            <span className="text-[13px] text-ink-muted">{r.gym_city}, {r.gym_state}</span>
+            <span className="text-[13px] text-ink-muted">{placeLine(r.gym_city, r.gym_state)}</span>
             {r.pending_claims_on_gym > 1 && (
               <span className={CHIP_WARN}>{r.pending_claims_on_gym} claims on this gym</span>
             )}
@@ -70,11 +71,11 @@ function Row({ r, busy, onAction }: { r: AdminClaimRow; busy: boolean; onAction:
               </Link>
             )}
             {site && (
-              <a href={/^https?:\/\//i.test(site) ? site : `https://${site}`} target="_blank" rel="noreferrer" className={`${textLink} break-all`}>
+              <a href={/^https?:\/\//i.test(site) ? site : `https://${site}`} target="_blank" rel="noreferrer" className={`${textLink} [overflow-wrap:anywhere]`}>
                 {site.replace(/^https?:\/\/(www\.)?/i, '')}
               </a>
             )}
-            <span className="text-ink-muted">filed {new Date(r.created_at).toLocaleString()}</span>
+            <span className="text-ink-muted">filed {stampDateTime(r.created_at)}</span>
           </div>
         </div>
       </div>
@@ -83,11 +84,13 @@ function Row({ r, busy, onAction }: { r: AdminClaimRow; busy: boolean; onAction:
         <div className="flex flex-col gap-1">
           <Cap as="span">{isReport ? 'Reported by' : 'Claimant'}</Cap>
           <div className="font-bold text-ink">{r.name}{r.claimant_display_name && r.claimant_display_name !== r.name ? <span className="text-ink-muted font-normal"> (account: {r.claimant_display_name})</span> : null}</div>
-          <div className="text-ink break-all">
-            {r.account_email ? <>{r.account_email} <span className="text-ink-muted">(account)</span></> : <span className="text-ink-muted">no confirmed account email</span>}
-          </div>
+          {/* S23: only the address may break mid-word (breaking the whole block split "e-mail" and "fo-rm" in the notes beside it); a
+              claim with no account email says so once, in the chip below, and a report says it here (it has no chip) */}
+          {r.account_email
+            ? <div className="text-ink"><span className="[overflow-wrap:anywhere]">{r.account_email}</span> <span className="text-ink-muted">(account)</span></div>
+            : isReport ? <div className="text-ink-muted">No confirmed account email</div> : null}
           {r.email && r.email.toLowerCase() !== (r.account_email ?? '').toLowerCase() && (
-            <div className="text-ink-muted break-all">{r.email} <span>(typed into the form, unverified)</span></div>
+            <div className="text-ink-muted"><span className="[overflow-wrap:anywhere]">{r.email}</span> <span>(typed into the form, unverified)</span></div>
           )}
           {r.role && <div className="text-ink">{r.role}</div>}
           <div className="flex flex-wrap gap-1 pt-0.5">
@@ -113,7 +116,7 @@ function Row({ r, busy, onAction }: { r: AdminClaimRow; busy: boolean; onAction:
           </>
         ) : (
           <>
-            <button type="button" disabled={busy || !r.user_id} title={r.user_id ? undefined : 'Claimant was not signed in; ask them to sign in and claim again'} className={primaryBtn} onClick={() => onAction(newListing ? 'Listing published' : 'Claim approved', async () => {
+            <button type="button" disabled={busy || !r.user_id} aria-describedby={r.user_id ? undefined : `claim-why-${r.id}`} className={primaryBtn} onClick={() => onAction(newListing ? 'Listing published' : 'Claim approved', async () => {
               const sb = getSupabase()!;
               await adminApproveClaim(sb, r.id);
               // 027: the approval stands even if the email fails; the notice says which happened.
@@ -140,6 +143,9 @@ function Row({ r, busy, onAction }: { r: AdminClaimRow; busy: boolean; onAction:
           >
             Remove listing
           </button>
+        )}
+        {!isReport && !r.user_id && (
+          <KeyReason id={`claim-why-${r.id}`} className="basis-full">Approve is off: the claimant was not signed in. Ask them to sign in and claim again.</KeyReason>
         )}
       </div>
     </li>
@@ -245,14 +251,14 @@ export default function AdminClaimsClient() {
         </button>
       </div>
       {notice && (
-        <div role="status" className={`text-[13px] font-bold border-2 px-3 py-2 flex flex-wrap items-center gap-2 ${notice.tone === 'warn' ? 'border-redpen text-redpen' : 'border-rule text-ink'}`}>
+        <QueueNotice tone={notice.tone}>
           <span className="min-w-0 break-words">{notice.text}</span>
           {notice.retryClaimId && (
             <button type="button" disabled={busy} className={quietBtn} onClick={() => void retryEmail(notice.retryClaimId!)}>
               Retry email
             </button>
           )}
-        </div>
+        </QueueNotice>
       )}
 
       <section aria-labelledby="claims-heading" className="flex flex-col gap-2.5">

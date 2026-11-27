@@ -127,7 +127,7 @@ export default function BroadcastSection({ meetId, meetName, meetDate = '', regi
       <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
         <div>
           <label htmlFor="bc-subject" className={LABEL}>Subject <span className="normal-case font-normal">({subject.length}/{BROADCAST_LIMITS.subject})</span></label>
-          <input id="bc-subject" className={INPUT} value={subject} maxLength={BROADCAST_LIMITS.subject} onChange={(e) => { setSubject(e.target.value); setArmed(false); }} disabled={!canWrite} placeholder={`${meetName || 'Show'}: weigh-in and schedule`} />
+          <input id="bc-subject" className={INPUT} value={subject} maxLength={BROADCAST_LIMITS.subject} onChange={(e) => { setSubject(e.target.value); setArmed(false); }} disabled={!canWrite} placeholder={`e.g. ${meetName || 'Show'}: weigh-in and schedule`} />
         </div>
         <div>
           <span className={LABEL}>To</span>
@@ -151,7 +151,7 @@ export default function BroadcastSection({ meetId, meetName, meetDate = '', regi
       <div>
         <label htmlFor="bc-body" className={LABEL}>Message <span className="normal-case font-normal">({body.length}/{BROADCAST_LIMITS.body}; blank line = new paragraph)</span></label>
         <textarea id="bc-body" className={`${INPUT} min-h-[9rem] font-medium`} value={body} maxLength={BROADCAST_LIMITS.body} onChange={(e) => { setBody(e.target.value); setArmed(false); }} disabled={!canWrite}
-          placeholder={'Weigh-ins open at 7:00 and close at 8:15. Rules meeting at 8:30, first event at 9:00.\n\nParking is behind the building; the front lot belongs to the dentist.'} />
+          placeholder={'e.g. Weigh-ins open at 7:00 and close at 8:15. Rules meeting at 8:30, first event at 9:00.\n\nParking is behind the building; the front lot belongs to the dentist.'} />
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
