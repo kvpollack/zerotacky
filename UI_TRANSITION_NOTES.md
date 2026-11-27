@@ -1698,3 +1698,150 @@ widest desktop measure 147 -> 68 ch (landing, athlete); 1 px ink rules in the fi
 directory intros and filter disclosure, tap targets under 44 px. **Pass 3** (content order): landing keys and the
 169-word intro, weights duplicates on show detail, empty-state collapse, athlete page sections, guides, claim placement.
 The nav still scrolls on phones (its own row) and the mode toggle still spells out Bright / Dark; both are pass 2.
+
+## UI pass 2: directory structure (11/27, no migration)
+
+Second of three passes from the merged UI audit (`audits/ui-audit-merged-2026-11-13.md`), rows 1, 4, 13 and 20: how the
+four directories are composed on a phone. Pass 1 changed tokens and left structure alone; this pass changes structure
+and adds no tokens. Scorer and judge pad are untouched.
+
+**Show list (row 1).** `components/website/ShowRows.tsx` renders two things and CSS shows one. Below `md` it is a
+stacked list (`<ul>`, one `<li data-zt-show-row>` per show): date and status on the first line, the name on its own line
+at 20/24 bold, the venue under it in muted 15/22, one 1 px divider between shows. The whole row is the link, so the
+Open column is gone on phones; the division and implement lists stay on the show page. From `md` up the five-column
+table is unchanged.
+- A live show's row opens the live board, the same place the Open column sent it. The live board has no link back to
+  the show page, so a live row has a second 44 px link, "Show details", under the row.
+- The table sits in a `hidden md:block` wrapper. `.zt-block` sets `display: grid` outside Tailwind's layers, so
+  `hidden` on the block itself loses and the table would draw under the phone list (it did, on the first try).
+  `test/directory.test.mjs` fails if `hidden` is ever put on a `.zt-block` in this file.
+
+**Gym directory (row 4).** `components/website/GymsBrowser.tsx` pages the list at 24 (`DIRECTORY_PAGE_SIZE` in the new
+`lib/website/directory.ts`). The filter bar and the foot of the list both read "Showing 24 of 169 gyms"; the key under
+the list reads "Show 24 more" and counts what the next press adds ("Show 1 more" on the last one).
+- The count belongs to the filter set it was opened under: any filter change starts again at 24 with no effect hook,
+  and clearing the filter gives back the list as it was left.
+- "Show more" also writes the count to the address bar (`/gyms?n=72`, `history.replaceState`, no navigation). Back from
+  a gym page then reopens the same cards at the same scroll position. The router remounts the component from its
+  cached first-visit props on Back, so the count is read from the address bar on mount, and from the `initialShown`
+  prop on the server. `cleanShownParam` accepts digits only, floors at one page and caps at 1,200.
+- `/gyms` no longer has a link to every gym in its HTML. `app/sitemap.ts` lists every gym page, and search, zip and
+  state reach the rest.
+- The card went from five ruled bands to two: details, then one rule and the action row. The day pass sits beside the
+  name when the card is at least 448 px wide and under the address when it is narrower (a container query on the
+  card, because a card is as narrow at 768 px in two columns as on a phone). Equipment is one line of text, the first
+  six tags and "+N more". Intro sessions and gym type are text, not chips. Hours and policy show only when the gym
+  supplied them (policy clamps at two lines), and everything missing is one line: "Not provided: street address,
+  hours." A price with no stated availability still shows (pass 1, finding 24).
+- Helpers `equipmentLine`, `dayPassSummary`, `missingDetailsLine`, `nextShown`, `moreLabel`, `shownLabel` are pure
+  functions in `lib/website/directory.ts`, tested without rendering.
+
+**Intros and filters (row 13).** Each directory has one sentence above the list; the copy that explains where listings
+come from, how to be listed and how to claim a gym moved below the list, next to its link. On phones `/shows` keeps
+search and status in view and `/gyms` keeps search and zip; the rest open from `MoreFiltersToggle`
+(`components/website/sheet.tsx`: 44 px, `aria-expanded`, `aria-controls` on the filter grid, and "· 2 on" when hidden
+filters are set, so a filter arriving by link such as `/gyms?state=PA` is never invisible). From `md` up the toggle is
+hidden and every filter shows. `/athletes` and `/trainers` have three filters and keep them all in view.
+
+**Tap targets (row 20).** `actionLink` in `sheet.tsx` is the text link at 44 px for links that stand alone: Reset
+filters, Website, Unclaimed, Clear show, View All on the landing page, Forgot password on sign-in. Gym names, the gym
+details key and the train-for show name are 44 px too. Checkbox labels in the gym filters are 44 px rows. Links inside
+a sentence are unchanged. The gym card's action row holds Website, Unclaimed and the key on one line down to a 360 px
+phone; the two arrows are dropped on narrow cards to make that fit, and at 320 px the key wraps.
+
+**Checked** (`~/.aki/tmp/zt/shots/p2_metrics.py`, local dev server on staging data, phone 390 and desktop 1440, bright
+and dark; the pass criteria are coded in its `compare`). Phone, before to after:
+
+| Page | Page height px | First entry at y | Entries rendered | Standalone targets under 44 px |
+|---|---|---|---|---|
+| /shows | 7,771 to 3,116 | 1,125 to 594 | 10 to 11 | 11 to 0 |
+| /gyms | 73,892 to 9,161 | 1,105 to 598 | 169 to 24 | 463 to 0 |
+| /athletes | 1,311 to 1,339 | 719 to 574 | 1 to 1 | 0 to 0 |
+| /trainers | 1,384 to 1,388 | 793 to 598 | 1 to 1 | 0 to 0 |
+| landing | 4,363 to 4,253 | (not a directory) | 4 to 4 | 5 to 0 |
+
+- The show name gets 342 px on a 390 px phone (was 112 px and up to three lines). No page scrolls sideways at 320, 360,
+  375 or 390 px.
+- Desktop: the gym directory is 4,656 px tall (was 32,288); the first entry sits at 552 px on `/gyms` (was 682) and 577
+  px on `/shows` (was 735). Table links on desktop are still 23 px tall; row 20 is a phone finding and they have a
+  pointer.
+- Staging gained a show between the two runs (the signed-in review approved a submission), so the show list is 11 rows
+  after and 10 before.
+- Walked in a browser: seven presses of the key reach all 169 gyms, each once; Back from card 61 of 72 returns to 72
+  cards at the same scroll offset; search to 38 matches shows 24, clearing it shows 72 again; `?n=abc`, `?n=-5` and an
+  eight-digit `?n=` give 24; `?n=999999` gives all 169; the train-for view (`/gyms?show=metric-test-open-2026`) keeps
+  its coverage line; no console errors.
+- Tests 845 to 857 (`test/directory.test.mjs`, 12 new), tsc clean. Contact sheet, 20 pairs:
+  `Downloads/zt_ui_pass2/contact_sheet.html` (Slate's laptop).
+
+**Not in this pass.** The phone nav row still scrolls sideways; the pass 1 notes parked it here, but it is not one of
+the four audit rows and needs a design decision first. Athlete cards keep their role chips. **Pass 3** (content
+order) is unchanged: rows 7, 8, 12, 14, 17, 19, 23, then 15 and 16.
+
+## Results pages on phones: scroll wrappers contain their children (11/27, no migration)
+
+Found while merging the signed-in review (`audits/ui-audit-merged-part2-2026-11-27.md`). Every show page with a
+standings table laid out at 1,008 to 1,310 px on a 390 px phone, so the phone loaded it zoomed out. Part 1 row 9 was
+marked fixed in pass 1 and was not: the pass 1 probe never loaded a page with a results table.
+
+- Cause: the standings table's "Share" column header is `sr-only`, which is `position: absolute`. Its scroll wrapper
+  (`overflow-x-auto`, `[contain:inline-size]`) was not positioned, so the element's containing block was outside the
+  wrapper, it escaped the clip, and the document grew to the table's full width.
+- Fix: `relative` on every horizontal scroll wrapper on website, legal and promoter pages (`ShowDetailClient.tsx` x2,
+  `PrepSheetClient.tsx`, `MarkdownBlocks.tsx`, `CheckInDeskSection.tsx`, `RegistrationsSection.tsx`).
+  `test/directory.test.mjs` fails if a wrapper in those files loses it (858 tests).
+- Probe: `~/.aki/tmp/zt/shots/mobile_width.py` loads pages with a real phone descriptor (the viewport meta is honoured)
+  and passes when `innerWidth` and `scrollWidth` are both 390. The earlier probes used a plain 390 px viewport and only
+  the pages in their own lists. Run this one on results, prep, report and register pages after any table change.
+  Before: 4 of 17 production pages failed. After, on the local build: 26 of 26 pass.
+
+## UI group A: defects and pass 1 corrections (11/27, no migration)
+
+First group of the part 2 build order (`audits/ui-audit-merged-part2-2026-11-27.md`): S2, S3, S4, S6, S12, S23, S24,
+S26. Website, register and promoter pages only. The scorer, judge pad and TV are untouched (`test/webTokens.test.mjs`).
+
+- **S3 native controls.** `[data-zt-theme]` sets `color-scheme: dark` for the scorer themes and the bright sheet never
+  reset it, so an unchecked box drew as a dark square on a white page. `[data-zt-web]` is now `color-scheme: light`
+  with `accent-color: var(--pen)`; the dark sheet mode sets `dark`.
+- **S4 grey slabs.** The 1 px rules inside a `.zt-block` were the block's ground showing through the grid gaps, so a
+  last row with fewer cells than columns showed the ground as a grey slab. A `p` or `li` cell narrowed by the 68ch
+  measure did the same. On screen the ground is now the sheet and each cell draws its own right and bottom rule with a
+  box shadow; `::after` repaints the block's right and bottom edge on top. Ruled cells are out of the 68ch measure, the
+  prose inside them keeps it. Blocks that drop their right or bottom border (`border-0`, the footer) and print keep
+  the old ground.
+- **S2 one editable grammar.** Inside `<main id="zt-main">` a typed value is ink at 400 and a placeholder is muted at
+  400, in both modes. Pen stays for links and keys. The Join code and PIN cells and the scorer's `.zt-input` are
+  outside the selector. Every example placeholder now starts with "e.g." (or carries it after a label: "Lift, e.g. Log
+  press"); placeholders that name what to type ("Name or @username") are a short allow list in `test/groupA.test.mjs`.
+  A new placeholder has to pick a side or the test fails.
+- **S6 disabled keys print their reason.** `KeyReason` in `components/website/sheet.tsx`: one cap line under the key,
+  wired with `aria-describedby`, nothing rendered when the key is live. On admin "Approve claim" (replaces a `title`
+  that touch screens never showed), account "Save profile" and the username key, My Gym "Save listing", meet "Send
+  transfer". The show page's dead disabled registration key is gone; the facts strip already says the state.
+- **S12 filler text.** `placeLine`, `venueWithPlace` and `registrationShort` in `lib/website/sheetFormat.ts`. A missing
+  city or state no longer prints "Not provided" or a stray comma; `venueLine` drops parts that are not on file. The
+  lifecycle label "Registration N/A" is "No Registration" in filters and the status is left out where it adds nothing
+  (dashboard row, meet header chip). "Reg form" and "Public Registration Page" show only while the form takes entries.
+  The dashboard leads with My Meets; the athlete block follows. The show title band and the register title band use
+  the same header formatter (`venueWithPlace`: "Power Plant Gym, York, PA"); list rows keep `venueLine`.
+- **S23 admin queues.** `stampDateTime` ("20 Nov 2026, 08:22", local time) replaces raw ISO stamps in both queues;
+  addresses wrap inside themselves (`overflow-wrap: anywhere` on the address span only, no `break-all` on the card);
+  the duplicated "no confirmed account email" sentence is printed once; both queues answer through `QueueNotice`.
+- **S24 full show.** The register band reads "Registration: Full · Waitlist". The waitlist notice is one ruled block
+  (`data-testid="waitlist-line"`) and the step 3 heading and final key read "Join the waitlist". The audit asked for
+  the waitlist position on that line. `PublicRegistrationMeet` carries `acceptedCount` and no waitlist count, so the
+  line states the cap and that the entry joins the waitlist. A position needs a new server field (not built).
+- **S26 one fee sentence.** The fee amount (`entryFeeDisplay` or "No fee listed") plus "The promoter collects
+  payment." is one constant used in the facts strip, the step 1 notice, the review row and the confirmation row.
+
+Carried to group B, because the Meet tab embeds the scorer's `components/scorer/MeetSetupSheet.tsx`: its two
+placeholders ("Set on the publishing phone", "meet-slug") and the locked units keys with no printed reason (S16 / S33).
+The meet header's lavender disabled-key style is S5 (group D).
+
+Probe: `~/.aki/tmp/zt/shots/pa_probe.py <tag>` then `compare before after` (22 pages, phone 390 and desktop 1440,
+bright and dark, signed in on staging; 88 page loads). Its header lists the criteria. Before (main `81ffdccb`) to
+after: controls in the wrong colour scheme 105 to 0, slabs 32 to 0, typed values not ink 400 420 to 0, placeholders
+that read as values 280 to 0, disabled keys with no printed reason 76 to 0, filler text 42 to 0, no sideways scroll.
+The "after" run skips the four Meet Setup items above by name. `mobile_width.py` on the local build: 11 of 11 pass.
+`test/groupA.test.mjs` holds the formatters, the CSS rules, the reason lines and the placeholder rule (885 tests).
+Contact sheet: `Downloads/zt_ui_groupA/contact_sheet.html` (`shots/contact_sheet_ga.py`).

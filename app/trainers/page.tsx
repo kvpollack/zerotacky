@@ -34,13 +34,9 @@ export default async function TrainersDirectoryPage({ searchParams }: { searchPa
             {trainers.length} listed{states.length ? ` · ${states.length} state${states.length === 1 ? '' : 's'}` : ''}
           </span>
         </div>
+        {/* Pass 2 (finding 13): the list's nature and the no-vetting line stay above it; how to be listed follows it. */}
         <p className="text-[15px] leading-relaxed text-ink max-w-3xl">
-          Coaches who marked themselves as trainers on their ZeroTacky account and chose a public profile. Each card says
-          whether they take in-person clients, online clients or both; contact details are whatever they put on their
-          profile. ZeroTacky does not vet trainers or handle bookings.{' '}
-          <Link href="/website/account" className={textLink}>Coach?</Link> Tick
-          &ldquo;I coach&rdquo; on your account page and turn on your public profile to be listed.{' '}
-          <Link href="/athletes" className={textLink}>Everyone listed</Link>.
+          Coaches who chose to be listed. ZeroTacky does not vet trainers or handle bookings.
         </p>
         {res.error && (
           <p className="text-[13px] font-bold text-redpen" role="alert">The directory could not be loaded right now. {res.error}</p>
@@ -55,6 +51,14 @@ export default async function TrainersDirectoryPage({ searchParams }: { searchPa
         fixedRole="trainer"
         initialMode={cleanModeParam(sp.mode)}
       />
+
+      <p className="text-[15px] leading-relaxed text-ink">
+        Each card says whether a coach takes in-person clients, online clients or both; contact details are whatever
+        they put on their profile.{' '}
+        <Link href="/website/account" className={textLink}>Coach?</Link> Tick
+        &ldquo;I coach&rdquo; on your account page and turn on your public profile to be listed.{' '}
+        <Link href="/athletes" className={textLink}>Everyone listed</Link>.
+      </p>
     </WebsiteShell>
   );
 }

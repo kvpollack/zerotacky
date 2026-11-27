@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { cancelTransfer, fetchTransferState, partyLabel, requestTransfer, type TransferState } from '@/lib/website/meetTransfers';
 import InviteLinks from '@/components/website/InviteLinks';
+import { KeyReason } from '@/components/website/sheet';
 
 const INPUT = 'w-full bg-zt-inset border border-zt-border-strong rounded-xl px-3 py-2 text-sm font-bold text-zt-text';
 const KEY = 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border font-black text-[11px] uppercase disabled:opacity-50 disabled:cursor-not-allowed';
@@ -72,10 +73,11 @@ export default function TransferSection({ sb, meetId }: { sb: SupabaseClient | n
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <label htmlFor="transfer-username" className="sr-only">Username of the new owner</label>
-            <input id="transfer-username" className={`${INPUT} max-w-xs`} placeholder="@username" value={username}
+            <input id="transfer-username" className={`${INPUT} max-w-xs`} placeholder="e.g. @username" value={username}
               onChange={(e) => setUsername(e.target.value)} autoComplete="off" spellCheck={false} />
-            <button type="submit" className={KEY_PRIMARY} disabled={busy || !username.trim()}>Send transfer</button>
+            <button type="submit" className={KEY_PRIMARY} disabled={busy || !username.trim()} aria-describedby={username.trim() ? undefined : 'transfer-why'}>Send transfer</button>
           </div>
+          <KeyReason id="transfer-why">{!busy && !username.trim() ? 'Type the new owner\u2019s username to send it' : null}</KeyReason>
         </form>
       )}
       {error && <p role="alert" className="text-xs font-bold text-red-400">{error}</p>}

@@ -139,17 +139,17 @@ export default function AddGymClient() {
         <div className={`${CELL} grid grid-cols-2 gap-x-4`}>
           <label htmlFor="ag-state"><Cap as="span">State</Cap></label>
           <label htmlFor="ag-zip"><Cap as="span">Zip</Cap></label>
-          <input id="ag-state" value={draft.state} onChange={(e) => patch({ state: e.target.value.toUpperCase().slice(0, 2) })} className="zt-input" maxLength={2} placeholder="TX" required autoComplete="address-level1" />
-          <input id="ag-zip" value={draft.zip} onChange={(e) => patch({ zip: e.target.value })} className="zt-input" maxLength={10} inputMode="numeric" placeholder="12345" autoComplete="postal-code" />
+          <input id="ag-state" value={draft.state} onChange={(e) => patch({ state: e.target.value.toUpperCase().slice(0, 2) })} className="zt-input" maxLength={2} placeholder="e.g. TX" required autoComplete="address-level1" />
+          <input id="ag-zip" value={draft.zip} onChange={(e) => patch({ zip: e.target.value })} className="zt-input" maxLength={10} inputMode="numeric" placeholder="e.g. 12345" autoComplete="postal-code" />
         </div>
-        {text('ag-web', 'Website', 'website_url', { maxLength: GYM_LIMITS.website_url, placeholder: 'https://', inputMode: 'url', autoComplete: 'url' })}
-        {text('ag-ig', 'Instagram', 'instagram', { maxLength: GYM_LIMITS.instagram, placeholder: '@handle' })}
+        {text('ag-web', 'Website', 'website_url', { maxLength: GYM_LIMITS.website_url, placeholder: 'e.g. https://yourgym.com', inputMode: 'url', autoComplete: 'url' })}
+        {text('ag-ig', 'Instagram', 'instagram', { maxLength: GYM_LIMITS.instagram, placeholder: 'e.g. @yourgym' })}
         {text('ag-phone', 'Phone', 'phone', { maxLength: GYM_LIMITS.phone, inputMode: 'tel', autoComplete: 'tel' })}
         {text('ag-contact', 'Public contact (email or booking link)', 'contact', { maxLength: GYM_LIMITS.contact })}
-        {text('ag-role', 'Your role at the gym', 'role', { maxLength: 40, placeholder: 'Owner, manager, head coach' }, true)}
+        {text('ag-role', 'Your role at the gym', 'role', { maxLength: 40, placeholder: 'e.g. owner, manager, head coach' }, true)}
         <div className={`${CELL} md:col-span-2`}>
           <label htmlFor="ag-msg"><Cap as="span">Anything that helps us confirm it (optional)</Cap></label>
-          <textarea id="ag-msg" value={draft.message} onChange={(e) => patch({ message: e.target.value })} className="zt-input min-h-[72px]" maxLength={1000} placeholder="A page showing the strongman equipment, a federation listing, how long you have been open" />
+          <textarea id="ag-msg" value={draft.message} onChange={(e) => patch({ message: e.target.value })} className="zt-input min-h-[72px]" maxLength={1000} placeholder="e.g. a page showing the strongman equipment, a federation listing, how long you have been open" />
         </div>
         <div className={`${CELL} md:col-span-2 gap-3 py-5`}>
           <p className={NOTE}>

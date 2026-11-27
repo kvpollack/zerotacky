@@ -33,12 +33,9 @@ export default async function AthletesDirectoryPage({ searchParams }: { searchPa
             {athletes.length} listed{states.length ? ` · ${states.length} state${states.length === 1 ? '' : 's'}` : ''}
           </span>
         </div>
+        {/* Pass 2 (finding 13): one sentence above the list; the opt-in copy sits with its link below it. */}
         <p className="text-[15px] leading-relaxed text-ink max-w-3xl">
-          People who train, compete, run shows or coach, and chose to be listed. Everyone here opted in from their account
-          page and can leave the list any time.{' '}
-          <Link href="/website/account" className={textLink}>Add yourself</Link>: pick a
-          username and turn on your public profile. Looking for a coach? See the{' '}
-          <Link href="/trainers" className={textLink}>Trainers</Link> list.
+          Lifters, promoters and coaches who chose to be listed.
         </p>
         {res.error && (
           <p className="text-[13px] font-bold text-redpen" role="alert">The directory could not be loaded right now. {res.error}</p>
@@ -52,6 +49,13 @@ export default async function AthletesDirectoryPage({ searchParams }: { searchPa
         initialRole={cleanRoleParam(sp.role)}
         initialSearch={cleanSearchParam(sp.q)}
       />
+
+      <p className="text-[15px] leading-relaxed text-ink">
+        Everyone here opted in from their account page and can leave the list any time.{' '}
+        <Link href="/website/account" className={textLink}>Add yourself</Link>: pick a
+        username and turn on your public profile. Looking for a coach? See the{' '}
+        <Link href="/trainers" className={textLink}>Trainers</Link> list.
+      </p>
     </WebsiteShell>
   );
 }

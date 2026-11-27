@@ -463,7 +463,7 @@ export default function ListingSection({
               type="text"
               value={draft.city}
               onChange={(e) => set('city', e.target.value)}
-              placeholder="York"
+              placeholder="e.g. York"
               className={INPUT}
             />
           </div>
@@ -477,7 +477,7 @@ export default function ListingSection({
               maxLength={4}
               value={draft.stateCode}
               onChange={(e) => set('stateCode', e.target.value.toUpperCase())}
-              placeholder="PA"
+              placeholder="e.g. PA"
               className={`${INPUT} uppercase`}
             />
           </div>
@@ -490,7 +490,7 @@ export default function ListingSection({
               type="text"
               value={draft.postalCode}
               onChange={(e) => set('postalCode', e.target.value)}
-              placeholder="17404"
+              placeholder="e.g. 17404"
               className={INPUT}
             />
           </div>
@@ -503,7 +503,7 @@ export default function ListingSection({
               type="text"
               value={draft.country}
               onChange={(e) => set('country', e.target.value.toUpperCase())}
-              placeholder="US"
+              placeholder="e.g. US"
               className={`${INPUT} uppercase`}
             />
           </div>
@@ -525,7 +525,7 @@ export default function ListingSection({
               type="text"
               value={draft.federation}
               onChange={(e) => set('federation', e.target.value)}
-              placeholder="USS, Strongman Corp, Unsanctioned..."
+              placeholder="e.g. USS, Strongman Corp, unsanctioned"
               className={INPUT}
             />
           </div>
@@ -654,7 +654,7 @@ export default function ListingSection({
             maxLength={URL_MAX}
             value={draft.livestreamUrl}
             onChange={(e) => set('livestreamUrl', e.target.value)}
-            placeholder="https://youtube.com/live/..."
+            placeholder="e.g. https://youtube.com/live/..."
             className={INPUT}
           />
           <p className="text-[11px] text-zt-muted mt-1">Shown as a &quot;Watch live&quot; key on the show page and the phone board. Any https:// link works (YouTube, Twitch, Facebook, Instagram).</p>
@@ -682,7 +682,7 @@ export default function ListingSection({
                 </div>
                 <div>
                   <label htmlFor={`listing-sponsor-url-${i}`} className="sr-only">Sponsor {i + 1} link</label>
-                  <input id={`listing-sponsor-url-${i}`} type="text" inputMode="url" maxLength={URL_MAX} value={s.url} onChange={(e) => setSponsor(i, { url: e.target.value })} placeholder="https://sponsor.com (optional)" className={INPUT} />
+                  <input id={`listing-sponsor-url-${i}`} type="text" inputMode="url" maxLength={URL_MAX} value={s.url} onChange={(e) => setSponsor(i, { url: e.target.value })} placeholder="e.g. https://sponsor.com (optional)" className={INPUT} />
                 </div>
                 <div className="flex items-center gap-1.5">
                   {sb && (

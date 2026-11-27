@@ -101,12 +101,12 @@ export default function SubmitExternalShowClient() {
           <div className="zt-block grid-cols-1 sm:grid-cols-2">
             <Field label="Show name" k="name" required maxLength={120} wide placeholder="e.g. Keystone Classic 2027" value={draft.name} onChange={set('name')} />
             <Field label="Date" k="date" type="date" required value={draft.date} onChange={set('date')} />
-            <Field label="Registration link" k="registration_url" type="url" required maxLength={500} placeholder="https://" hint="The page where athletes sign up." value={draft.registration_url} onChange={set('registration_url')} />
+            <Field label="Registration link" k="registration_url" type="url" required maxLength={500} placeholder="e.g. https://example.com/register" hint="The page where athletes sign up." value={draft.registration_url} onChange={set('registration_url')} />
             <Field label="City" k="city" required maxLength={80} value={draft.city} onChange={set('city')} />
-            <Field label="State" k="state" required maxLength={2} placeholder="PA" hint="US two-letter code." value={draft.state} onChange={set('state')} />
+            <Field label="State" k="state" required maxLength={2} placeholder="e.g. PA" hint="US two-letter code." value={draft.state} onChange={set('state')} />
             <Field label="Venue" k="facility_name" maxLength={120} value={draft.facility_name} onChange={set('facility_name')} />
-            <Field label="Federation" k="federation" maxLength={80} placeholder="Strongman Corporation, USS, unsanctioned" value={draft.federation} onChange={set('federation')} />
-            <Field label="Divisions" k="divisions_note" maxLength={400} wide placeholder="Novice, Open, Masters 40+; comma separated" hint="Shown under the show on the list." value={draft.divisions_note} onChange={set('divisions_note')} />
+            <Field label="Federation" k="federation" maxLength={80} placeholder="e.g. Strongman Corporation, USS, unsanctioned" value={draft.federation} onChange={set('federation')} />
+            <Field label="Divisions" k="divisions_note" maxLength={400} wide placeholder="e.g. Novice, Open, Masters 40+ (comma separated)" hint="Shown under the show on the list." value={draft.divisions_note} onChange={set('divisions_note')} />
             <Field label="Note to the reviewer" k="submitter_note" maxLength={400} wide hint="Not shown publicly." value={draft.submitter_note} onChange={set('submitter_note')} />
           </div>
           {error && <div role="alert" className="text-[13px] font-bold text-ink">{error}</div>}

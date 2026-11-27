@@ -40,17 +40,9 @@ export default async function ShowsDirectoryPage() {
             </span>
           )}
         </div>
+        {/* Pass 2 (finding 13): one sentence above the list; the format note and the promoter's line follow the list. */}
         <p className="text-[15px] leading-relaxed text-ink max-w-3xl">
-          Filter competitions by status, state, or the implements they use. Shows can run traditional
-          weight classes or inclusive strength groups, where athletes are grouped by the weights they
-          move rather than by bodyweight.
-        </p>
-        <p className="text-[15px] leading-relaxed text-ink">
-          Running a show that registers somewhere else?{' '}
-          <Link href="/shows/submit" className={textLink}>
-            List it here
-          </Link>{' '}
-          and the calendar links out to your registration page.
+          Find a competition by status, state or implement.
         </p>
       </div>
 
@@ -68,6 +60,20 @@ export default async function ShowsDirectoryPage() {
           availableImplements={implementTags}
         />
       )}
+
+      <div className="flex flex-col gap-2 text-[15px] leading-relaxed text-ink">
+        <p>
+          Shows can run traditional weight classes or inclusive strength groups, where athletes are grouped by the
+          weights they move rather than by bodyweight.
+        </p>
+        <p>
+          Running a show that registers somewhere else?{' '}
+          <Link href="/shows/submit" className={textLink}>
+            List it here
+          </Link>{' '}
+          and the calendar links out to your registration page.
+        </p>
+      </div>
     </WebsiteShell>
   );
 }

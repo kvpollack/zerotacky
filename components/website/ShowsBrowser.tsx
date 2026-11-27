@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { filterPublicShows } from '@/lib/website/filters';
 import ShowRows from './ShowRows';
-import { Cap, KeyButton, textLink } from './sheet';
+import { Cap, KeyButton, MoreFiltersToggle, actionLink } from './sheet';
 import type { PublicShowSummary, ShowCompetitionStatus } from '@/lib/website/types';
 
 interface ShowsBrowserProps {
@@ -15,6 +15,8 @@ interface ShowsBrowserProps {
 
 // Hand redraw in the sheet grammar (11/5, sweep item 5): one ruled block, a cap over each input, count + reset in the
 // bottom row. The rows themselves are ShowRows (Phase 3).
+// Pass 2 (11/27, finding 13): search and status stay in view; division, state, implement and federation sit behind
+// "More filters" on phones (always open from md up), so the first show starts inside the first screen.
 export default function ShowsBrowser({
   initialShows,
   availableStates,
@@ -26,6 +28,7 @@ export default function ShowsBrowser({
   const [implementTag, setImplementTag] = useState<string>('ALL');
   const [federation, setFederation] = useState<string>('ALL');
   const [divisionQuery, setDivisionQuery] = useState<string>('');
+  const [moreOpen, setMoreOpen] = useState(false);
 
   const availableFederations = useMemo(() => {
     const set = new Set<string>();
@@ -56,6 +59,8 @@ export default function ShowsBrowser({
     federation !== 'ALL' ||
     divisionQuery.trim() !== '';
 
+  const moreCount = [stateFilter !== 'ALL', implementTag !== 'ALL', federation !== 'ALL', divisionQuery.trim() !== ''].filter(Boolean).length;
+
   const resetFilters = () => {
     setSearch('');
     setCompetitionStatus('ALL');
@@ -69,8 +74,8 @@ export default function ShowsBrowser({
     <div className="space-y-5">
       {/* Filter bar */}
       <section aria-label="Filter strongman shows" className="zt-block grid-cols-1">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-4 px-4 py-4 sm:px-5">
-          <div className="flex flex-col gap-1.5">
+        <div id="show-filter-grid" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-4 px-4 py-4 sm:px-5">
+          <div className="flex flex-col gap-1.5 md:order-1">
             <label htmlFor="show-search-input"><Cap as="span">Search show, venue, or event</Cap></label>
             <input
               id="show-search-input"
@@ -81,7 +86,7 @@ export default function ShowsBrowser({
               className="zt-input"
             />
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className={`flex-col gap-1.5 order-3 md:order-2 ${moreOpen ? 'flex' : 'hidden md:flex'}`}>
             <label htmlFor="show-division-input"><Cap as="span">Division or class</Cap></label>
             <input
               id="show-division-input"
@@ -92,7 +97,7 @@ export default function ShowsBrowser({
               className="zt-input"
             />
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 order-2 md:order-3">
             <label htmlFor="show-status-select"><Cap as="span">Status</Cap></label>
             <select
               id="show-status-select"
@@ -108,7 +113,7 @@ export default function ShowsBrowser({
               <option value="cancelled">Cancelled</option>
             </select>
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className={`flex-col gap-1.5 order-4 ${moreOpen ? 'flex' : 'hidden md:flex'}`}>
             <label htmlFor="show-state-select"><Cap as="span">State</Cap></label>
             <select id="show-state-select" value={stateFilter} onChange={(e) => setStateFilter(e.target.value)} className="zt-input">
               <option value="ALL">All States</option>
@@ -117,7 +122,7 @@ export default function ShowsBrowser({
               ))}
             </select>
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className={`flex-col gap-1.5 order-5 ${moreOpen ? 'flex' : 'hidden md:flex'}`}>
             <label htmlFor="show-implement-select"><Cap as="span">Implement</Cap></label>
             <select id="show-implement-select" value={implementTag} onChange={(e) => setImplementTag(e.target.value)} className="zt-input">
               <option value="ALL">Any Implement</option>
@@ -126,7 +131,7 @@ export default function ShowsBrowser({
               ))}
             </select>
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className={`flex-col gap-1.5 order-6 ${moreOpen ? 'flex' : 'hidden md:flex'}`}>
             <label htmlFor="show-federation-select"><Cap as="span">Federation</Cap></label>
             <select id="show-federation-select" value={federation} onChange={(e) => setFederation(e.target.value)} className="zt-input">
               <option value="ALL">Any Federation / Unsanctioned</option>
@@ -137,13 +142,16 @@ export default function ShowsBrowser({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 sm:px-5 text-[13px]">
-          <div className="text-ink-muted">
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-2 sm:px-5 text-[13px]">
+          <div className="text-ink-muted" role="status">
             Showing <strong className="text-ink">{filteredShows.length}</strong> of {initialShows.length} shows
           </div>
-          {hasActiveFilters && (
-            <button type="button" onClick={resetFilters} className={textLink}>Reset filters</button>
-          )}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {hasActiveFilters && (
+              <button type="button" onClick={resetFilters} className={actionLink}>Reset filters</button>
+            )}
+            <MoreFiltersToggle open={moreOpen} onToggle={() => setMoreOpen((o) => !o)} count={moreCount} controls="show-filter-grid" />
+          </div>
         </div>
       </section>
 

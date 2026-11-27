@@ -104,7 +104,7 @@ export default function RegistrationsSection({
           No athlete registrations submitted for this meet yet.
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-zt-border text-[10px] font-extrabold uppercase text-zt-muted">

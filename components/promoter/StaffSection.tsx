@@ -161,7 +161,7 @@ export default function StaffSection({ meetName, meetDate, listing, stations, di
             </div>
             <div>
               <label htmlFor={`staff-note-${i}`} className="sr-only">Note</label>
-              <input id={`staff-note-${i}`} type="text" maxLength={STAFF_LIMITS.note} value={r.note} onChange={(e) => setRow(i, { note: e.target.value })} placeholder="Note (arrives 7:00, brings tape)" className={INPUT} />
+              <input id={`staff-note-${i}`} type="text" maxLength={STAFF_LIMITS.note} value={r.note} onChange={(e) => setRow(i, { note: e.target.value })} placeholder="Note, e.g. arrives 7:00, brings tape" className={INPUT} />
             </div>
             <button type="button" onClick={() => removeRow(i)} aria-label={`Remove ${r.name || `row ${i + 1}`}`} className="p-2 rounded-xl text-zt-muted hover:text-zt-danger-text justify-self-end">
               <Trash2 className="w-4 h-4" aria-hidden="true" />

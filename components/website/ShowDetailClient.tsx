@@ -20,7 +20,7 @@ import { showTrainingNeeds, trainForShowHref } from '@/lib/website/trainFor';
 import { prepSheetHref } from '@/lib/website/prepSheet';
 import { reportHref } from '@/lib/website/meetReport';
 import { safeVideoUrl, specNotes } from '@/lib/events/spec';
-import { longIsoDate, shortIsoDate, splitFee, venueLine } from '@/lib/website/sheetFormat';
+import { longIsoDate, placeLine, registrationShort, shortIsoDate, splitFee, venueWithPlace } from '@/lib/website/sheetFormat';
 import { hasScheduleTimes, icsHref, scheduleTimeZone, scheduleTimeline, shiftIsoDate, timeZoneLabel } from '@/lib/website/schedule';
 import type { DivisionResultsView, PublicShowRecord } from '@/lib/website/types';
 
@@ -65,6 +65,10 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
     show.resultsStatus
   );
 
+  // UI group A (11/27, S12): "Open" under a Registration label, and "Not offered" where registration does not apply
+  // (it printed "Registration N/A", and a dead disabled key with the same words sat in the action bar).
+  const regShort = registrationShort(show.registrationStatus);
+
   const canRegisterInApp =
     show.registrationStatus === 'open' || show.registrationStatus === 'waitlist';
 
@@ -92,7 +96,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
       <div>
         <TitleBand
           name={show.name}
-          meta={[show.date ? longIsoDate(show.date) : 'Not provided', venueLine(show.venue)]}
+          meta={[show.date && show.date !== 'Not provided' ? longIsoDate(show.date) : 'Date not set', venueWithPlace(show.venue)]}
           status={[`Competition: ${life.competitionLabel}`, `Results: ${life.resultsLabel}`, show.isDemoFixture && 'Demo Fixture (Sample Data)']}
         />
 
@@ -106,7 +110,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
             <Cap>Venue</Cap>
             <div className={FACT_V}>
               {show.venue.facilityName || 'Facility not provided'}
-              <span className={FACT_S}>{show.venue.city}, {show.venue.state}</span>
+              {placeLine(show.venue.city, show.venue.state) && <span className={FACT_S}>{placeLine(show.venue.city, show.venue.state)}</span>}
             </div>
           </WebCell>
           <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
@@ -125,7 +129,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
           </WebCell>
           <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
             <Cap>Registration</Cap>
-            <div className={FACT_V}>{life.registrationLabel}</div>
+            <div className={FACT_V}>{regShort ?? 'Not offered'}</div>
           </WebCell>
           <WebCell pad="sm" className="min-h-[84px] justify-center gap-1 px-4">
             <Cap>Live board</Cap>
@@ -312,10 +316,14 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                 </span>
               </div>
 
+              {/* The scroll wrapper is `relative` (11/27): the sr-only "Share" header in the last column is position:absolute.
+                  Without a positioned wrapper it escapes the clip and widens the document to the table's full width
+                  (1,137 px on a 390 px phone), so a phone loads the page zoomed out. test/directory.test.mjs holds
+                  this for every scroll wrapper. */}
               {divView.standings.length === 0 ? (
                 <p className="text-[13px] text-ink-muted">No athletes or scores recorded for this division.</p>
               ) : (
-                <div className="overflow-x-auto max-w-full min-w-0 [contain:inline-size] border-2 border-rule">
+                <div className="relative overflow-x-auto max-w-full min-w-0 [contain:inline-size] border-2 border-rule">
                   <table className="w-full text-left border-collapse text-[13px]">
                     <thead>
                       <tr>
@@ -420,7 +428,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
         </div>
 
         <div className="border-2 border-rule min-w-0 max-w-full">
-          <div className="overflow-x-auto max-w-full min-w-0 [contain:inline-size]">
+          <div className="relative overflow-x-auto max-w-full min-w-0 [contain:inline-size]">
             <table className="w-full text-[13px] border-collapse">
               <thead>
                 <tr>
@@ -502,8 +510,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
               <dd className={`${DD} mt-1`}>
                 <div className="font-bold">{show.venue.facilityName || 'Facility not provided'}</div>
                 <div>
-                  {show.venue.streetAddress ? `${show.venue.streetAddress}, ` : ''}
-                  {show.venue.city}, {show.venue.state} {show.venue.postalCode || ''}
+                  {[show.venue.streetAddress, [placeLine(show.venue.city, show.venue.state), show.venue.postalCode].filter(Boolean).join(' ')].filter(Boolean).join(', ') || 'Address not provided'}
                 </div>
                 {/* MS-14: a map link built from the address on file; nothing is invented when the address is missing or
                     a placeholder, and demo fixtures (made-up venues) get none (Astra LT-05/06) */}
@@ -572,7 +579,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
               </div>
             </div>
             <dl className="text-[13px] leading-[1.5] space-y-1.5">
-              <div><dt className="inline text-ink-muted">Registration Status: </dt><dd className="inline font-bold text-ink">{life.registrationLabel}</dd></div>
+              <div><dt className="inline text-ink-muted">Registration Status: </dt><dd className="inline font-bold text-ink">{regShort ?? 'Not offered'}</dd></div>
               <div><dt className="inline text-ink-muted">Promoter Contact: </dt><dd className="inline text-ink">{show.registration.promoterContact || 'Not provided'}</dd></div>
               <div><dt className="inline text-ink-muted">Weigh-In / Grouping Policy: </dt><dd className="inline text-ink">{show.registration.weighInNotes || 'Not provided'}</dd></div>
             </dl>
@@ -580,9 +587,9 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
             {/* Lifecycle Action Bar */}
             <div className="flex flex-wrap gap-2.5 mt-1">
               {show.isDemoFixture ? (
-                <button type="button" disabled className={keyClass('line', 'opacity-50 cursor-not-allowed')}>
-                  Demo show: registration disabled
-                </button>
+                <span className="inline-flex items-center min-h-12 px-5 border-2 border-rule-subtle text-sm font-bold uppercase tracking-[0.04em] text-ink-muted">
+                  Demo show: no registration
+                </span>
               ) : show.registration.externalRegistrationUrl ? (
                 <a href={show.registration.externalRegistrationUrl} target="_blank" rel="noopener noreferrer" className={keyClass('pen')}>
                   External Registration Page ↗
@@ -591,11 +598,7 @@ export default function ShowDetailClient({ show, divisionResults }: ShowDetailCl
                 <Key href={`/register/${show.slug}`} variant="pen">
                   {show.registrationStatus === 'waitlist' ? 'Join Waitlist →' : 'Register Now →'}
                 </Key>
-              ) : (
-                <button type="button" disabled className={keyClass('line', 'opacity-50 cursor-not-allowed')}>
-                  {life.registrationLabel}
-                </button>
-              )}
+              ) : null}
               <FollowShowButton slug={show.slug} isDemoFixture={!!show.isDemoFixture} />
               {show.liveScoreboardPath && (
                 <Key href={show.liveScoreboardPath} variant="ink">Open Public Live Scoreboard</Key>

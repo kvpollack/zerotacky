@@ -28,6 +28,23 @@ export function Key({ href, variant = 'ink', className = '', children, ...rest }
   );
 }
 
+/** Why a key is off, printed under it as a cap line (UI group A, 11/27, part 2 S6): a `title` never shows on touch
+ *  and a key that is only greyed reads as broken. The key points here with aria-describedby={id}. Renders nothing
+ *  when there is no reason to give (the key is live, or busy with its own "Saving…" label). */
+export function KeyReason({ id, children, className = '' }: { id: string; children?: React.ReactNode; className?: string }) {
+  if (children === null || children === undefined || children === false || children === '') return null;
+  return <Cap as="span" id={id} className={`block ${className}`}>{children}</Cap>;
+}
+
+/** One notice grammar for the admin queues (S23): a ruled line; a failure takes the red rule and red text. */
+export function QueueNotice({ tone = 'ok', children }: { tone?: 'ok' | 'warn'; children: React.ReactNode }) {
+  return (
+    <div role="status" className={`text-[13px] font-bold border-2 px-3 py-2 flex flex-wrap items-center gap-2 ${tone === 'warn' ? 'border-redpen text-redpen' : 'border-rule text-ink'}`}>
+      {children}
+    </div>
+  );
+}
+
 type KeyButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: KeyVariant };
 export function KeyButton({ variant = 'ink', className = '', type = 'button', children, ...rest }: KeyButtonProps) {
   return (
@@ -61,8 +78,8 @@ export function SectionCap({ children, aside, id }: { children: React.ReactNode;
 /** The coloured band at the top of a show, gym or registration page. Pass 1 (11/18, Fable 6 / Astra 10): the record's
  *  own name on its own line (22 px phone, 26 px desktop), the date · venue line under it, status words on the right. */
 export function TitleBand({ name, meta, status, className = '' }: { name: React.ReactNode; meta?: React.ReactNode[]; status?: React.ReactNode[]; className?: string }) {
-  const metaItems = (meta ?? []).filter((m) => m !== null && m !== undefined && m !== false);
-  const statusItems = (status ?? []).filter((s) => s !== null && s !== undefined && s !== false);
+  const metaItems = (meta ?? []).filter((m) => m !== null && m !== undefined && m !== false && m !== '');
+  const statusItems = (status ?? []).filter((s) => s !== null && s !== undefined && s !== false && s !== '');
   return (
     <div className={`bg-slot text-slot-label border-2 border-b-0 border-rule flex flex-wrap items-end justify-between gap-x-6 gap-y-2 px-5 sm:px-7 min-h-16 py-4 leading-snug ${className}`}>
       <h1 className="font-normal min-w-0">
@@ -98,3 +115,23 @@ export const navClass = (active: boolean) => `${NAV_LINK} ${active ? 'bg-ink tex
 
 /** Inline link in running text: ink, underlined, pen on hover. */
 export const textLink = 'font-bold underline underline-offset-4 decoration-1 text-ink hover:text-pen';
+// A standalone action link (not inside a sentence): the same link, 44 px tall so a thumb can hit it (pass 2, finding 20).
+export const actionLink = `inline-flex items-center min-h-11 ${textLink}`;
+
+// Pass 2 (finding 13): a directory keeps its two main filters in view and the rest behind this toggle on phones. From
+// md up the toggle is hidden and the panel it controls is always open, so the caller hides the panel with
+// `open ? '' : 'hidden md:grid'`. `count` is how many of the hidden filters are set.
+export function MoreFiltersToggle({ open, onToggle, count, controls, className = '' }: { open: boolean; onToggle: () => void; count: number; controls: string; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      aria-controls={controls}
+      className={`md:hidden inline-flex items-center justify-between gap-3 min-h-11 px-3.5 border-2 border-rule bg-sheet text-[13px] font-bold uppercase tracking-[0.04em] text-ink outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-pen focus-visible:outline-offset-2 ${className}`}
+    >
+      <span>{open ? 'Fewer filters' : 'More filters'}{count > 0 && <span className="text-pen"> · {count} on</span>}</span>
+      <span aria-hidden="true">{open ? '−' : '+'}</span>
+    </button>
+  );
+}

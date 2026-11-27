@@ -57,12 +57,12 @@ export const FAVORITE_LIFT_OPTIONS: ReadonlyArray<{ id: string; label: string }>
 ];
 
 export const SOCIAL_KEYS: ReadonlyArray<{ key: SocialKey; label: string; placeholder: string }> = [
-  { key: 'instagram', label: 'Instagram', placeholder: 'handle' },
-  { key: 'tiktok', label: 'TikTok', placeholder: 'handle' },
-  { key: 'youtube', label: 'YouTube', placeholder: 'channel handle' },
-  { key: 'x', label: 'X', placeholder: 'handle' },
-  { key: 'facebook', label: 'Facebook', placeholder: 'page or profile name' },
-  { key: 'website', label: 'Website', placeholder: 'https://' },
+  { key: 'instagram', label: 'Instagram', placeholder: 'e.g. yourname' },
+  { key: 'tiktok', label: 'TikTok', placeholder: 'e.g. yourname' },
+  { key: 'youtube', label: 'YouTube', placeholder: 'e.g. yourchannel' },
+  { key: 'x', label: 'X', placeholder: 'e.g. yourname' },
+  { key: 'facebook', label: 'Facebook', placeholder: 'e.g. your.page' },
+  { key: 'website', label: 'Website', placeholder: 'e.g. https://yoursite.com' },
 ];
 
 export const MAX_PRS = 3;

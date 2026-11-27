@@ -7,6 +7,7 @@ import { collectDistinctImplementTags, collectDistinctStates } from '@/lib/websi
 import { sortEquipmentTags } from '@/lib/website/gymEquipment';
 import { canonical } from '@/lib/website/seo';
 import { cleanSearchParam, cleanStateParam } from '@/lib/website/athletes';
+import { cleanShownParam } from '@/lib/website/directory';
 
 // Directory rows are loaded by scripts outside deploys; refresh every 5 min.
 export const revalidate = 300;
@@ -52,12 +53,9 @@ export default async function GymsDirectoryPage({ searchParams }: { searchParams
             </span>
           )}
         </div>
+        {/* Pass 2 (finding 13): one sentence above the list; where the listings come from and the owner's line follow it. */}
         <p className="text-[15px] leading-relaxed text-ink max-w-3xl">
-          Strongman and powerlifting gyms you can actually train at. Filter by distance from your zip, equipment, day-pass policy, or gyms that run intro sessions for beginners.
-          Missing details are marked <strong>Not provided</strong>.{' '}
-          {live
-            ? 'Each listing was built from the gym\u2019s own website and stays marked Unclaimed until the owner takes it over. Gym owner? Open your gym and tap Claim this gym.'
-            : 'These listings are fictional demos; gym owners adding their own gym is next on the roadmap.'}
+          Strongman and powerlifting gyms you can train at.
         </p>
         {res.error && (
           <p className="text-[13px] font-bold text-redpen" role="alert">The directory could not be loaded right now. {res.error}</p>
@@ -71,8 +69,15 @@ export default async function GymsDirectoryPage({ searchParams }: { searchParams
         initialSearch={cleanSearchParam(sp.q)}
         initialState={cleanStateParam(sp.state)}
         initialIntroOnly={sp.intro === '1' || sp.intro === 'true'}
+        initialShown={cleanShownParam(sp.n)}
         trainFor={trainFor}
       />
+
+      <p className="text-[15px] leading-relaxed text-ink">
+        {live
+          ? 'Each listing was built from the gym\u2019s own website and stays marked Unclaimed until the owner takes it over. Gym owner? Open your gym and tap Claim this gym.'
+          : 'These listings are fictional demos; gym owners adding their own gym is next on the roadmap.'}
+      </p>
     </WebsiteShell>
   );
 }

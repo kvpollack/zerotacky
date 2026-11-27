@@ -181,7 +181,7 @@ export default function SignInForm({ auth, defaultMode = 'signin', returnTo, idP
                     await auth.sendPasswordReset(email);
                     return `Reset link sent to ${email.trim()}. It opens the Account page to set a new password${returnTo ? ', then brings you back here' : ''}.`;
                   })}
-                  className={`self-start text-[13px] ${textLink}`}
+                  className={`self-start inline-flex items-center min-h-11 text-[13px] ${textLink}`}
                 >
                   Forgot password?
                 </button>

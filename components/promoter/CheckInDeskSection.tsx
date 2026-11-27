@@ -221,7 +221,7 @@ export default function CheckInDeskSection({
       {rows.length === 0 ? (
         <p className="text-xs text-zt-muted">No active athletes on the roster yet. Accept registrations or add athletes on the Athletes tab.</p>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-zt-border text-[10px] font-extrabold uppercase text-zt-muted">

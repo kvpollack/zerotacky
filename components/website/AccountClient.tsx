@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Cap, keyClass, textLink } from '@/components/website/sheet';
+import { Cap, KeyReason, keyClass, textLink } from '@/components/website/sheet';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/useAuth';
 import SignInForm, { takeReturnTo } from '@/components/auth/SignInForm';
@@ -409,11 +409,11 @@ export default function AccountClient() {
                   </div>
                   <div className={CELL}>
                     <label htmlFor="about-location"><Cap as="span">Location</Cap></label>
-                    <input id="about-location" value={about.location} onChange={(e) => patchAbout({ location: e.target.value })} className={INPUT} maxLength={80} placeholder="City, State" />
+                    <input id="about-location" value={about.location} onChange={(e) => patchAbout({ location: e.target.value })} className={INPUT} maxLength={80} placeholder="e.g. York, PA" />
                   </div>
                   <div className={CELL}>
                     <label htmlFor="about-gym"><Cap as="span">Home gym</Cap></label>
-                    <input id="about-gym" value={about.home_gym_name} onChange={(e) => patchAbout({ home_gym_name: e.target.value })} className={INPUT} maxLength={80} placeholder="Where you train" />
+                    <input id="about-gym" value={about.home_gym_name} onChange={(e) => patchAbout({ home_gym_name: e.target.value })} className={INPUT} maxLength={80} placeholder="e.g. Keystone Forge Strength" />
                   </div>
                   {/* 029: link the home gym to its Gym Directory listing; the public page shows the gym as a link. Picking a gym
                       also fills the name above so the text and the link agree; clearing keeps the typed name. */}
@@ -435,10 +435,10 @@ export default function AccountClient() {
                   {about.prs.map((pr, i) => (
                     <React.Fragment key={i}>
                       <div className={CELL}>
-                        <input aria-label={`PR ${i + 1} lift`} value={pr.lift} onChange={(e) => patchPR(i, { lift: e.target.value })} className={INPUT} maxLength={40} placeholder={i === 0 ? 'Lift (Log press)' : 'Lift'} />
+                        <input aria-label={`PR ${i + 1} lift`} value={pr.lift} onChange={(e) => patchPR(i, { lift: e.target.value })} className={INPUT} maxLength={40} placeholder={i === 0 ? 'Lift, e.g. Log press' : 'Lift'} />
                       </div>
                       <div className={CELL}>
-                        <input aria-label={`PR ${i + 1} result`} value={pr.value} onChange={(e) => patchPR(i, { value: e.target.value })} className={`${INPUT} font-sheet`} maxLength={40} placeholder={i === 0 ? 'Result (275 lb)' : 'Result'} />
+                        <input aria-label={`PR ${i + 1} result`} value={pr.value} onChange={(e) => patchPR(i, { value: e.target.value })} className={`${INPUT} font-sheet`} maxLength={40} placeholder={i === 0 ? 'Result, e.g. 275 lb' : 'Result'} />
                       </div>
                     </React.Fragment>
                   ))}
@@ -481,9 +481,12 @@ export default function AccountClient() {
             )}
 
             {notice && <Notice {...notice} />}
-            <button type="submit" disabled={busy || avatarBusy || !dirty} className={keyClass('pen', 'self-start disabled:opacity-40')}>
-              Save profile
-            </button>
+            <div className="flex flex-col items-start gap-1.5">
+              <button type="submit" disabled={busy || avatarBusy || !dirty} aria-describedby={dirty ? undefined : 'save-profile-why'} className={keyClass('pen', 'disabled:opacity-40')}>
+                Save profile
+              </button>
+              <KeyReason id="save-profile-why">{!dirty && !busy && !avatarBusy ? 'No changes to save' : null}</KeyReason>
+            </div>
           </form>
         )}
       </section>
@@ -531,14 +534,15 @@ export default function AccountClient() {
               <label htmlFor="profile-username"><Cap as="span">Username</Cap></label>
               <div className="flex items-center gap-2">
                 <span className="text-[17px] font-bold text-ink-muted">@</span>
-                <input id="profile-username" value={draftUsername} onChange={(e) => setDraftUsername(e.target.value)} className={INPUT} maxLength={USERNAME_MAX} autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="yourname" />
+                <input id="profile-username" value={draftUsername} onChange={(e) => setDraftUsername(e.target.value)} className={INPUT} maxLength={USERNAME_MAX} autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="e.g. yourname" />
               </div>
               <div className={NOTE}>3 to 30 characters, lowercase letters, numbers and underscores. If you change it, the old one is held for 30 days so nobody else can grab it right away. Promoters use it to link your results to this page (Show History).</div>
             </div>
             <div className={`${CELL} justify-end`}>
-              <button type="submit" disabled={usernameBusy || normalizeUsername(draftUsername) === (p.username ?? '')} className={keyClass('line', 'disabled:opacity-40')}>
+              <button type="submit" disabled={usernameBusy || normalizeUsername(draftUsername) === (p.username ?? '')} aria-describedby={normalizeUsername(draftUsername) === (p.username ?? '') ? 'username-why' : undefined} className={keyClass('line', 'disabled:opacity-40')}>
                 {usernameBusy ? 'Saving…' : p.username ? 'Change username' : 'Set username'}
               </button>
+              <KeyReason id="username-why">{!usernameBusy && normalizeUsername(draftUsername) === (p.username ?? '') ? (p.username ? 'Type a different username to change it' : 'Type a username to set it') : null}</KeyReason>
             </div>
             <label className={`${CELL} col-span-full flex-row items-start gap-3 ${p.username ? 'cursor-pointer' : 'opacity-60'}`}>
               <input

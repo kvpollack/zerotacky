@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth/useAuth';
 import { getSupabase } from '@/lib/auth/supabaseBrowser';
 import { GYM_EQUIPMENT } from '@/lib/website/gymEquipment';
 import PaintPicker from './PaintPicker';
-import { Cap, Key, KeyButton, keyClass, textLink } from './sheet';
+import { Cap, Key, KeyButton, KeyReason, keyClass, textLink } from './sheet';
 import {
   DAY_PASS_OPTIONS, GYM_LIMITS, GYM_SOCIAL_KEYS, GYM_TYPES, INTRO_SESSIONS_OPTIONS, cleanGymPatch, fetchMyClaims, fetchMyGyms, patchFromRow, patchKey,
   geocodeAddress, saveMyGym, addressChanged, type GymPatch, type PinChange, type MyClaimRow, type MyGymRow,
@@ -172,7 +172,7 @@ function GymEditor({ row, onSaved }: { row: MyGymRow; onSaved: (r: MyGymRow) => 
           </div>
           <div className="md:col-span-1">
             <label htmlFor={`state-${row.id}`} className={labelCls}>State</label>
-            <input id={`state-${row.id}`} value={draft.state} onChange={(e) => patch({ state: e.target.value.toUpperCase() })} className={inputCls} maxLength={2} required autoComplete="address-level1" placeholder="PA" />
+            <input id={`state-${row.id}`} value={draft.state} onChange={(e) => patch({ state: e.target.value.toUpperCase() })} className={inputCls} maxLength={2} required autoComplete="address-level1" placeholder="e.g. PA" />
           </div>
           <div className="md:col-span-2">
             <label htmlFor={`zip-${row.id}`} className={labelCls}>Zip</label>
@@ -187,7 +187,7 @@ function GymEditor({ row, onSaved }: { row: MyGymRow; onSaved: (r: MyGymRow) => 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor={`web-${row.id}`} className={labelCls}>Website</label>
-            <input id={`web-${row.id}`} value={draft.website_url} onChange={(e) => patch({ website_url: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.website_url} inputMode="url" placeholder="yourgym.com" />
+            <input id={`web-${row.id}`} value={draft.website_url} onChange={(e) => patch({ website_url: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.website_url} inputMode="url" placeholder="e.g. yourgym.com" />
           </div>
           <div>
             <label htmlFor={`phone-${row.id}`} className={labelCls}>Phone</label>
@@ -195,11 +195,11 @@ function GymEditor({ row, onSaved }: { row: MyGymRow; onSaved: (r: MyGymRow) => 
           </div>
           <div>
             <label htmlFor={`ig-${row.id}`} className={labelCls}>Instagram</label>
-            <input id={`ig-${row.id}`} value={draft.instagram} onChange={(e) => patch({ instagram: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.instagram} placeholder="yourgym (no @ needed)" />
+            <input id={`ig-${row.id}`} value={draft.instagram} onChange={(e) => patch({ instagram: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.instagram} placeholder="e.g. yourgym (no @ needed)" />
           </div>
           <div>
             <label htmlFor={`contact-${row.id}`} className={labelCls}>Email or contact note</label>
-            <input id={`contact-${row.id}`} value={draft.contact} onChange={(e) => patch({ contact: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.contact} placeholder="info@yourgym.com or “DM us on Instagram”" />
+            <input id={`contact-${row.id}`} value={draft.contact} onChange={(e) => patch({ contact: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.contact} placeholder="e.g. info@yourgym.com or “DM us on Instagram”" />
           </div>
           {GYM_SOCIAL_KEYS.map((sk) => (
             <div key={sk.key}>
@@ -221,19 +221,19 @@ function GymEditor({ row, onSaved }: { row: MyGymRow; onSaved: (r: MyGymRow) => 
           </div>
           <div>
             <label htmlFor={`price-${row.id}`} className={labelCls}>Day pass price</label>
-            <input id={`price-${row.id}`} value={draft.day_pass_price} onChange={(e) => patch({ day_pass_price: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.day_pass_price} placeholder="$20, or $15 with a USS card" />
+            <input id={`price-${row.id}`} value={draft.day_pass_price} onChange={(e) => patch({ day_pass_price: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.day_pass_price} placeholder="e.g. $20, or $15 with a USS card" />
           </div>
           <div className="md:col-span-2">
             <label htmlFor={`passurl-${row.id}`} className={labelCls}>Buy or book a pass online (link)</label>
-            <input id={`passurl-${row.id}`} value={draft.day_pass_url} onChange={(e) => patch({ day_pass_url: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.day_pass_url} inputMode="url" placeholder="yourgym.com/day-pass" />
+            <input id={`passurl-${row.id}`} value={draft.day_pass_url} onChange={(e) => patch({ day_pass_url: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.day_pass_url} inputMode="url" placeholder="e.g. yourgym.com/day-pass" />
           </div>
           <div className="md:col-span-2">
             <label htmlFor={`policy-${row.id}`} className={labelCls}>Drop-in policy</label>
-            <textarea id={`policy-${row.id}`} value={draft.drop_in_policy} onChange={(e) => patch({ drop_in_policy: e.target.value })} className="zt-input min-h-[4.5rem]" maxLength={GYM_LIMITS.drop_in_policy} placeholder="Waiver at the desk, 18+, call ahead on weekends, bring your own tacky…" />
+            <textarea id={`policy-${row.id}`} value={draft.drop_in_policy} onChange={(e) => patch({ drop_in_policy: e.target.value })} className="zt-input min-h-[4.5rem]" maxLength={GYM_LIMITS.drop_in_policy} placeholder="e.g. waiver at the desk, 18+, call ahead on weekends, bring your own tacky…" />
           </div>
           <div className="md:col-span-2">
             <label htmlFor={`hours-${row.id}`} className={labelCls}>Hours a visitor can come in</label>
-            <input id={`hours-${row.id}`} value={draft.drop_in_hours} onChange={(e) => patch({ drop_in_hours: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.drop_in_hours} placeholder="Staffed hours Mon–Fri 4–8 pm, Sat 9–1" />
+            <input id={`hours-${row.id}`} value={draft.drop_in_hours} onChange={(e) => patch({ drop_in_hours: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.drop_in_hours} placeholder="e.g. staffed hours Mon–Fri 4–8 pm, Sat 9–1" />
           </div>
         </div>
       </fieldset>
@@ -253,11 +253,11 @@ function GymEditor({ row, onSaved }: { row: MyGymRow; onSaved: (r: MyGymRow) => 
             <>
               <div className="md:col-span-2">
                 <label htmlFor={`intronote-${row.id}`} className={labelCls}>When, how much, who to ask</label>
-                <textarea id={`intronote-${row.id}`} value={draft.intro_sessions_note} onChange={(e) => patch({ intro_sessions_note: e.target.value })} className="zt-input min-h-[4.5rem]" maxLength={GYM_LIMITS.intro_sessions_note} placeholder="Saturdays 10 am, $20, no experience needed. Email the desk to book a spot." />
+                <textarea id={`intronote-${row.id}`} value={draft.intro_sessions_note} onChange={(e) => patch({ intro_sessions_note: e.target.value })} className="zt-input min-h-[4.5rem]" maxLength={GYM_LIMITS.intro_sessions_note} placeholder="e.g. Saturdays 10 am, $20, no experience needed. Email the desk to book a spot." />
               </div>
               <div className="md:col-span-2">
                 <label htmlFor={`introurl-${row.id}`} className={labelCls}>Sign-up or info link</label>
-                <input id={`introurl-${row.id}`} value={draft.intro_sessions_url} onChange={(e) => patch({ intro_sessions_url: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.intro_sessions_url} inputMode="url" placeholder="yourgym.com/intro-strongman" />
+                <input id={`introurl-${row.id}`} value={draft.intro_sessions_url} onChange={(e) => patch({ intro_sessions_url: e.target.value })} className={inputCls} maxLength={GYM_LIMITS.intro_sessions_url} inputMode="url" placeholder="e.g. yourgym.com/intro-strongman" />
               </div>
             </>
           )}
@@ -280,11 +280,12 @@ function GymEditor({ row, onSaved }: { row: MyGymRow; onSaved: (r: MyGymRow) => 
       <div className={CELL}>
         {notice && <Notice {...notice} />}
         <div className="flex flex-wrap items-center gap-2">
-          <KeyButton type="submit" variant="pen" disabled={busy || !dirty}>{busy ? 'Saving…' : 'Save listing'}</KeyButton>
+          <KeyButton type="submit" variant="pen" disabled={busy || !dirty} aria-describedby={dirty ? undefined : `save-why-${row.id}`}>{busy ? 'Saving…' : 'Save listing'}</KeyButton>
           {dirty && !busy && (
             <KeyButton variant="line" onClick={() => { setDraft(patchFromRow(row)); setNotice(null); }}>Discard changes</KeyButton>
           )}
         </div>
+        <KeyReason id={`save-why-${row.id}`}>{!dirty && !busy ? 'No changes to save' : null}</KeyReason>
         {row.status !== 'pending' && (
           <p className={NOTE}>Something wrong you cannot fix here, like the name or the web address slug? <Link href={`/gyms/${row.slug}/claim?mode=report`} className={textLink}>Tell us</Link>.</p>
         )}
